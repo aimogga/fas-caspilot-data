@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { createServer } from 'http';
+import { createServer } from "node:http";
 
 const PORT = 3000;
 const html = `<!DOCTYPE html>
@@ -29,11 +29,11 @@ const html = `<!DOCTYPE html>
 </html>`;
 
 const server = createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/html' });
-  res.end(html);
+	res.writeHead(200, { "Content-Type": "text/html" });
+	res.end(html);
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Harness placeholder running on http://0.0.0.0:${PORT}`);
-  console.log('Phase 1 will replace this with Next.js.');
+server.listen(PORT, "0.0.0.0", () => {
+	console.log(`Harness placeholder running on http://0.0.0.0:${PORT}`);
+	console.log("Phase 1 will replace this with Next.js.");
 });
