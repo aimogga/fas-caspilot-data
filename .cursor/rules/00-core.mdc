@@ -1,0 +1,11 @@
+---
+description: Core working rules for every task in this repo
+alwaysApply: true
+---
+- Read AGENTS.md and the last 3 entries of harness/progress.md before changing anything.
+- Work on exactly one feature_id from your task packet. Keep the diff small.
+- Write tests from the acceptance criteria before or alongside the code. Never weaken or delete a test to make it pass.
+- Run `pnpm lint && pnpm typecheck && pnpm test` before you finish.
+- Append a harness/progress.md entry and open a PR using the template.
+- Do not edit status fields in harness/feature_list.json; QA owns those.
+- If a needed decision is not in docs/ or harness/DECISIONS.md, stop and ask instead of guessing.

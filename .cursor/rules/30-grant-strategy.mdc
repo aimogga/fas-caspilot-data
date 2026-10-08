@@ -1,0 +1,12 @@
+---
+description: Rules for grant matching, explanations and AI strategy drafts
+globs: lib/grants/**, app/**/grants/**, supabase/functions/strategy-*/**
+alwaysApply: false
+---
+- Matching is explainable: every score component stores its reason and the source rows behind it.
+- Hard eligibility filters run before scoring; unmet requirements are shown as flags, never hidden.
+- AI strategy drafts: retrieve only from our database (opportunity text, FAS metrics, public indicators, award history). Output structured JSON validated by a schema. Every number must reference a citation id that resolves to a stored row; drafts that fail this check are rejected, not shown.
+- Label all drafts "DRAFT — human review required". Label inferences as inferences.
+- Never claim to know what a past winner wrote. Award records show who won, how much and short descriptions; say exactly that.
+- Never copy text from other organizations' award descriptions into FAS drafts.
+- The LLM provider sits behind lib/llm/ adapter; don't call a provider SDK directly from feature code.

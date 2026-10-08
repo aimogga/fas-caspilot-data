@@ -1,0 +1,7 @@
+{
+  "install": "corepack enable && pnpm install --frozen-lockfile",
+  "start": "supabase start",
+  "terminals": [
+    { "name": "web", "command": "pnpm dev" }
+  ]
+}

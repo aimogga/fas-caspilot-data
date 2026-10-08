@@ -1,0 +1,11 @@
+---
+description: Rules for public data ingestion code
+globs: packages/ingest/**, supabase/functions/ingest-*/**, n8n/**
+alwaysApply: false
+---
+- Each source is one module in packages/ingest/<source-id>/ with: fetch, parse, validate, load. Pure functions, unit-tested with recorded fixtures (no live calls in unit tests).
+- Use only endpoints and licenses recorded in docs/DATA_SOURCES.md. If a source's row says "Avoid" or "Verify first", stop.
+- Load into public_indicator in long format with source_id, indicator_code, geo_fips, period, value, moe, unit, vintage, ingest_run_id.
+- Every run writes an ingest_run row (start, end, status, rows, checksum, error). Runs are idempotent: re-running the same vintage must not duplicate rows.
+- Respect rate limits and API key rules (e.g., Grants.gov keys are disabled after 30 days of no use; the schedule must keep them active).
+- n8n workflows: schedule + call the ingest function + alert on failure. Export workflow JSON to n8n/ for version control. New workflows are created inactive; never edit existing live workflows without George's approval.

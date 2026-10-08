@@ -1,0 +1,67 @@
+# AGENTS.md — CasePilot × FAS "Public Data to Proof"
+
+You are working in the repo for a free CasePilot tool built for **Family Advocacy Services (FAS)**, a Utah nonprofit that pays for therapy for families who can't afford it, many referred through courts. The tool collects free public data, accepts FAS's own data, shows both, matches FAS to grants and produces evidence packets. Keep this file short; details live in the linked docs.
+
+## Read order (every session)
+1. This file.
+2. `harness/progress.md` — the last 3 entries.
+3. Your task packet (GitHub Issue labeled `packet`) and its `context_files`.
+4. Only the docs your packet names: `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/DATA_SOURCES.md`, `docs/GRANT_MATCHING.md`, `docs/PRIVACY_AND_COMPLIANCE.md`.
+
+## Stack
+Next.js (App Router, TypeScript) on Vercel · Supabase (Postgres, Auth, RLS, Storage, Edge Functions) · n8n (n8n.casepilot.io) for schedules and alerts · Playwright for e2e · Vitest for unit tests.
+*(Phase 1 confirms exact versions and updates this section.)*
+
+## Commands
+> Phase 1 finalizes these. Until then they are the target names.
+```
+pnpm install            # install
+pnpm dev                # run app on :3000
+pnpm lint               # eslint
+pnpm typecheck          # tsc --noEmit
+pnpm test               # unit tests (vitest)
+pnpm test:db            # database + RLS tests against local Supabase
+pnpm test:e2e           # playwright
+pnpm seed:synthetic     # load synthetic FAS data into local DB
+supabase start          # local Supabase (needs Docker)
+supabase db reset       # rebuild local DB from migrations + seed
+```
+**Smoke check before you start and before you finish:** `pnpm install && pnpm lint && pnpm typecheck && pnpm test`.
+
+## Repo layout (target)
+```
+app/                 Next.js routes (team/, board/, admin/, api/)
+components/          UI (shadcn/ui based)
+lib/metrics/         metric definitions + suppression helpers
+lib/grants/          matching, eligibility, explanations, strategy builder
+packages/ingest/     one module per public data source (pure, testable)
+supabase/migrations/ schema changes (never edit an applied migration)
+supabase/functions/  edge functions (ingest runners, exports)
+n8n/                 exported n8n workflow JSON (schedules + alerts)
+tests/               fixtures/, golden/, e2e/
+docs/                specs (read-only for engineers unless your packet says otherwise)
+harness/             plan, feature list, progress, decisions, audits
+```
+
+## Golden rules
+1. **One feature per session**, matching your packet's `feature_id`. Small diffs.
+2. **Synthetic data only.** Never use, request or paste real FAS client data. Never connect to production.
+3. **No secrets in code or commits.** Use environment variables; Cursor Cloud secrets live in Cursor's Secrets tab.
+4. **Every displayed number comes from the database** and traces to a source row with a date (`source_id`, `vintage`, `ingest_run_id`) or to an FAS upload batch.
+5. **Privacy is enforced in code:** county-level geography in shared views, suppress counts < 11 (with complementary suppression), month/quarter dates in exports, no court documents, no substance-use fields, no clinical notes. See `docs/PRIVACY_AND_COMPLIANCE.md`.
+6. **Migrations are forward-only.** New file per change; RLS enabled and deny-by-default on every new table.
+7. **AI-generated text in the app** (strategy drafts) must cite stored rows and be labeled DRAFT. No invented statistics.
+8. **Don't edit** `harness/feature_list.json` statuses (QA only) or acceptance criteria (George only).
+
+## Definition of done
+Tests for every acceptance criterion · smoke check green · app starts · no secrets or real data in the diff · `harness/progress.md` entry appended · PR opened with the template · QA packet requested.
+
+## Ending a session cleanly
+Commit working code only. If you must stop mid-feature, leave the code compiling, write exactly what's left in `progress.md`, and say so in your return report.
+
+## Cursor Cloud specific instructions
+- The machine is defined by `.cursor/environment.json` (finalized in Phase 0). Docker is available for `supabase start`.
+- Secrets come from Cursor's Secrets tab as environment variables. If one is missing, stop and report; don't hardcode.
+- Cloud agents may reach preview/dev services only. Never production.
+- Long-running dev server: use the configured terminal, not a blocking command.
+- *(Engineer Supervisor: record ports, gotchas and slow steps here as you find them.)*

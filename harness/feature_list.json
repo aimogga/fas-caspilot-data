@@ -1,0 +1,764 @@
+{
+  "_readme": "Contract for the build. All features start 'failing'. Only QA sets status to 'passing', and only with evidence links. Nobody edits acceptance criteria without George's approval.",
+  "version": 1,
+  "updated": "2026-10-08",
+  "features": [
+    {
+      "id": "F-000",
+      "phase": 0,
+      "title": "Plugin and tool inventory completed",
+      "owner": "chief-of-staff",
+      "acceptance": [
+        "harness/PLUGIN_INVENTORY.md lists every plugin/MCP/integration available in Grok, Cursor (local + Cloud) and n8n",
+        "Each row marked Use / Maybe / Avoid with a one-line reason",
+        "Any tool that would send FAS data to a third party is flagged"
+      ],
+      "tests": [
+        "manual review by George"
+      ],
+      "human_gate": "george-before-merge",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-001",
+      "phase": 0,
+      "title": "Open decisions D-001 to D-010 decided",
+      "owner": "chief-of-staff",
+      "acceptance": [
+        "Each decision has options, recommendation, cost and risk",
+        "George's decision and date recorded in DECISIONS.md"
+      ],
+      "tests": [
+        "manual review by George"
+      ],
+      "human_gate": "george-before-merge",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-002",
+      "phase": 0,
+      "title": "Phase 2 and 5 data sources verified",
+      "owner": "deep-research",
+      "acceptance": [
+        "A source card exists in docs/research/ for every 'Use' and 'Verify first' row in DATA_SOURCES.md",
+        "Each card has a working sample call, latest vintage, license and commercial-reuse answer"
+      ],
+      "tests": [
+        "QA re-runs 3 random sample calls"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-003",
+      "phase": 0,
+      "title": "Cursor Cloud environment ready",
+      "owner": "engineer-supervisor",
+      "acceptance": [
+        ".cursor/environment.json committed (from Cursor's Cloud agent setup flow)",
+        "A cloud agent can install, run lint/typecheck/test and start the app on a fresh machine",
+        "Secrets stored in Cursor's Secrets tab only; AGENTS.md 'Cursor Cloud specific instructions' updated"
+      ],
+      "tests": [
+        "cloud agent run log linked as evidence"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-101",
+      "phase": 1,
+      "title": "App shell with Supabase Auth and roles",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Sign in/out works",
+        "Roles admin, staff, board_viewer enforced on routes",
+        "Board viewers cannot reach staff pages"
+      ],
+      "tests": [
+        "e2e: auth-roles.spec.ts",
+        "unit: role guards"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-102",
+      "phase": 1,
+      "title": "Database schema v1 with RLS deny-by-default",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "All tables in ARCHITECTURE.md created via migrations",
+        "RLS enabled on every table with policies per role and org_id",
+        "No table readable without a policy"
+      ],
+      "tests": [
+        "db: rls.test.ts covering each table x role"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-103",
+      "phase": 1,
+      "title": "Synthetic data generator",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "`pnpm seed:synthetic` creates ~200 realistic cases across at least 10 Utah counties, including small counties",
+        "Includes court and non-court cases, non-starts with reasons, completed and dropped episodes, affiliated and unaffiliated providers, outcome scores",
+        "Contains no real names or real records"
+      ],
+      "tests": [
+        "unit: generator invariants",
+        "golden: fixture with hand-computed metrics"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-104",
+      "phase": 1,
+      "title": "CI pipeline",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "PRs run lint, typecheck, unit, db and e2e smoke tests",
+        "Secret scanning enabled",
+        "Main branch protected; CI required"
+      ],
+      "tests": [
+        "CI run link"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-105",
+      "phase": 1,
+      "title": "Preview environments",
+      "owner": "engineer-supervisor",
+      "acceptance": [
+        "Each PR gets a Vercel preview using a non-production Supabase project/branch with synthetic data"
+      ],
+      "tests": [
+        "preview URL in PR"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-201",
+      "phase": 2,
+      "title": "Source registry, ingest run logging and failure alerts",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "source_registry and ingest_run populated",
+        "Failed runs alert via n8n (email or Slack)",
+        "Re-running a vintage does not duplicate rows"
+      ],
+      "tests": [
+        "unit: idempotency",
+        "integration: simulated failure triggers alert"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-202",
+      "phase": 2,
+      "title": "Ingest: Census SAHIE uninsured by county",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Module packages/ingest/sahie fetches, parses, validates and loads into public_indicator with provenance",
+        "All 29 Utah counties present or explicitly marked not published",
+        "Scheduled in n8n (workflow JSON exported to n8n/)"
+      ],
+      "tests": [
+        "unit: sahie parser with recorded fixture",
+        "integration: load into local DB"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-203",
+      "phase": 2,
+      "title": "Ingest: Census SAIPE poverty by county",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Module packages/ingest/saipe fetches, parses, validates and loads into public_indicator with provenance",
+        "All 29 Utah counties present or explicitly marked not published",
+        "Scheduled in n8n (workflow JSON exported to n8n/)"
+      ],
+      "tests": [
+        "unit: saipe parser with recorded fixture",
+        "integration: load into local DB"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-204",
+      "phase": 2,
+      "title": "Ingest: ACS 5-year denominators",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Module packages/ingest/acs5 fetches, parses, validates and loads into public_indicator with provenance",
+        "All 29 Utah counties present or explicitly marked not published",
+        "Scheduled in n8n (workflow JSON exported to n8n/)"
+      ],
+      "tests": [
+        "unit: acs5 parser with recorded fixture",
+        "integration: load into local DB"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-205",
+      "phase": 2,
+      "title": "Ingest: HRSA mental health HPSA",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Module packages/ingest/hrsa_hpsa_mh fetches, parses, validates and loads into public_indicator with provenance",
+        "All 29 Utah counties present or explicitly marked not published",
+        "Scheduled in n8n (workflow JSON exported to n8n/)"
+      ],
+      "tests": [
+        "unit: hrsa_hpsa_mh parser with recorded fixture",
+        "integration: load into local DB"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-206",
+      "phase": 2,
+      "title": "Ingest: CDC PLACES county mental health measures",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Module packages/ingest/cdc_places fetches, parses, validates and loads into public_indicator with provenance",
+        "All 29 Utah counties present or explicitly marked not published",
+        "Scheduled in n8n (workflow JSON exported to n8n/)"
+      ],
+      "tests": [
+        "unit: cdc_places parser with recorded fixture",
+        "integration: load into local DB"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-207",
+      "phase": 2,
+      "title": "Ingest: Utah Courts filings by county (workbook)",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Module packages/ingest/ut_courts fetches, parses, validates and loads into public_indicator with provenance",
+        "All 29 Utah counties present or explicitly marked not published",
+        "Scheduled in n8n (workflow JSON exported to n8n/)"
+      ],
+      "tests": [
+        "unit: ut_courts parser with recorded fixture",
+        "integration: load into local DB"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-208",
+      "phase": 2,
+      "title": "Ingest: VA VetPop2023 county",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Module packages/ingest/va_vetpop fetches, parses, validates and loads into public_indicator with provenance",
+        "All 29 Utah counties present or explicitly marked not published",
+        "Scheduled in n8n (workflow JSON exported to n8n/)"
+      ],
+      "tests": [
+        "unit: va_vetpop parser with recorded fixture",
+        "integration: load into local DB"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-209",
+      "phase": 2,
+      "title": "Data freshness panel",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Shows each source's latest vintage, last successful run and status",
+        "Stale sources highlighted with text, not color alone"
+      ],
+      "tests": [
+        "e2e: freshness.spec.ts screenshot"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-210",
+      "phase": 2,
+      "title": "County need score v1 with methodology page",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Score computed from versioned weights in need_score_config",
+        "Methodology page lists inputs, weights, vintages and limits",
+        "Changing weights creates a new version"
+      ],
+      "tests": [
+        "unit: need score on fixture",
+        "golden: expected ranking"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-211",
+      "phase": 2,
+      "title": "Utah county map explorer",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Map colored by need score",
+        "Clicking a county shows indicators with source and date"
+      ],
+      "tests": [
+        "e2e: map.spec.ts screenshot"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-301",
+      "phase": 3,
+      "title": "Spreadsheet upload with mapping and validation",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Template download",
+        "Column mapping screen",
+        "Validation errors listed per row with downloadable report",
+        "Preview before commit",
+        "Batch rollback"
+      ],
+      "tests": [
+        "e2e: upload.spec.ts (good file, bad file)",
+        "unit: validators"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-302",
+      "phase": 3,
+      "title": "Manual entry forms",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Forms for case, application, authorization, delivery, outcome",
+        "Same validation as uploads",
+        "Audit log entries created"
+      ],
+      "tests": [
+        "e2e: entry-forms.spec.ts"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-303",
+      "phase": 3,
+      "title": "Aggregate-only submissions",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Org can submit period totals per metric",
+        "Clearly labeled as aggregate in all views"
+      ],
+      "tests": [
+        "e2e: aggregate.spec.ts"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-304",
+      "phase": 3,
+      "title": "Metrics M1\u2013M6",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Views implement definitions in PRD section C3",
+        "Filters by date range, county, referral source",
+        "Results match golden fixture exactly"
+      ],
+      "tests": [
+        "golden: tests/golden/metrics.json",
+        "unit: edge cases (missing dates, zero denominators)"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-305",
+      "phase": 3,
+      "title": "Outcome change metric O1",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Supports OQ-45, YOQ, PHQ-9, GAD-7 with direction per measure",
+        "Shows mean change and share improved"
+      ],
+      "tests": [
+        "golden: outcomes fixture"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-306",
+      "phase": 3,
+      "title": "Suppression and complementary suppression",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Counts < 11 hidden in all shared views",
+        "Complementary suppression prevents recovery from totals",
+        "Rates on suppressed counts hidden"
+      ],
+      "tests": [
+        "unit: suppression edge cases",
+        "db: shared views never return cells < 11"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-401",
+      "phase": 4,
+      "title": "Team dashboard",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Six metrics + outcomes with trends and filters",
+        "Data freshness and grant pipeline widgets",
+        "Every number shows its as-of date"
+      ],
+      "tests": [
+        "e2e: team-dashboard.spec.ts screenshot"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-402",
+      "phase": 4,
+      "title": "Board dashboard (print-friendly)",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "One screen, plain language, suppressed aggregates only",
+        "Prints cleanly to letter-size",
+        "Related-party share (M6) shown with rate comparison"
+      ],
+      "tests": [
+        "e2e: board-dashboard.spec.ts screenshot + print PDF"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-403",
+      "phase": 4,
+      "title": "Evidence packet PDF",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Sections: county need profile, FAS results, outcomes, methodology and sources, suppression note, related-party disclosure",
+        "No exact dates, no case-level fields, no cell < 11",
+        "Variants: grant attachment and board packet"
+      ],
+      "tests": [
+        "unit: export assertions",
+        "visual: PDF page snapshots"
+      ],
+      "human_gate": "george-before-merge",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-404",
+      "phase": 4,
+      "title": "Evidence packet DOCX and CSV appendix",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Same content and rules as PDF",
+        "Opens cleanly in Word and Google Docs"
+      ],
+      "tests": [
+        "unit: export assertions"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-501",
+      "phase": 5,
+      "title": "Grants.gov opportunity ingest",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Scheduled search for configured themes and eligibility",
+        "Opportunities stored with raw JSON",
+        "API key kept active (no 30-day lapse)",
+        "Respects 60/min and 10,000/day limits"
+      ],
+      "tests": [
+        "unit: parser with recorded fixture",
+        "integration: rate-limit handling"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-502",
+      "phase": 5,
+      "title": "Foundation opportunities: manual entry and CSV import",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Form and CSV import for foundation opportunities",
+        "Same fields as federal where applicable"
+      ],
+      "tests": [
+        "e2e: foundation-import.spec.ts"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-503",
+      "phase": 5,
+      "title": "Eligibility filters and flags",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "All checks in GRANT_MATCHING.md implemented",
+        "Unmet requirements shown as flags, not hidden"
+      ],
+      "tests": [
+        "unit: eligibility rules on fixtures"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-504",
+      "phase": 5,
+      "title": "Fit score and 'How we matched' panel",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Weights from versioned config",
+        "Each component stores reason and source_refs",
+        "Panel renders components only from stored reasons"
+      ],
+      "tests": [
+        "unit: scoring fixtures",
+        "e2e: match-explanation.spec.ts"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-505",
+      "phase": 5,
+      "title": "Weekly grant digest",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "n8n sends weekly email of new matches above threshold",
+        "Created inactive; George activates"
+      ],
+      "tests": [
+        "integration: digest render test"
+      ],
+      "human_gate": "george-before-send",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-506",
+      "phase": 5,
+      "title": "Award history from USAspending",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Awards by Assistance Listing and state stored in award_history",
+        "SQL summary: count, median, range, recipient types, Utah share"
+      ],
+      "tests": [
+        "unit: parser fixture",
+        "golden: summary on fixture"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-507",
+      "phase": 5,
+      "title": "Foundation grant history (ProPublica / 990-PF)",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Funder lookup by EIN",
+        "Grants paid stored where available",
+        "Clearly states data year and gaps"
+      ],
+      "tests": [
+        "unit: parser fixture"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-508",
+      "phase": 5,
+      "title": "Response strategy builder (cited drafts)",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "Output validated against schema in GRANT_MATCHING.md",
+        "Every number resolves to a stored citation or the draft is rejected",
+        "DRAFT label everywhere; export only after staff approval",
+        "Inferences listed separately"
+      ],
+      "tests": [
+        "unit: citation validator",
+        "eval: 5 sample opportunities reviewed by QA"
+      ],
+      "human_gate": "george-before-merge",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-509",
+      "phase": 5,
+      "title": "Grant match eval set and regression gate",
+      "owner": "qa",
+      "acceptance": [
+        "At least 20 labeled opportunities",
+        "Precision >= 70% at digest threshold",
+        "CI fails if precision drops"
+      ],
+      "tests": [
+        "CI eval job"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-601",
+      "phase": 6,
+      "title": "Nightly audit script",
+      "owner": "engineer-bot",
+      "acceptance": [
+        "`pnpm audit:nightly` runs every check in NIGHTLY_AUDIT.md and writes a dated report",
+        "Runs in under 10 minutes"
+      ],
+      "tests": [
+        "CI run of audit script on preview"
+      ],
+      "human_gate": "none",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-602",
+      "phase": 6,
+      "title": "Security review",
+      "owner": "qa",
+      "acceptance": [
+        "RLS tests pass for every table x role",
+        "Secrets scan clean",
+        "Dependency audit: no high/critical vulnerabilities",
+        "Supabase advisors clean"
+      ],
+      "tests": [
+        "reports linked"
+      ],
+      "human_gate": "george-before-merge",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-603",
+      "phase": 6,
+      "title": "Legal review gate",
+      "owner": "chief-of-staff",
+      "acceptance": [
+        "Written legal opinion on HIPAA/BAA, Part 2 avoidance and court-record handling filed",
+        "Required BAAs in place"
+      ],
+      "tests": [
+        "George confirms"
+      ],
+      "human_gate": "george-before-deploy",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-604",
+      "phase": 6,
+      "title": "Real-data onboarding runbook and migration",
+      "owner": "engineer-supervisor",
+      "acceptance": [
+        "Runbook for loading FAS's real data into production",
+        "Dry run on synthetic data passes",
+        "George performs or approves the real load"
+      ],
+      "tests": [
+        "runbook + dry-run evidence"
+      ],
+      "human_gate": "george-before-deploy",
+      "status": "failing",
+      "evidence": []
+    },
+    {
+      "id": "F-605",
+      "phase": 6,
+      "title": "Board launch",
+      "owner": "chief-of-staff",
+      "acceptance": [
+        "Board accounts created",
+        "Board packet delivered",
+        "Feedback captured in DECISIONS.md"
+      ],
+      "tests": [
+        "George confirms"
+      ],
+      "human_gate": "george-before-send",
+      "status": "failing",
+      "evidence": []
+    }
+  ]
+}
