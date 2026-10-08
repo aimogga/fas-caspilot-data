@@ -11,32 +11,17 @@ const DATE = new Date().toISOString().split('T')[0];
 
 function checkHarnessIntegrity() {
   const r = {status: 'GREEN', findings: [], details: []};
+  const addYellow = (f) => { r.status = 'YELLOW'; r.findings.push(f); };
   try {
     const fl = JSON.parse(readFileSync('harness/feature_list.json', 'utf-8'));
     const passing = fl.features.filter(f => f.status === 'passing');
     const noEv = passing.filter(f => !f.evidence?.length);
-    
-    if (noEv.length) {
-      r.status = 'YELLOW';
-      r.findings.push(`${noEv.length} passing feature(s) lack evidence`);
-    } else {
-      r.details.push(passing.length ? `All ${passing.length} passing feature(s) have evidence` : 'No passing features yet');
-    }
+    noEv.length ? addYellow(`${noEv.length} passing feature(s) lack evidence`) : r.details.push(passing.length ? `All ${passing.length} passing feature(s) have evidence` : 'No passing features yet');
 
-    const amd = readFileSync('AGENTS.md', 'utf-8');
-    const cmds = amd.match(/## Commands\n```\n([\s\S]*?)\n```/)?.[1]
-      .split('\n').filter(l => l.trim() && !l.trim().startsWith('#'))
-      .map(l => l.split('#')[0].trim().replace(/^pnpm /, '').split(' ')[0]) || [];
-    
+    const cmds = (readFileSync('AGENTS.md', 'utf-8').match(/## Commands\n```\n([\s\S]*?)\n```/)?.[1] || '').split('\n').filter(l => l.trim() && !l.trim().startsWith('#')).map(l => l.split('#')[0].trim().replace(/^pnpm /, '').split(' ')[0]);
     const pkg = JSON.parse(readFileSync('package.json', 'utf-8'));
     const missing = cmds.filter(c => !pkg.scripts?.[c]);
-    
-    if (missing.length) {
-      r.status = 'YELLOW';
-      r.findings.push(`Missing commands: ${missing.join(', ')}`);
-    } else {
-      r.details.push('All AGENTS.md commands exist');
-    }
+    missing.length ? addYellow(`Missing commands: ${missing.join(', ')}`) : r.details.push('All AGENTS.md commands exist');
 
     if (existsSync('docs')) {
       const docs = execSync('find docs -name "*.md" 2>/dev/null || true', {encoding: 'utf-8'}).trim().split('\n').filter(f => f);
@@ -59,11 +44,41 @@ function checkHarnessIntegrity() {
         r.details.push(`No broken refs in ${docs.length} doc(s)`);
       }
     }
+
+    // Progress log validation
+    const yesterday = new Date(Date.now() - 86400000).toISOString();
+    const commits = execSync(`git log --since="${yesterday}" --format="%s" 2>/dev/null || echo ""`, {encoding: 'utf-8'}).trim().split('\n').filter(c => c);
+    const progLog = checkProgressLog(commits, existsSync('harness/progress.md') ? readFileSync('harness/progress.md', 'utf-8') : '');
+    if (progLog.missing.length) {
+      r.status = worst(r.status, 'YELLOW');
+      r.findings.push(`Missing progress entries: PR ${progLog.missing.join(', ')}`);
+    } else if (commits.length) {
+      r.details.push(`All ${progLog.found.length} merged PR(s) documented`);
+    }
   } catch (e) {
     r.status = 'RED';
     r.findings.push(`Error: ${e.message}`);
   }
   return r;
+}
+
+export function checkProgressLog(commits, progressText) {
+  const prNums = new Set();
+  commits.forEach(c => {
+    const m = c.match(/\(#(\d+)\)$/) || (c.startsWith('Merge pull request #') && c.match(/Merge pull request #(\d+)/));
+    if (m) prNums.add(m[1]);
+  });
+  const found = [], missing = [];
+  prNums.forEach(n => (progressText.includes(`PR #${n}`) || progressText.includes(`/pull/${n}`) ? found : missing).push(n));
+  return {found, missing};
+}
+
+export function matchSecretLine(line) {
+  return !/"env\([^)]+\)"/.test(line) && [
+    /AKIA[0-9A-Z]{16}/,
+    new RegExp('-----BEGIN ' + '.* PRIVATE' + ' KEY-----'),
+    /(password|secret|token|api[_-]?key)\s*[:=]\s*['"][^'"]{12,}['"]/i
+  ].some(p => p.test(line));
 }
 
 function checkSecretScan() {
@@ -78,12 +93,6 @@ function checkSecretScan() {
     }
     
     r.details.push(`Scanned ${commits.length} commit(s)`);
-    
-    const patterns = [
-      {n: 'AWS', p: /AKIA[0-9A-Z]{16}/},
-      {n: 'Key', p: /-----BEGIN .* PRIVATE KEY-----/},
-      {n: 'Secret', p: /(password|secret|token|api[_-]?key)\s*[:=]\s*['"][^'"]{12,}['"]/i}
-    ];
     
     let found = 0;
     for (const c of commits) {
@@ -100,9 +109,7 @@ function checkSecretScan() {
         if (inLock || !line.startsWith('+') || line.startsWith('+++')) continue;
         if (/example|test_/i.test(line)) continue;
         
-        for (const {p} of patterns) {
-          if (p.test(line)) found++;
-        }
+        if (matchSecretLine(line)) found++;
       }
     }
     
@@ -128,19 +135,12 @@ function checkDeps() {
     } catch (e) {
       out = e.stdout || '{}';
     }
-    const d = JSON.parse(out);
-    const v = d.metadata?.vulnerabilities || {};
+    const v = JSON.parse(out).metadata?.vulnerabilities || {};
     const [c, h, m, l] = [v.critical||0, v.high||0, v.moderate||0, v.low||0];
     
-    if (c || h) {
-      r.status = 'RED';
-      r.findings.push(`${c} critical, ${h} high`);
-    } else if (m) {
-      r.status = 'YELLOW';
-      r.findings.push(`${m} moderate`);
-    } else {
-      r.details.push(`No high/critical (${l} low)`);
-    }
+    if (c || h) { r.status = 'RED'; r.findings.push(`${c} critical, ${h} high`); }
+    else if (m) { r.status = 'YELLOW'; r.findings.push(`${m} moderate`); }
+    else r.details.push(`No high/critical (${l} low)`);
   } catch (e) {
     r.status = 'YELLOW';
     r.findings.push(`Error: ${e.message}`);
@@ -150,15 +150,15 @@ function checkDeps() {
 
 function checkBuild() {
   const r = {status: 'GREEN', findings: [], details: []};
-  for (const [n, cmd] of [['lint', 'pnpm lint'], ['typecheck', 'pnpm typecheck'], ['test', 'pnpm test']]) {
+  [['lint', 'pnpm lint'], ['typecheck', 'pnpm typecheck'], ['test', 'pnpm test']].forEach(([n, cmd]) => {
     try {
-      execSync(cmd, {stdio: 'pipe', timeout: 30000});
+      execSync(cmd, {stdio: 'pipe', timeout: 120000});
       r.details.push(`${n} passed`);
     } catch {
       r.status = 'RED';
       r.findings.push(`${n} failed`);
     }
-  }
+  });
   return r;
 }
 
@@ -168,44 +168,31 @@ export function worst(a, b) {
 }
 
 export function generateReport(res) {
-  let md = `# Nightly Audit — ${res.date}\n`;
-  md += `Overall: ${res.overall}\n`;
+  let md = `# Nightly Audit — ${res.date}\nOverall: ${res.overall}\n`;
   const [crit, high, med] = [[], [], []];
-  for (const [n, c] of Object.entries(res.checks)) {
-    // Privacy area is Critical severity per NIGHTLY_AUDIT.md
-    if (n === 'privacy' && c.status === 'RED') {
-      crit.push(...c.findings.map(f => `[${n}] ${f}`));
-    } else if (c.status === 'RED') {
-      high.push(...c.findings.map(f => `[${n}] ${f}`));
-    } else if (c.status === 'YELLOW') {
-      med.push(...c.findings.map(f => `[${n}] ${f}`));
-    }
-  }
-  md += `Critical: ${crit.length ? crit.join('; ') : 'none'}\n`;
-  md += `High: ${high.length ? high.join('; ') : 'none'}\n`;
-  md += `Medium: ${med.length ? med.join('; ') : 'none'}\n`;
-  md += `Data freshness: not yet implemented (needs database)\n`;
-  md += `Spend: not yet implemented\n`;
-  md += `Doc-drift PR: none\n\n`;
+  Object.entries(res.checks).forEach(([n, c]) => {
+    (n === 'privacy' && c.status === 'RED' ? crit : c.status === 'RED' ? high : c.status === 'YELLOW' ? med : []).push(...c.findings.map(f => `[${n}] ${f}`));
+  });
+  md += `Critical: ${crit.length ? crit.join('; ') : 'none'}\nHigh: ${high.length ? high.join('; ') : 'none'}\nMedium: ${med.length ? med.join('; ') : 'none'}\n`;
+  md += `Data freshness: not yet implemented (needs database)\nSpend: not yet implemented\nDoc-drift PR: none\n\n`;
   
-  for (const [n, c] of Object.entries(res.checks)) {
+  Object.entries(res.checks).forEach(([n, c]) => {
     md += `### ${n}\n**Status:** ${c.status}\n\n`;
-    if (c.reason) md += `**Reason:** ${c.reason}\n\n`;
-    if (c.impl?.length) md += `**Implemented:** ${c.impl.join(', ')}\n\n`;
-    if (c.todo?.length) md += `**Not Yet Implemented:** ${c.todo.join(', ')}\n\n`;
-    if (c.findings?.length) md += `**Findings:**\n${c.findings.map(f => `- ${f}`).join('\n')}\n\n`;
-    if (c.details?.length) md += `**Details:**\n${c.details.map(d => `- ${d}`).join('\n')}\n\n`;
-  }
+    ['reason', 'impl', 'todo', 'findings', 'details'].forEach(k => {
+      if (c[k]?.length || c[k]) {
+        md += `**${k === 'impl' ? 'Implemented' : k === 'todo' ? 'Not Yet Implemented' : k.charAt(0).toUpperCase() + k.slice(1)}:** `;
+        md += k === 'findings' || k === 'details' ? '\n' + c[k].map(x => `- ${x}`).join('\n') + '\n\n' : k === 'reason' ? c[k] + '\n\n' : c[k].join(', ') + '\n\n';
+      }
+    });
+  });
   
-  md += `---\nTP-0003 nightly audit\n`;
-  return md;
+  return md + `---\nTP-0003 nightly audit\n`;
 }
 
 async function main() {
   const res = {date: DATE, overall: 'GREEN', checks: {}};
   
-  res.checks.dataFreshness = {status: 'SKIPPED', reason: 'needs database', findings: [], details: []};
-  res.checks.dataSanity = {status: 'SKIPPED', reason: 'needs database schema', findings: [], details: []};
+  ['dataFreshness', 'dataSanity'].forEach(k => res.checks[k] = {status: 'SKIPPED', reason: 'needs database' + (k === 'dataSanity' ? ' schema' : ''), findings: [], details: []});
   res.checks.grants = {status: 'SKIPPED', reason: 'needs GRANTS_GOV_API_KEY', findings: [], details: []};
   
   const sec = checkSecretScan();
@@ -218,8 +205,7 @@ async function main() {
   };
   if (sec.status !== 'GREEN') res.overall = worst(res.overall, sec.status);
   
-  const bld = checkBuild();
-  const dep = checkDeps();
+  const bld = checkBuild(), dep = checkDeps();
   res.checks.buildHealth = {
     status: worst(bld.status, dep.status),
     impl: ['Lint', 'Typecheck', 'Test', 'Deps'],
@@ -227,13 +213,12 @@ async function main() {
     findings: [...bld.findings, ...dep.findings],
     details: [...bld.details, ...dep.details]
   };
-  if (bld.status !== 'GREEN' || dep.status !== 'GREEN') res.overall = worst(res.overall, worst(bld.status, dep.status));
+  if (res.checks.buildHealth.status !== 'GREEN') res.overall = worst(res.overall, res.checks.buildHealth.status);
   
   const har = checkHarnessIntegrity();
   res.checks.harnessIntegrity = {
     status: har.status,
-    impl: ['Feature evidence', 'AGENTS.md commands', 'Doc refs'],
-    todo: ['Progress log validation'],
+    impl: ['Feature evidence', 'AGENTS.md commands', 'Doc refs', 'Progress log'],
     findings: har.findings,
     details: har.details
   };

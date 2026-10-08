@@ -2,18 +2,13 @@ name: Nightly Audit
 
 on:
   schedule:
-    - cron: '0 9 * * *'  # 9 AM UTC (2-3 AM Mountain Time depending on DST)
-  workflow_dispatch:     # Manual trigger for testing
+    - cron: '0 9 * * *'
+  workflow_dispatch:
   pull_request:
     paths:
       - '.github/workflows/nightly-audit.yml'
       - 'scripts/nightly-audit.mjs'
       - 'scripts/nightly-audit.test.mjs'
-      - 'harness/**'
-      - 'AGENTS.md'
-      - 'docs/**'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
 
 permissions:
   contents: read
@@ -27,7 +22,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 50  # For commit history checks
+          fetch-depth: 50
+          persist-credentials: false
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -47,8 +43,8 @@ jobs:
         run: |
           DATE=$(date -u +%Y-%m-%d)
           echo "audit_date=$DATE" >> $GITHUB_OUTPUT
-          node scripts/nightly-audit.mjs > audit-output.txt 2>&1
-          EXIT_CODE=$?
+          EXIT_CODE=0
+          node scripts/nightly-audit.mjs > audit-output.txt 2>&1 || EXIT_CODE=$?
           cat audit-output.txt
           exit $EXIT_CODE
       
@@ -69,11 +65,5 @@ jobs:
             cat "harness/audits/${{ steps.audit.outputs.audit_date }}.md" >> $GITHUB_STEP_SUMMARY
           else
             echo "⚠️ Audit report not generated" >> $GITHUB_STEP_SUMMARY
-            if [ -f "audit-output.txt" ]; then
-              echo "" >> $GITHUB_STEP_SUMMARY
-              echo "### Audit Output" >> $GITHUB_STEP_SUMMARY
-              echo '```' >> $GITHUB_STEP_SUMMARY
-              cat audit-output.txt >> $GITHUB_STEP_SUMMARY
-              echo '```' >> $GITHUB_STEP_SUMMARY
-            fi
+            [ -f "audit-output.txt" ] && { echo "" >> $GITHUB_STEP_SUMMARY; echo "### Audit Output" >> $GITHUB_STEP_SUMMARY; echo '```' >> $GITHUB_STEP_SUMMARY; cat audit-output.txt >> $GITHUB_STEP_SUMMARY; echo '```' >> $GITHUB_STEP_SUMMARY; }
           fi

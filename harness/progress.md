@@ -25,8 +25,8 @@ Left to do: Phase 1 app shell (F-101) and schema (F-102). QA still owns F-003 st
 Decisions needed: D-001 to D-010 still open. Versions above are the cloud shell pins, not a Phase 1 decision.
 
 ## 2026-10-08 22:53 (UTC) — Cloud Agent — packet TP-0003 / feature F-601 (first slice)
-Did: Added GitHub Actions workflow `.github/workflows/nightly-audit.yml` (cron 9 AM UTC, workflow_dispatch, PR trigger). Implemented checks that work without secrets: harness integrity, secret scan, dependency vulnerabilities, build health. Fixed import side effect, NIGHTLY_AUDIT.md template format (Overall:, Data freshness:, Spend:, Doc-drift PR: lines), privacy-to-Critical severity mapping. 392 hand-written lines. Unit tests for pure functions.
-State: Workflow green. Script exits 0 when audit runs; overall status in report. Lint/typecheck/test pass (in CI; vitest OOMs in local VM). App starts. Audit correctly reports HIGH for braces CVE-2026-93687 (no v3.0.4 release yet).
+Did: Added GitHub Actions workflow `.github/workflows/nightly-audit.yml` (cron 9 AM UTC, workflow_dispatch, PR trigger). Implemented checks that work without secrets: harness integrity (feature evidence, commands, doc refs, progress log), secret scan (with env placeholder and self-match fixes), dependency vulnerabilities, build health. Fixed import side effect, NIGHTLY_AUDIT.md template format, privacy-to-Critical severity mapping, paths filter, EXIT_CODE capture, persist-credentials. ~390 hand-written lines. Unit tests for pure functions (worst, generateReport, matchSecretLine, checkProgressLog).
+State: Workflow green. Script exits 0 when audit runs; overall status in report. Lint/typecheck/test pass in CI. App starts. Audit correctly reports Critical=none, HIGH for braces CVE-2026-93687 (transitive via @next/eslint-plugin-next; no v3.0.4 release yet), and MEDIUM for missing progress entries if today's real merges (#3, #4, #5) aren't documented.
 Evidence: PR #7 (https://github.com/aimogga/fas-caspilot-data/pull/7), green run at final head linked in PR body
 Left to do: F-601 full implementation (Phase 6).
 Decisions needed: None.
