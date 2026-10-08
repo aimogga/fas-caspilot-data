@@ -10,7 +10,7 @@ Recommendation: OQ/YOQ if licensing is affordable; otherwise PHQ-9/GAD-7.
 Decision: ___ · Date: ___
 
 ### D-009 Cost caps
-Set monthly caps for: Cursor Cloud Agents + Automations (Automations run in Max Mode and bill as cloud-agent usage), per-run cap for the Nightly Audit, in-app LLM API, Supabase, Vercel. Max parallel cloud agents (start: 2).
+Set monthly caps for: Cursor Cloud Agents, per-run cap for the Nightly Audit (GitHub Actions cron; no Cursor Automations on George's $20 plan), in-app LLM API, Supabase, Vercel. Cloud agents: 1 at a time ($20 plan).
 Recommendation: Chief of Staff proposes numbers from the Phase 0 cost estimate.
 Decision: ___ · Date: ___
 
@@ -66,3 +66,10 @@ Context: F-003 (PR #3, setup-flow Cloud Agent environment) came in at 624 change
 Options: (A) count every changed line; (B) exclude lockfiles (`pnpm-lock.yaml`) and tool-generated files (e.g. `supabase/config.toml` from `supabase init`), but list them by name in the PR body; (C) keep counting everything and grant one-off exceptions case by case.
 Cost/risk: low. The risk is a large hand-edit hidden in a "generated" file; QA checks that excluded files match their generator.
 Decision: **B.** Lockfiles and tool-generated files don't count toward `max_diff_lines`; every PR lists the excluded files by name in its body, and QA checks they match their generator. Decided by George in chat. · Date: 2026-10-08
+
+### D-013 Who merges
+Decision: George no longer reviews or merges PRs. The Engineer Supervisor squash-merges a PR and deletes its branch once QA posts PASS on every acceptance criterion, with evidence, at the PR's current head sha; if the head moves after the PASS, QA re-checks first. `human_gate` is `none` for ordinary code and docs packets. After each merge or QA verdict, the Engineer Supervisor sends Chief of staff the test results plus 2–3 next-step options with a recommendation, and doesn't start the next packet until George's pick is relayed (unless it's already on the approved PLAN). Confirmed by George 2026-10-08. · Date: 2026-10-08
+
+### D-014 Production approvals
+Decision: Once QA PASSes at the current head sha and the preview works, the team may merge, deploy to production, apply production DB migrations, and create, edit and activate n8n workflows on n8n.casepilot.io without asking George. Only money or plan decisions go to George, through Chief of staff. Still gated on George (`human_gate: george`): real FAS data (Phase 6 legal gate; synthetic only until then), outbound emails, and acceptance-criteria changes. Note: Vercel project fas-caspilot-data currently skips production builds via an Ignored Build Step, which must be removed when production deploys start. Confirmed by George 2026-10-08. · Date: 2026-10-08
+Supersedes: earlier gate lists that kept production deploys, production migrations and n8n workflow changes on George.
