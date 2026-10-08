@@ -54,7 +54,20 @@ if [[ -S /var/run/docker.sock ]]; then
 fi
 
 # Local keys are printed by the CLI. Keep them out of the boot log.
-supabase start >> /tmp/supabase-start.log 2>&1
+# The first attempt can lose the race with the database container, so retry.
+supabase_ok=0
+for _ in 1 2 3; do
+  if supabase start >> /tmp/supabase-start.log 2>&1; then
+    supabase_ok=1
+    break
+  fi
+  echo "supabase start attempt failed; retrying" >> /tmp/supabase-start.log
+  sleep 8
+done
+if [[ "$supabase_ok" -ne 1 ]]; then
+  echo "supabase start failed; see /tmp/supabase-start.log" >&2
+  exit 1
+fi
 
 if ! "${TMUX[@]}" has-session -t web 2>/dev/null; then
   "${TMUX[@]}" new-session -d -s web -- \
