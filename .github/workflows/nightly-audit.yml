@@ -9,6 +9,11 @@ on:
       - '.github/workflows/nightly-audit.yml'
       - 'scripts/nightly-audit.mjs'
       - 'scripts/nightly-audit.test.mjs'
+      - 'harness/**'
+      - 'AGENTS.md'
+      - 'docs/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
 
 permissions:
   contents: read
