@@ -25,8 +25,8 @@ Left to do: Phase 1 app shell (F-101) and schema (F-102). QA still owns F-003 st
 Decisions needed: D-001 to D-010 still open. Versions above are the cloud shell pins, not a Phase 1 decision.
 
 ## 2026-10-08 22:53 (UTC) — Cloud Agent — packet TP-0003 / feature F-601 (first slice)
-Did: Added GitHub Actions workflow `.github/workflows/nightly-audit.yml` (cron 9 AM UTC, workflow_dispatch, PR trigger). Implemented checks that work without secrets: harness integrity, secret scan, dependency vulnerabilities, build health. Checks requiring secrets show as skipped with reason. Generates dated report in `harness/audits/`. Fixed to 382 hand-written lines, added unit tests, fixed secret-scan and doc-ref bugs.
-State: Workflow runs green. Script exits 0 (audit ran); overall status (GREEN/YELLOW/RED) is in report. Lint, typecheck, test pass. App starts. Audit correctly reports HIGH finding for braces CVE-2026-93687 (no patch available yet).
-Evidence: PR #7 (https://github.com/aimogga/fas-caspilot-data/pull/7), green run at 572d640: https://github.com/aimogga/fas-caspilot-data/actions/runs/37859160531, artifact: https://github.com/aimogga/fas-caspilot-data/actions/runs/37859160531/artifacts/11584542127
-Left to do: F-601 full implementation (Phase 6). This is TP-0003, a first slice.
-Decisions needed: None for this packet. D-001 to D-010 remain open for Chief of Staff.
+Did: Added GitHub Actions workflow `.github/workflows/nightly-audit.yml` (cron 9 AM UTC, workflow_dispatch, PR trigger). Implemented checks that work without secrets: harness integrity, secret scan, dependency vulnerabilities, build health. Fixed import side effect, NIGHTLY_AUDIT.md template format (Overall:, Data freshness:, Spend:, Doc-drift PR: lines), privacy-to-Critical severity mapping. 392 hand-written lines. Unit tests for pure functions.
+State: Workflow green. Script exits 0 when audit runs; overall status in report. Lint/typecheck/test pass (in CI; vitest OOMs in local VM). App starts. Audit correctly reports HIGH for braces CVE-2026-93687 (no v3.0.4 release yet).
+Evidence: PR #7 (https://github.com/aimogga/fas-caspilot-data/pull/7), green run at 0a3128d: https://github.com/aimogga/fas-caspilot-data/actions/runs/37859942402, artifact: https://github.com/aimogga/fas-caspilot-data/actions/runs/37859942402/artifacts/11584776802
+Left to do: F-601 full implementation (Phase 6).
+Decisions needed: None.
