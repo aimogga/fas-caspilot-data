@@ -1,0 +1,2 @@
+-- Synthetic seed data is added in F-103 (`pnpm seed:synthetic`).
+-- This file stays empty so `supabase db reset` has a seed path and loads no rows.

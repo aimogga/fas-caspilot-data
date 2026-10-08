@@ -1,7 +1,6 @@
 {
-  "install": "corepack enable && pnpm install --frozen-lockfile",
-  "start": "supabase start",
-  "terminals": [
-    { "name": "web", "command": "pnpm dev" }
-  ]
+  "name": "CasePilot FAS",
+  "user": "ubuntu",
+  "install": "bash .cursor/install.sh",
+  "start": "bash .cursor/start.sh"
 }

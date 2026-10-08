@@ -10,7 +10,7 @@ You are working in the repo for a free CasePilot tool built for **Family Advocac
 
 ## Stack
 Next.js (App Router, TypeScript) on Vercel · Supabase (Postgres, Auth, RLS, Storage, Edge Functions) · n8n (n8n.casepilot.io) for schedules and alerts · Playwright for e2e · Vitest for unit tests.
-*(Phase 1 confirms exact versions and updates this section.)*
+*(Phase 1 confirms exact versions and updates this section. The Cloud Agent shell currently pins Next.js 16.4.0, React 19.3.0, and Supabase CLI 2.120.0.)*
 
 ## Commands
 > Phase 1 finalizes these. Until then they are the target names.
@@ -60,8 +60,11 @@ Tests for every acceptance criterion · smoke check green · app starts · no se
 Commit working code only. If you must stop mid-feature, leave the code compiling, write exactly what's left in `progress.md`, and say so in your return report.
 
 ## Cursor Cloud specific instructions
-- The machine is defined by `.cursor/environment.json` (finalized in Phase 0). Docker is available for `supabase start`.
-- Secrets come from Cursor's Secrets tab as environment variables. If one is missing, stop and report; don't hardcode.
+- The machine is defined by `.cursor/environment.json`. `install` runs `.cursor/install.sh` (Docker, Supabase CLI 2.120.0, `pnpm install --frozen-lockfile`). `start` runs `.cursor/start.sh` (dockerd, `supabase start`, `pnpm dev`).
+- Node comes from the image via nvm (`v22.22.2`); `install` symlinks `node` and `pnpm` (10.33.3) into `/usr/local/bin` so login shells find them.
+- Docker: Ubuntu `docker.io` 29. The default overlay snapshotter fails in this VM (`mount ... overlay ... invalid argument`). `.cursor/start.sh` uses `fuse-overlayfs`, turns off the containerd snapshotter, and switches iptables to legacy. systemd is not usable here (`policy-rc.d` denies service starts), so the script launches `dockerd` in tmux session `dockerd`.
+- Ports: Next.js `3000`. Supabase API `54321`, Postgres `54322`, Studio `54323`, Mailpit `54324`. First `supabase start` pulls images and can take several minutes; later boots reuse the images.
+- App check: open `http://127.0.0.1:3000` and use **Check local services**. `GET /api/health` reports the app and whether the local Supabase API answers. This shell is not auth, schema, or product screens (those are Phase 1).
+- Secrets come from Cursor's Secrets tab as environment variables. If one is missing, stop and report; don't hardcode. No secrets are required to boot this shell.
 - Cloud agents may reach preview/dev services only. Never production.
-- Long-running dev server: use the configured terminal, not a blocking command.
-- *(Engineer Supervisor: record ports, gotchas and slow steps here as you find them.)*
+- Long-running dev server: `start` already runs it in tmux session `web` (`/tmp/web.log`). Do not start a second `pnpm dev`.
