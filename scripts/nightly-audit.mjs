@@ -168,15 +168,25 @@ export function worst(a, b) {
 }
 
 export function generateReport(res) {
-  let md = `# Nightly Audit — ${res.date}\n\n**Overall:** ${res.overall}\n\n`;
+  let md = `# Nightly Audit — ${res.date}\n`;
+  md += `Overall: ${res.overall}\n`;
   const [crit, high, med] = [[], [], []];
   for (const [n, c] of Object.entries(res.checks)) {
-    if (c.status === 'RED') high.push(...c.findings.map(f => `[${n}] ${f}`));
-    else if (c.status === 'YELLOW') med.push(...c.findings.map(f => `[${n}] ${f}`));
+    // Privacy area is Critical severity per NIGHTLY_AUDIT.md
+    if (n === 'privacy' && c.status === 'RED') {
+      crit.push(...c.findings.map(f => `[${n}] ${f}`));
+    } else if (c.status === 'RED') {
+      high.push(...c.findings.map(f => `[${n}] ${f}`));
+    } else if (c.status === 'YELLOW') {
+      med.push(...c.findings.map(f => `[${n}] ${f}`));
+    }
   }
-  md += `**Critical:** ${crit.length ? crit.join('; ') : 'none'}\n`;
-  md += `**High:** ${high.length ? high.join('; ') : 'none'}\n`;
-  md += `**Medium:** ${med.length ? med.join('; ') : 'none'}\n\n`;
+  md += `Critical: ${crit.length ? crit.join('; ') : 'none'}\n`;
+  md += `High: ${high.length ? high.join('; ') : 'none'}\n`;
+  md += `Medium: ${med.length ? med.join('; ') : 'none'}\n`;
+  md += `Data freshness: not yet implemented (needs database)\n`;
+  md += `Spend: not yet implemented\n`;
+  md += `Doc-drift PR: none\n\n`;
   
   for (const [n, c] of Object.entries(res.checks)) {
     md += `### ${n}\n**Status:** ${c.status}\n\n`;
@@ -242,7 +252,11 @@ async function main() {
   process.exit(0);
 }
 
-main().catch(e => {
-  console.error('Fatal:', e);
-  process.exit(1);
-});
+// Only run main when executed directly
+import { pathToFileURL } from 'url';
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch(e => {
+    console.error('Fatal:', e);
+    process.exit(1);
+  });
+}

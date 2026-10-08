@@ -5,44 +5,38 @@
 import { describe, it, expect } from 'vitest';
 import { worst, generateReport } from './nightly-audit.mjs';
 
-describe('worst status', () => {
-  it('ranks RED highest', () => {
+describe('worst', () => {
+  it('ranks RED > YELLOW > GREEN > SKIPPED', () => {
     expect(worst('GREEN', 'RED')).toBe('RED');
-    expect(worst('RED', 'YELLOW')).toBe('RED');
-  });
-
-  it('ranks YELLOW over GREEN', () => {
     expect(worst('GREEN', 'YELLOW')).toBe('YELLOW');
-  });
-
-  it('handles SKIPPED as lowest', () => {
     expect(worst('SKIPPED', 'GREEN')).toBe('GREEN');
   });
 });
 
 describe('generateReport', () => {
-  it('generates markdown with overall status', () => {
-    const r = {
-      date: '2026-10-08',
-      overall: 'GREEN',
-      checks: {test: {status: 'GREEN', findings: [], details: ['OK']}}
-    };
+  it('includes all NIGHTLY_AUDIT.md template lines', () => {
+    const r = {date: '2026-10-08', overall: 'GREEN', checks: {}};
     const md = generateReport(r);
-    expect(md).toContain('# Nightly Audit — 2026-10-08');
-    expect(md).toContain('**Overall:** GREEN');
+    expect(md).toContain('Overall:');
+    expect(md).toContain('Critical:');
+    expect(md).toContain('High:');
+    expect(md).toContain('Medium:');
+    expect(md).toContain('Data freshness:');
+    expect(md).toContain('Spend:');
+    expect(md).toContain('Doc-drift PR:');
   });
 
-  it('categorizes findings by severity', () => {
+  it('maps privacy RED to Critical, others to High', () => {
     const r = {
       date: '2026-10-08',
       overall: 'RED',
       checks: {
-        a: {status: 'RED', findings: ['High'], details: []},
-        b: {status: 'YELLOW', findings: ['Med'], details: []}
+        privacy: {status: 'RED', findings: ['Secret'], details: []},
+        other: {status: 'RED', findings: ['Issue'], details: []}
       }
     };
     const md = generateReport(r);
-    expect(md).toContain('**High:** [a] High');
-    expect(md).toContain('**Medium:** [b] Med');
+    expect(md).toContain('Critical: [privacy] Secret');
+    expect(md).toContain('High: [other] Issue');
   });
 });

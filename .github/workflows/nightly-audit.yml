@@ -8,7 +8,7 @@ on:
     paths:
       - '.github/workflows/nightly-audit.yml'
       - 'scripts/nightly-audit.mjs'
-      - 'scripts/audit-checks/**'
+      - 'scripts/nightly-audit.test.mjs'
 
 permissions:
   contents: read
