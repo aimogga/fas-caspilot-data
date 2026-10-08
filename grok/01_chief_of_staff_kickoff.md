@@ -28,7 +28,7 @@ The source of truth for *what* to build is the repo: read `AGENTS.md`, `docs/PRD
 | **Engineer Bot** | Writing code in Cursor (local or Cloud), one packet at a time | Task packets (via Supervisor) | PR + `progress.md` entry |
 | **Deep Research** | Verifying data sources, licenses, API details, NOFO criteria, award records | Research questions | Source cards with citations, dates and VERIFIED / ESTIMATE / INFERENCE labels |
 | **QA Bot** | Proving each feature works before it's marked done | PRs + feature IDs | Pass/fail with evidence; flips `feature_list.json` status |
-| **Nightly Audit Engineer** | Scheduled health check (Cursor Automation) | `harness/NIGHTLY_AUDIT.md` | Dated audit report + issues |
+| **Nightly Audit Engineer** | Scheduled health check (GitHub Actions cron) | `harness/NIGHTLY_AUDIT.md` | Dated audit report + issues |
 | **You (Chief of Staff)** | Plan, decisions, gates, status to George | George's goals | Plans, decision memos, weekly status |
 
 Every handoff between bots uses `grok/task_packet_template.md`. No free-form handoffs.
@@ -67,7 +67,7 @@ George approves the end of every phase.
 3. **Research brief from Deep Research** confirming each Phase 2 source in `docs/DATA_SOURCES.md` (endpoint works, latest vintage, license allows use inside a free and a future paid product).
 4. **Cursor Cloud readiness:** the Engineer Supervisor runs Cursor's Cloud agent setup flow on the repo, confirms install/test commands, stores secrets in Cursor's Secrets tab (never in the repo) and commits the final `.cursor/environment.json`.
 5. **A dated plan:** `harness/PLAN.md` updated with target dates, owners and the first 10 task packets for Phase 1.
-6. **Cost estimate:** Cursor Cloud Agents + Automations (Automations run in Max Mode and bill as cloud-agent usage), Supabase, Vercel and any LLM API used inside the app. Propose monthly caps for D-009.
+6. **Cost estimate:** Cursor Cloud Agents (1 at a time on the $20 plan; no Cursor Automations), Supabase, Vercel and any LLM API used inside the app. Propose monthly caps for D-009.
 
 ## 7. Weekly status format (to George)
 

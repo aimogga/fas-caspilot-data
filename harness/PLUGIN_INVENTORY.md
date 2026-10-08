@@ -6,9 +6,9 @@
 | Tool | Where | Verdict | Use it for | Guardrails |
 |---|---|---|---|---|
 | Cursor (local + Cloud Agents) | Build | **Use** | All coding; one cloud agent per packet | Dev/preview credentials only |
-| Cursor Automations | Build | **Use** | Nightly Audit (cron); optional PR-triggered checks | Per-run cost cap (D-009); read-only by default |
+| Cursor Automations | Build | Avoid | Not on George's $20 plan; Nightly Audit runs as a GitHub Actions cron instead | — |
 | Cursor Bugbot / PR review (if enabled) | Build | Maybe | Second-opinion review on PRs | Doesn't replace QA |
-| GitHub | Build | **Use** | Repo, Issues (packets), PRs, Actions CI | Branch protection on main |
+| GitHub | Build | **Use** | Repo, Issues (packets), PRs, Actions CI + Nightly Audit cron | Branch protection on main |
 | Supabase MCP | Cursor | **Use** (dev/preview only) | Schema inspection, migrations on dev, advisors | Never connected to production project |
 | Vercel MCP | Cursor | **Use** (read-mostly) | Deployment status, logs, preview URLs | Promotions to production need George |
 | Shadcn UI MCP | Cursor | **Use** | UI components and blocks | — |
@@ -40,4 +40,4 @@
 | Engineer Bot |  | Via Cursor only |  |
 | Deep Research |  | Write to docs/research/ via PR | Needs web access |
 | QA Bot |  | Read + CI + preview access | Only bot that edits feature statuses |
-| Nightly Audit |  | Read; PRs for doc drift only | Runs as Cursor Automation |
+| Nightly Audit |  | Read; PRs for doc drift only | Runs as GitHub Actions cron |
