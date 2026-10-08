@@ -64,4 +64,10 @@ Commit working code only. If you must stop mid-feature, leave the code compiling
 - Secrets come from Cursor's Secrets tab as environment variables. If one is missing, stop and report; don't hardcode.
 - Cloud agents may reach preview/dev services only. Never production.
 - Long-running dev server: use the configured terminal, not a blocking command.
-- *(Engineer Supervisor: record ports, gotchas and slow steps here as you find them.)*
+- **Commands:** `pnpm install` (uses frozen lockfile), `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm dev` (starts placeholder server on :3000).
+- **Port:** Dev server runs on port 3000 (0.0.0.0:3000).
+- **Gotchas:**
+  - Phase 0: `supabase start` is skipped (no supabase/ directory yet). Phase 1 will add it.
+  - Phase 0: `pnpm dev` runs a static placeholder server. Phase 1 will scaffold Next.js.
+  - Install is fast (~2s after corepack downloads pnpm once per environment).
+  - Smoke check (`pnpm lint && pnpm typecheck && pnpm test`) runs in ~3-4 seconds.

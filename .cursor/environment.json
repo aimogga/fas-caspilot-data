@@ -1,0 +1,7 @@
+{
+  "install": "corepack enable && pnpm install --frozen-lockfile",
+  "start": "",
+  "terminals": [
+    { "name": "web", "command": "pnpm dev" }
+  ]
+}
