@@ -1,0 +1,74 @@
+name: Nightly Audit
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # 9 AM UTC (2-3 AM Mountain Time depending on DST)
+  workflow_dispatch:     # Manual trigger for testing
+  pull_request:
+    paths:
+      - '.github/workflows/nightly-audit.yml'
+      - 'scripts/nightly-audit.mjs'
+      - 'scripts/audit-checks/**'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 50  # For commit history checks
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.3
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Run nightly audit
+        id: audit
+        run: |
+          DATE=$(date -u +%Y-%m-%d)
+          echo "audit_date=$DATE" >> $GITHUB_OUTPUT
+          node scripts/nightly-audit.mjs > audit-output.txt 2>&1
+          EXIT_CODE=$?
+          cat audit-output.txt
+          exit $EXIT_CODE
+      
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-audit-${{ steps.audit.outputs.audit_date }}
+          path: |
+            audit-output.txt
+            harness/audits/${{ steps.audit.outputs.audit_date }}.md
+          retention-days: 90
+      
+      - name: Generate job summary
+        if: always()
+        run: |
+          if [ -f "harness/audits/${{ steps.audit.outputs.audit_date }}.md" ]; then
+            cat "harness/audits/${{ steps.audit.outputs.audit_date }}.md" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Audit report not generated" >> $GITHUB_STEP_SUMMARY
+            if [ -f "audit-output.txt" ]; then
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "### Audit Output" >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              cat audit-output.txt >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
