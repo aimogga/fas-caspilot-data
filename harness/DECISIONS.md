@@ -10,7 +10,7 @@ Recommendation: OQ/YOQ if licensing is affordable; otherwise PHQ-9/GAD-7.
 Decision: ___ · Date: ___
 
 ### D-009 Cost caps
-Set monthly caps for: Cursor Cloud Agents, per-run cap for the Nightly Audit (GitHub Actions cron; no Cursor Automations on George's $20 plan), in-app LLM API, Supabase, Vercel. Cloud agents: 1 at a time ($20 plan).
+Set monthly caps for: Cursor Cloud Agents + Automations (Automations run in Max Mode and bill as cloud-agent usage), per-run cap for the Nightly Audit, in-app LLM API, Supabase, Vercel. Max parallel cloud agents (start: 2).
 Recommendation: Chief of Staff proposes numbers from the Phase 0 cost estimate.
 Decision: ___ · Date: ___
 
