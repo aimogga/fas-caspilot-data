@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import { createServer } from "node:http";
+import { pathToFileURL } from "node:url";
 
-const PORT = 3000;
 const html = `<!DOCTYPE html>
 <html>
 <head>
@@ -20,20 +20,26 @@ const html = `<!DOCTYPE html>
   <ul>
     <li><code>pnpm install</code> — install dependencies</li>
     <li><code>pnpm dev</code> — run this placeholder server</li>
-    <li><code>pnpm lint</code> — run eslint</li>
+    <li><code>pnpm lint</code> — run biome</li>
     <li><code>pnpm typecheck</code> — run tsc</li>
-    <li><code>pnpm test</code> — run vitest</li>
+    <li><code>pnpm test</code> — run node --test</li>
   </ul>
   <p><strong>Note:</strong> Supabase start is skipped until Phase 1 adds the supabase/ directory.</p>
 </body>
 </html>`;
 
-const server = createServer((req, res) => {
-	res.writeHead(200, { "Content-Type": "text/html" });
-	res.end(html);
-});
+export function createHarnessServer() {
+	return createServer((req, res) => {
+		res.writeHead(200, { "Content-Type": "text/html" });
+		res.end(html);
+	});
+}
 
-server.listen(PORT, "0.0.0.0", () => {
-	console.log(`Harness placeholder running on http://0.0.0.0:${PORT}`);
-	console.log("Phase 1 will replace this with Next.js.");
-});
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+	const PORT = Number.parseInt(process.env.PORT || "3000", 10);
+	const server = createHarnessServer();
+	server.listen(PORT, "0.0.0.0", () => {
+		console.log(`Harness placeholder running on http://0.0.0.0:${PORT}`);
+		console.log("Phase 1 will replace this with Next.js.");
+	});
+}
