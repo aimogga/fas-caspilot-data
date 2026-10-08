@@ -66,8 +66,13 @@
         "cloud agent run log linked as evidence"
       ],
       "human_gate": "none",
-      "status": "failing",
-      "evidence": []
+      "status": "passing",
+      "evidence": [
+        "https://github.com/aimogga/fas-caspilot-data/pull/3#issuecomment-6068687287 (QA evidence comment, TP-0002; C1: human attestation by George 2026-10-08)",
+        "https://cursor.com/agents/bc-d6a3c247-9b3a-5cea-b543-5d181008a93e (fresh QA cloud run log)",
+        "https://github.com/aimogga/fas-caspilot-data/commit/ab86eaa39f1a40936b3025006e210cf72ea6034f (tested sha ab86eaa)",
+        "https://github.com/aimogga/fas-caspilot-data/commit/84e8f0972fcfc3850320030fbcbbe19ca0c18fd0 (PR #3 squash merge 84e8f09)"
+      ]
     },
     {
       "id": "F-101",
