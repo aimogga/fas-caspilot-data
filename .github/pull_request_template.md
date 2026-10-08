@@ -1,6 +1,6 @@
 ## Packet
 - Packet: TP-____  · Feature: F-____
-- Risk: low / medium / high · Human gate: none / george-before-merge / george-before-deploy
+- Risk: low / medium / high · Human gate: none / george (D-013, D-014)
 
 ## What changed (3 lines max)
 
@@ -16,6 +16,10 @@
 - [ ] Displayed numbers trace to stored rows (source_id / vintage / upload batch)
 - [ ] Suppression applied to any shared output
 - [ ] `harness/progress.md` entry appended
+- [ ] Hand-written diff ≤ 400 lines (`max_diff_lines`); lockfiles and generated files don't count but are listed below (D-012)
 - [ ] QA packet requested
+
+## Lockfiles and generated files (excluded from diff cap)
+- none
 
 ## What I did not do

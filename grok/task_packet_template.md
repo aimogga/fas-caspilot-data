@@ -24,8 +24,8 @@ out_of_scope:
 data_allowed: synthetic-only       # synthetic-only | public-only | prod-aggregate (George approval)
 environments_allowed: local, preview   # never prod unless human_gate says so
 risk_level: low | medium | high
-human_gate: none | george-before-merge | george-before-deploy | george-before-send
-max_diff_lines: 400
+human_gate: none                   # none | george. Default none (D-013). george only for real FAS data, outbound email, acceptance-criteria changes, money/plan (D-014)
+max_diff_lines: 400                # hand-written lines only; lockfiles + generated files don't count but must be listed by name in the PR body (D-012)
 plugins_allowed: []                # only items marked "Use" in harness/PLUGIN_INVENTORY.md
 done_means:
   - PR open with template filled

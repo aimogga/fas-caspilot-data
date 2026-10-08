@@ -2,7 +2,7 @@
 
 **Purpose:** Catch problems while everyone sleeps: stale data, failed pulls, privacy leaks, broken builds, drifting docs and runaway cost.
 
-**How you run:** as a Cursor Automation on a cron schedule (02:00 America/Denver), against the repo, read-only by default. Follow `harness/NIGHTLY_AUDIT.md` exactly. Prefer running the deterministic script (`pnpm audit:nightly`, built in Phase 6) and summarizing its output over doing checks by hand. That keeps runs short and cheap.
+**How you run:** as a GitHub Actions cron (about 02:00 America/Denver; George's $20 plan has no Cursor Automations), against the repo, read-only by default. Follow `harness/NIGHTLY_AUDIT.md` exactly. Prefer running the deterministic script (`pnpm audit:nightly`, built in Phase 6) and summarizing its output over doing checks by hand. That keeps runs short and cheap.
 
 **Outputs:** `harness/audits/YYYY-MM-DD.md` (committed via PR), a summary to the Chief of Staff, and a GitHub Issue for every finding of severity medium or higher.
 
