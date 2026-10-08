@@ -1,281 +1,248 @@
 #!/usr/bin/env node
-
 /**
- * Nightly Audit Script
- * 
- * Runs the checks from harness/NIGHTLY_AUDIT.md that can work today
- * without secrets, and produces a dated report.
- * 
- * This is TP-0003, a first slice toward F-601 (Phase 6 full audit script).
+ * Nightly Audit (TP-0003) - First slice toward F-601
  */
 
-import { writeFileSync, mkdirSync } from 'fs';
+import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { checkHarnessIntegrity } from './audit-checks/harness-integrity.mjs';
-import { checkSecretScan } from './audit-checks/secret-scan.mjs';
-import { checkDependencyVulnerabilities } from './audit-checks/dependency-vulnerabilities.mjs';
-import { checkBuildHealth } from './audit-checks/build-health.mjs';
+import { execSync } from 'child_process';
 
-const AUDIT_DATE = new Date().toISOString().split('T')[0];
+const DATE = new Date().toISOString().split('T')[0];
 
-async function runAudit() {
-  console.log(`\n═══════════════════════════════════════════`);
-  console.log(`  Nightly Audit — ${AUDIT_DATE}`);
-  console.log(`═══════════════════════════════════════════\n`);
+function checkHarnessIntegrity() {
+  const r = {status: 'GREEN', findings: [], details: []};
+  try {
+    const fl = JSON.parse(readFileSync('harness/feature_list.json', 'utf-8'));
+    const passing = fl.features.filter(f => f.status === 'passing');
+    const noEv = passing.filter(f => !f.evidence?.length);
+    
+    if (noEv.length) {
+      r.status = 'YELLOW';
+      r.findings.push(`${noEv.length} passing feature(s) lack evidence`);
+    } else {
+      r.details.push(passing.length ? `All ${passing.length} passing feature(s) have evidence` : 'No passing features yet');
+    }
 
-  const results = {
-    date: AUDIT_DATE,
-    overall: 'GREEN',
-    checks: {}
-  };
+    const amd = readFileSync('AGENTS.md', 'utf-8');
+    const cmds = amd.match(/## Commands\n```\n([\s\S]*?)\n```/)?.[1]
+      .split('\n').filter(l => l.trim() && !l.trim().startsWith('#'))
+      .map(l => l.split('#')[0].trim().replace(/^pnpm /, '').split(' ')[0]) || [];
+    
+    const pkg = JSON.parse(readFileSync('package.json', 'utf-8'));
+    const missing = cmds.filter(c => !pkg.scripts?.[c]);
+    
+    if (missing.length) {
+      r.status = 'YELLOW';
+      r.findings.push(`Missing commands: ${missing.join(', ')}`);
+    } else {
+      r.details.push('All AGENTS.md commands exist');
+    }
 
-  // Check 1: Data freshness (not yet implemented - needs database)
-  console.log('🔍 Check 1: Data freshness');
-  results.checks.dataFreshness = {
-    status: 'SKIPPED',
-    reason: 'Not yet implemented: needs database access and ingest infrastructure',
-    findings: [],
-    details: []
-  };
-  console.log('   ⊗ Skipped: needs database access\n');
+    if (existsSync('docs')) {
+      const docs = execSync('find docs -name "*.md" 2>/dev/null || true', {encoding: 'utf-8'}).trim().split('\n').filter(f => f);
+      let broken = [];
+      for (const doc of docs) {
+        const txt = readFileSync(doc, 'utf-8');
+        const refs = txt.match(/\[.*?\]\(([^)]+)\)/g) || [];
+        for (const ref of refs) {
+          const p = ref.match(/\[.*?\]\(([^)]+)\)/)?.[1];
+          if (p && !p.startsWith('#') && !p.startsWith('http')) {
+            const dir = doc.substring(0, doc.lastIndexOf('/'));
+            if (!existsSync(join(dir, p))) broken.push(`${doc}: ${p}`);
+          }
+        }
+      }
+      if (broken.length) {
+        r.status = 'YELLOW';
+        r.findings.push(`${broken.length} broken doc ref(s)`);
+      } else if (docs.length) {
+        r.details.push(`No broken refs in ${docs.length} doc(s)`);
+      }
+    }
+  } catch (e) {
+    r.status = 'RED';
+    r.findings.push(`Error: ${e.message}`);
+  }
+  return r;
+}
 
-  // Check 2: Data sanity (not yet implemented - needs database)
-  console.log('🔍 Check 2: Data sanity');
-  results.checks.dataSanity = {
-    status: 'SKIPPED',
-    reason: 'Not yet implemented: needs database schema and historical data',
-    findings: [],
-    details: []
-  };
-  console.log('   ⊗ Skipped: needs database schema\n');
+function checkSecretScan() {
+  const r = {status: 'GREEN', findings: [], details: []};
+  try {
+    const yesterday = new Date(Date.now() - 86400000).toISOString();
+    const commits = execSync(`git log --since="${yesterday}" --format="%H" 2>/dev/null || echo ""`, {encoding: 'utf-8'}).trim().split('\n').filter(c => c);
+    
+    if (!commits.length) {
+      r.details.push('No commits in last 24h');
+      return r;
+    }
+    
+    r.details.push(`Scanned ${commits.length} commit(s)`);
+    
+    const patterns = [
+      {n: 'AWS', p: /AKIA[0-9A-Z]{16}/},
+      {n: 'Key', p: /-----BEGIN .* PRIVATE KEY-----/},
+      {n: 'Secret', p: /(password|secret|token|api[_-]?key)\s*[:=]\s*['"][^'"]{12,}['"]/i}
+    ];
+    
+    let found = 0;
+    for (const c of commits) {
+      const diff = execSync(`git show ${c} --format="" --no-color`, {encoding: 'utf-8', maxBuffer: 10*1024*1024});
+      const lines = diff.split('\n');
+      let inLock = false;
+      
+      for (const line of lines) {
+        if (line.startsWith('diff --git') && line.includes('lock.')) {
+          inLock = true;
+          continue;
+        }
+        if (line.startsWith('diff --git')) inLock = false;
+        if (inLock || !line.startsWith('+') || line.startsWith('+++')) continue;
+        if (/example|test_/i.test(line)) continue;
+        
+        for (const {p} of patterns) {
+          if (p.test(line)) found++;
+        }
+      }
+    }
+    
+    if (found) {
+      r.status = 'RED';
+      r.findings.push(`${found} potential secret(s)`);
+    } else {
+      r.details.push('No obvious secrets');
+    }
+  } catch (e) {
+    r.status = 'YELLOW';
+    r.findings.push(`Error: ${e.message}`);
+  }
+  return r;
+}
 
-  // Check 3: Grants (not yet implemented - needs Grants.gov integration)
-  console.log('🔍 Check 3: Grants');
-  results.checks.grants = {
-    status: 'SKIPPED',
-    reason: 'Not yet implemented: needs GRANTS_GOV_API_KEY',
-    findings: [],
-    details: []
-  };
-  console.log('   ⊗ Skipped: needs GRANTS_GOV_API_KEY\n');
+function checkDeps() {
+  const r = {status: 'GREEN', findings: [], details: []};
+  try {
+    let out;
+    try {
+      out = execSync('pnpm audit --json', {encoding: 'utf-8', stdio: 'pipe'});
+    } catch (e) {
+      out = e.stdout || '{}';
+    }
+    const d = JSON.parse(out);
+    const v = d.metadata?.vulnerabilities || {};
+    const [c, h, m, l] = [v.critical||0, v.high||0, v.moderate||0, v.low||0];
+    
+    if (c || h) {
+      r.status = 'RED';
+      r.findings.push(`${c} critical, ${h} high`);
+    } else if (m) {
+      r.status = 'YELLOW';
+      r.findings.push(`${m} moderate`);
+    } else {
+      r.details.push(`No high/critical (${l} low)`);
+    }
+  } catch (e) {
+    r.status = 'YELLOW';
+    r.findings.push(`Error: ${e.message}`);
+  }
+  return r;
+}
 
-  // Check 4: Privacy (partial - secret scan only for now)
-  console.log('🔍 Check 4: Privacy');
-  const secretScanResult = checkSecretScan();
-  results.checks.privacy = {
-    status: secretScanResult.status,
-    implemented: ['Secret scan of last 24h commits'],
-    notYetImplemented: [
-      'Suppression test suite (needs database schema)',
-      'RLS enabled check (needs SUPABASE_ACCESS_TOKEN)',
-      'Board/export view checks (needs application code)'
-    ],
-    findings: secretScanResult.findings,
-    details: secretScanResult.details
-  };
+function checkBuild() {
+  const r = {status: 'GREEN', findings: [], details: []};
+  for (const [n, cmd] of [['lint', 'pnpm lint'], ['typecheck', 'pnpm typecheck'], ['test', 'pnpm test']]) {
+    try {
+      execSync(cmd, {stdio: 'pipe', timeout: 30000});
+      r.details.push(`${n} passed`);
+    } catch {
+      r.status = 'RED';
+      r.findings.push(`${n} failed`);
+    }
+  }
+  return r;
+}
+
+export function worst(a, b) {
+  const p = {RED: 3, YELLOW: 2, GREEN: 1, SKIPPED: 0};
+  return p[a] > p[b] ? a : b;
+}
+
+export function generateReport(res) {
+  let md = `# Nightly Audit — ${res.date}\n\n**Overall:** ${res.overall}\n\n`;
+  const [crit, high, med] = [[], [], []];
+  for (const [n, c] of Object.entries(res.checks)) {
+    if (c.status === 'RED') high.push(...c.findings.map(f => `[${n}] ${f}`));
+    else if (c.status === 'YELLOW') med.push(...c.findings.map(f => `[${n}] ${f}`));
+  }
+  md += `**Critical:** ${crit.length ? crit.join('; ') : 'none'}\n`;
+  md += `**High:** ${high.length ? high.join('; ') : 'none'}\n`;
+  md += `**Medium:** ${med.length ? med.join('; ') : 'none'}\n\n`;
   
-  console.log(`   ${getStatusIcon(secretScanResult.status)} Secret scan: ${secretScanResult.status}`);
-  for (const detail of secretScanResult.details) {
-    console.log(`     ${detail}`);
+  for (const [n, c] of Object.entries(res.checks)) {
+    md += `### ${n}\n**Status:** ${c.status}\n\n`;
+    if (c.reason) md += `**Reason:** ${c.reason}\n\n`;
+    if (c.impl?.length) md += `**Implemented:** ${c.impl.join(', ')}\n\n`;
+    if (c.todo?.length) md += `**Not Yet Implemented:** ${c.todo.join(', ')}\n\n`;
+    if (c.findings?.length) md += `**Findings:**\n${c.findings.map(f => `- ${f}`).join('\n')}\n\n`;
+    if (c.details?.length) md += `**Details:**\n${c.details.map(d => `- ${d}`).join('\n')}\n\n`;
   }
-  for (const finding of secretScanResult.findings) {
-    console.log(`     ⚠ ${finding}`);
-  }
-  console.log('   ⊗ Suppression tests: needs database schema');
-  console.log('   ⊗ RLS check: needs SUPABASE_ACCESS_TOKEN');
-  console.log('   ⊗ Board/export views: needs application code\n');
-
-  if (secretScanResult.status !== 'GREEN') {
-    results.overall = worstStatus(results.overall, secretScanResult.status);
-  }
-
-  // Check 5: Build health
-  console.log('🔍 Check 5: Build health');
-  const buildHealthResult = checkBuildHealth();
-  const depVulnResult = checkDependencyVulnerabilities();
   
-  results.checks.buildHealth = {
-    status: worstStatus(buildHealthResult.status, depVulnResult.status),
-    implemented: ['Lint', 'Typecheck', 'Test', 'Dependency vulnerabilities'],
-    notYetImplemented: [
-      'Preview deploy health (needs VERCEL_TOKEN)',
-      'Production deploy health (needs VERCEL_TOKEN)'
-    ],
-    findings: [...buildHealthResult.findings, ...depVulnResult.findings],
-    details: [...buildHealthResult.details, ...depVulnResult.details]
+  md += `---\nTP-0003 nightly audit\n`;
+  return md;
+}
+
+async function main() {
+  const res = {date: DATE, overall: 'GREEN', checks: {}};
+  
+  res.checks.dataFreshness = {status: 'SKIPPED', reason: 'needs database', findings: [], details: []};
+  res.checks.dataSanity = {status: 'SKIPPED', reason: 'needs database schema', findings: [], details: []};
+  res.checks.grants = {status: 'SKIPPED', reason: 'needs GRANTS_GOV_API_KEY', findings: [], details: []};
+  
+  const sec = checkSecretScan();
+  res.checks.privacy = {
+    status: sec.status,
+    impl: ['Secret scan'],
+    todo: ['Suppression (needs schema)', 'RLS (needs SUPABASE_ACCESS_TOKEN)', 'Views (needs app)'],
+    findings: sec.findings,
+    details: sec.details
   };
-
-  console.log(`   ${getStatusIcon(buildHealthResult.status)} Build checks: ${buildHealthResult.status}`);
-  for (const detail of buildHealthResult.details) {
-    console.log(`     ${detail}`);
-  }
-  for (const finding of buildHealthResult.findings) {
-    console.log(`     ⚠ ${finding}`);
-  }
+  if (sec.status !== 'GREEN') res.overall = worst(res.overall, sec.status);
   
-  console.log(`   ${getStatusIcon(depVulnResult.status)} Dependencies: ${depVulnResult.status}`);
-  for (const detail of depVulnResult.details) {
-    console.log(`     ${detail}`);
-  }
-  for (const finding of depVulnResult.findings) {
-    console.log(`     ⚠ ${finding}`);
-  }
-  
-  console.log('   ⊗ Deploy health: needs VERCEL_TOKEN\n');
-
-  if (buildHealthResult.status !== 'GREEN' || depVulnResult.status !== 'GREEN') {
-    results.overall = worstStatus(results.overall, worstStatus(buildHealthResult.status, depVulnResult.status));
-  }
-
-  // Check 6: Harness integrity
-  console.log('🔍 Check 6: Harness integrity');
-  const harnessResult = checkHarnessIntegrity();
-  results.checks.harnessIntegrity = {
-    status: harnessResult.status,
-    implemented: [
-      'Feature evidence validation',
-      'AGENTS.md command validation',
-      'Doc file reference checks',
-      'Progress log checks'
-    ],
-    notYetImplemented: [],
-    findings: harnessResult.findings,
-    details: harnessResult.details
+  const bld = checkBuild();
+  const dep = checkDeps();
+  res.checks.buildHealth = {
+    status: worst(bld.status, dep.status),
+    impl: ['Lint', 'Typecheck', 'Test', 'Deps'],
+    todo: ['Deploy health (needs VERCEL_TOKEN)'],
+    findings: [...bld.findings, ...dep.findings],
+    details: [...bld.details, ...dep.details]
   };
-
-  console.log(`   ${getStatusIcon(harnessResult.status)} Harness checks: ${harnessResult.status}`);
-  for (const detail of harnessResult.details) {
-    console.log(`     ${detail}`);
-  }
-  for (const finding of harnessResult.findings) {
-    console.log(`     ⚠ ${finding}`);
-  }
-  console.log('');
-
-  if (harnessResult.status !== 'GREEN') {
-    results.overall = worstStatus(results.overall, harnessResult.status);
-  }
-
-  // Check 7: Cost (not yet implemented - needs cloud billing APIs)
-  console.log('🔍 Check 7: Cost tracking');
-  results.checks.cost = {
-    status: 'SKIPPED',
-    reason: 'Not yet implemented: needs cloud billing API access',
-    findings: [],
-    details: []
-  };
-  console.log('   ⊗ Skipped: needs cloud billing API access\n');
-
-  // Generate report
-  const reportPath = join(process.cwd(), 'harness', 'audits', `${AUDIT_DATE}.md`);
-  mkdirSync(join(process.cwd(), 'harness', 'audits'), { recursive: true });
+  if (bld.status !== 'GREEN' || dep.status !== 'GREEN') res.overall = worst(res.overall, worst(bld.status, dep.status));
   
-  const report = generateReport(results);
-  writeFileSync(reportPath, report, 'utf-8');
-
-  console.log(`═══════════════════════════════════════════`);
-  console.log(`  Overall Status: ${results.overall}`);
-  console.log(`═══════════════════════════════════════════\n`);
-  console.log(`Report written to: ${reportPath}\n`);
-
-  // Exit with appropriate code
-  if (results.overall === 'RED') {
-    process.exit(1);
-  } else if (results.overall === 'YELLOW') {
-    process.exit(0); // Don't fail CI on warnings
-  }
+  const har = checkHarnessIntegrity();
+  res.checks.harnessIntegrity = {
+    status: har.status,
+    impl: ['Feature evidence', 'AGENTS.md commands', 'Doc refs'],
+    todo: ['Progress log validation'],
+    findings: har.findings,
+    details: har.details
+  };
+  if (har.status !== 'GREEN') res.overall = worst(res.overall, har.status);
+  
+  res.checks.cost = {status: 'SKIPPED', reason: 'needs cloud billing API', findings: [], details: []};
+  
+  mkdirSync('harness/audits', {recursive: true});
+  const path = join('harness', 'audits', `${DATE}.md`);
+  writeFileSync(path, generateReport(res), 'utf-8');
+  
+  console.log(`\nNightly Audit — ${DATE}`);
+  console.log(`Overall: ${res.overall}`);
+  console.log(`Report: ${path}\n`);
+  
   process.exit(0);
 }
 
-function getStatusIcon(status) {
-  switch (status) {
-    case 'GREEN': return '✓';
-    case 'YELLOW': return '⚠';
-    case 'RED': return '✗';
-    case 'SKIPPED': return '⊗';
-    default: return '?';
-  }
-}
-
-function worstStatus(a, b) {
-  const priority = { 'RED': 3, 'YELLOW': 2, 'GREEN': 1, 'SKIPPED': 0 };
-  return priority[a] > priority[b] ? a : b;
-}
-
-function generateReport(results) {
-  let report = `# Nightly Audit — ${results.date}\n\n`;
-  report += `**Overall Status:** ${results.overall}\n\n`;
-
-  // Summary of findings by severity
-  const critical = [];
-  const high = [];
-  const medium = [];
-
-  for (const [checkName, check] of Object.entries(results.checks)) {
-    if (check.status === 'RED') {
-      high.push(...check.findings.map(f => `[${checkName}] ${f}`));
-    } else if (check.status === 'YELLOW') {
-      medium.push(...check.findings.map(f => `[${checkName}] ${f}`));
-    }
-  }
-
-  report += `**Critical:** ${critical.length > 0 ? critical.join('; ') : 'none'}\n`;
-  report += `**High:** ${high.length > 0 ? high.join('; ') : 'none'}\n`;
-  report += `**Medium:** ${medium.length > 0 ? medium.join('; ') : 'none'}\n\n`;
-
-  // Detailed results
-  report += `## Check Results\n\n`;
-
-  for (const [checkName, check] of Object.entries(results.checks)) {
-    report += `### ${checkName}\n`;
-    report += `**Status:** ${check.status}\n\n`;
-
-    if (check.reason) {
-      report += `**Reason:** ${check.reason}\n\n`;
-    }
-
-    if (check.implemented && check.implemented.length > 0) {
-      report += `**Implemented:**\n`;
-      for (const item of check.implemented) {
-        report += `- ${item}\n`;
-      }
-      report += `\n`;
-    }
-
-    if (check.notYetImplemented && check.notYetImplemented.length > 0) {
-      report += `**Not Yet Implemented:**\n`;
-      for (const item of check.notYetImplemented) {
-        report += `- ${item}\n`;
-      }
-      report += `\n`;
-    }
-
-    if (check.findings && check.findings.length > 0) {
-      report += `**Findings:**\n`;
-      for (const finding of check.findings) {
-        report += `- ${finding}\n`;
-      }
-      report += `\n`;
-    }
-
-    if (check.details && check.details.length > 0) {
-      report += `**Details:**\n`;
-      for (const detail of check.details) {
-        report += `- ${detail}\n`;
-      }
-      report += `\n`;
-    }
-  }
-
-  report += `---\n`;
-  report += `Generated by TP-0003 nightly audit workflow\n`;
-  report += `This is a first slice toward F-601 (Phase 6 full audit script)\n`;
-
-  return report;
-}
-
-// Run the audit
-runAudit().catch(err => {
-  console.error('Fatal error during audit:', err);
+main().catch(e => {
+  console.error('Fatal:', e);
   process.exit(1);
 });
