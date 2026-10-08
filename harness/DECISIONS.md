@@ -54,18 +54,15 @@ Questions: how foundation opportunities get in (manual entry, CSV export from th
 Recommendation: manual + CSV in v1; check each tool's export terms before automating.
 Decision: ___ · Date: ___
 
-### D-012 Diff cap: PR #3 exception and what counts toward max_diff_lines (proposed)
-Context: F-003 (PR #3, setup-flow Cloud Agent environment) came in at 624 changed lines excluding `pnpm-lock.yaml` and the generated `supabase/config.toml`, over the 400-line `max_diff_lines` in the packet template. George approved a one-time setup exception on 2026-10-08 and merged PR #3 (84e8f09).
-Open question: do lockfiles and generated files count toward `max_diff_lines`?
-Options: (A) count every changed line; (B) exclude lockfiles (`pnpm-lock.yaml`) and tool-generated files (e.g. `supabase/config.toml` from `supabase init`), but list them by name in the PR body; (C) keep counting everything and grant one-off exceptions case by case.
-Recommendation: **B.** Lockfile and generated-config churn isn't reviewable code, so counting it pushes packets toward swapping tools just to fit the cap (as happened on PR #1). Listing excluded files keeps them visible to QA and Nightly Audit.
-Cost/risk: low. The risk is a large hand-edit hidden in a "generated" file; QA checks that excluded files match their generator.
-Status: the one-time exception is approved; the counting rule stays **proposed** until George decides.
-Decision: ___ · Date: ___
-
 ## Decided
 *(move items here with George's decision and date)*
 
 ### D-011 Lint and test stack
 Context: PR #1 tried Biome + `node --test` to keep the lockfile under the diff cap; AGENTS.md specifies ESLint + Vitest. PR #3 shipped ESLint + Vitest (`eslint.config.mjs`, `vitest.config.mts`) and PR #1 was closed as superseded.
 Decision: **ESLint for lint, Vitest for tests**, matching AGENTS.md. Smoke check stays `pnpm lint && pnpm typecheck && pnpm test`. Adopted with George's merge of PR #3 (84e8f09). · Date: 2026-10-08
+
+### D-012 Diff cap: what counts toward max_diff_lines
+Context: F-003 (PR #3, setup-flow Cloud Agent environment) came in at 624 changed lines excluding `pnpm-lock.yaml` and the generated `supabase/config.toml`, over the 400-line `max_diff_lines` in the packet template. George approved a one-time setup exception on 2026-10-08 and merged PR #3 (84e8f09).
+Options: (A) count every changed line; (B) exclude lockfiles (`pnpm-lock.yaml`) and tool-generated files (e.g. `supabase/config.toml` from `supabase init`), but list them by name in the PR body; (C) keep counting everything and grant one-off exceptions case by case.
+Cost/risk: low. The risk is a large hand-edit hidden in a "generated" file; QA checks that excluded files match their generator.
+Decision: **B.** Lockfiles and tool-generated files don't count toward `max_diff_lines`; every PR lists the excluded files by name in its body, and QA checks they match their generator. Decided by George in chat. · Date: 2026-10-08
