@@ -51,8 +51,8 @@ function allowed(table: Table, actor: Actor, op: Op): boolean {
 
 function sql(q: string) {
   const pg = assertLocalSupabase(API, DB);
-  const env = { ...process.env, PGPASSWORD: pg.password };
-  for (const k of ['PGHOST', 'PGHOSTADDR', 'PGSERVICE']) delete env[k];
+  const env: NodeJS.ProcessEnv = { ...process.env, PGPASSWORD: pg.password };
+  delete env.PGHOST; delete env.PGHOSTADDR; delete env.PGSERVICE;
   execFileSync('psql', ['-h', pg.host, '-p', pg.port, '-U', pg.user, '-d', pg.database, '-v', 'ON_ERROR_STOP=1', '-At', '-c', q], { encoding: 'utf8', env });
 }
 

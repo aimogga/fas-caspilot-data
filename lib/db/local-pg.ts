@@ -2,7 +2,7 @@ const LOCAL = new Set(['127.0.0.1', 'localhost']);
 
 export type LocalPg = { host: string; port: string; user: string; database: string; password: string };
 
-export function assertLocalSupabase(api: string, db: string, env: NodeJS.ProcessEnv = process.env): LocalPg {
+export function assertLocalSupabase(api: string, db: string, env: Record<string, string | undefined> = process.env): LocalPg {
   for (const k of ['PGHOST', 'PGHOSTADDR', 'PGSERVICE'] as const) {
     if (env[k]) throw new Error(`${k} must not be set`);
   }
