@@ -1,34 +1,7 @@
-import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
-import Link from 'next/link';
-import SignOutButton from '@/components/SignOutButton';
+import { PageLayout } from '@/components/PageLayout';
 
 export default async function AdminPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect('/login');
-  }
-
-  const role = user.app_metadata?.role;
-
-  if (role !== 'admin') {
-    redirect('/403');
-  }
-
-  return (
-    <div style={{ maxWidth: '800px', margin: '50px auto', padding: '20px' }}>
-      <h1>Admin Page</h1>
-      <p>This page is accessible to admin role only.</p>
-      <p>Your role: <strong>{role}</strong></p>
-      
-      <nav style={{ margin: '30px 0' }}>
-        <Link href="/" style={{ color: '#0070f3', marginRight: '20px' }}>Home</Link>
-        <SignOutButton />
-      </nav>
-    </div>
-  );
+  return <PageLayout title="Admin Page">
+    <p>Accessible to admin role only.</p>
+  </PageLayout>;
 }
