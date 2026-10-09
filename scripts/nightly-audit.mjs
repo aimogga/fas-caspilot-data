@@ -7,33 +7,77 @@ export function parseAgentsCommands(md) {
   const m = md.match(/## Commands\n([\s\S]*?)(```\n([\s\S]*?)\n```|\n## )/);
   return m && m[3] ? [...new Set(m[3].split('\n').filter(l => l.trim().startsWith('pnpm ')).map(l => l.split('#')[0].trim().replace(/^pnpm /, '').split(/\s+/)[0]).filter(c => c !== 'install'))] : [];
 }
-function countVulns(parsed) {
-  const adv = parsed.advisories;
-  if (adv && typeof adv === 'object') {
-    const n = {critical: 0, high: 0, moderate: 0, low: 0};
-    for (const a of Object.values(adv)) {
-      const s = String(a?.severity || '').toLowerCase();
-      if (s in n) n[s]++;
-    }
-    return n;
-  }
-  const v = parsed.metadata?.vulnerabilities;
-  if (!v) return null;
-  return {critical: v.critical || 0, high: v.high || 0, moderate: v.moderate || 0, low: v.low || 0};
+const SEV = ['critical', 'high', 'moderate', 'low', 'info'];
+const AUDIT_TIMEOUT_MS = 90000;
+const IGNORE_FILE = 'harness/audit-ignores.json';
+
+function failRun(finding) {
+  return {status: 'RED', finding, ignored: []};
 }
 
-export function parseAudit(out) {
-  if (!out || !out.trim()) return {status: 'YELLOW', finding: 'audit could not run'};
-  try {
-    const n = countVulns(JSON.parse(out));
-    if (!n) return {status: 'YELLOW', finding: 'audit could not run'};
-    const [c, h, m, l] = [n.critical, n.high, n.moderate, n.low];
-    if (c || h) return {status: 'RED', finding: `${c} critical, ${h} high`};
-    if (m) return {status: 'YELLOW', finding: `${m} moderate`};
-    return {status: 'GREEN', finding: `No high/critical (${l} low)`};
-  } catch {
-    return {status: 'YELLOW', finding: 'audit could not run'};
+export function loadIgnores(readFile = readFileSync, path = IGNORE_FILE) {
+  const raw = JSON.parse(readFile(path, 'utf-8'));
+  return Array.isArray(raw) ? raw : raw.ignores || [];
+}
+
+export function ignoreIds(ig) {
+  return String(ig.id || '').split(/[/,]+/).map(s => s.trim()).filter(Boolean);
+}
+
+export function matchIgnore(a, ignores, today) {
+  const ids = new Set([a.github_advisory_id, ...(a.cves || [])].filter(Boolean));
+  for (const ig of ignores) {
+    if (today > ig.expires) continue;
+    if (ig.package && a.module_name && ig.package !== a.module_name) continue;
+    if (ignoreIds(ig).some(id => ids.has(id))) return ig;
   }
+}
+
+export function formatIgnored(i) {
+  return `${i.id} (${i.package}, ${i.severity}): ${i.reason}, reviewer ${i.reviewer}, re-review by ${i.expires}`;
+}
+
+export function parseAudit(out, opts = {}) {
+  if (!out || !String(out).trim()) return failRun('audit could not run');
+  let parsed;
+  try { parsed = JSON.parse(out); }
+  catch { return failRun('audit could not run'); }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return failRun('audit could not run');
+  const meta = parsed.metadata?.vulnerabilities;
+  if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return failRun('audit could not run');
+  const hasAdv = Object.prototype.hasOwnProperty.call(parsed, 'advisories');
+  const adv = parsed.advisories;
+  if (hasAdv && (!adv || typeof adv !== 'object' || Array.isArray(adv))) return failRun('audit could not run');
+  const today = opts.today || DATE;
+  const ignores = opts.ignores || [];
+  const counted = {critical: 0, high: 0, moderate: 0, low: 0, info: 0};
+  const ignCounts = {critical: 0, high: 0, moderate: 0, low: 0, info: 0};
+  const ignored = [];
+  if (hasAdv) {
+    for (const a of Object.values(adv)) {
+      const s = a?.severity == null || a.severity === '' ? '' : String(a.severity).toLowerCase();
+      if (!SEV.includes(s)) return failRun('unknown severity');
+      const ig = matchIgnore(a, ignores, today);
+      if (ig) {
+        ignored.push({id: ig.id, package: ig.package, severity: s, reason: ig.reason, reviewer: ig.reviewer, expires: ig.expires});
+        ignCounts[s]++;
+        continue;
+      }
+      counted[s]++;
+    }
+    for (const k of ['critical', 'high']) {
+      if ((counted[k] || 0) + (ignCounts[k] || 0) !== (meta[k] || 0)) return failRun('advisories/metadata mismatch');
+    }
+  } else {
+    counted.critical = meta.critical || 0;
+    counted.high = meta.high || 0;
+    counted.moderate = meta.moderate || 0;
+    counted.low = meta.low || 0;
+  }
+  const [c, h, m, l] = [counted.critical, counted.high, counted.moderate, counted.low];
+  if (c || h) return {status: 'RED', finding: `${c} critical, ${h} high`, ignored};
+  if (m) return {status: 'YELLOW', finding: `${m} moderate`, ignored};
+  return {status: 'GREEN', finding: `No high/critical (${l} low)`, ignored};
 }
 export function checkDocRefs(listDocs, readFile, fileExists) {
   try {
@@ -129,7 +173,6 @@ export function checkSecretScan(gitRunner = execSync) {
       r.details.push('No commits in last 24h');
       return r;
     }
-    r.details.push(`Scanned ${commits.length} commit(s)`);
     let found = 0;
     for (const c of commits) {
       const diff = gitRunner(`git show ${c} --format="" --no-color`, {encoding: 'utf-8', maxBuffer: 10*1024*1024});
@@ -146,30 +189,39 @@ export function checkSecretScan(gitRunner = execSync) {
         if (matchSecretLine(line)) found++;
       }
     }
+    r.details.push(`Scanned ${commits.length} commit(s)`);
     if (found) {
       r.status = 'RED';
       r.findings.push(`${found} potential secret(s)`);
     } else r.details.push('No obvious secrets');
   } catch {
-    r.status = 'YELLOW';
-    r.findings.push('could not read git history');
+    r.status = 'RED';
+    r.findings = ['secret scan could not run'];
+    r.details = [];
   }
   return r;
 }
 
-function checkDeps() {
-  const r = {status: 'GREEN', findings: [], details: []};
+export function runPnpmAudit() {
   try {
-    let out;
-    try { out = execSync('pnpm audit --json', {encoding: 'utf-8', stdio: 'pipe'}); }
-    catch (e) { out = e.stdout || ''; }
-    const {status, finding} = parseAudit(out);
-    r.status = status;
-    if (status === 'GREEN') r.details.push(finding);
-    else r.findings.push(finding);
+    return execSync('pnpm audit --json', {encoding: 'utf-8', stdio: 'pipe', timeout: AUDIT_TIMEOUT_MS});
   } catch (e) {
-    r.status = 'YELLOW';
-    r.findings.push(`Error: ${e.message}`);
+    if (e.stdout && String(e.stdout).trim()) return e.stdout;
+    throw e;
+  }
+}
+
+export function checkDeps({run = runPnpmAudit, parse = parseAudit, ignores, today} = {}) {
+  const r = {status: 'GREEN', findings: [], details: [], ignored: []};
+  try {
+    const parsed = parse(run(), {ignores: ignores ?? loadIgnores(), today});
+    r.status = parsed.status;
+    r.ignored = parsed.ignored || [];
+    if (parsed.status === 'GREEN') r.details.push(parsed.finding);
+    else r.findings.push(parsed.finding);
+  } catch {
+    r.status = 'RED';
+    r.findings.push('audit could not run');
   }
   return r;
 }
@@ -220,6 +272,7 @@ export function generateReport(res) {
   let md = `# Nightly Audit — ${res.date}\nOverall: ${res.overall}\n`;
   const {crit, high, med} = collectFindings(res);
   md += `Critical: ${crit.length ? crit.join('; ') : 'none'}\nHigh: ${high.length ? high.join('; ') : 'none'}\nMedium: ${med.length ? med.join('; ') : 'none'}\n`;
+  md += `Ignored: ${res.ignored?.length ? res.ignored.map(formatIgnored).join('; ') : 'none'}\n`;
   md += `Data freshness: not yet implemented (needs database)\nSpend: not yet implemented\nDoc-drift PR: none\n\n`;
   
   Object.entries(res.checks || {}).forEach(([n, c]) => {
@@ -235,13 +288,20 @@ export function generateReport(res) {
   return md + `---\nTP-0003 nightly audit\n`;
 }
 
-async function main() {
-  const res = {date: DATE, overall: 'GREEN', checks: {}};
+export async function main(opts = {}) {
+  const date = opts.date || DATE;
+  const secretScan = opts.secretScan || checkSecretScan;
+  const build = opts.build || checkBuild;
+  const deps = opts.deps || checkDeps;
+  const harness = opts.harness || checkHarnessIntegrity;
+  const emit = opts.emit || writeAndPrintReport;
+  const log = opts.log || console.log;
+  const res = {date, overall: 'GREEN', checks: {}, ignored: []};
   
   ['dataFreshness', 'dataSanity'].forEach(k => res.checks[k] = {status: 'SKIPPED', reason: 'needs database' + (k === 'dataSanity' ? ' schema' : ''), findings: [], details: []});
   res.checks.grants = {status: 'SKIPPED', reason: 'needs GRANTS_GOV_API_KEY', findings: [], details: []};
   
-  const sec = checkSecretScan();
+  const sec = secretScan();
   res.checks.privacy = {
     status: sec.status,
     impl: ['Secret scan'],
@@ -251,7 +311,8 @@ async function main() {
   };
   if (sec.status !== 'GREEN') res.overall = worst(res.overall, sec.status);
   
-  const bld = checkBuild(), dep = checkDeps();
+  const bld = build(), dep = deps();
+  res.ignored = dep.ignored || [];
   res.checks.buildHealth = {
     status: worst(bld.status, dep.status),
     impl: ['Lint', 'Typecheck', 'Test', 'Deps'],
@@ -261,21 +322,21 @@ async function main() {
   };
   if (res.checks.buildHealth.status !== 'GREEN') res.overall = worst(res.overall, res.checks.buildHealth.status);
   
-  const har = checkHarnessIntegrity();
+  const har = harness();
   res.checks.harnessIntegrity = {status: har.status, impl: ['Feature evidence', 'AGENTS.md commands', 'Doc refs', 'Progress log'], findings: har.findings, details: har.details};
   if (har.status !== 'GREEN') res.overall = worst(res.overall, har.status);
   
   res.checks.cost = {status: 'SKIPPED', reason: 'needs cloud billing API', findings: [], details: []};
   
-  const {path, exitCode} = writeAndPrintReport(res);
-  console.log(`Report: ${path}`);
-  process.exit(exitCode);
+  const {path, exitCode} = emit(res);
+  log(`Report: ${path}`);
+  return exitCode;
 }
 
 // Only run main when executed directly
 import { pathToFileURL } from 'url';
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch(e => {
+  main().then(c => process.exit(c ?? 1)).catch(e => {
     console.error('Fatal:', e);
     process.exit(1);
   });

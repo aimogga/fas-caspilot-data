@@ -9,6 +9,8 @@ on:
       - '.github/workflows/nightly-audit.yml'
       - 'scripts/nightly-audit.mjs'
       - 'scripts/nightly-audit.test.mjs'
+      - 'package.json'
+      - 'harness/audit-ignores.json'
 
 permissions:
   contents: read
@@ -40,6 +42,7 @@ jobs:
       
       - name: Run nightly audit
         id: audit
+        shell: bash
         run: |
           DATE=$(date -u +%Y-%m-%d)
           echo "audit_date=$DATE" >> $GITHUB_OUTPUT
