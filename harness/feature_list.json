@@ -110,8 +110,16 @@
         "db: rls.test.ts covering each table x role"
       ],
       "human_gate": "none",
-      "status": "failing",
-      "evidence": []
+      "status": "passing",
+      "evidence": [
+        "https://github.com/aimogga/fas-caspilot-data/pull/15#issuecomment-6076751608 (QA PASS part 1 at 4ae12d2)",
+        "https://github.com/aimogga/fas-caspilot-data/pull/17#issuecomment-6077887232 (QA PASS part 2 at 1399db1)",
+        "https://github.com/aimogga/fas-caspilot-data/pull/19#issuecomment-6081055045 (QA PASS part 3 at 6b99b2d)",
+        "https://github.com/aimogga/fas-caspilot-data/commit/c917c094bce3e47274619ac2763aaedeac5db98a (PR #15 squash merge c917c09)",
+        "https://github.com/aimogga/fas-caspilot-data/commit/b61cef944305684569ca615a568f150f8d32dd30 (PR #17 squash merge b61cef9)",
+        "https://github.com/aimogga/fas-caspilot-data/commit/b6dc21ca57aa189323f644fe4b020d23a894db84 (PR #19 squash merge b6dc21c)",
+        "fas-dev zlizvzpatfyhdydfmxef verified read-only by QA 2026-10-09 06:43 MT: 23 tables RLS forced, guard [] (all ARCHITECTURE.md tables)"
+      ]
     },
     {
       "id": "F-103",
