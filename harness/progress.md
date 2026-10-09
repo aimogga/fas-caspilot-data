@@ -50,3 +50,10 @@ State: lint/typecheck/unit/e2e/test:db green vs local Supabase.
 Evidence: PR #15.
 Left: QA re-check at new head.
 Decisions: None. Public tables: signed-in SELECT only. org: SELECT own (admin/staff/board_viewer); UPDATE own by admin; no INSERT/DELETE.
+
+## 2026-10-09 06:20 (UTC) — Cloud Agent — packet TP-0005 / F-102 QA FAIL #2
+Did: same-org staff role-only escalation test + rpc app_role/app_org_id; reset user_metadata; partitioned guard probe; refuse psql unless URL hosts are loopback.
+State: lint/typecheck/unit/e2e/test:db green vs local Supabase.
+Evidence: PR #15.
+Left: QA re-check at new head.
+Decisions: None.

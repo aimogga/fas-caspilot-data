@@ -1,13 +1,13 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { execFileSync } from 'node:child_process';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 function need(name: string): string {
   const v = process.env[name];
   if (!v) throw new Error(`Missing ${name}. Run pnpm test:db (loads supabase status -o env).`);
   return v;
 }
-const URL = need('SUPABASE_URL');
+const API = need('SUPABASE_URL');
 const ANON = need('SUPABASE_ANON_KEY');
 const SVC = need('SUPABASE_SERVICE_ROLE_KEY');
 const DB = need('SUPABASE_DB_URL');
@@ -47,8 +47,17 @@ function allowed(table: Table, actor: Actor, op: Op): boolean {
   return op === 'select' || (op === 'update' && actor === 'admin');
 }
 
+const LOCAL = new Set(['127.0.0.1', 'localhost']);
 function sql(q: string) {
+  for (const [n, v] of [['SUPABASE_URL', API], ['SUPABASE_DB_URL', DB]] as const) {
+    const h = new URL(v).hostname;
+    if (!LOCAL.has(h)) throw new Error(`${n} host must be 127.0.0.1 or localhost (got ${h})`);
+  }
   execFileSync('psql', [DB, '-v', 'ON_ERROR_STOP=1', '-At', '-c', q], { encoding: 'utf8' });
+}
+
+async function clearUserMeta(c: SupabaseClient) {
+  await c.auth.updateUser({ data: { role: null, org_id: null } });
 }
 
 const clients: Partial<Record<Actor, SupabaseClient>> = {};
@@ -57,14 +66,22 @@ let seq = 0;
 
 describe('rls', () => {
   beforeAll(async () => {
-    svc = createClient(URL, SVC, { auth: { persistSession: false, autoRefreshToken: false } });
+    svc = createClient(API, SVC, { auth: { persistSession: false, autoRefreshToken: false } });
     for (const a of ACTORS) {
-      const c = createClient(URL, ANON, { auth: { persistSession: false, autoRefreshToken: false } });
+      const c = createClient(API, ANON, { auth: { persistSession: false, autoRefreshToken: false } });
       if (a !== 'anon') {
         const { error } = await c.auth.signInWithPassword({ email: EMAIL[a], password: 'testpass123' });
         if (error) throw error;
       }
       clients[a] = c;
+    }
+  });
+
+  afterAll(async () => {
+    for (const email of [EMAIL.staff, EMAIL['other-org']]) {
+      const c = createClient(API, ANON, { auth: { persistSession: false, autoRefreshToken: false } });
+      await c.auth.signInWithPassword({ email, password: 'testpass123' });
+      await clearUserMeta(c);
     }
   });
 
@@ -81,13 +98,13 @@ describe('rls', () => {
 
   it('guard flags a public table with RLS off and one with no policy', async () => {
     try {
-      sql('CREATE TABLE public._rls_guard_probe(id int); CREATE TABLE public._rls_guard_nopol(id int); ALTER TABLE public._rls_guard_nopol ENABLE ROW LEVEL SECURITY');
+      sql('CREATE TABLE public._rls_guard_probe(id int); CREATE TABLE public._rls_guard_nopol(id int); ALTER TABLE public._rls_guard_nopol ENABLE ROW LEVEL SECURITY; CREATE TABLE public._rls_guard_part(id int) PARTITION BY RANGE (id)');
       const { data, error } = await clients.admin!.rpc('rls_guard_violations');
       expect(error).toBeNull();
       const names = (data ?? []).map((r: { relname: string }) => r.relname);
-      expect(names).toEqual(expect.arrayContaining(['_rls_guard_probe', '_rls_guard_nopol']));
+      expect(names).toEqual(expect.arrayContaining(['_rls_guard_probe', '_rls_guard_nopol', '_rls_guard_part']));
     } finally {
-      sql('DROP TABLE IF EXISTS public._rls_guard_probe, public._rls_guard_nopol');
+      sql('DROP TABLE IF EXISTS public._rls_guard_probe, public._rls_guard_nopol, public._rls_guard_part');
     }
     const { data } = await clients.admin!.rpc('rls_guard_violations');
     expect(data).toEqual([]);
@@ -135,15 +152,38 @@ describe('rls', () => {
   });
 
   it('user_metadata role/org_id does not grant extra access', async () => {
-    const c = createClient(URL, ANON, { auth: { persistSession: false, autoRefreshToken: false } });
-    const { error: sign } = await c.auth.signInWithPassword({ email: EMAIL['other-org'], password: 'testpass123' });
-    expect(sign).toBeNull();
-    const { error: upd } = await c.auth.updateUser({ data: { role: 'admin', org_id: ORG1 } });
-    expect(upd).toBeNull();
-    await c.auth.refreshSession();
-    const { data } = await c.from('org').select('id').eq('id', ORG1);
-    expect(data?.length ?? 0).toBe(0);
-    const { data: patched } = await c.from('org').update({ uei: 'Z' }).eq('id', ORG1).select();
-    expect(patched?.length ?? 0).toBe(0);
+    const c = createClient(API, ANON, { auth: { persistSession: false, autoRefreshToken: false } });
+    try {
+      const { error: sign } = await c.auth.signInWithPassword({ email: EMAIL['other-org'], password: 'testpass123' });
+      expect(sign).toBeNull();
+      const { error: upd } = await c.auth.updateUser({ data: { role: 'admin', org_id: ORG1 } });
+      expect(upd).toBeNull();
+      await c.auth.refreshSession();
+      const { data } = await c.from('org').select('id').eq('id', ORG1);
+      expect(data?.length ?? 0).toBe(0);
+      const { data: patched } = await c.from('org').update({ uei: 'Z' }).eq('id', ORG1).select();
+      expect(patched?.length ?? 0).toBe(0);
+    } finally {
+      await clearUserMeta(c);
+    }
+  });
+
+  it('user_metadata role does not escalate same-org staff', async () => {
+    const c = createClient(API, ANON, { auth: { persistSession: false, autoRefreshToken: false } });
+    try {
+      const { error: sign } = await c.auth.signInWithPassword({ email: EMAIL.staff, password: 'testpass123' });
+      expect(sign).toBeNull();
+      const { error: upd } = await c.auth.updateUser({ data: { role: 'admin' } });
+      expect(upd).toBeNull();
+      await c.auth.refreshSession();
+      const { data: role } = await c.rpc('app_role');
+      expect(role).toBe('staff');
+      const { data: org } = await c.rpc('app_org_id');
+      expect(org).toBe(ORG1);
+      const { data: patched } = await c.from('org').update({ uei: 'Z' }).eq('id', ORG1).select();
+      expect(patched?.length ?? 0).toBe(0);
+    } finally {
+      await clearUserMeta(c);
+    }
   });
 });
