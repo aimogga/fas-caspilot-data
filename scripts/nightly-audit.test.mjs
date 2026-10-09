@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { worst, generateReport, matchSecretLine, checkProgressLog, parseAgentsCommands, parseAudit, checkSecretScan, checkDocRefs } from './nightly-audit.mjs';
+import { worst, generateReport, matchSecretLine, checkProgressLog, parseAgentsCommands, parseAudit, checkSecretScan, checkDocRefs, auditExitCode, writeAndPrintReport } from './nightly-audit.mjs';
 describe('worst', () => {
   it('ranks RED > YELLOW > GREEN > SKIPPED', () => {
     expect(worst('GREEN', 'RED')).toBe('RED');
@@ -16,6 +16,37 @@ describe('generateReport', () => {
     const md = generateReport({date: '2026-10-08', overall: 'RED', checks: {privacy: {status: 'RED', findings: ['Secret'], details: []}, other: {status: 'RED', findings: ['Issue'], details: []}}});
     expect(md).toContain('Critical: [privacy] Secret');
     expect(md).toContain('High: [other] Issue');
+  });
+});
+describe('auditExitCode', () => {
+  it('RED exits non-zero', () => {
+    expect(auditExitCode({overall: 'RED', checks: {buildHealth: {status: 'RED', findings: ['0 critical, 1 high']}}})).not.toBe(0);
+  });
+  it('Critical exits non-zero', () => {
+    expect(auditExitCode({overall: 'YELLOW', checks: {privacy: {status: 'RED', findings: ['Secret']}}})).not.toBe(0);
+  });
+  it('GREEN exits 0', () => {
+    expect(auditExitCode({overall: 'GREEN', checks: {}})).toBe(0);
+  });
+  it('YELLOW exits 0', () => {
+    expect(auditExitCode({overall: 'YELLOW', checks: {harnessIntegrity: {status: 'YELLOW', findings: ['Missing commands']}}})).toBe(0);
+  });
+});
+describe('writeAndPrintReport', () => {
+  it('prints the full markdown report', () => {
+    const logs = [];
+    const files = {};
+    const res = {date: '2026-10-09', overall: 'RED', checks: {buildHealth: {status: 'RED', findings: ['0 critical, 1 high'], details: []}}};
+    const {md, exitCode} = writeAndPrintReport(res, {
+      mkdirSync: () => {},
+      writeFileSync: (p, c) => { files[p] = c; },
+      log: (s) => logs.push(s),
+    });
+    expect(exitCode).not.toBe(0);
+    expect(logs.join('\n')).toBe(md);
+    expect(logs.join('\n')).toContain('# Nightly Audit — 2026-10-09');
+    expect(logs.join('\n')).toContain('Overall: RED');
+    expect(files['harness/audits/2026-10-09.md']).toBe(md);
   });
 });
 describe('matchSecretLine', () => {
@@ -44,6 +75,12 @@ describe('parseAudit', () => {
   });
   it('returns RED on high', () => expect(parseAudit('{"metadata":{"vulnerabilities":{"high":1}}}')).toEqual({status: 'RED', finding: '0 critical, 1 high'}));
   it('returns GREEN on no high/critical', () => expect(parseAudit('{"metadata":{"vulnerabilities":{"low":2}}}')).toEqual({status: 'GREEN', finding: 'No high/critical (2 low)'}));
+  it('returns RED from remaining advisories even if metadata is empty', () => {
+    expect(parseAudit('{"advisories":{"1":{"severity":"high"}},"metadata":{"vulnerabilities":{"high":0}}}')).toEqual({status: 'RED', finding: '0 critical, 1 high'});
+  });
+  it('ignores muted highs when advisories is empty', () => {
+    expect(parseAudit('{"advisories":{},"metadata":{"vulnerabilities":{"high":1}}}')).toEqual({status: 'GREEN', finding: 'No high/critical (0 low)'});
+  });
 });
 describe('checkSecretScan', () => {
   it('returns YELLOW on git failure', () => {

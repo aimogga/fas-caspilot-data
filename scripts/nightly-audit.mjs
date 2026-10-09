@@ -7,12 +7,27 @@ export function parseAgentsCommands(md) {
   const m = md.match(/## Commands\n([\s\S]*?)(```\n([\s\S]*?)\n```|\n## )/);
   return m && m[3] ? [...new Set(m[3].split('\n').filter(l => l.trim().startsWith('pnpm ')).map(l => l.split('#')[0].trim().replace(/^pnpm /, '').split(/\s+/)[0]).filter(c => c !== 'install'))] : [];
 }
+function countVulns(parsed) {
+  const adv = parsed.advisories;
+  if (adv && typeof adv === 'object') {
+    const n = {critical: 0, high: 0, moderate: 0, low: 0};
+    for (const a of Object.values(adv)) {
+      const s = String(a?.severity || '').toLowerCase();
+      if (s in n) n[s]++;
+    }
+    return n;
+  }
+  const v = parsed.metadata?.vulnerabilities;
+  if (!v) return null;
+  return {critical: v.critical || 0, high: v.high || 0, moderate: v.moderate || 0, low: v.low || 0};
+}
+
 export function parseAudit(out) {
   if (!out || !out.trim()) return {status: 'YELLOW', finding: 'audit could not run'};
   try {
-    const v = JSON.parse(out).metadata?.vulnerabilities;
-    if (!v) return {status: 'YELLOW', finding: 'audit could not run'};
-    const [c, h, m, l] = [v.critical||0, v.high||0, v.moderate||0, v.low||0];
+    const n = countVulns(JSON.parse(out));
+    if (!n) return {status: 'YELLOW', finding: 'audit could not run'};
+    const [c, h, m, l] = [n.critical, n.high, n.moderate, n.low];
     if (c || h) return {status: 'RED', finding: `${c} critical, ${h} high`};
     if (m) return {status: 'YELLOW', finding: `${m} moderate`};
     return {status: 'GREEN', finding: `No high/critical (${l} low)`};
@@ -178,16 +193,36 @@ export function worst(a, b) {
   return p[a] > p[b] ? a : b;
 }
 
+export function collectFindings(res) {
+  const crit = [], high = [], med = [];
+  Object.entries(res.checks || {}).forEach(([n, c]) => {
+    (n === 'privacy' && c.status === 'RED' ? crit : c.status === 'RED' ? high : c.status === 'YELLOW' ? med : []).push(...(c.findings || []).map(f => `[${n}] ${f}`));
+  });
+  return {crit, high, med};
+}
+
+export function auditExitCode(res) {
+  if (res.overall === 'RED' || collectFindings(res).crit.length) return 1;
+  return 0;
+}
+
+export function writeAndPrintReport(res, io = {}) {
+  const md = generateReport(res);
+  const dir = join('harness', 'audits');
+  (io.mkdirSync ?? mkdirSync)(dir, {recursive: true});
+  const path = join(dir, `${res.date}.md`);
+  (io.writeFileSync ?? writeFileSync)(path, md, 'utf-8');
+  (io.log ?? console.log)(md);
+  return {path, md, exitCode: auditExitCode(res)};
+}
+
 export function generateReport(res) {
   let md = `# Nightly Audit — ${res.date}\nOverall: ${res.overall}\n`;
-  const [crit, high, med] = [[], [], []];
-  Object.entries(res.checks).forEach(([n, c]) => {
-    (n === 'privacy' && c.status === 'RED' ? crit : c.status === 'RED' ? high : c.status === 'YELLOW' ? med : []).push(...c.findings.map(f => `[${n}] ${f}`));
-  });
+  const {crit, high, med} = collectFindings(res);
   md += `Critical: ${crit.length ? crit.join('; ') : 'none'}\nHigh: ${high.length ? high.join('; ') : 'none'}\nMedium: ${med.length ? med.join('; ') : 'none'}\n`;
   md += `Data freshness: not yet implemented (needs database)\nSpend: not yet implemented\nDoc-drift PR: none\n\n`;
   
-  Object.entries(res.checks).forEach(([n, c]) => {
+  Object.entries(res.checks || {}).forEach(([n, c]) => {
     md += `### ${n}\n**Status:** ${c.status}\n\n`;
     ['reason', 'impl', 'todo', 'findings', 'details'].forEach(k => {
       if (c[k]?.length || c[k]) {
@@ -232,20 +267,14 @@ async function main() {
   
   res.checks.cost = {status: 'SKIPPED', reason: 'needs cloud billing API', findings: [], details: []};
   
-  mkdirSync('harness/audits', {recursive: true});
-  const path = join('harness', 'audits', `${DATE}.md`);
-  writeFileSync(path, generateReport(res), 'utf-8');
-  
-  console.log(`\nNightly Audit — ${DATE}`);
-  console.log(`Overall: ${res.overall}`);
-  console.log(`Report: ${path}\n`);
-  
-  process.exit(0);
+  const {path, exitCode} = writeAndPrintReport(res);
+  console.log(`Report: ${path}`);
+  process.exit(exitCode);
 }
 
 // Only run main when executed directly
 import { pathToFileURL } from 'url';
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch(e => {
     console.error('Fatal:', e);
     process.exit(1);

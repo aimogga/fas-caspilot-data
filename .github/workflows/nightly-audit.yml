@@ -46,6 +46,10 @@ jobs:
           EXIT_CODE=0
           node scripts/nightly-audit.mjs > audit-output.txt 2>&1 || EXIT_CODE=$?
           cat audit-output.txt
+          if [ -f "harness/audits/${DATE}.md" ]; then
+            echo "----- harness/audits/${DATE}.md -----"
+            cat "harness/audits/${DATE}.md"
+          fi
           exit $EXIT_CODE
       
       - name: Upload audit report

@@ -92,3 +92,9 @@ Decisions: none.
 Did: Court order 1–30 days before referral (≥5 distinct gaps); followup mix ≥20% improve/flat/worsen (kills after-20-worsens). Golden unchanged.
 State: lint/typecheck/unit/seed/test:db/e2e pending this commit.
 Evidence: PR #21. Left: none. Decisions: none.
+
+## 2026-10-09 16:02 (UTC) — Cloud Agent — packet TP-0009 / F-601
+Did: Nightly audit exits non-zero on Overall RED or Critical (privacy RED); YELLOW/GREEN stay 0. Full `harness/audits/<date>.md` printed to stdout (job log) in addition to artifact + step summary. Oct 9 RED was GHSA-vfj7-8cjw-p6xm (braces ≤3.0.3 via eslint-config-next; no patched release). parseAudit now counts remaining `advisories` (pnpm ignoreCves leaves metadata.high=1 with empty advisories). Review exception for CVE-2026-93687 (lint-toolchain, no untrusted globs, unpatched). Tests: RED/Critical non-zero, GREEN 0, report printed.
+State: compiling; smoke pending this commit.
+Left: none.
+Decisions: none.
