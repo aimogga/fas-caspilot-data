@@ -4,6 +4,7 @@
     "package": "braces",
     "reason": "dev-only lint toolchain transitive dep, no patched release",
     "reviewer": "QA bot",
-    "expires": "2026-11-08"
+    "expires": "2026-11-08",
+    "severity": "high"
   }
 ]

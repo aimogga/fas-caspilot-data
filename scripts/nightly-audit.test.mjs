@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { worst, generateReport, matchSecretLine, checkProgressLog, parseAgentsCommands, parseAudit, checkSecretScan, checkDocRefs, auditExitCode, writeAndPrintReport, checkDeps, main, formatIgnored } from './nightly-audit.mjs';
+import { spawnSync } from 'child_process';
+import { worst, generateReport, matchSecretLine, checkProgressLog, parseAgentsCommands, parseAudit, checkSecretScan, checkDocRefs, auditExitCode, writeAndPrintReport, checkDeps, main, formatIgnored, runPnpmAudit } from './nightly-audit.mjs';
+const BRACES_IG = {id: 'CVE-2026-93687 / GHSA-vfj7-8cjw-p6xm', package: 'braces', reason: 'dev-only lint toolchain transitive dep, no patched release', reviewer: 'QA bot', expires: '2026-11-08', severity: 'high'};
+const BRACES_JSON = JSON.stringify({advisories: {'1240992': {severity: 'high', module_name: 'braces', cves: ['CVE-2026-93687'], github_advisory_id: 'GHSA-vfj7-8cjw-p6xm'}}, metadata: {vulnerabilities: {critical: 0, high: 1, moderate: 0, low: 0}}});
 describe('worst', () => {
   it('ranks RED > YELLOW > GREEN > SKIPPED', () => {
     expect(worst('GREEN', 'RED')).toBe('RED');
@@ -10,7 +13,7 @@ describe('worst', () => {
 describe('generateReport', () => {
   it('includes template lines', () => {
     const md = generateReport({date: '2026-10-08', overall: 'GREEN', checks: {}});
-    ['Overall:', 'Critical:', 'High:', 'Medium:', 'Ignored:', 'Data freshness:', 'Spend:', 'Doc-drift PR:'].forEach(k => expect(md).toContain(k));
+    ['Overall:', 'Critical:', 'High:', 'Medium:', 'Ignored:', 'Stale:', 'Data freshness:', 'Spend:', 'Doc-drift PR:'].forEach(k => expect(md).toContain(k));
   });
   it('maps privacy RED to Critical', () => {
     const md = generateReport({date: '2026-10-08', overall: 'RED', checks: {privacy: {status: 'RED', findings: ['Secret'], details: []}, other: {status: 'RED', findings: ['Issue'], details: []}}});
@@ -18,10 +21,8 @@ describe('generateReport', () => {
     expect(md).toContain('High: [other] Issue');
   });
   it('lists ignored advisories with id, package, reason, reviewer and expiry', () => {
-    const ig = {id: 'CVE-2026-93687 / GHSA-vfj7-8cjw-p6xm', package: 'braces', severity: 'high', reason: 'dev-only lint toolchain transitive dep, no patched release', reviewer: 'QA bot', expires: '2026-11-08'};
-    const md = generateReport({date: '2026-10-09', overall: 'GREEN', checks: {}, ignored: [ig]});
-    expect(md).toContain('Ignored: ' + formatIgnored(ig));
-    ['CVE-2026-93687', 'GHSA-vfj7-8cjw-p6xm', 'braces', 'dev-only lint toolchain transitive dep, no patched release', 'QA bot', '2026-11-08'].forEach(k => expect(md).toContain(k));
+    const md = generateReport({date: '2026-10-09', overall: 'GREEN', checks: {}, ignored: [BRACES_IG]});
+    expect(md).toContain(formatIgnored(BRACES_IG));
   });
 });
 describe('auditExitCode', () => {
@@ -62,6 +63,8 @@ describe('matchSecretLine', () => {
     expect(matchSecretLine('+ ' + '-----BEGIN ' + 'RSA PRIVATE' + ' KEY-----')).toBe(true);
     expect(matchSecretLine('+ ' + '-----BEGIN ' + 'EC PRIVATE' + ' KEY-----')).toBe(true);
     expect(matchSecretLine('+ ' + '-----BEGIN ' + 'OPENSSH PRIVATE' + ' KEY-----')).toBe(true);
+    expect(matchSecretLine('+ -----' + 'BEGIN PRIVATE KEY-----')).toBe(true);
+    expect(matchSecretLine('+ -----' + 'BEGIN ENCRYPTED PRIVATE KEY-----')).toBe(true);
   });
 });
 describe('checkProgressLog', () => {
@@ -77,40 +80,52 @@ describe('parseAgentsCommands', () => {
   it('returns empty when no fence', () => expect(parseAgentsCommands('## Commands\nNo code')).toEqual([]));
   it('stops at next heading', () => expect(parseAgentsCommands('## Commands\ntext\n## Other\n```\npnpm dev\n```')).toEqual([]));
 });
-const BRACES_IG = {id: 'CVE-2026-93687 / GHSA-vfj7-8cjw-p6xm', package: 'braces', reason: 'dev-only lint toolchain transitive dep, no patched release', reviewer: 'QA bot', expires: '2026-11-08'};
-const BRACES_JSON = JSON.stringify({advisories: {'1240992': {severity: 'high', module_name: 'braces', cves: ['CVE-2026-93687'], github_advisory_id: 'GHSA-vfj7-8cjw-p6xm'}}, metadata: {vulnerabilities: {critical: 0, high: 1, moderate: 0, low: 0}}});
 function expectFailClosed(out) {
   const r = parseAudit(out);
-  expect(r.status).not.toBe('GREEN');
   expect(r.status).toBe('RED');
   expect(auditExitCode({overall: r.status, checks: {buildHealth: {status: r.status, findings: [r.finding]}}})).not.toBe(0);
 }
 describe('parseAudit', () => {
-  it('returns RED on empty or invalid', () => {
-    ['', 'not json', '{}'].forEach(s => {
-      expect(parseAudit(s).status).toBe('RED');
-      expect(parseAudit(s).finding).toBe('audit could not run');
-    });
-  });
+  it.each(['', 'not json', '{}'])('RED could not run %j', s => expect(parseAudit(s)).toMatchObject({status: 'RED', finding: 'audit could not run'}));
   it('returns RED on high', () => expect(parseAudit('{"metadata":{"vulnerabilities":{"high":1}}}')).toMatchObject({status: 'RED', finding: '0 critical, 1 high'}));
   it('returns GREEN on no high/critical', () => expect(parseAudit('{"metadata":{"vulnerabilities":{"low":2}}}')).toMatchObject({status: 'GREEN', finding: 'No high/critical (2 low)'}));
-  it('empty advisories object is RED not GREEN', () => expectFailClosed('{"advisories":{}}'));
-  it('empty advisories array is RED not GREEN', () => expectFailClosed('[]'));
-  it('advisories array field is RED not GREEN', () => expectFailClosed('{"advisories":[],"metadata":{"vulnerabilities":{"high":1}}}'));
-  it('empty advisories with metadata {} is RED not GREEN', () => expectFailClosed('{"advisories":{},"metadata":{}}'));
-  it('empty advisories while metadata has critical 3 / high 2 is RED not GREEN', () => expectFailClosed('{"advisories":{},"metadata":{"vulnerabilities":{"critical":3,"high":2}}}'));
-  it('unknown severity is RED not GREEN', () => expectFailClosed('{"advisories":{"1":{"severity":"severe","module_name":"x"}},"metadata":{"vulnerabilities":{"critical":1}}}'));
-  it('missing severity is RED not GREEN', () => expectFailClosed('{"advisories":{"1":{"module_name":"x"}},"metadata":{"vulnerabilities":{"critical":1}}}'));
+  it.each([
+    '{"advisories":{}}', '[]', '{"advisories":[],"metadata":{"vulnerabilities":{"high":1}}}',
+    '{"advisories":{},"metadata":{}}', '{"advisories":{},"metadata":{"vulnerabilities":{"critical":3,"high":2}}}',
+    '{"advisories":{},"metadata":{"vulnerabilities":{"moderate":2}}}',
+  ])('fail-closed %s', expectFailClosed);
+  it.each([
+    '{"advisories":{"1":{"severity":"severe","module_name":"x"}},"metadata":{"vulnerabilities":{"low":1}}}',
+    '{"advisories":{"1":{"module_name":"x"}},"metadata":{"vulnerabilities":{"low":1}}}',
+  ])('unknown severity is an error not low %s', out => expect(parseAudit(out)).toMatchObject({status: 'RED', finding: 'unknown severity'}));
   it('unexpired ignore is GREEN and listed', () => {
     const r = parseAudit(BRACES_JSON, {ignores: [BRACES_IG], today: '2026-10-09'});
     expect(r.status).toBe('GREEN');
     expect(r.ignored[0]).toMatchObject({id: BRACES_IG.id, package: 'braces', severity: 'high', reviewer: 'QA bot', expires: '2026-11-08'});
   });
   it('expired ignore is RED', () => {
-    const r = parseAudit(BRACES_JSON, {ignores: [BRACES_IG], today: '2026-11-09'});
+    expect(parseAudit(BRACES_JSON, {ignores: [BRACES_IG], today: '2026-11-09'})).toMatchObject({status: 'RED', finding: '0 critical, 1 high', ignored: []});
+  });
+  it.each([
+    [{expires: undefined}, 'expiry missing'], [{expires: 'never'}, 'never'], [{expires: '2026/11/08'}, 'slash date'],
+    [{expires: 20261108}, 'numeric expires'], [{reviewer: undefined}, 'missing reviewer'], [{reason: undefined}, 'missing reason'],
+    [{package: undefined}, 'missing package'], [{id: ''}, 'empty id'],
+  ])('invalid ignore %s is RED', (over) => {
+    const r = parseAudit(BRACES_JSON, {ignores: [{...BRACES_IG, ...over}], today: '2026-10-09'});
     expect(r.status).toBe('RED');
-    expect(r.finding).toBe('0 critical, 1 high');
-    expect(r.ignored).toEqual([]);
+    expect(r.finding).toMatch(/^invalid ignore/);
+  });
+  it('ignore requires id and package match', () => {
+    expect(parseAudit(BRACES_JSON, {ignores: [{...BRACES_IG, package: 'left-pad'}], today: '2026-10-09'})).toMatchObject({status: 'RED', finding: '0 critical, 1 high', ignored: []});
+  });
+  it('stops ignoring when severity rises', () => {
+    expect(parseAudit(BRACES_JSON, {ignores: [{...BRACES_IG, severity: 'moderate'}], today: '2026-10-09'})).toMatchObject({status: 'RED', ignored: []});
+  });
+  it('reports stale ignores', () => {
+    const r = parseAudit(BRACES_JSON, {ignores: [BRACES_IG, {...BRACES_IG, id: 'CVE-0000-0000', package: 'nope'}], today: '2026-10-09'});
+    expect(r.status).toBe('GREEN');
+    expect(r.stale.map(s => s.id)).toContain('CVE-0000-0000');
+    expect(generateReport({date: '2026-10-09', overall: 'GREEN', checks: {}, ignored: r.ignored, stale: r.stale})).toContain('CVE-0000-0000');
   });
 });
 describe('checkSecretScan', () => {
@@ -120,17 +135,16 @@ describe('checkSecretScan', () => {
   });
 });
 describe('checkDeps', () => {
-  it('pnpm audit crash is RED', () => {
-    expect(checkDeps({run: () => { throw new Error('crash'); }}).status).toBe('RED');
-  });
-  it('network failure is RED', () => {
-    expect(checkDeps({run: () => { throw new Error('getaddrinfo ENOTFOUND registry.npmjs.org'); }}).status).toBe('RED');
-  });
-  it('garbage output is RED', () => {
-    expect(checkDeps({run: () => 'not json', ignores: []}).status).toBe('RED');
-  });
-  it('empty object output is RED', () => {
-    expect(checkDeps({run: () => '{}', ignores: []}).status).toBe('RED');
+  it.each([
+    [() => { throw new Error('crash'); }],
+    [() => { throw new Error('getaddrinfo ENOTFOUND registry.npmjs.org'); }],
+    [() => 'not json'],
+    [() => '{}'],
+  ])('scanner fault is RED', run => expect(checkDeps({run, ignores: []}).status).toBe('RED'));
+  it('pnpm runner propagates scanner errors', () => {
+    const boom = () => { throw Object.assign(new Error('crash'), {stdout: ''}); };
+    expect(() => runPnpmAudit(boom)).toThrow();
+    expect(checkDeps({run: () => runPnpmAudit(boom)}).status).toBe('RED');
   });
 });
 const greenStub = () => ({status: 'GREEN', findings: [], details: [], ignored: []});
@@ -149,6 +163,10 @@ describe('main', () => {
       emit: (res) => ({path: 'x', md: '', exitCode: auditExitCode(res)}), log: () => {},
     });
     expect(code).toBe(0);
+  });
+  it('CLI entry exits non-zero for RED fixture', () => {
+    const r = spawnSync(process.execPath, ['scripts/nightly-audit.mjs'], {env: {...process.env, NIGHTLY_AUDIT_FIXTURE: 'red'}, encoding: 'utf8', timeout: 15000});
+    expect(r.status).not.toBe(0);
   });
 });
 describe('checkDocRefs', () => {

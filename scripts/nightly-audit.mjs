@@ -8,16 +8,35 @@ export function parseAgentsCommands(md) {
   return m && m[3] ? [...new Set(m[3].split('\n').filter(l => l.trim().startsWith('pnpm ')).map(l => l.split('#')[0].trim().replace(/^pnpm /, '').split(/\s+/)[0]).filter(c => c !== 'install'))] : [];
 }
 const SEV = ['critical', 'high', 'moderate', 'low', 'info'];
+const RANK = {info: 0, low: 1, moderate: 2, high: 3, critical: 4};
 const AUDIT_TIMEOUT_MS = 90000;
 const IGNORE_FILE = 'harness/audit-ignores.json';
+const IGNORE_KEYS = ['id', 'package', 'reason', 'reviewer', 'expires', 'severity'];
 
 function failRun(finding) {
-  return {status: 'RED', finding, ignored: []};
+  return {status: 'RED', finding, ignored: [], stale: []};
 }
 
 export function loadIgnores(readFile = readFileSync, path = IGNORE_FILE) {
   const raw = JSON.parse(readFile(path, 'utf-8'));
   return Array.isArray(raw) ? raw : raw.ignores || [];
+}
+
+function parseIsoDate(s) {
+  if (typeof s !== 'string') return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+  if (!m) return null;
+  const y = +m[1], mo = +m[2], d = +m[3];
+  const dt = new Date(Date.UTC(y, mo - 1, d));
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() === mo - 1 && dt.getUTCDate() === d ? dt : null;
+}
+
+function validateIgnore(ig) {
+  for (const k of IGNORE_KEYS) {
+    if (typeof ig?.[k] !== 'string' || !ig[k].trim()) return `invalid ignore: ${k}`;
+  }
+  if (!parseIsoDate(ig.expires)) return 'invalid ignore: expires';
+  if (!SEV.includes(ig.severity.toLowerCase())) return 'invalid ignore: severity';
 }
 
 export function ignoreIds(ig) {
@@ -26,10 +45,13 @@ export function ignoreIds(ig) {
 
 export function matchIgnore(a, ignores, today) {
   const ids = new Set([a.github_advisory_id, ...(a.cves || [])].filter(Boolean));
+  const s = String(a.severity || '').toLowerCase();
   for (const ig of ignores) {
-    if (today > ig.expires) continue;
-    if (ig.package && a.module_name && ig.package !== a.module_name) continue;
-    if (ignoreIds(ig).some(id => ids.has(id))) return ig;
+    if (ig.package !== a.module_name) continue;
+    if (!ignoreIds(ig).some(id => ids.has(id))) continue;
+    if (parseIsoDate(today) > parseIsoDate(ig.expires)) continue;
+    if ((RANK[s] ?? 0) > (RANK[ig.severity.toLowerCase()] ?? 0)) continue;
+    return ig;
   }
 }
 
@@ -50,13 +72,22 @@ export function parseAudit(out, opts = {}) {
   if (hasAdv && (!adv || typeof adv !== 'object' || Array.isArray(adv))) return failRun('audit could not run');
   const today = opts.today || DATE;
   const ignores = opts.ignores || [];
+  for (const ig of ignores) {
+    const err = validateIgnore(ig);
+    if (err) return failRun(err);
+  }
   const counted = {critical: 0, high: 0, moderate: 0, low: 0, info: 0};
   const ignCounts = {critical: 0, high: 0, moderate: 0, low: 0, info: 0};
   const ignored = [];
+  const touched = new Set();
   if (hasAdv) {
     for (const a of Object.values(adv)) {
       const s = a?.severity == null || a.severity === '' ? '' : String(a.severity).toLowerCase();
       if (!SEV.includes(s)) return failRun('unknown severity');
+      const ids = new Set([a.github_advisory_id, ...(a.cves || [])].filter(Boolean));
+      for (const x of ignores) {
+        if (x.package === a.module_name && ignoreIds(x).some(id => ids.has(id))) touched.add(x.id);
+      }
       const ig = matchIgnore(a, ignores, today);
       if (ig) {
         ignored.push({id: ig.id, package: ig.package, severity: s, reason: ig.reason, reviewer: ig.reviewer, expires: ig.expires});
@@ -65,7 +96,7 @@ export function parseAudit(out, opts = {}) {
       }
       counted[s]++;
     }
-    for (const k of ['critical', 'high']) {
+    for (const k of ['critical', 'high', 'moderate']) {
       if ((counted[k] || 0) + (ignCounts[k] || 0) !== (meta[k] || 0)) return failRun('advisories/metadata mismatch');
     }
   } else {
@@ -74,10 +105,11 @@ export function parseAudit(out, opts = {}) {
     counted.moderate = meta.moderate || 0;
     counted.low = meta.low || 0;
   }
+  const stale = ignores.filter(ig => !touched.has(ig.id));
   const [c, h, m, l] = [counted.critical, counted.high, counted.moderate, counted.low];
-  if (c || h) return {status: 'RED', finding: `${c} critical, ${h} high`, ignored};
-  if (m) return {status: 'YELLOW', finding: `${m} moderate`, ignored};
-  return {status: 'GREEN', finding: `No high/critical (${l} low)`, ignored};
+  if (c || h) return {status: 'RED', finding: `${c} critical, ${h} high`, ignored, stale};
+  if (m) return {status: 'YELLOW', finding: `${m} moderate`, ignored, stale};
+  return {status: 'GREEN', finding: `No high/critical (${l} low)`, ignored, stale};
 }
 export function checkDocRefs(listDocs, readFile, fileExists) {
   try {
@@ -159,7 +191,7 @@ export function checkProgressLog(commits, progressText) {
 export function matchSecretLine(line) {
   return !/"env\([^)]+\)"/.test(line) && [
     /AKIA[0-9A-Z]{16}/,
-    new RegExp('-----BEGIN ' + '.* PRIVATE' + ' KEY-----'),
+    new RegExp('-----BEGIN (?:[A-Z0-9]+ )?(?:ENCRYPTED )?PRIVATE KEY-----'),
     /(password|secret|token|api[_-]?key)\s*[:=]\s*['"][^'"]{12,}['"]/i
   ].some(p => p.test(line));
 }
@@ -202,9 +234,9 @@ export function checkSecretScan(gitRunner = execSync) {
   return r;
 }
 
-export function runPnpmAudit() {
+export function runPnpmAudit(run = execSync) {
   try {
-    return execSync('pnpm audit --json', {encoding: 'utf-8', stdio: 'pipe', timeout: AUDIT_TIMEOUT_MS});
+    return run('pnpm audit --json', {encoding: 'utf-8', stdio: 'pipe', timeout: AUDIT_TIMEOUT_MS});
   } catch (e) {
     if (e.stdout && String(e.stdout).trim()) return e.stdout;
     throw e;
@@ -212,11 +244,12 @@ export function runPnpmAudit() {
 }
 
 export function checkDeps({run = runPnpmAudit, parse = parseAudit, ignores, today} = {}) {
-  const r = {status: 'GREEN', findings: [], details: [], ignored: []};
+  const r = {status: 'GREEN', findings: [], details: [], ignored: [], stale: []};
   try {
     const parsed = parse(run(), {ignores: ignores ?? loadIgnores(), today});
     r.status = parsed.status;
     r.ignored = parsed.ignored || [];
+    r.stale = parsed.stale || [];
     if (parsed.status === 'GREEN') r.details.push(parsed.finding);
     else r.findings.push(parsed.finding);
   } catch {
@@ -273,6 +306,7 @@ export function generateReport(res) {
   const {crit, high, med} = collectFindings(res);
   md += `Critical: ${crit.length ? crit.join('; ') : 'none'}\nHigh: ${high.length ? high.join('; ') : 'none'}\nMedium: ${med.length ? med.join('; ') : 'none'}\n`;
   md += `Ignored: ${res.ignored?.length ? res.ignored.map(formatIgnored).join('; ') : 'none'}\n`;
+  md += `Stale: ${res.stale?.length ? res.stale.map(formatIgnored).join('; ') : 'none'}\n`;
   md += `Data freshness: not yet implemented (needs database)\nSpend: not yet implemented\nDoc-drift PR: none\n\n`;
   
   Object.entries(res.checks || {}).forEach(([n, c]) => {
@@ -296,7 +330,7 @@ export async function main(opts = {}) {
   const harness = opts.harness || checkHarnessIntegrity;
   const emit = opts.emit || writeAndPrintReport;
   const log = opts.log || console.log;
-  const res = {date, overall: 'GREEN', checks: {}, ignored: []};
+  const res = {date, overall: 'GREEN', checks: {}, ignored: [], stale: []};
   
   ['dataFreshness', 'dataSanity'].forEach(k => res.checks[k] = {status: 'SKIPPED', reason: 'needs database' + (k === 'dataSanity' ? ' schema' : ''), findings: [], details: []});
   res.checks.grants = {status: 'SKIPPED', reason: 'needs GRANTS_GOV_API_KEY', findings: [], details: []};
@@ -313,6 +347,7 @@ export async function main(opts = {}) {
   
   const bld = build(), dep = deps();
   res.ignored = dep.ignored || [];
+  res.stale = dep.stale || [];
   res.checks.buildHealth = {
     status: worst(bld.status, dep.status),
     impl: ['Lint', 'Typecheck', 'Test', 'Deps'],
@@ -336,7 +371,11 @@ export async function main(opts = {}) {
 // Only run main when executed directly
 import { pathToFileURL } from 'url';
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().then(c => process.exit(c ?? 1)).catch(e => {
+  const ok = () => ({status: 'GREEN', findings: [], details: [], ignored: [], stale: []});
+  const opts = process.env.NIGHTLY_AUDIT_FIXTURE === 'red'
+    ? {secretScan: ok, build: ok, harness: ok, deps: () => ({status: 'RED', findings: ['fixture'], details: [], ignored: [], stale: []})}
+    : {};
+  main(opts).then(c => process.exit(c ?? 1)).catch(e => {
     console.error('Fatal:', e);
     process.exit(1);
   });

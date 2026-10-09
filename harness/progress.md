@@ -100,5 +100,5 @@ Left: none.
 Decisions: none.
 
 ## 2026-10-09 16:25 (UTC) — Cloud Agent — TP-0009 QA FAIL PR #22
-Did: Fail-closed parse (require metadata.vulnerabilities; empty/array/mismatch/unknown severity → RED). Ignores in harness/audit-ignores.json (CVE/GHSA braces, QA bot, expires 2026-11-08); listed in report; expired counts again. Scanner cannot-run (pnpm crash/network/garbage/{}/git) is RED. pnpm audit timeout 90s; workflow shell bash + path filter.
+Did: Fail-closed parse; reviewed ignore file with ISO expiry/severity; scanner cannot-run is RED; PKCS#8; N3/N4b/M6 tests.
 Left: none. Decisions: none.
