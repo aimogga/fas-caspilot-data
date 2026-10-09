@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:db": "node scripts/test-db.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "seed:synthetic": "node --experimental-strip-types --no-warnings=ExperimentalWarning lib/synthetic/cli.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
