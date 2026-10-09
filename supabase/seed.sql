@@ -61,3 +61,24 @@ INSERT INTO outcome_measure (id, org_id, case_id, measure_code, baseline_score, 
 INSERT INTO aggregate_submission (id, org_id, period, metric_code, value, n, notes) VALUES
   ('d3d3d3d3-d3d3-d3d3-d3d3-d3d3d3d3d3d1', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '2024-Q1', 'm1', 1, 20, 'n'),
   ('d3d3d3d3-d3d3-d3d3-d3d3-d3d3d3d3d3d2', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '2024-Q1', 'm1', 1, 20, 'n');
+INSERT INTO opportunity (id, source, external_id, title, funder, assistance_listing, eligibility, description, raw) VALUES
+  ('10101010-1010-1010-1010-101010101010', 'grants_gov', 'syn-opp-1', 'Synth Opp', 'HHS', '93.958', '{}', 'd', '{}');
+INSERT INTO opportunity_criteria (id, opportunity_id, criterion, weight_points, "text", extracted_by) VALUES
+  ('20202020-2020-2020-2020-202020202020', '10101010-1010-1010-1010-101010101010', 'mission', 1, 't', 'syn');
+INSERT INTO award_history (id, source, funder, recipient, recipient_state, amount, fiscal_year, description, raw) VALUES
+  ('30303030-3030-3030-3030-303030303030', 'usaspending', 'HHS', 'Synth Recip', 'UT', 1, 2024, 'syn', '{}');
+INSERT INTO match_result (id, org_id, opportunity_id, score, components, flags, model_version) VALUES
+  ('40404040-4040-4040-4040-404040404041', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '10101010-1010-1010-1010-101010101010', 1, '{}', '{}', 'v1'),
+  ('40404040-4040-4040-4040-404040404042', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '10101010-1010-1010-1010-101010101010', 1, '{}', '{}', 'v1');
+INSERT INTO strategy_draft (id, org_id, opportunity_id, inputs_snapshot, output, citations, status, created_by) VALUES
+  ('50505050-5050-5050-5050-505050505051', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '10101010-1010-1010-1010-101010101010', '{}', '{}', '{}', 'draft', '11111111-1111-1111-1111-111111111111'),
+  ('50505050-5050-5050-5050-505050505052', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '10101010-1010-1010-1010-101010101010', '{}', '{}', '{}', 'draft', '55555555-5555-5555-5555-555555555555');
+INSERT INTO pipeline_status (opportunity_id, org_id, status, owner, notes) VALUES
+  ('10101010-1010-1010-1010-101010101010', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'watch', 'a', 'n'),
+  ('10101010-1010-1010-1010-101010101010', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'watch', 'b', 'n');
+INSERT INTO export_job (id, org_id, type, params, file_path, suppression_applied, created_by) VALUES
+  ('60606060-6060-6060-6060-606060606061', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'pdf', '{}', '/synthetic/a.pdf', true, '11111111-1111-1111-1111-111111111111'),
+  ('60606060-6060-6060-6060-606060606062', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'pdf', '{}', '/synthetic/b.pdf', true, '55555555-5555-5555-5555-555555555555');
+INSERT INTO audit_log (id, org_id, actor, action, entity, details) VALUES
+  ('70707070-7070-7070-7070-707070707071', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '11111111-1111-1111-1111-111111111111', 'seed', 'org', '{}'),
+  ('70707070-7070-7070-7070-707070707072', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '55555555-5555-5555-5555-555555555555', 'seed', 'org', '{}');

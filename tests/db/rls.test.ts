@@ -27,11 +27,19 @@ const A1 = '99999999-9999-9999-9999-999999999991';
 const A2 = '99999999-9999-9999-9999-999999999992';
 const Z1 = 'a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a1';
 const Z2 = 'a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a2';
+const OPP1 = '10101010-1010-1010-1010-101010101010';
+const ADMIN = '11111111-1111-1111-1111-111111111111';
+const STAFF = '22222222-2222-2222-2222-222222222222';
 const ACTORS = ['anon', 'admin', 'staff', 'board_viewer', 'other-org', 'other-admin', 'no-role', 'org-norole'] as const;
 const OPS = ['select', 'insert', 'update', 'delete'] as const;
 const PUBLIC = ['geo_county', 'source_registry', 'ingest_run', 'public_indicator', 'need_score_config', 'need_score'] as const;
 const FAS = ['case', 'application', 'authorization', 'provider', 'delivery_episode', 'outcome_measure', 'upload_batch', 'aggregate_submission'] as const;
-const TABLES = [...PUBLIC, 'org', ...FAS] as const;
+const GLOB = ['opportunity', 'opportunity_criteria', 'award_history'] as const;
+const GRW = ['match_result', 'strategy_draft', 'pipeline_status'] as const;
+const JOB = ['export_job', 'audit_log'] as const;
+const ORG_T = [...FAS, ...GRW, ...JOB] as const;
+const TABLES = [...PUBLIC, 'org', ...FAS, ...GLOB, ...GRW, ...JOB] as const;
+const ARCH = ['aggregate_submission','application','audit_log','authorization','award_history','case','delivery_episode','export_job','geo_county','ingest_run','match_result','need_score','need_score_config','opportunity','opportunity_criteria','org','outcome_measure','pipeline_status','provider','public_indicator','source_registry','strategy_draft','upload_batch'] as const;
 const SIGNED = new Set(['admin', 'staff', 'board_viewer', 'other-org', 'other-admin']);
 type Actor = (typeof ACTORS)[number];
 type Op = (typeof OPS)[number];
@@ -42,6 +50,14 @@ const TAG: Record<Table, string> = {
   need_score_config: 'version', need_score: 'geo_fips', org: 'uei', case: 'referral_source',
   application: 'decision', authorization: 'service_type', provider: 'npi', delivery_episode: 'discharge_status',
   outcome_measure: 'measure_code', upload_batch: 'file_path', aggregate_submission: 'period',
+  opportunity: 'external_id', opportunity_criteria: 'criterion', award_history: 'description',
+  match_result: 'model_version', strategy_draft: 'status', pipeline_status: 'notes',
+  export_job: 'type', audit_log: 'action',
+};
+const UID: Record<Exclude<Actor, 'anon'>, string> = {
+  admin: ADMIN, staff: STAFF, board_viewer: '33333333-3333-3333-3333-333333333333',
+  'other-org': '44444444-4444-4444-4444-444444444444', 'other-admin': '55555555-5555-5555-5555-555555555555',
+  'no-role': '66666666-6666-6666-6666-666666666666', 'org-norole': '77777777-7777-7777-7777-777777777777',
 };
 
 const EMAIL: Record<Exclude<Actor, 'anon'>, string> = {
@@ -66,15 +82,27 @@ const M: Record<Table, { s: Rec; r: (t: string) => Rec; p: Rec; u: Rec }> = {
   outcome_measure: { s: { id: 'c2c2c2c2-c2c2-c2c2-c2c2-c2c2c2c2c2c1' }, r: (t) => ({ org_id: ORG1, case_id: C1, measure_code: t, baseline_score: 1, baseline_date: '2024-01-01' }), p: { followup_score: 9 }, u: { followup_score: null } },
   upload_batch: { s: { id: UB1 }, r: (t) => ({ org_id: ORG1, file_path: t, mapping: {}, rows_ok: 0, rows_error: 0, status: 'ok' }), p: { status: 'x' }, u: { status: 'ok' } },
   aggregate_submission: { s: { id: 'd3d3d3d3-d3d3-d3d3-d3d3-d3d3d3d3d3d1' }, r: (t) => ({ org_id: ORG1, period: t, metric_code: 'm1', value: 1, n: 20, notes: t }), p: { notes: 'x' }, u: { notes: 'n' } },
+  opportunity: { s: { id: OPP1 }, r: (t) => ({ source: 'grants_gov', external_id: t, title: t, eligibility: {}, raw: {} }), p: { title: 'X' }, u: { title: 'Synth Opp' } },
+  opportunity_criteria: { s: { id: '20202020-2020-2020-2020-202020202020' }, r: (t) => ({ opportunity_id: OPP1, criterion: t, weight_points: 1, text: t }), p: { weight_points: 9 }, u: { weight_points: 1 } },
+  award_history: { s: { id: '30303030-3030-3030-3030-303030303030' }, r: (t) => ({ source: 'usaspending', funder: 'HHS', recipient: t, description: t, raw: {} }), p: { amount: 9 }, u: { amount: 1 } },
+  match_result: { s: { id: '40404040-4040-4040-4040-404040404041' }, r: (t) => ({ org_id: ORG1, opportunity_id: OPP1, score: 1, components: {}, flags: {}, model_version: t }), p: { score: 9 }, u: { score: 1 } },
+  strategy_draft: { s: { id: '50505050-5050-5050-5050-505050505051' }, r: (t) => ({ org_id: ORG1, opportunity_id: OPP1, inputs_snapshot: { t }, output: {}, citations: {}, status: 'draft' }), p: { status: 'approved' }, u: { status: 'draft' } },
+  pipeline_status: { s: { opportunity_id: OPP1, org_id: ORG1 }, r: (t) => ({ opportunity_id: OPP1, org_id: ORG1, status: 'watch', notes: t }), p: { notes: 'x' }, u: { notes: 'n' } },
+  export_job: { s: { id: '60606060-6060-6060-6060-606060606061' }, r: (t) => ({ org_id: ORG1, type: t, params: {}, suppression_applied: true, created_by: ADMIN }), p: { file_path: 'x' }, u: { file_path: '/synthetic/a.pdf' } },
+  audit_log: { s: { id: '70707070-7070-7070-7070-707070707071' }, r: (t) => ({ org_id: ORG1, actor: ADMIN, action: t, entity: 'org', details: {} }), p: { action: 'x' }, u: { action: 'seed' } },
 };
 
-function isFas(table: Table): boolean {
-  return (FAS as readonly string[]).includes(table);
+function inArr(table: Table, xs: readonly string[]): boolean {
+  return xs.includes(table);
 }
 
 function allowed(table: Table, actor: Actor, op: Op): boolean {
   if (!SIGNED.has(actor)) return false;
-  if (isFas(table)) return (actor === 'admin' || actor === 'staff') && (op !== 'delete' || actor === 'admin');
+  const own = actor === 'admin' || actor === 'staff';
+  if (inArr(table, GLOB)) return op === 'select' && (own || actor === 'other-org' || actor === 'other-admin');
+  if (inArr(table, FAS) || inArr(table, GRW)) return own && (op !== 'delete' || actor === 'admin');
+  if (table === 'export_job') return own && (op === 'select' || op === 'insert');
+  if (table === 'audit_log') return (op === 'select' && actor === 'admin') || (op === 'insert' && own);
   if (table !== 'org') return op === 'select';
   if (actor === 'other-org' || actor === 'other-admin') return false;
   return op === 'select' || (op === 'update' && actor === 'admin');
@@ -85,8 +113,26 @@ function sql(q: string): string {
   return execFileSync('psql', ['-h', pg.host, '-p', pg.port, '-U', pg.user, '-d', pg.database, '-v', 'ON_ERROR_STOP=1', '-At', '-c', q], { encoding: 'utf8', env: localPgEnv(pg) });
 }
 
-function tagq(table: Table, t: string): Rec {
-  return table === 'need_score' ? { version: 'v1', geo_fips: '49049' } : { [TAG[table]]: t };
+function tagq(table: Table, t: string, row?: Rec): Rec {
+  if (table === 'need_score') return { version: 'v1', geo_fips: '49049' };
+  if (table === 'strategy_draft' && row?.id) return { id: row.id };
+  if (table === 'strategy_draft') return { inputs_snapshot: { t } };
+  return { [TAG[table]]: t };
+}
+
+async function freshOpp(): Promise<string> {
+  const { data, error } = await svc.from('opportunity').insert({ source: 'grants_gov', title: 'tmp', eligibility: {}, raw: {} }).select('id').single();
+  expect(error).toBeNull();
+  return data!.id as string;
+}
+
+async function prepInsert(table: Table, actor: Actor, tag: string): Promise<Rec> {
+  const row = { ...M[table].r(tag) };
+  if (table === 'export_job') row.created_by = actor === 'anon' ? ADMIN : UID[actor];
+  if (table === 'audit_log') row.actor = actor === 'anon' ? ADMIN : UID[actor];
+  if (table === 'strategy_draft') row.id = crypto.randomUUID();
+  if (table === 'pipeline_status') row.opportunity_id = await freshOpp();
+  return row;
 }
 
 async function landed(c: SupabaseClient, table: Table, row: Rec, q: Rec): Promise<boolean> {
@@ -172,7 +218,9 @@ describe('rls', () => {
       }
       const tag = `t${String(++seq).padStart(4, '0')}`;
       if (op === 'insert') {
-        expect(await landed(c, table, meta.r(tag), tagq(table, tag))).toBe(allow);
+        const row = await prepInsert(table, actor, tag);
+        expect(await landed(c, table, row, tagq(table, tag, row))).toBe(allow);
+        if (table === 'pipeline_status') await svc.from('opportunity').delete().eq('id', row.opportunity_id);
         return;
       }
       if (op === 'update') {
@@ -181,13 +229,16 @@ describe('rls', () => {
         if (allow) await svc.from(table).update(meta.u).match(meta.s);
         return;
       }
-      if (isFas(table)) {
-        const { data: created, error: insErr } = await svc.from(table).insert(meta.r(`d${tag}`)).select();
+      if (inArr(table, FAS) || inArr(table, GRW)) {
+        const row = table === 'pipeline_status' ? { ...meta.r(`d${tag}`), opportunity_id: await freshOpp() } : meta.r(`d${tag}`);
+        const { data: created, error: insErr } = await svc.from(table).insert(row).select();
         expect(insErr).toBeNull();
-        const id = (created as Rec[])[0]!.id;
-        const { data } = await c.from(table).delete().eq('id', id).select();
+        const rec = (created as Rec[])[0]!;
+        const q = table === 'pipeline_status' ? { opportunity_id: rec.opportunity_id, org_id: rec.org_id } : { id: rec.id };
+        const { data } = await c.from(table).delete().match(q).select();
         expect((data?.length ?? 0) > 0).toBe(allow);
-        if (!allow) await svc.from(table).delete().eq('id', id);
+        if (!allow) await svc.from(table).delete().match(q);
+        if (table === 'pipeline_status') await svc.from('opportunity').delete().eq('id', rec.opportunity_id);
         return;
       }
       const { data } = await c.from(table).delete().match(meta.s).select();
@@ -245,9 +296,10 @@ describe('rls', () => {
     }
   });
 
-  it.each([...FAS].map((table) => ({ table })))('staff cannot insert $table with another org_id', async ({ table }) => {
+  it.each([...ORG_T].map((table) => ({ table })))('staff cannot insert $table with another org_id', async ({ table }) => {
     const tag = `x${String(++seq).padStart(4, '0')}`;
-    expect(await landed(clients.staff!, table, otherOrgRow(table, tag), tagq(table, tag))).toBe(false);
+    const row = { ...otherOrgRow(table, tag), ...(table === 'export_job' ? { created_by: STAFF } : {}), ...(table === 'audit_log' ? { actor: STAFF } : {}) };
+    expect(await landed(clients.staff!, table, row, tagq(table, tag, row))).toBe(false);
   });
 
   it('staff cannot move a row org_id to another org', async () => {
@@ -264,16 +316,16 @@ describe('rls', () => {
     { table: 'authorization', col: 'provider_id', row: { org_id: ORG1, application_id: A1, provider_id: P2, service_type: 'fk-prov' }, q: { service_type: 'fk-prov' } },
     { table: 'delivery_episode', col: 'authorization_id', row: { org_id: ORG1, authorization_id: Z2, discharge_status: 'fk' }, q: { discharge_status: 'fk' } },
     { table: 'outcome_measure', col: 'case_id', row: { org_id: ORG1, case_id: C2, measure_code: 'fk' }, q: { measure_code: 'fk' } },
-  ] as { table: Table; col: string; row: Rec; q: Rec }[])('child cannot attach $table.$col across orgs', async ({ table, row, q }) => {
+  ] as { table: Table; col: string; row: Rec; q: Rec }[])('$col on $table', async ({ table, row, q }) => {
     const { error } = await svc.from(table).insert(row);
     const { data } = await svc.from(table).select('id').match(q).limit(1);
     if (data?.length) await svc.from(table).delete().match(q);
     expect(error).toBeTruthy();
   });
 
-  it('FAS org_id is NOT NULL', () => {
-    const names = sql(`SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace JOIN pg_attribute a ON a.attrelid=c.oid WHERE n.nspname='public' AND c.relkind='r' AND a.attname='org_id' AND a.attnotnull AND NOT a.attisdropped AND c.relname IN (${[...FAS].map((t) => `'${t}'`).join(',')}) ORDER BY 1`).trim().split('\n');
-    expect(names).toEqual([...FAS].sort());
+  it('org-scoped org_id is NOT NULL', () => {
+    const names = sql(`SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace JOIN pg_attribute a ON a.attrelid=c.oid WHERE n.nspname='public' AND c.relkind='r' AND a.attname='org_id' AND a.attnotnull AND NOT a.attisdropped AND c.relname IN (${[...ORG_T].map((t) => `'${t}'`).join(',')}) ORDER BY 1`).trim().split('\n');
+    expect(names).toEqual([...ORG_T].sort());
   });
 
   it('other-org staff sees own FAS rows only', async () => {
@@ -282,5 +334,43 @@ describe('rls', () => {
     expect(own?.length).toBe(1);
     const { data: leak } = await c.from('provider').select('id').eq('id', P1);
     expect(leak?.length ?? 0).toBe(0);
+    const { data: mown } = await c.from('match_result').select('id').eq('id', '40404040-4040-4040-4040-404040404042');
+    expect(mown?.length).toBe(1);
+    const { data: mleak } = await c.from('match_result').select('id').eq('id', '40404040-4040-4040-4040-404040404041');
+    expect(mleak?.length ?? 0).toBe(0);
+  });
+
+  it('ARCHITECTURE.md tables exist with RLS and a policy', async () => {
+    const names = sql(`SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind='r' AND c.relrowsecurity AND EXISTS (SELECT 1 FROM pg_policy p WHERE p.polrelid=c.oid) AND c.relname IN (${[...ARCH].map((t) => `'${t}'`).join(',')}) ORDER BY 1`).trim().split('\n');
+    expect(names).toEqual([...ARCH]);
+    const { data, error } = await clients.admin!.rpc('rls_guard_violations');
+    expect(error).toBeNull();
+    expect(data).toEqual([]);
+  });
+
+  it('guard flags a public view without security_invoker', async () => {
+    try {
+      sql('CREATE VIEW public._rls_guard_view AS SELECT 1 AS x; CREATE VIEW public._rls_ok_view WITH (security_invoker=true) AS SELECT 1 AS x');
+      const { data, error } = await clients.admin!.rpc('rls_guard_violations');
+      expect(error).toBeNull();
+      const names = (data ?? []).map((r: { relname: string }) => r.relname);
+      expect(names).toContain('_rls_guard_view');
+      expect(names).not.toContain('_rls_ok_view');
+    } finally {
+      sql('DROP VIEW IF EXISTS public._rls_guard_view, public._rls_ok_view');
+    }
+  });
+
+  it('audit_log is append-only and spoofed actor/created_by is denied', async () => {
+    const admin = clients.admin!;
+    const { data: upd } = await admin.from('audit_log').update({ action: 'x' }).eq('id', '70707070-7070-7070-7070-707070707071').select();
+    expect(upd?.length ?? 0).toBe(0);
+    const { data: del } = await admin.from('audit_log').delete().eq('id', '70707070-7070-7070-7070-707070707071').select();
+    expect(del?.length ?? 0).toBe(0);
+    expect((await svc.from('audit_log').select('id').eq('id', '70707070-7070-7070-7070-707070707071')).data?.length).toBe(1);
+    const a = `s${String(++seq).padStart(4, '0')}`;
+    const e = `s${String(++seq).padStart(4, '0')}`;
+    expect(await landed(admin, 'audit_log', { ...M.audit_log.r(a), actor: STAFF }, tagq('audit_log', a))).toBe(false);
+    expect(await landed(admin, 'export_job', { ...M.export_job.r(e), created_by: STAFF }, tagq('export_job', e))).toBe(false);
   });
 });
