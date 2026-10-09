@@ -18,7 +18,7 @@ export function assertLocalSupabase(api: string, db: string, env: Record<string,
 }
 
 export function localPgEnv(pg: LocalPg, env: Record<string, string | undefined> = process.env): NodeJS.ProcessEnv {
-  const out: NodeJS.ProcessEnv = { ...env, PGPASSWORD: pg.password };
+  const out: Record<string, string | undefined> = { ...env, PGPASSWORD: pg.password };
   for (const k of ['PGHOST', 'PGHOSTADDR', 'PGSERVICE', 'PGOPTIONS'] as const) delete out[k];
-  return out;
+  return out as unknown as NodeJS.ProcessEnv;
 }
