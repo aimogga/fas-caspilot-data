@@ -37,30 +37,17 @@ Evidence: PR #10.
 Left: QA re-check. Denied-route 200 later.
 Decisions: None.
 
-## 2026-10-09 04:50 (UTC) — Cloud Agent — packet TP-0005 / F-102 (part 1 of 3)
-Did: 7 tables + app_role()/app_org_id() + deny-by-default RLS; seed org_id + second org/user; table-driven tests/db/rls.test.ts + catalog guard; pnpm test:db.
-State: lint/typecheck/unit/e2e/test:db green vs local Supabase.
-Evidence: this PR (TP-0005, issue #14).
-Left: F-102 parts 2–3 (remaining tables). QA owns status.
-Decisions: None. Public tables: signed-in SELECT only. org: SELECT own (admin/staff/board_viewer); UPDATE own by admin; no INSERT/DELETE.
+## 2026-10-09 04:50 (UTC) — TP-0005 / F-102 part 1
+Did: 7 tables + helpers + deny-by-default RLS; table-driven rls.test.ts; test:db from status -o env. Left: parts 2–3. Decisions: public SELECT-only; org SELECT own + known role; UPDATE admin own; no INSERT/DELETE.
 
-## 2026-10-09 05:50 (UTC) — Cloud Agent — packet TP-0005 / F-102 QA FAIL fix
-Did: org-norole seed user; user_metadata escalation test; guard probe via SUPABASE_DB_URL; REVOKE EXECUTE FROM anon; test:db loads `supabase status -o env` (no keys in repo).
-State: lint/typecheck/unit/e2e/test:db green vs local Supabase.
-Evidence: PR #15.
-Left: QA re-check at new head.
-Decisions: None. Public tables: signed-in SELECT only. org: SELECT own (admin/staff/board_viewer); UPDATE own by admin; no INSERT/DELETE.
+## 2026-10-09 05:50 (UTC) — TP-0005 QA FAIL #1
+Did: org-norole; user_metadata test; guard probe; REVOKE anon; keys from status -o env only.
 
-## 2026-10-09 06:20 (UTC) — Cloud Agent — packet TP-0005 / F-102 QA FAIL #2
-Did: same-org staff role-only escalation test + rpc app_role/app_org_id; reset user_metadata; partitioned guard probe; refuse psql unless URL hosts are loopback.
-State: lint/typecheck/unit/e2e/test:db green vs local Supabase.
-Evidence: PR #15.
-Left: QA re-check at new head.
-Decisions: None.
+## 2026-10-09 06:20 (UTC) — TP-0005 QA FAIL #2
+Did: staff role-only + rpc helpers; partitioned probe; loopback host check.
 
-## 2026-10-09 07:05 (UTC) — Cloud Agent — packet TP-0005 / F-102 QA FAIL #3
-Did: parse SUPABASE_URL/DB_URL at load; reject DB search/hash and PGHOST/PGHOSTADDR/PGSERVICE; psql -h/-p/-U/-d + child PGPASSWORD; unit tests for ?host/?hostaddr/?service/#fragment/non-loopback.
-State: lint/typecheck/unit/e2e/test:db green vs local Supabase.
-Evidence: PR #15.
-Left: QA re-check at new head.
-Decisions: None.
+## 2026-10-09 07:05 (UTC) — TP-0005 QA FAIL #3
+Did: parse URLs at load; reject search/hash and PGHOST*; psql -h/-p/-U/-d + PGPASSWORD.
+
+## 2026-10-09 07:35 (UTC) — TP-0005 QA FAIL #4
+Did: reject dbname/user unless /^\w+$/; clear PGOPTIONS in sql() child env; unit tests for non-loopback SUPABASE_URL and conninfo dbnames.

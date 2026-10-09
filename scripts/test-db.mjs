@@ -13,12 +13,5 @@ for (const line of raw.split('\n')) {
   process.env[dest] = v;
 }
 const missing = Object.values(map).filter((k) => !process.env[k]);
-if (missing.length) {
-  console.error(`test:db missing ${missing.join(', ')} from supabase status -o env`);
-  process.exit(1);
-}
-const r = spawnSync('pnpm', ['exec', 'vitest', 'run', '--config', 'vitest.db.config.mts', ...process.argv.slice(2)], {
-  stdio: 'inherit',
-  env: process.env,
-});
-process.exit(r.status ?? 1);
+if (missing.length) { console.error(`test:db missing ${missing.join(', ')} from supabase status -o env`); process.exit(1); }
+process.exit(spawnSync('pnpm', ['exec', 'vitest', 'run', '--config', 'vitest.db.config.mts', ...process.argv.slice(2)], { stdio: 'inherit', env: process.env }).status ?? 1);
