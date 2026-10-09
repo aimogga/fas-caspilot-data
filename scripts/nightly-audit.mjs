@@ -61,12 +61,10 @@ function checkHarnessIntegrity() {
       if (missing.length) addYellow(`Missing commands: ${missing.join(', ')}`);
       else r.details.push('All AGENTS.md commands exist');
     }
-    if (existsSync('docs')) {
-      const listDocs = () => readdirSync('docs', {recursive: true, encoding: 'utf-8'}).filter(f => f.endsWith('.md')).map(f => join('docs', f));
-      const docCheck = checkDocRefs(listDocs, (p) => readFileSync(p, 'utf-8'), existsSync);
-      if (docCheck.status) { r.status = docCheck.status; r.findings.push(docCheck.finding); }
-      else r.details.push(docCheck.detail);
-    }
+    const listDocs = () => readdirSync('docs', {recursive: true, encoding: 'utf-8'}).filter(f => f.endsWith('.md')).map(f => join('docs', f));
+    const docCheck = checkDocRefs(listDocs, (p) => readFileSync(p, 'utf-8'), existsSync);
+    if (docCheck.status) { r.status = worst(r.status, docCheck.status); r.findings.push(docCheck.finding); }
+    else r.details.push(docCheck.detail);
     try {
       const yesterday = new Date(Date.now() - 86400000).toISOString();
       const commits = execSync(`git log --since="${yesterday}" --format="%s"`, {encoding: 'utf-8'}).trim().split('\n').filter(c => c);
