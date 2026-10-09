@@ -39,7 +39,8 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = pg_catalog
 AS $$ SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
   WHERE n.nspname = 'public' AND c.relkind = 'r'
     AND (NOT c.relrowsecurity OR NOT EXISTS (SELECT 1 FROM pg_policy p WHERE p.polrelid = c.oid)); $$;
-GRANT EXECUTE ON FUNCTION rls_guard_violations() TO anon, authenticated;
+REVOKE ALL ON FUNCTION rls_guard_violations() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION rls_guard_violations() TO authenticated;
 
 DO $$
 DECLARE t text;
@@ -50,13 +51,13 @@ BEGIN
     EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', t);
     EXECUTE format('ALTER TABLE %I FORCE ROW LEVEL SECURITY', t);
     EXECUTE format('CREATE POLICY %I ON %I FOR SELECT TO authenticated USING (app_role() IN (''admin'',''staff'',''board_viewer''))', t||'_sel', t);
-    EXECUTE format('CREATE POLICY %I ON %I FOR ALL TO authenticated USING (app_role()=''admin'') WITH CHECK (app_role()=''admin'')', t||'_mut', t);
   END LOOP;
 END $$;
 
 ALTER TABLE org ENABLE ROW LEVEL SECURITY;
 ALTER TABLE org FORCE ROW LEVEL SECURITY;
 CREATE POLICY org_sel ON org FOR SELECT TO authenticated
-  USING (app_role() = 'admin' OR id = app_org_id());
-CREATE POLICY org_mut ON org FOR ALL TO authenticated
-  USING (app_role() = 'admin') WITH CHECK (app_role() = 'admin');
+  USING (id = app_org_id() AND app_role() IN ('admin', 'staff', 'board_viewer'));
+CREATE POLICY org_upd ON org FOR UPDATE TO authenticated
+  USING (app_role() = 'admin' AND id = app_org_id())
+  WITH CHECK (app_role() = 'admin' AND id = app_org_id());

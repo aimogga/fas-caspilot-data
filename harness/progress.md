@@ -42,4 +42,4 @@ Did: 7 tables + app_role()/app_org_id() + deny-by-default RLS; seed org_id + sec
 State: lint/typecheck/unit/e2e/test:db green vs local Supabase.
 Evidence: this PR (TP-0005, issue #14).
 Left: F-102 parts 2–3 (remaining tables). QA owns status.
-Decisions: None. Public tables: signed-in SELECT, admin write. org: SELECT own or admin; write admin.
+Decisions: None. Public tables: signed-in SELECT only. org: SELECT own (admin/staff/board_viewer); UPDATE own by admin; no INSERT/DELETE.
