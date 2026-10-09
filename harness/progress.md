@@ -108,3 +108,7 @@ Left: none. Decisions: none.
 ## 2026-10-09 17:35 (UTC) — Cloud Agent — TP-0009 QA FAIL #4 PR #22
 Did: One id per ignore (CVE|GHSA); braces split into two same-expiry entries; alias overlap with later expiry is RED.
 Left: none. Decisions: none.
+
+## 2026-10-09 18:08 (UTC) — Cloud Agent — TP-0009 QA FAIL #5 PR #22
+Did: GHSA-only ignores (one per id, ≤90-day expiry); CVE lives in reason text; alias/CVE matching removed.
+Left: none. Decisions: none.

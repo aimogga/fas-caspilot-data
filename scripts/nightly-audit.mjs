@@ -31,12 +31,14 @@ function parseIsoDate(s) {
   return dt.getUTCFullYear() === y && dt.getUTCMonth() === mo - 1 && dt.getUTCDate() === d ? dt : null;
 }
 
-function validateIgnore(ig) {
+function validateIgnore(ig, today) {
   for (const k of IGNORE_KEYS) {
     if (typeof ig?.[k] !== 'string' || !ig[k].trim()) return `invalid ignore: ${k}`;
   }
-  if (!/^(CVE-\d{4}-\d+|GHSA(-[a-z0-9]{4}){3})$/.test(ig.id)) return 'invalid ignore: id';
-  if (!parseIsoDate(ig.expires)) return 'invalid ignore: expires';
+  if (!/^GHSA(-[a-z0-9]{4}){3}$/.test(ig.id)) return 'invalid ignore: id';
+  const exp = parseIsoDate(ig.expires), t = parseIsoDate(today);
+  if (!exp) return 'invalid ignore: expires';
+  if (t && (exp - t) / 86400000 > 90) return 'invalid ignore: expires';
   if (!SEV.includes(ig.severity.toLowerCase())) return 'invalid ignore: severity';
 }
 
@@ -59,11 +61,10 @@ export function parseAudit(out, opts = {}) {
   const ignores = opts.ignores || [];
   const seen = new Set();
   for (const ig of ignores) {
-    const err = validateIgnore(ig);
+    const err = validateIgnore(ig, today);
     if (err) return failRun(err);
-    const k = `${ig.id}\0${ig.package}`;
-    if (seen.has(k)) return failRun('duplicate ignore');
-    seen.add(k);
+    if (seen.has(ig.id)) return failRun('duplicate ignore');
+    seen.add(ig.id);
   }
   const counted = {critical: 0, high: 0, moderate: 0, low: 0, info: 0};
   const ignCounts = {critical: 0, high: 0, moderate: 0, low: 0, info: 0};
@@ -73,13 +74,10 @@ export function parseAudit(out, opts = {}) {
     for (const a of Object.values(adv)) {
       const s = a?.severity == null || a.severity === '' ? '' : String(a.severity).toLowerCase();
       if (!SEV.includes(s)) return failRun('unknown severity');
-      const ids = new Set([a.github_advisory_id, ...(a.cves || [])].filter(Boolean));
-      const hits = ignores.filter(x => x.package === a.module_name && ids.has(x.id));
-      if (new Set(hits.map(h => h.expires)).size > 1) return failRun('duplicate ignore');
-      hits.forEach(h => touched.add(h.id));
-      const igs = hits.filter(h => !(parseIsoDate(today) > parseIsoDate(h.expires)) && (RANK[s] ?? 0) <= (RANK[h.severity.toLowerCase()] ?? 0));
-      if (igs.length) {
-        igs.forEach(ig => ignored.push({id: ig.id, package: ig.package, severity: s, reason: ig.reason, reviewer: ig.reviewer, expires: ig.expires}));
+      const ig = ignores.find(x => x.id === a.github_advisory_id && x.package === a.module_name);
+      if (ig) touched.add(ig.id);
+      if (ig && !(parseIsoDate(today) > parseIsoDate(ig.expires)) && (RANK[s] ?? 0) <= (RANK[ig.severity.toLowerCase()] ?? 0)) {
+        ignored.push({id: ig.id, package: ig.package, severity: s, reason: ig.reason, reviewer: ig.reviewer, expires: ig.expires});
         ignCounts[s]++;
         continue;
       }
