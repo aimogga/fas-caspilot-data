@@ -36,3 +36,10 @@ State: lint/typecheck/unit/e2e green vs local Supabase.
 Evidence: PR #10.
 Left: QA re-check. Denied-route 200 later.
 Decisions: None.
+
+## 2026-10-09 04:50 (UTC) — Cloud Agent — packet TP-0005 / F-102 (part 1 of 3)
+Did: 7 tables + app_role()/app_org_id() + deny-by-default RLS; seed org_id + second org/user; table-driven tests/db/rls.test.ts + catalog guard; pnpm test:db.
+State: lint/typecheck/unit/e2e/test:db green vs local Supabase.
+Evidence: this PR (TP-0005, issue #14).
+Left: F-102 parts 2–3 (remaining tables). QA owns status.
+Decisions: None. Public tables: signed-in SELECT, admin write. org: SELECT own or admin; write admin.
