@@ -52,6 +52,9 @@ export default function HomePage() {
           </ul>
         </section>
       ) : null}
+      <form action="/api/auth/signout" method="post">
+        <button type="submit">Sign Out</button>
+      </form>
     </main>
   );
 }
