@@ -37,10 +37,12 @@ CREATE TABLE org (
 CREATE FUNCTION rls_guard_violations() RETURNS TABLE(relname name)
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = pg_catalog
 AS $$ SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
-  WHERE n.nspname = 'public' AND c.relkind = 'r'
+  WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p')
     AND (NOT c.relrowsecurity OR NOT EXISTS (SELECT 1 FROM pg_policy p WHERE p.polrelid = c.oid)); $$;
 REVOKE ALL ON FUNCTION rls_guard_violations() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION rls_guard_violations() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION rls_guard_violations() TO authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC, anon;
 
 DO $$
 DECLARE t text;

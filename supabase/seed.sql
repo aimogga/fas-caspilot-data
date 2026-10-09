@@ -15,7 +15,8 @@ FROM (VALUES
   ('33333333-3333-3333-3333-333333333333'::uuid, 'board@example.test', 'board_viewer', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid),
   ('44444444-4444-4444-4444-444444444444'::uuid, 'other@example.test', 'staff', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'::uuid),
   ('55555555-5555-5555-5555-555555555555'::uuid, 'other-admin@example.test', 'admin', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'::uuid),
-  ('66666666-6666-6666-6666-666666666666'::uuid, 'norole@example.test', null, null)
+  ('66666666-6666-6666-6666-666666666666'::uuid, 'norole@example.test', null, null),
+  ('77777777-7777-7777-7777-777777777777'::uuid, 'org-norole@example.test', null, 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid)
 ) AS u(id, email, role, org_id);
 
 INSERT INTO auth.identities (user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)

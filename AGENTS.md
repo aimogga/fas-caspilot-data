@@ -20,7 +20,7 @@ pnpm dev                # run app on :3000
 pnpm lint               # eslint
 pnpm typecheck          # tsc --noEmit
 pnpm test               # unit tests (vitest)
-pnpm test:db            # RLS + catalog guard vs local Supabase (needs supabase start; local default keys)
+pnpm test:db            # RLS + catalog guard vs local Supabase (loads API_URL/ANON_KEY/SERVICE_ROLE_KEY/DB_URL from `supabase status -o env`; needs `psql`)
 pnpm test:e2e           # playwright
 pnpm seed:synthetic     # load synthetic FAS data into local DB
 supabase start          # local Supabase (needs Docker)

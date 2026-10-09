@@ -43,3 +43,10 @@ State: lint/typecheck/unit/e2e/test:db green vs local Supabase.
 Evidence: this PR (TP-0005, issue #14).
 Left: F-102 parts 2–3 (remaining tables). QA owns status.
 Decisions: None. Public tables: signed-in SELECT only. org: SELECT own (admin/staff/board_viewer); UPDATE own by admin; no INSERT/DELETE.
+
+## 2026-10-09 05:50 (UTC) — Cloud Agent — packet TP-0005 / F-102 QA FAIL fix
+Did: org-norole seed user; user_metadata escalation test; guard probe via SUPABASE_DB_URL; REVOKE EXECUTE FROM anon; test:db loads `supabase status -o env` (no keys in repo).
+State: lint/typecheck/unit/e2e/test:db green vs local Supabase.
+Evidence: PR #15.
+Left: QA re-check at new head.
+Decisions: None. Public tables: signed-in SELECT only. org: SELECT own (admin/staff/board_viewer); UPDATE own by admin; no INSERT/DELETE.

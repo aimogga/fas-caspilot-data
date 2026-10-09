@@ -1,14 +1,21 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { execFileSync } from 'node:child_process';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-const URL = process.env.SUPABASE_URL ?? 'http://127.0.0.1:54321';
-const ANON = process.env.SUPABASE_ANON_KEY ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0'; // local CLI test_anon
-const SVC = process.env.SUPABASE_SERVICE_ROLE_KEY ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU'; // local CLI test_service_role
+function need(name: string): string {
+  const v = process.env[name];
+  if (!v) throw new Error(`Missing ${name}. Run pnpm test:db (loads supabase status -o env).`);
+  return v;
+}
+const URL = need('SUPABASE_URL');
+const ANON = need('SUPABASE_ANON_KEY');
+const SVC = need('SUPABASE_SERVICE_ROLE_KEY');
+const DB = need('SUPABASE_DB_URL');
 const ORG1 = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 const ORG2 = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 const SID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
 const RID = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
-const ACTORS = ['anon', 'admin', 'staff', 'board_viewer', 'other-org', 'other-admin', 'no-role'] as const;
+const ACTORS = ['anon', 'admin', 'staff', 'board_viewer', 'other-org', 'other-admin', 'no-role', 'org-norole'] as const;
 const OPS = ['select', 'insert', 'update', 'delete'] as const;
 const TABLES = ['geo_county', 'source_registry', 'ingest_run', 'public_indicator', 'need_score_config', 'need_score', 'org'] as const;
 const SIGNED = new Set(['admin', 'staff', 'board_viewer', 'other-org', 'other-admin']);
@@ -21,6 +28,7 @@ const EMAIL: Record<Exclude<Actor, 'anon'>, string> = {
   admin: 'admin@example.test', staff: 'staff@example.test',
   board_viewer: 'board@example.test', 'other-org': 'other@example.test',
   'other-admin': 'other-admin@example.test', 'no-role': 'norole@example.test',
+  'org-norole': 'org-norole@example.test',
 };
 const M: Record<Table, { s: Rec; r: (t: string) => Rec; p: Rec; u: Rec }> = {
   geo_county: { s: { fips: '49035' }, r: (t) => ({ fips: t, name: t, state: 'UT', population_latest: 1 }), p: { name: 'X' }, u: { name: 'Salt Lake' } },
@@ -37,6 +45,10 @@ function allowed(table: Table, actor: Actor, op: Op): boolean {
   if (table !== 'org') return op === 'select';
   if (actor === 'other-org' || actor === 'other-admin') return false;
   return op === 'select' || (op === 'update' && actor === 'admin');
+}
+
+function sql(q: string) {
+  execFileSync('psql', [DB, '-v', 'ON_ERROR_STOP=1', '-At', '-c', q], { encoding: 'utf8' });
 }
 
 const clients: Partial<Record<Actor, SupabaseClient>> = {};
@@ -56,9 +68,28 @@ describe('rls', () => {
     }
   });
 
+  it('anon cannot execute rls_guard_violations', async () => {
+    const { error } = await clients.anon!.rpc('rls_guard_violations');
+    expect(error).toBeTruthy();
+  });
+
   it('pg_catalog: public tables have RLS on and at least one policy', async () => {
     const { data, error } = await clients.admin!.rpc('rls_guard_violations');
     expect(error).toBeNull();
+    expect(data).toEqual([]);
+  });
+
+  it('guard flags a public table with RLS off and one with no policy', async () => {
+    try {
+      sql('CREATE TABLE public._rls_guard_probe(id int); CREATE TABLE public._rls_guard_nopol(id int); ALTER TABLE public._rls_guard_nopol ENABLE ROW LEVEL SECURITY');
+      const { data, error } = await clients.admin!.rpc('rls_guard_violations');
+      expect(error).toBeNull();
+      const names = (data ?? []).map((r: { relname: string }) => r.relname);
+      expect(names).toEqual(expect.arrayContaining(['_rls_guard_probe', '_rls_guard_nopol']));
+    } finally {
+      sql('DROP TABLE IF EXISTS public._rls_guard_probe, public._rls_guard_nopol');
+    }
+    const { data } = await clients.admin!.rpc('rls_guard_violations');
     expect(data).toEqual([]);
   });
 
@@ -101,5 +132,18 @@ describe('rls', () => {
     await svc.from('org').update({ uei: 'UEIOTH0002' }).match(own);
     const { data: leak } = await c.from('org').select('id').eq('id', ORG1);
     expect(leak?.length ?? 0).toBe(0);
+  });
+
+  it('user_metadata role/org_id does not grant extra access', async () => {
+    const c = createClient(URL, ANON, { auth: { persistSession: false, autoRefreshToken: false } });
+    const { error: sign } = await c.auth.signInWithPassword({ email: EMAIL['other-org'], password: 'testpass123' });
+    expect(sign).toBeNull();
+    const { error: upd } = await c.auth.updateUser({ data: { role: 'admin', org_id: ORG1 } });
+    expect(upd).toBeNull();
+    await c.auth.refreshSession();
+    const { data } = await c.from('org').select('id').eq('id', ORG1);
+    expect(data?.length ?? 0).toBe(0);
+    const { data: patched } = await c.from('org').update({ uei: 'Z' }).eq('id', ORG1).select();
+    expect(patched?.length ?? 0).toBe(0);
   });
 });

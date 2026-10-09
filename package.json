@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:db": "vitest run --config vitest.db.config.mts",
+    "test:db": "node scripts/test-db.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {
