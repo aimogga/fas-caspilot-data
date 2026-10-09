@@ -65,3 +65,7 @@ Left: F-102 part 3. Decisions: none.
 Did: 8 grants/export/audit tables with CHECK enums, org-scoped RLS (export_job created_by=auth.uid(), audit_log actor uuid append-only), view security_invoker guard, synthetic seed, rls matrix + ARCH catalog.
 State: lint/typecheck green; unit 60/60; test:db 767/767; e2e 5/5; `/api/health` ok vs local Supabase.
 Left: none (F-102 schema complete). Decisions: none.
+
+## 2026-10-09 10:35 (UTC) — Cloud Agent — TP-0007 QA FAIL
+Did: CHECK bogus inserts; guard true/on (ci) + false probe + matviews; pg_constraint PK/FKs; stamp_now() on audit_log.at / export_job.created_at.
+Left: none. Decisions: none.

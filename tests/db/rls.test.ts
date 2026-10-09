@@ -350,14 +350,25 @@ describe('rls', () => {
 
   it('guard flags a public view without security_invoker', async () => {
     try {
-      sql('CREATE VIEW public._rls_guard_view AS SELECT 1 AS x; CREATE VIEW public._rls_ok_view WITH (security_invoker=true) AS SELECT 1 AS x');
+      sql('CREATE VIEW public._rls_guard_view AS SELECT 1 AS x; CREATE VIEW public._rls_guard_view_off WITH (security_invoker=false) AS SELECT 1 AS x; CREATE VIEW public._rls_ok_view WITH (security_invoker=true) AS SELECT 1 AS x');
       const { data, error } = await clients.admin!.rpc('rls_guard_violations');
       expect(error).toBeNull();
       const names = (data ?? []).map((r: { relname: string }) => r.relname);
-      expect(names).toContain('_rls_guard_view');
+      expect(names).toEqual(expect.arrayContaining(['_rls_guard_view', '_rls_guard_view_off']));
       expect(names).not.toContain('_rls_ok_view');
     } finally {
-      sql('DROP VIEW IF EXISTS public._rls_guard_view, public._rls_ok_view');
+      sql('DROP VIEW IF EXISTS public._rls_guard_view, public._rls_guard_view_off, public._rls_ok_view');
+    }
+  });
+
+  it('guard flags a public materialized view', async () => {
+    try {
+      sql('CREATE MATERIALIZED VIEW public._rls_guard_mat AS SELECT 1 AS x');
+      const { data, error } = await clients.admin!.rpc('rls_guard_violations');
+      expect(error).toBeNull();
+      expect((data ?? []).map((r: { relname: string }) => r.relname)).toContain('_rls_guard_mat');
+    } finally {
+      sql('DROP MATERIALIZED VIEW IF EXISTS public._rls_guard_mat');
     }
   });
 
@@ -372,5 +383,47 @@ describe('rls', () => {
     const e = `s${String(++seq).padStart(4, '0')}`;
     expect(await landed(admin, 'audit_log', { ...M.audit_log.r(a), actor: STAFF }, tagq('audit_log', a))).toBe(false);
     expect(await landed(admin, 'export_job', { ...M.export_job.r(e), created_by: STAFF }, tagq('export_job', e))).toBe(false);
+  });
+
+  it.each([
+    { table: 'opportunity' as Table, col: 'source', row: { ...M.opportunity.r('bogus'), source: 'bogus' } },
+    { table: 'award_history' as Table, col: 'source', row: { ...M.award_history.r('bogus'), source: 'bogus' } },
+    { table: 'strategy_draft' as Table, col: 'status', row: { ...M.strategy_draft.r('bogus'), status: 'bogus' } },
+  ])('CHECK $col on $table rejects bogus', async ({ table, row }) => {
+    const { error } = await svc.from(table).insert(row as Rec);
+    const q = tagq(table, 'bogus', row);
+    const { data } = await svc.from(table).select('*').match(q).limit(1);
+    if (data?.length) await svc.from(table).delete().match(q);
+    expect(error).toBeTruthy();
+  });
+
+  it.each([
+    { t: 'pipeline_status', def: 'PRIMARY KEY (opportunity_id, org_id)' },
+    { t: 'match_result', def: 'FOREIGN KEY (opportunity_id) REFERENCES opportunity(id)' },
+    { t: 'strategy_draft', def: 'FOREIGN KEY (opportunity_id) REFERENCES opportunity(id)' },
+    { t: 'opportunity_criteria', def: 'FOREIGN KEY (opportunity_id) REFERENCES opportunity(id)' },
+    { t: 'match_result', def: 'FOREIGN KEY (org_id) REFERENCES org(id)' },
+    { t: 'strategy_draft', def: 'FOREIGN KEY (org_id) REFERENCES org(id)' },
+    { t: 'pipeline_status', def: 'FOREIGN KEY (org_id) REFERENCES org(id)' },
+    { t: 'export_job', def: 'FOREIGN KEY (org_id) REFERENCES org(id)' },
+    { t: 'audit_log', def: 'FOREIGN KEY (org_id) REFERENCES org(id)' },
+  ])('$t has $def', ({ t, def }) => {
+    const got = sql(`SELECT pg_get_constraintdef(c.oid) FROM pg_constraint c JOIN pg_class r ON r.oid=c.conrelid JOIN pg_namespace n ON n.oid=r.relnamespace WHERE n.nspname='public' AND r.relname='${t}'`).trim().split('\n');
+    expect(got).toContain(def);
+  });
+
+  it('server stamps audit_log.at and export_job.created_at', async () => {
+    const admin = clients.admin!;
+    const a = `s${String(++seq).padStart(4, '0')}`;
+    const e = `s${String(++seq).padStart(4, '0')}`;
+    await admin.from('audit_log').insert({ ...M.audit_log.r(a), actor: ADMIN, at: '2001-01-01' });
+    await admin.from('export_job').insert({ ...M.export_job.r(e), created_by: ADMIN, created_at: '2099-01-01' });
+    const now = Date.now();
+    const { data: al } = await svc.from('audit_log').select('at').eq('action', a).maybeSingle();
+    const { data: ej } = await svc.from('export_job').select('created_at').eq('type', e).maybeSingle();
+    expect(Math.abs(new Date(al!.at as string).getTime() - now)).toBeLessThan(8000);
+    expect(Math.abs(new Date(ej!.created_at as string).getTime() - now)).toBeLessThan(8000);
+    await svc.from('audit_log').delete().eq('action', a);
+    await svc.from('export_job').delete().eq('type', e);
   });
 });

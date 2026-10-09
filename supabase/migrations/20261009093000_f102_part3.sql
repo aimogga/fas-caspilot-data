@@ -43,7 +43,10 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = pg_catalog
 AS $$ SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
   WHERE n.nspname = 'public' AND (
     (c.relkind IN ('r','p') AND (NOT c.relrowsecurity OR NOT EXISTS (SELECT 1 FROM pg_policy p WHERE p.polrelid = c.oid)))
-    OR (c.relkind = 'v' AND NOT COALESCE(c.reloptions, ARRAY[]::text[]) @> ARRAY['security_invoker=true'])); $$;
+    OR c.relkind = 'm'
+    OR (c.relkind = 'v' AND NOT EXISTS (
+      SELECT 1 FROM unnest(COALESCE(c.reloptions, ARRAY[]::text[])) o
+      WHERE lower(o) IN ('security_invoker=true','security_invoker=on')))); $$;
 
 DO $$
 DECLARE t text;
@@ -76,3 +79,12 @@ CREATE POLICY audit_log_sel ON audit_log FOR SELECT TO authenticated
   USING (org_id = app_org_id() AND app_role() = 'admin');
 CREATE POLICY audit_log_ins ON audit_log FOR INSERT TO authenticated
   WITH CHECK (org_id = app_org_id() AND app_role() IN ('admin','staff') AND actor = auth.uid());
+
+CREATE OR REPLACE FUNCTION stamp_now() RETURNS trigger
+LANGUAGE plpgsql SET search_path = pg_catalog AS $$
+BEGIN
+  IF TG_TABLE_NAME = 'audit_log' THEN NEW.at := now(); ELSE NEW.created_at := now(); END IF;
+  RETURN NEW;
+END; $$;
+CREATE TRIGGER audit_log_stamp BEFORE INSERT ON audit_log FOR EACH ROW EXECUTE FUNCTION stamp_now();
+CREATE TRIGGER export_job_stamp BEFORE INSERT ON export_job FOR EACH ROW EXECUTE FUNCTION stamp_now();
