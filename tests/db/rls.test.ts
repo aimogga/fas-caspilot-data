@@ -1,6 +1,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { execFileSync } from 'node:child_process';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { assertLocalSupabase } from '@/lib/db/local-pg';
 
 function need(name: string): string {
   const v = process.env[name];
@@ -11,6 +12,7 @@ const API = need('SUPABASE_URL');
 const ANON = need('SUPABASE_ANON_KEY');
 const SVC = need('SUPABASE_SERVICE_ROLE_KEY');
 const DB = need('SUPABASE_DB_URL');
+assertLocalSupabase(API, DB);
 const ORG1 = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 const ORG2 = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 const SID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
@@ -47,13 +49,11 @@ function allowed(table: Table, actor: Actor, op: Op): boolean {
   return op === 'select' || (op === 'update' && actor === 'admin');
 }
 
-const LOCAL = new Set(['127.0.0.1', 'localhost']);
 function sql(q: string) {
-  for (const [n, v] of [['SUPABASE_URL', API], ['SUPABASE_DB_URL', DB]] as const) {
-    const h = new URL(v).hostname;
-    if (!LOCAL.has(h)) throw new Error(`${n} host must be 127.0.0.1 or localhost (got ${h})`);
-  }
-  execFileSync('psql', [DB, '-v', 'ON_ERROR_STOP=1', '-At', '-c', q], { encoding: 'utf8' });
+  const pg = assertLocalSupabase(API, DB);
+  const env = { ...process.env, PGPASSWORD: pg.password };
+  for (const k of ['PGHOST', 'PGHOSTADDR', 'PGSERVICE']) delete env[k];
+  execFileSync('psql', ['-h', pg.host, '-p', pg.port, '-U', pg.user, '-d', pg.database, '-v', 'ON_ERROR_STOP=1', '-At', '-c', q], { encoding: 'utf8', env });
 }
 
 async function clearUserMeta(c: SupabaseClient) {

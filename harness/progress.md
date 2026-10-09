@@ -57,3 +57,10 @@ State: lint/typecheck/unit/e2e/test:db green vs local Supabase.
 Evidence: PR #15.
 Left: QA re-check at new head.
 Decisions: None.
+
+## 2026-10-09 07:05 (UTC) — Cloud Agent — packet TP-0005 / F-102 QA FAIL #3
+Did: parse SUPABASE_URL/DB_URL at load; reject DB search/hash and PGHOST/PGHOSTADDR/PGSERVICE; psql -h/-p/-U/-d + child PGPASSWORD; unit tests for ?host/?hostaddr/?service/#fragment/non-loopback.
+State: lint/typecheck/unit/e2e/test:db green vs local Supabase.
+Evidence: PR #15.
+Left: QA re-check at new head.
+Decisions: None.
