@@ -23,3 +23,9 @@ State: `pnpm lint`, `typecheck`, and `test` are green. `GET /api/health` reports
 Evidence: PR for the cloud environment.
 Left to do: Phase 1 app shell (F-101) and schema (F-102). QA still owns F-003 status.
 Decisions needed: D-001 to D-010 still open. Versions above are the cloud shell pins, not a Phase 1 decision.
+
+## 2026-10-08 22:53 (UTC) — Cloud Agent — packet TP-0003 / F-601 (first slice)
+Did: `.github/workflows/nightly-audit.yml` (cron 9 AM UTC, workflow_dispatch, PR). Checks: harness (evidence, AGENTS.MD cmds, doc refs, progress), secret scan (env/self-match fix), deps, build. 13 tests. Workflow green. Audit: Critical=none at main (branch self-match 572d640), HIGH braces CVE, MEDIUM missing test:db/test:e2e/seed:synthetic & PRs #3/#4/#5.
+Evidence: PR #7
+Left: F-601 full (Phase 6).
+Decisions: None.
