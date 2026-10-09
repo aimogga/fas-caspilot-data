@@ -69,3 +69,7 @@ Left: none (F-102 schema complete). Decisions: none.
 ## 2026-10-09 10:35 (UTC) — Cloud Agent — TP-0007 QA FAIL
 Did: CHECK bogus inserts; guard true/on (ci) + false probe + matviews; pg_constraint PK/FKs; stamp_now() on audit_log.at / export_job.created_at.
 Left: none. Decisions: none.
+
+## 2026-10-09 12:25 (UTC) — Cloud Agent — TP-0007 QA FAIL #2
+Did: exact CHECK defs in `$t has $def`; view probes off/0/no; REVOKE TRUNCATE,TRIGGER from anon/authenticated + catalog.
+Left: none. Decisions: none.

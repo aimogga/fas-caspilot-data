@@ -350,14 +350,14 @@ describe('rls', () => {
 
   it('guard flags a public view without security_invoker', async () => {
     try {
-      sql('CREATE VIEW public._rls_guard_view AS SELECT 1 AS x; CREATE VIEW public._rls_guard_view_off WITH (security_invoker=false) AS SELECT 1 AS x; CREATE VIEW public._rls_ok_view WITH (security_invoker=true) AS SELECT 1 AS x');
+      sql('CREATE VIEW public._rls_guard_view AS SELECT 1 AS x; CREATE VIEW public._rls_guard_view_off WITH (security_invoker=false) AS SELECT 1 AS x; CREATE VIEW public._rls_guard_view_off2 WITH (security_invoker=off) AS SELECT 1 AS x; CREATE VIEW public._rls_guard_view_0 WITH (security_invoker=0) AS SELECT 1 AS x; CREATE VIEW public._rls_guard_view_no WITH (security_invoker=no) AS SELECT 1 AS x; CREATE VIEW public._rls_ok_view WITH (security_invoker=true) AS SELECT 1 AS x');
       const { data, error } = await clients.admin!.rpc('rls_guard_violations');
       expect(error).toBeNull();
       const names = (data ?? []).map((r: { relname: string }) => r.relname);
-      expect(names).toEqual(expect.arrayContaining(['_rls_guard_view', '_rls_guard_view_off']));
+      expect(names).toEqual(expect.arrayContaining(['_rls_guard_view', '_rls_guard_view_off', '_rls_guard_view_off2', '_rls_guard_view_0', '_rls_guard_view_no']));
       expect(names).not.toContain('_rls_ok_view');
     } finally {
-      sql('DROP VIEW IF EXISTS public._rls_guard_view, public._rls_guard_view_off, public._rls_ok_view');
+      sql('DROP VIEW IF EXISTS public._rls_guard_view, public._rls_guard_view_off, public._rls_guard_view_off2, public._rls_guard_view_0, public._rls_guard_view_no, public._rls_ok_view');
     }
   });
 
@@ -407,6 +407,9 @@ describe('rls', () => {
     { t: 'pipeline_status', def: 'FOREIGN KEY (org_id) REFERENCES org(id)' },
     { t: 'export_job', def: 'FOREIGN KEY (org_id) REFERENCES org(id)' },
     { t: 'audit_log', def: 'FOREIGN KEY (org_id) REFERENCES org(id)' },
+    { t: 'opportunity', def: "CHECK ((source = ANY (ARRAY['grants_gov'::text, 'foundation_manual'::text, 'foundation_csv'::text])))" },
+    { t: 'award_history', def: "CHECK ((source = ANY (ARRAY['usaspending'::text, 'irs_990pf'::text])))" },
+    { t: 'strategy_draft', def: "CHECK ((status = ANY (ARRAY['draft'::text, 'approved'::text, 'rejected'::text])))" },
   ])('$t has $def', ({ t, def }) => {
     const got = sql(`SELECT pg_get_constraintdef(c.oid) FROM pg_constraint c JOIN pg_class r ON r.oid=c.conrelid JOIN pg_namespace n ON n.oid=r.relnamespace WHERE n.nspname='public' AND r.relname='${t}'`).trim().split('\n');
     expect(got).toContain(def);
@@ -425,5 +428,10 @@ describe('rls', () => {
     expect(Math.abs(new Date(ej!.created_at as string).getTime() - now)).toBeLessThan(8000);
     await svc.from('audit_log').delete().eq('action', a);
     await svc.from('export_job').delete().eq('type', e);
+  });
+
+  it('anon and authenticated cannot TRUNCATE or TRIGGER public tables', () => {
+    const bad = sql(`SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace CROSS JOIN (VALUES ('anon'),('authenticated')) r(rolname) CROSS JOIN (VALUES ('TRUNCATE'),('TRIGGER')) p(priv) WHERE n.nspname='public' AND c.relkind IN ('r','p') AND has_table_privilege(r.rolname, c.oid, p.priv)`).trim();
+    expect(bad).toBe('');
   });
 });
