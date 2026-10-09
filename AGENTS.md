@@ -69,7 +69,7 @@ Commit working code only. If you must stop mid-feature, leave the code compiling
 - Node comes from the image via nvm (`v22.22.2`); `install` symlinks `node` and `pnpm` (10.33.3) into `/usr/local/bin` so login shells find them.
 - Docker: Ubuntu `docker.io` 29. The default overlay snapshotter fails in this VM (`mount ... overlay ... invalid argument`). `.cursor/start.sh` uses `fuse-overlayfs`, turns off the containerd snapshotter, and switches iptables to legacy. systemd is not usable here (`policy-rc.d` denies service starts), so the script launches `dockerd` in tmux session `dockerd`.
 - Ports: Next.js `3000`. Supabase API `54321`, Postgres `54322`, Studio `54323`, Mailpit `54324`. First `supabase start` pulls images and can take several minutes; later boots reuse the images.
-- App check: open `http://127.0.0.1:3000` and use **Check local services**. `GET /api/health` reports the app and whether the local Supabase API answers. This shell is not auth, schema, or product screens (those are Phase 1).
+- App check: `curl -fsS http://127.0.0.1:3000/api/health` reports the app and whether the local Supabase API answers. This shell is not auth, schema, or product screens (those are Phase 1).
 - Secrets come from Cursor's Secrets tab as environment variables. If one is missing, stop and report; don't hardcode. No secrets are required to boot this shell.
 - Cloud agents may reach preview/dev services only. Never production.
 - Long-running dev server: `start` already runs it in tmux session `web` (`/tmp/web.log`). Do not start a second `pnpm dev`.

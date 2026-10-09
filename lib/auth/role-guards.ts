@@ -10,7 +10,7 @@ export function getAllowedRoles(path: string): UserRole[] {
   return RULES[path] ?? [];
 }
 export function isPublicRoute(path: string): boolean {
-  return path === '/login' || path === '/403' || path === '/api/auth/signout';
+  return path === '/login' || path === '/403' || path === '/api/auth/signout' || path === '/api/health';
 }
 
 const UNSAFE = /[\\\x00-\x1F\x7F]/;
@@ -22,6 +22,7 @@ export function safeRedirect(redirect: unknown, origin: string): string {
   try {
     const url = new URL(redirect, origin);
     if (url.origin !== origin) return '/';
+    if (url.pathname.startsWith('//') || url.pathname.startsWith('/\\')) return '/';
     return `${url.pathname}${url.search}${url.hash}`;
   } catch {
     return '/';

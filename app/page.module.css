@@ -1,0 +1,85 @@
+.page {
+  margin: 0 auto;
+  max-width: 40rem;
+  padding: 4rem 1.5rem;
+}
+
+.kicker {
+  color: var(--muted);
+  font-family: "Segoe UI", sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+}
+
+.page h1 {
+  font-size: 2.4rem;
+  font-weight: 500;
+  line-height: 1.1;
+  margin: 0 0 0.75rem;
+}
+
+.lede {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  margin: 0 0 1.5rem;
+}
+
+.button {
+  background: var(--accent);
+  border: 0;
+  border-radius: 999px;
+  color: var(--accent-text);
+  cursor: pointer;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 1rem;
+  padding: 0.7rem 1.2rem;
+}
+
+.button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--panel);
+  margin-top: 1.5rem;
+  padding: 1rem 1.2rem;
+}
+
+.panel h2 {
+  font-family: "Segoe UI", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+}
+
+.checks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.checks li {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.45rem 0;
+}
+
+.ok {
+  color: var(--ok);
+  font-family: "Segoe UI", sans-serif;
+}
+
+.bad {
+  color: var(--bad);
+  font-family: "Segoe UI", sans-serif;
+}
+
+.error {
+  color: var(--bad);
+}

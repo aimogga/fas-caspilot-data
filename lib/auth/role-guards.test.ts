@@ -26,7 +26,7 @@ describe('role-guards', () => {
     expect(isPublicRoute('/login')).toBe(true);
     expect(isPublicRoute('/403')).toBe(true);
     expect(isPublicRoute('/api/auth/signout')).toBe(true);
-    expect(isPublicRoute('/api/health')).toBe(false);
+    expect(isPublicRoute('/api/health')).toBe(true);
     expect(isPublicRoute('/')).toBe(false);
   });
   const origin = 'http://localhost:3000';
@@ -41,6 +41,11 @@ describe('role-guards', () => {
     ['javascript:alert(1)', '/'],
     ['', '/'],
     [null, '/'],
+    ['/.//evil.com', '/'],
+    ['/..//evil.com', '/'],
+    ['/%2e%2e//evil.com', '/'],
+    ['/a/..//evil.com', '/'],
+    ['/staff/..//evil.com', '/'],
     ['/staff', '/staff'],
     ['/board?x=1#y', '/board?x=1#y'],
   ])('safeRedirect(%j) → %j', (input, expected) => {

@@ -30,9 +30,9 @@ Evidence: PR #7
 Left: F-601 full (Phase 6).
 Decisions: None.
 
-## 2026-10-09 03:16 (UTC) — Cloud Agent — packet TP-0004 / F-101
-Did: Harden safeRedirect (origin + backslash/control reject). Public routes allowlisted. Removed unused page.module.css. E2e covers /%5Cevil.com.
-State: lint, typecheck, unit, e2e green.
+## 2026-10-09 03:30 (UTC) — Cloud Agent — packet TP-0004 / F-101
+Did: Reject `//` path after URL normalize; `/api/health` public; redirect keeps query; restore page.module.css.
+State: lint/typecheck/unit/e2e green vs local Supabase.
 Evidence: PR #10.
-Left to do: QA re-check F-101. Denied-route 200 left for later.
-Decisions needed: None.
+Left: QA re-check. Denied-route 200 later.
+Decisions: None.
