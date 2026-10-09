@@ -9,6 +9,11 @@ import { execSync } from 'child_process';
 
 const DATE = new Date().toISOString().split('T')[0];
 
+export function parseAgentsCommands(md) {
+  const m = md.match(/## Commands\n([\s\S]*?)```\n([\s\S]*?)\n```/);
+  return m ? [...new Set(m[2].split('\n').filter(l => l.trim().startsWith('pnpm ')).map(l => l.split('#')[0].trim().replace(/^pnpm /, '').split(/\s+/)[0]).filter(c => c !== 'install'))] : [];
+}
+
 function checkHarnessIntegrity() {
   const r = {status: 'GREEN', findings: [], details: []};
   const addYellow = (f) => { r.status = 'YELLOW'; r.findings.push(f); };
@@ -16,12 +21,17 @@ function checkHarnessIntegrity() {
     const fl = JSON.parse(readFileSync('harness/feature_list.json', 'utf-8'));
     const passing = fl.features.filter(f => f.status === 'passing');
     const noEv = passing.filter(f => !f.evidence?.length);
-    noEv.length ? addYellow(`${noEv.length} passing feature(s) lack evidence`) : r.details.push(passing.length ? `All ${passing.length} passing feature(s) have evidence` : 'No passing features yet');
+    if (noEv.length) addYellow(`${noEv.length} passing feature(s) lack evidence`);
+    else r.details.push(passing.length ? `All ${passing.length} passing feature(s) have evidence` : 'No passing features yet');
 
-    const cmds = (readFileSync('AGENTS.md', 'utf-8').match(/## Commands\n```\n([\s\S]*?)\n```/)?.[1] || '').split('\n').filter(l => l.trim() && !l.trim().startsWith('#')).map(l => l.split('#')[0].trim().replace(/^pnpm /, '').split(' ')[0]);
-    const pkg = JSON.parse(readFileSync('package.json', 'utf-8'));
-    const missing = cmds.filter(c => !pkg.scripts?.[c]);
-    missing.length ? addYellow(`Missing commands: ${missing.join(', ')}`) : r.details.push('All AGENTS.md commands exist');
+    const cmds = parseAgentsCommands(readFileSync('AGENTS.md', 'utf-8'));
+    if (!cmds.length) addYellow('AGENTS.md: parsed 0 commands from ## Commands');
+    else {
+      const pkg = JSON.parse(readFileSync('package.json', 'utf-8'));
+      const missing = cmds.filter(c => !pkg.scripts?.[c]);
+      if (missing.length) addYellow(`Missing commands: ${missing.join(', ')}`);
+      else r.details.push('All AGENTS.md commands exist');
+    }
 
     if (existsSync('docs')) {
       const docs = execSync('find docs -name "*.md" 2>/dev/null || true', {encoding: 'utf-8'}).trim().split('\n').filter(f => f);
@@ -216,12 +226,7 @@ async function main() {
   if (res.checks.buildHealth.status !== 'GREEN') res.overall = worst(res.overall, res.checks.buildHealth.status);
   
   const har = checkHarnessIntegrity();
-  res.checks.harnessIntegrity = {
-    status: har.status,
-    impl: ['Feature evidence', 'AGENTS.md commands', 'Doc refs', 'Progress log'],
-    findings: har.findings,
-    details: har.details
-  };
+  res.checks.harnessIntegrity = {status: har.status, impl: ['Feature evidence', 'AGENTS.md commands', 'Doc refs', 'Progress log'], findings: har.findings, details: har.details};
   if (har.status !== 'GREEN') res.overall = worst(res.overall, har.status);
   
   res.checks.cost = {status: 'SKIPPED', reason: 'needs cloud billing API', findings: [], details: []};
