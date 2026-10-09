@@ -98,17 +98,9 @@ Did: Nightly audit exits non-zero on Overall RED or Critical; YELLOW/GREEN stay 
 Left: none. Decisions: none.
 
 ## 2026-10-09 16:25 (UTC) — Cloud Agent — TP-0009 QA FAIL PR #22
-Did: Fail-closed parse; ignore file; scanner cannot-run RED; PKCS#8; N3/N4b/M6.
+Did: Fail-closed parse; GHSA-only ignore (unique id, ≤90-day expiry); scanner cannot-run RED.
 Left: none. Decisions: none.
 
-## 2026-10-09 17:11 (UTC) — Cloud Agent — TP-0009 QA FAIL #3 PR #22
-Did: Dup id+package ignore RED; stale ≥YELLOW; N7/N10/N11/S3/N12/V7/V9 tests.
-Left: none. Decisions: none.
-
-## 2026-10-09 17:35 (UTC) — Cloud Agent — TP-0009 QA FAIL #4 PR #22
-Did: One id per ignore (CVE|GHSA); braces split into two same-expiry entries; alias overlap with later expiry is RED.
-Left: none. Decisions: none.
-
-## 2026-10-09 18:08 (UTC) — Cloud Agent — TP-0009 QA FAIL #5 PR #22
-Did: GHSA-only ignores (one per id, ≤90-day expiry); CVE lives in reason text; alias/CVE matching removed.
+## 2026-10-09 18:42 (UTC) — Cloud Agent — TP-0009 QA FAIL #6 PR #22
+Did: Exact severity match (upgrade RED, downgrade not GREEN); missing GHSA counted; second braces GHSA counted.
 Left: none. Decisions: none.

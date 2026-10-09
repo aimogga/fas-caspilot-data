@@ -112,19 +112,30 @@ describe('parseAudit', () => {
   it('ignore requires GHSA id and package match', () => {
     expect(parseAudit(BRACES_JSON, {ignores: [{...GHSA_IG, package: 'left-pad'}], today: '2026-10-09'})).toMatchObject({status: 'RED', finding: '0 critical, 1 high', ignored: []});
   });
-  it('upgraded severity is RED', () => {
+  it('severity upgrade is RED and downgrade is not silent GREEN', () => {
     expect(parseAudit(BRACES_JSON, {ignores: [{...GHSA_IG, severity: 'moderate'}], today: '2026-10-09'})).toMatchObject({status: 'RED', ignored: []});
+    const down = JSON.stringify({advisories: {'1': {severity: 'moderate', module_name: 'braces', github_advisory_id: GHSA_IG.id}}, metadata: {vulnerabilities: {moderate: 1}}});
+    const r = parseAudit(down, {ignores: [GHSA_IG], today: '2026-10-09'});
+    expect(r.status).toBe('YELLOW');
+    expect(r.ignored).toEqual([]);
   });
   it('reports stale ignores as YELLOW', () => {
     const r = parseAudit(BRACES_JSON, {ignores: [GHSA_IG, STALE_IG], today: '2026-10-09'});
     expect(r.status).toBe('YELLOW');
     expect(r.stale.map(s => s.id)).toContain('GHSA-aaaa-bbbb-cccc');
   });
-  it('duplicate GHSA same package is RED', () => {
-    expect(parseAudit(BRACES_JSON, {ignores: [GHSA_IG, {...GHSA_IG, expires: '2026-11-09'}], today: '2026-10-09'}).status).toBe('RED');
+  it.each([[{...GHSA_IG, expires: '2026-11-09'}], [{...GHSA_IG, package: 'left-pad'}]])('duplicate GHSA is RED %j', extra => {
+    expect(parseAudit(BRACES_JSON, {ignores: [GHSA_IG, extra], today: '2026-10-09'}).status).toBe('RED');
   });
-  it('duplicate GHSA different package is RED', () => {
-    expect(parseAudit(BRACES_JSON, {ignores: [GHSA_IG, {...GHSA_IG, package: 'left-pad'}], today: '2026-10-09'}).status).toBe('RED');
+  it.each([undefined, null, ''])('missing github_advisory_id %j is counted not ignored', gid => {
+    const a = {severity: 'high', module_name: 'braces'};
+    if (gid !== undefined) a.github_advisory_id = gid;
+    expect(parseAudit(JSON.stringify({advisories: {1: a}, metadata: {vulnerabilities: {high: 1}}}), {ignores: [GHSA_IG], today: '2026-10-09'})).toMatchObject({status: 'RED', ignored: [], finding: '0 critical, 1 high'});
+  });
+  it('second braces GHSA is counted', () => {
+    const r = parseAudit(JSON.stringify({advisories: {a: {severity: 'high', module_name: 'braces', github_advisory_id: GHSA_IG.id}, b: {severity: 'high', module_name: 'braces', github_advisory_id: 'GHSA-xxxx-yyyy-zzzz'}}, metadata: {vulnerabilities: {high: 2}}}), {ignores: [GHSA_IG], today: '2026-10-09'});
+    expect(r).toMatchObject({status: 'RED', finding: '0 critical, 1 high'});
+    expect(r.ignored).toHaveLength(1);
   });
   it('reports moderate and stale together', () => {
     const r = parseAudit(JSON.stringify({advisories: {1: {severity: 'moderate', module_name: 'x', github_advisory_id: 'GHSA-xxxx-yyyy-zzzz'}}, metadata: {vulnerabilities: {moderate: 1}}}), {ignores: [STALE_IG], today: '2026-10-09'});

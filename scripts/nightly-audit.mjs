@@ -8,7 +8,6 @@ export function parseAgentsCommands(md) {
   return m && m[3] ? [...new Set(m[3].split('\n').filter(l => l.trim().startsWith('pnpm ')).map(l => l.split('#')[0].trim().replace(/^pnpm /, '').split(/\s+/)[0]).filter(c => c !== 'install'))] : [];
 }
 const SEV = ['critical', 'high', 'moderate', 'low', 'info'];
-const RANK = {info: 0, low: 1, moderate: 2, high: 3, critical: 4};
 const AUDIT_TIMEOUT_MS = 90000;
 const IGNORE_FILE = 'harness/audit-ignores.json';
 const IGNORE_KEYS = ['id', 'package', 'reason', 'reviewer', 'expires', 'severity'];
@@ -76,8 +75,8 @@ export function parseAudit(out, opts = {}) {
       if (!SEV.includes(s)) return failRun('unknown severity');
       const ig = ignores.find(x => x.id === a.github_advisory_id && x.package === a.module_name);
       if (ig) touched.add(ig.id);
-      if (ig && !(parseIsoDate(today) > parseIsoDate(ig.expires)) && (RANK[s] ?? 0) <= (RANK[ig.severity.toLowerCase()] ?? 0)) {
-        ignored.push({id: ig.id, package: ig.package, severity: s, reason: ig.reason, reviewer: ig.reviewer, expires: ig.expires});
+      if (ig && !(parseIsoDate(today) > parseIsoDate(ig.expires)) && s === ig.severity.toLowerCase()) {
+        ignored.push({id: ig.id, package: ig.package, severity: ig.severity, reason: ig.reason, reviewer: ig.reviewer, expires: ig.expires});
         ignCounts[s]++;
         continue;
       }
