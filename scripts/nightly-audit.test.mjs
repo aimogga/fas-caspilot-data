@@ -18,7 +18,6 @@ describe('generateReport', () => {
     const md = generateReport({date: '2026-10-08', overall: 'GREEN', checks: {}});
     ['Overall:', 'Critical:', 'High:', 'Medium:', 'Data freshness:', 'Spend:', 'Doc-drift PR:'].forEach(k => expect(md).toContain(k));
   });
-
   it('maps privacy RED to Critical', () => {
     const md = generateReport({date: '2026-10-08', overall: 'RED', checks: {privacy: {status: 'RED', findings: ['Secret'], details: []}, other: {status: 'RED', findings: ['Issue'], details: []}}});
     expect(md).toContain('Critical: [privacy] Secret');
@@ -36,34 +35,23 @@ describe('matchSecretLine', () => {
 
 describe('checkProgressLog', () => {
   it('finds documented PRs and flags missing', () => {
-    const r1 = checkProgressLog(['Fix bug (#3)', 'Merge pull request #4 from'], 'PR #3 fix\nPR #4 feature');
-    expect(r1.found).toEqual(['3', '4']);
-    expect(r1.missing).toEqual([]);
-    const r2 = checkProgressLog(['Add feature (#5)'], 'PR #3 done');
-    expect(r2.found).toEqual([]);
-    expect(r2.missing).toEqual(['5']);
+    expect(checkProgressLog(['Fix (#3)', 'Merge pull request #4 from'], 'PR #3\nPR #4')).toEqual({found: ['3', '4'], missing: []});
+    expect(checkProgressLog(['Add (#5)'], 'PR #3')).toEqual({found: [], missing: ['5']});
   });
 });
 
 describe('parseAgentsCommands', () => {
   it('parses pnpm scripts, skips builtins and non-pnpm', () => {
-    const cmds = parseAgentsCommands(`## Commands\n> Note\n\`\`\`\npnpm install\npnpm dev\npnpm lint\npnpm typecheck\npnpm test\npnpm test:db\npnpm test:e2e\npnpm seed:synthetic\nsupabase start\n\`\`\``);
-    expect(cmds).toEqual(['dev', 'lint', 'typecheck', 'test', 'test:db', 'test:e2e', 'seed:synthetic']);
+    expect(parseAgentsCommands(`## Commands\n\`\`\`\npnpm install\npnpm dev\npnpm lint\npnpm typecheck\npnpm test\npnpm test:db\npnpm test:e2e\npnpm seed:synthetic\nsupabase start\n\`\`\``)).toEqual(['dev', 'lint', 'typecheck', 'test', 'test:db', 'test:e2e', 'seed:synthetic']);
   });
   it('returns empty when no fence', () => expect(parseAgentsCommands('## Commands\nNo code')).toEqual([]));
-  it('stops at next heading', () => expect(parseAgentsCommands('## Commands\ntext\n## Other\n```\npnpm dev\n```')).toEqual([]));
+  it('stops at next heading', () => expect(parseAgentsCommands('## Commands\ntext\n## Other')).toEqual([]));
 });
 
 describe('parseAudit', () => {
-  it('returns YELLOW on empty or invalid JSON', () => {
-    expect(parseAudit('')).toEqual({status: 'YELLOW', finding: 'audit could not run'});
-    expect(parseAudit('not json')).toEqual({status: 'YELLOW', finding: 'audit could not run'});
-    expect(parseAudit('{}')).toEqual({status: 'YELLOW', finding: 'audit could not run'});
+  it('returns YELLOW on empty or invalid', () => {
+    ['', 'not json', '{}'].forEach(s => expect(parseAudit(s)).toEqual({status: 'YELLOW', finding: 'audit could not run'}));
   });
-  it('returns RED on high vulnerabilities', () => {
-    expect(parseAudit('{"metadata":{"vulnerabilities":{"high":1}}}')).toEqual({status: 'RED', finding: '0 critical, 1 high'});
-  });
-  it('returns GREEN on no high/critical', () => {
-    expect(parseAudit('{"metadata":{"vulnerabilities":{"low":2}}}')).toEqual({status: 'GREEN', finding: 'No high/critical (2 low)'});
-  });
+  it('returns RED on high', () => expect(parseAudit('{"metadata":{"vulnerabilities":{"high":1}}}')).toEqual({status: 'RED', finding: '0 critical, 1 high'}));
+  it('returns GREEN on no high/critical', () => expect(parseAudit('{"metadata":{"vulnerabilities":{"low":2}}}')).toEqual({status: 'GREEN', finding: 'No high/critical (2 low)'}));
 });

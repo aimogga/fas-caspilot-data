@@ -14,10 +14,6 @@ export function parseAgentsCommands(md) {
   return m && m[3] ? [...new Set(m[3].split('\n').filter(l => l.trim().startsWith('pnpm ')).map(l => l.split('#')[0].trim().replace(/^pnpm /, '').split(/\s+/)[0]).filter(c => c !== 'install'))] : [];
 }
 
-function gitLines(fmt, gitRunner = execSync) {
-  return gitRunner(`git log --format="${fmt}"`, {encoding: 'utf-8'}).trim().split('\n').filter(l => l);
-}
-
 export function parseAudit(out) {
   if (!out || !out.trim()) return {status: 'YELLOW', finding: 'audit could not run'};
   try {
@@ -43,10 +39,10 @@ function checkHarnessIntegrity() {
     else r.details.push(passing.length ? `All ${passing.length} passing feature(s) have evidence` : 'No passing features yet');
 
     const cmds = parseAgentsCommands(readFileSync('AGENTS.md', 'utf-8'));
-    if (!cmds.length) addYellow('AGENTS.md: parsed 0 commands from ## Commands');
-    else {
-      const pkg = JSON.parse(readFileSync('package.json', 'utf-8'));
-      const missing = cmds.filter(c => !pkg.scripts?.[c]);
+    if (!cmds.length) {
+      addYellow('AGENTS.md: parsed 0 commands from ## Commands');
+    } else {
+      const missing = cmds.filter(c => !JSON.parse(readFileSync('package.json', 'utf-8')).scripts?.[c]);
       if (missing.length) addYellow(`Missing commands: ${missing.join(', ')}`);
       else r.details.push('All AGENTS.md commands exist');
     }
@@ -76,7 +72,7 @@ function checkHarnessIntegrity() {
     // Progress log validation
     try {
       const yesterday = new Date(Date.now() - 86400000).toISOString();
-      const commits = gitLines(`--since="${yesterday}" %s`);
+      const commits = execSync(`git log --since="${yesterday}" --format="%s"`, {encoding: 'utf-8'}).trim().split('\n').filter(c => c);
       const progLog = checkProgressLog(commits, existsSync('harness/progress.md') ? readFileSync('harness/progress.md', 'utf-8') : '');
       if (progLog.missing.length) {
         r.status = worst(r.status, 'YELLOW');
@@ -149,9 +145,7 @@ function checkSecretScan(gitRunner = execSync) {
     if (found) {
       r.status = 'RED';
       r.findings.push(`${found} potential secret(s)`);
-    } else {
-      r.details.push('No obvious secrets');
-    }
+    } else r.details.push('No obvious secrets');
   } catch (e) {
     r.status = 'YELLOW';
     r.findings.push(e.message?.includes('git') ? 'could not read git history' : `Error: ${e.message}`);
@@ -163,11 +157,8 @@ function checkDeps() {
   const r = {status: 'GREEN', findings: [], details: []};
   try {
     let out;
-    try {
-      out = execSync('pnpm audit --json', {encoding: 'utf-8', stdio: 'pipe'});
-    } catch (e) {
-      out = e.stdout || '';
-    }
+    try { out = execSync('pnpm audit --json', {encoding: 'utf-8', stdio: 'pipe'}); }
+    catch (e) { out = e.stdout || ''; }
     const {status, finding} = parseAudit(out);
     r.status = status;
     if (status === 'GREEN') r.details.push(finding);
