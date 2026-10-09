@@ -2,20 +2,24 @@
 export const SYNTH_ORG = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 export const DEFAULT_SEED = 103;
 export const DEFAULT_CASES = 200;
+export const WINDOW_START = '2024-01-01';
+export const WINDOW_END = '2025-03-31';
 export const SMALL_FIPS = ['49009', '49031', '49033', '49055', '49017'] as const;
 const REASONS = ['no_show', 'moved', 'declined', 'waitlist'] as const;
-const MEASURES = [
+export const MEASURES = [
   { code: 'PHQ-9', max: 27 },
   { code: 'GAD-7', max: 21 },
   { code: 'OQ-45', max: 180 },
   { code: 'YOQ', max: 240 },
 ] as const;
 const CASE_FIPS = ['49035', '49049', '49011', '49057', '49053', '49005', '49009', '49031', '49033', '49055', '49017', '49045'];
+const WEIGHTS = [48, 28, 14, 10, 8, 5, 1, 1, 1, 1, 1, 3];
+const WSUM = WEIGHTS.reduce((a, b) => a + b, 0);
 
 export type County = { fips: string; name: string; state: 'UT'; population_latest: null };
 export const COUNTIES: County[] = '01 Beaver|03 Box Elder|05 Cache|07 Carbon|09 Daggett|11 Davis|13 Duchesne|15 Emery|17 Garfield|19 Grand|21 Iron|23 Juab|25 Kane|27 Millard|29 Morgan|31 Piute|33 Rich|35 Salt Lake|37 San Juan|39 Sanpete|41 Sevier|43 Summit|45 Tooele|47 Uintah|49 Utah|51 Wasatch|53 Washington|55 Wayne|57 Weber'
   .split('|')
-      .map((s) => ({ fips: `49${s.slice(0, 2).padStart(3, '0')}`, name: s.slice(3), state: 'UT', population_latest: null }));
+  .map((s) => ({ fips: `49${s.slice(0, 2).padStart(3, '0')}`, name: s.slice(3), state: 'UT', population_latest: null }));
 
 export type Rec = Record<string, unknown>;
 export type Bundle = {
@@ -48,6 +52,13 @@ function ymd(offset: number): string {
   return new Date(Date.UTC(2024, 0, 1 + offset)).toISOString().slice(0, 10);
 }
 
+function countyAt(i: number, r: () => number): string {
+  if (i < 12) return CASE_FIPS[i]!;
+  let x = r() * WSUM, k = 0;
+  for (; k < 12 && (x -= WEIGHTS[k]!) >= 0; k++);
+  return CASE_FIPS[Math.min(k, 11)]!;
+}
+
 export function generate(seed = DEFAULT_SEED, nCases = DEFAULT_CASES): Bundle {
   const r = rng(seed);
   const provider = Array.from({ length: 12 }, (_, i) => ({
@@ -62,50 +73,55 @@ export function generate(seed = DEFAULT_SEED, nCases = DEFAULT_CASES): Bundle {
   const outcome_measure: Rec[] = [];
   for (let i = 0; i < nCases; i++) {
     const court = i % 5 < 2;
-    const refOff = Math.floor(r() * 300);
+    const refOff = Math.floor(r() * 280);
+    const lag = 1 + (i % 14);
     const cid = uid(1000 + i);
     cases.push({
       id: cid, org_id: SYNTH_ORG, referral_source: court ? 'court' : i % 2 ? 'self' : 'school',
-      court_involved: court, court_order_date: court ? ymd(refOff + 3) : null, referral_date: ymd(refOff),
-      county_fips: CASE_FIPS[i % CASE_FIPS.length], household_size: 1 + (i % 6),
+      court_involved: court, court_order_date: court ? ymd(refOff + lag) : null, referral_date: ymd(refOff),
+      county_fips: countyAt(i, r), household_size: 1 + (i % 6),
       income_band: ['a', 'b', 'c', 'd'][i % 4], prior_services: [], upload_batch_id: uid(100),
     });
     const approved = i % 7 !== 0;
-    const aid = uid(2000 + i);
-    application.push({
-      id: aid, org_id: SYNTH_ORG, case_id: cid, application_date: ymd(refOff + 7),
-      decision_date: ymd(refOff + 14), decision: approved ? 'approved' : 'denied',
-      award_amount: approved ? 500 + (i % 20) * 50 : 0, family_contribution: approved ? (i % 5) * 10 : 0,
-    });
-    const m = MEASURES[i % 4];
-    const baseline = Math.min(m.max, Math.floor(r() * m.max * 0.65) + 3);
-    const hasFu = i % 5 !== 0;
-    const follow = hasFu ? Math.max(0, baseline - 1 - (i % 6)) : null;
-    outcome_measure.push({
-      id: uid(5000 + i), org_id: SYNTH_ORG, case_id: cid, measure_code: m.code,
-      baseline_score: baseline, baseline_date: ymd(refOff + 21),
-      followup_score: follow, followup_date: follow == null ? null : ymd(refOff + 66),
-    });
-    if (!approved) continue;
-    const aff = i % 2 === 0;
-    const prov = provider.find((p) => p.provider_affiliated === aff)!;
-    const zid = uid(3000 + i);
     const units = 4 + (i % 8);
     const rate = 80 + (i % 10) * 5;
-    authorization.push({
-      id: zid, org_id: SYNTH_ORG, application_id: aid, service_type: 'therapy',
-      provider_id: prov.id, units, rate, total_authorized: units * rate,
+    const authTot = units * rate;
+    application.push({
+      id: uid(2000 + i), org_id: SYNTH_ORG, case_id: cid, application_date: ymd(refOff + 16),
+      decision_date: ymd(refOff + 23), decision: approved ? 'approved' : 'denied',
+      award_amount: approved ? authTot + (i % 5) * 10 : 0, family_contribution: approved ? (i % 5) * 10 : 0,
     });
+    if (!approved) continue;
+    const zid = uid(3000 + i);
     const kind = i % 5;
+    const sessions = kind === 0 ? 0 : kind === 1 ? Math.min(units, 1 + (i % 3)) : 1 + (i % units);
+    const firstOff = kind === 0 ? null : refOff + 30;
+    const lastOff = firstOff == null ? null : firstOff + (kind === 1 ? 7 : 45);
+    const baseOff = firstOff ?? refOff + 23;
+    const hasFu = i % 5 !== 0;
+    const fuOff = hasFu ? Math.max(baseOff, lastOff ?? baseOff) + 14 : null;
+    authorization.push({
+      id: zid, org_id: SYNTH_ORG, application_id: uid(2000 + i), service_type: 'therapy',
+      provider_id: provider[i % 12]!.id, units, rate, total_authorized: authTot,
+    });
     delivery_episode.push({
       id: uid(4000 + i), org_id: SYNTH_ORG, authorization_id: zid,
-      first_session_date: kind === 0 ? null : ymd(refOff + 21),
-      last_session_date: kind === 0 ? null : ymd(refOff + (kind === 1 ? 35 : 81)),
-      sessions_attended: kind === 0 ? 0 : kind === 1 ? 2 + (i % 3) : 8 + (i % 6),
-      no_shows: kind === 0 ? 0 : i % 3,
+      first_session_date: firstOff == null ? null : ymd(firstOff),
+      last_session_date: lastOff == null ? null : ymd(lastOff),
+      sessions_attended: sessions, no_shows: kind === 0 ? 0 : i % 3,
       discharge_status: kind === 0 ? null : kind === 1 ? 'dropped' : 'completed',
       non_start_reason: kind === 0 ? REASONS[Math.floor(i / 5) % REASONS.length] : null,
-      dollars_paid: kind === 0 ? 0 : (kind === 1 ? 2 : 8) * rate,
+      dollars_paid: sessions * rate,
+    });
+    const m = MEASURES[i % 4];
+    const baseline = Math.min(m.max - 2, Math.max(2, Math.floor(r() * (m.max - 4)) + 2));
+    const mix = i % 3;
+    const follow = !hasFu ? null : mix === 0 ? Math.max(0, baseline - 1 - (i % 4))
+      : mix === 1 ? baseline : Math.min(m.max, baseline + 1 + (i % 3));
+    outcome_measure.push({
+      id: uid(5000 + i), org_id: SYNTH_ORG, case_id: cid, measure_code: m.code,
+      baseline_score: baseline, baseline_date: ymd(baseOff),
+      followup_score: follow, followup_date: fuOff == null ? null : ymd(fuOff),
     });
   }
   return {

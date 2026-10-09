@@ -80,3 +80,10 @@ State: lint/typecheck/unit 64/64; test:db 785/785 after seed; e2e 5/5; `/api/hea
 Evidence: https://github.com/aimogga/fas-caspilot-data/pull/21
 Left: none (QA packet requested on the PR).
 Decisions: none.
+
+## 2026-10-09 14:27 (UTC) — Cloud Agent — TP-0008 QA FAIL / F-103
+Did: Realism: followup ≥ last session/baseline; sessions/paid/auth vs award; outcome mix; all 12 providers; denied skip episodes/outcomes; weighted counties; vary court lag. Mutant invariants + toSql org/f103/idempotent test. Golden hand-recomputed.
+State: lint/typecheck/unit 66/66; seed x2; test:db 785/785; e2e 5/5.
+Evidence: PR #21.
+Left: none (QA re-check).
+Decisions: none.
