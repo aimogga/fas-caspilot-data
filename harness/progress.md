@@ -76,7 +76,7 @@ Left: none. Decisions: none.
 
 ## 2026-10-09 14:00 (UTC) — Cloud Agent — packet TP-0008 / F-103
 Did: Pure seeded generator in `lib/synthetic/` (~200 cases, 29 UT counties); `pnpm seed:synthetic` loads local Supabase (idempotent f103 ids, keeps seed.sql fixtures) or `--sql` export; unit invariants + golden 20-case fixture. Renamed F-102 migrations to fas-dev versions (no content change).
-State: lint/typecheck/unit 64/64 green.
-Evidence: PR linking #20.
-Left: seed into local DB + test:db/e2e after this commit; QA packet.
+State: lint/typecheck/unit 64/64; test:db 785/785 after seed; e2e 5/5; `/api/health` ok.
+Evidence: https://github.com/aimogga/fas-caspilot-data/pull/21
+Left: none (QA packet requested on the PR).
 Decisions: none.
