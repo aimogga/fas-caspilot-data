@@ -92,3 +92,15 @@ Decisions: none.
 Did: Court order 1–30 days before referral (≥5 distinct gaps); followup mix ≥20% improve/flat/worsen (kills after-20-worsens). Golden unchanged.
 State: lint/typecheck/unit/seed/test:db/e2e pending this commit.
 Evidence: PR #21. Left: none. Decisions: none.
+
+## 2026-10-09 16:02 (UTC) — Cloud Agent — packet TP-0009 / F-601
+Did: Nightly audit exits non-zero on Overall RED or Critical; YELLOW/GREEN stay 0. Report printed to job log. Braces GHSA-vfj7-8cjw-p6xm reviewed ignore.
+Left: none. Decisions: none.
+
+## 2026-10-09 16:25 (UTC) — Cloud Agent — TP-0009 QA FAIL PR #22
+Did: Fail-closed parse; GHSA-only ignore (unique id, ≤90-day expiry); scanner cannot-run RED.
+Left: none. Decisions: none.
+
+## 2026-10-09 18:42 (UTC) — Cloud Agent — TP-0009 QA FAIL #6 PR #22
+Did: Exact severity match (upgrade RED, downgrade not GREEN); missing GHSA counted; second braces GHSA counted.
+Left: none. Decisions: none.

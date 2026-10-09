@@ -9,6 +9,8 @@ on:
       - '.github/workflows/nightly-audit.yml'
       - 'scripts/nightly-audit.mjs'
       - 'scripts/nightly-audit.test.mjs'
+      - 'package.json'
+      - 'harness/audit-ignores.json'
 
 permissions:
   contents: read
@@ -40,12 +42,17 @@ jobs:
       
       - name: Run nightly audit
         id: audit
+        shell: bash
         run: |
           DATE=$(date -u +%Y-%m-%d)
           echo "audit_date=$DATE" >> $GITHUB_OUTPUT
           EXIT_CODE=0
           node scripts/nightly-audit.mjs > audit-output.txt 2>&1 || EXIT_CODE=$?
           cat audit-output.txt
+          if [ -f "harness/audits/${DATE}.md" ]; then
+            echo "----- harness/audits/${DATE}.md -----"
+            cat "harness/audits/${DATE}.md"
+          fi
           exit $EXIT_CODE
       
       - name: Upload audit report

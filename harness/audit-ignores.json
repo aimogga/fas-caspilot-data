@@ -1,0 +1,3 @@
+[
+  {"id": "GHSA-vfj7-8cjw-p6xm", "package": "braces", "reason": "CVE-2026-93687; dev-only lint toolchain transitive dep, no patched release", "reviewer": "QA bot", "expires": "2026-11-08", "severity": "high"}
+]
