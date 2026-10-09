@@ -18,12 +18,15 @@ const ORG2 = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 const SID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
 const RID = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
 const UB1 = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee1';
+const UB2 = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee2';
 const P1 = 'ffffffff-ffff-ffff-ffff-fffffffffff1';
 const P2 = 'ffffffff-ffff-ffff-ffff-fffffffffff2';
 const C1 = '88888888-8888-8888-8888-888888888881';
 const C2 = '88888888-8888-8888-8888-888888888882';
 const A1 = '99999999-9999-9999-9999-999999999991';
+const A2 = '99999999-9999-9999-9999-999999999992';
 const Z1 = 'a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a1';
+const Z2 = 'a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a2';
 const ACTORS = ['anon', 'admin', 'staff', 'board_viewer', 'other-org', 'other-admin', 'no-role', 'org-norole'] as const;
 const OPS = ['select', 'insert', 'update', 'delete'] as const;
 const PUBLIC = ['geo_county', 'source_registry', 'ingest_run', 'public_indicator', 'need_score_config', 'need_score'] as const;
@@ -34,6 +37,12 @@ type Actor = (typeof ACTORS)[number];
 type Op = (typeof OPS)[number];
 type Table = (typeof TABLES)[number];
 type Rec = Record<string, unknown>;
+const TAG: Record<Table, string> = {
+  geo_county: 'fips', source_registry: 'name', ingest_run: 'checksum', public_indicator: 'indicator_code',
+  need_score_config: 'version', need_score: 'geo_fips', org: 'uei', case: 'referral_source',
+  application: 'decision', authorization: 'service_type', provider: 'npi', delivery_episode: 'discharge_status',
+  outcome_measure: 'measure_code', upload_batch: 'file_path', aggregate_submission: 'period',
+};
 
 const EMAIL: Record<Exclude<Actor, 'anon'>, string> = {
   admin: 'admin@example.test', staff: 'staff@example.test',
@@ -71,9 +80,30 @@ function allowed(table: Table, actor: Actor, op: Op): boolean {
   return op === 'select' || (op === 'update' && actor === 'admin');
 }
 
-function sql(q: string) {
+function sql(q: string): string {
   const pg = assertLocalSupabase(API, DB);
-  execFileSync('psql', ['-h', pg.host, '-p', pg.port, '-U', pg.user, '-d', pg.database, '-v', 'ON_ERROR_STOP=1', '-At', '-c', q], { encoding: 'utf8', env: localPgEnv(pg) });
+  return execFileSync('psql', ['-h', pg.host, '-p', pg.port, '-U', pg.user, '-d', pg.database, '-v', 'ON_ERROR_STOP=1', '-At', '-c', q], { encoding: 'utf8', env: localPgEnv(pg) });
+}
+
+function tagq(table: Table, t: string): Rec {
+  return table === 'need_score' ? { version: 'v1', geo_fips: '49049' } : { [TAG[table]]: t };
+}
+
+async function landed(c: SupabaseClient, table: Table, row: Rec, q: Rec): Promise<boolean> {
+  await c.from(table).insert(row);
+  const { data } = await svc.from(table).select('*').match(q).limit(1);
+  const did = (data?.length ?? 0) > 0;
+  if (did) await svc.from(table).delete().match(q);
+  return did;
+}
+
+function otherOrgRow(table: Table, t: string): Rec {
+  const swap: Partial<Record<Table, Rec>> = {
+    case: { upload_batch_id: UB2 }, application: { case_id: C2 },
+    authorization: { application_id: A2, provider_id: P2 }, delivery_episode: { authorization_id: Z2 },
+    outcome_measure: { case_id: C2 },
+  };
+  return { ...M[table].r(t), org_id: ORG2, ...swap[table] };
 }
 
 async function clearUserMeta(c: SupabaseClient) {
@@ -142,8 +172,7 @@ describe('rls', () => {
       }
       const tag = `t${String(++seq).padStart(4, '0')}`;
       if (op === 'insert') {
-        const { data, error } = await c.from(table).insert(meta.r(tag)).select();
-        expect(!error && (data?.length ?? 0) > 0).toBe(allow);
+        expect(await landed(c, table, meta.r(tag), tagq(table, tag))).toBe(allow);
         return;
       }
       if (op === 'update') {
@@ -216,9 +245,9 @@ describe('rls', () => {
     }
   });
 
-  it('staff cannot insert with another org_id', async () => {
-    const { data, error } = await clients.staff!.from('provider').insert({ org_id: ORG2, name: 'x', npi: '9', provider_affiliated: false }).select();
-    expect(!error && (data?.length ?? 0) > 0).toBe(false);
+  it.each([...FAS].map((table) => ({ table })))('staff cannot insert $table with another org_id', async ({ table }) => {
+    const tag = `x${String(++seq).padStart(4, '0')}`;
+    expect(await landed(clients.staff!, table, otherOrgRow(table, tag), tagq(table, tag))).toBe(false);
   });
 
   it('staff cannot move a row org_id to another org', async () => {
@@ -228,9 +257,23 @@ describe('rls', () => {
     expect(still?.org_id).toBe(ORG1);
   });
 
-  it('child cannot reference a parent in another org', async () => {
-    const { error } = await svc.from('application').insert({ org_id: ORG1, case_id: C2, application_date: '2024-01-01', decision: 'x' });
+  it.each([
+    { table: 'case' as const, col: 'upload_batch_id', row: { org_id: ORG1, referral_source: 'fk', upload_batch_id: UB2 }, q: { referral_source: 'fk' } },
+    { table: 'application' as const, col: 'case_id', row: { org_id: ORG1, case_id: C2, decision: 'fk' }, q: { decision: 'fk' } },
+    { table: 'authorization' as const, col: 'application_id', row: { org_id: ORG1, application_id: A2, service_type: 'fk-app' }, q: { service_type: 'fk-app' } },
+    { table: 'authorization' as const, col: 'provider_id', row: { org_id: ORG1, application_id: A1, provider_id: P2, service_type: 'fk-prov' }, q: { service_type: 'fk-prov' } },
+    { table: 'delivery_episode' as const, col: 'authorization_id', row: { org_id: ORG1, authorization_id: Z2, discharge_status: 'fk' }, q: { discharge_status: 'fk' } },
+    { table: 'outcome_measure' as const, col: 'case_id', row: { org_id: ORG1, case_id: C2, measure_code: 'fk' }, q: { measure_code: 'fk' } },
+  ])('child cannot attach $table.$col across orgs', async ({ table, row, q }) => {
+    const { error } = await svc.from(table).insert(row);
+    const { data } = await svc.from(table).select('id').match(q).limit(1);
+    if (data?.length) await svc.from(table).delete().match(q);
     expect(error).toBeTruthy();
+  });
+
+  it('FAS org_id is NOT NULL', () => {
+    const names = sql(`SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace JOIN pg_attribute a ON a.attrelid=c.oid WHERE n.nspname='public' AND c.relkind='r' AND a.attname='org_id' AND a.attnotnull AND NOT a.attisdropped AND c.relname IN (${[...FAS].map((t) => `'${t}'`).join(',')}) ORDER BY 1`).trim().split('\n');
+    expect(names).toEqual([...FAS].sort());
   });
 
   it('other-org staff sees own FAS rows only', async () => {

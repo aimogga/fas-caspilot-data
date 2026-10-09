@@ -56,3 +56,7 @@ Did: reject dbname/user unless /^\w+$/; clear PGOPTIONS in sql() child env; unit
 Did: 8 FAS tables with org_id + same-org composite FKs; admin/staff SELECT/INSERT/UPDATE and admin DELETE via a policy DO loop; synthetic seed for orgs aaaa/bbbb; rls.test.ts matrix plus org-move/child-FK cases; localPgEnv() for psql child env.
 State: lint/typecheck green; unit 60/60; test:db 490/490; e2e 5/5; `/api/health` ok vs local Supabase.
 Left: F-102 part 3 (grants/exports). Decisions: none.
+
+## 2026-10-09 08:35 (UTC) — Cloud Agent — TP-0006 QA FAIL
+Did: INSERT via return-minimal then svc tag lookup+cleanup; table-driven 6 composite child FKs; catalog org_id NOT NULL on all 8 FAS tables.
+Left: F-102 part 3. Decisions: none.
