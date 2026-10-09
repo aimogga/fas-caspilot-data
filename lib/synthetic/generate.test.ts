@@ -4,6 +4,7 @@ import {
   COUNTIES, DEFAULT_SEED, generate, MEASURES, SMALL_FIPS, summarize, SYNTH_ORG, toSql, uid, WINDOW_END, WINDOW_START,
 } from './generate';
 
+
 const golden = JSON.parse(readFileSync('tests/golden/synthetic-20.json', 'utf8')) as {
   seed: number; nCases: number; courtBits: string; summary: ReturnType<typeof summarize>;
 };
@@ -21,8 +22,7 @@ const dates = (row: Record<string, unknown>) => Object.values(row).filter((v): v
 
 describe('unit: generator invariants', () => {
   it('emits ~200 cases across 10+ counties including small/rural', () => {
-    expect(b.case.length).toBeGreaterThanOrEqual(180);
-    expect(b.case.length).toBeLessThanOrEqual(220);
+    expect(b.case.length).toBeGreaterThanOrEqual(180); expect(b.case.length).toBeLessThanOrEqual(220);
     expect(COUNTIES).toHaveLength(29);
     expect(COUNTIES.every((c) => /^49\d{3}$/.test(c.fips) && c.state === 'UT')).toBe(true);
     const used = new Set(b.case.map((c) => c.county_fips as string));
@@ -90,10 +90,12 @@ describe('unit: generator invariants', () => {
       return Number(e.sessions_attended) > Number(z.units) || Number(e.dollars_paid) !== Number(e.sessions_attended) * Number(z.rate)
         || Number(e.dollars_paid) > Number(z.total_authorized) || Number(z.total_authorized) > Number(a.award_amount);
     })).toEqual([]);
-    expect(b.case.filter((c) => c.court_involved && !c.court_order_date)).toEqual([]);
-    expect(b.case.filter((c) => c.court_involved && c.referral_source !== 'court')).toEqual([]);
-    const deltas = b.outcome_measure.filter((o) => o.followup_score != null).map((o) => Number(o.followup_score) - Number(o.baseline_score));
-    expect(deltas.some((d) => d < 0) && deltas.some((d) => d > 0) && deltas.some((d) => d === 0)).toBe(true);
+    const court = b.case.filter((c) => c.court_involved);
+    expect(court.filter((c) => !c.court_order_date || (c.court_order_date as string) >= (c.referral_date as string) || c.referral_source !== 'court')).toEqual([]);
+    expect(new Set(court.map((c) => (Date.parse(c.referral_date as string) - Date.parse(c.court_order_date as string)) / 864e5)).size).toBeGreaterThanOrEqual(5);
+    const dlt = b.outcome_measure.filter((o) => o.followup_score != null).map((o) => Number(o.followup_score) - Number(o.baseline_score));
+    const pct = (p: (n: number) => boolean) => dlt.filter(p).length / dlt.length;
+    expect(pct((d) => d < 0) >= 0.2 && pct((d) => d === 0) >= 0.2 && pct((d) => d > 0) >= 0.2).toBe(true);
     expect(b.outcome_measure.filter((o) => o.followup_date && ((o.followup_date as string) < ((eByZ[b.authorization.find((z) => aBy[z.application_id as string]!.case_id === o.case_id)?.id as string]?.last_session_date as string) ?? (o.baseline_date as string)) || (o.followup_date as string) < (o.baseline_date as string)))).toEqual([]);
   });
 

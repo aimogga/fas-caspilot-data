@@ -2,16 +2,10 @@
 export const SYNTH_ORG = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 export const DEFAULT_SEED = 103;
 export const DEFAULT_CASES = 200;
-export const WINDOW_START = '2024-01-01';
-export const WINDOW_END = '2025-03-31';
+export const WINDOW_START = '2024-01-01', WINDOW_END = '2025-03-31';
 export const SMALL_FIPS = ['49009', '49031', '49033', '49055', '49017'] as const;
 const REASONS = ['no_show', 'moved', 'declined', 'waitlist'] as const;
-export const MEASURES = [
-  { code: 'PHQ-9', max: 27 },
-  { code: 'GAD-7', max: 21 },
-  { code: 'OQ-45', max: 180 },
-  { code: 'YOQ', max: 240 },
-] as const;
+export const MEASURES = [{ code: 'PHQ-9', max: 27 }, { code: 'GAD-7', max: 21 }, { code: 'OQ-45', max: 180 }, { code: 'YOQ', max: 240 }] as const;
 const CASE_FIPS = ['49035', '49049', '49011', '49057', '49053', '49005', '49009', '49031', '49033', '49055', '49017', '49045'];
 const WEIGHTS = [48, 28, 14, 10, 8, 5, 1, 1, 1, 1, 1, 3];
 const WSUM = WEIGHTS.reduce((a, b) => a + b, 0);
@@ -54,8 +48,7 @@ function ymd(offset: number): string {
 
 function countyAt(i: number, r: () => number): string {
   if (i < 12) return CASE_FIPS[i]!;
-  let x = r() * WSUM, k = 0;
-  for (; k < 12 && (x -= WEIGHTS[k]!) >= 0; k++);
+  let x = r() * WSUM, k = 0; for (; k < 12 && (x -= WEIGHTS[k]!) >= 0; k++);
   return CASE_FIPS[Math.min(k, 11)]!;
 }
 
@@ -73,12 +66,12 @@ export function generate(seed = DEFAULT_SEED, nCases = DEFAULT_CASES): Bundle {
   const outcome_measure: Rec[] = [];
   for (let i = 0; i < nCases; i++) {
     const court = i % 5 < 2;
-    const refOff = Math.floor(r() * 280);
-    const lag = 1 + (i % 14);
+    const refOff = 30 + Math.floor(r() * 250);
+    const lag = 1 + (i % 30);
     const cid = uid(1000 + i);
     cases.push({
       id: cid, org_id: SYNTH_ORG, referral_source: court ? 'court' : i % 2 ? 'self' : 'school',
-      court_involved: court, court_order_date: court ? ymd(refOff + lag) : null, referral_date: ymd(refOff),
+      court_involved: court, court_order_date: court ? ymd(refOff - lag) : null, referral_date: ymd(refOff),
       county_fips: countyAt(i, r), household_size: 1 + (i % 6),
       income_band: ['a', 'b', 'c', 'd'][i % 4], prior_services: [], upload_batch_id: uid(100),
     });
