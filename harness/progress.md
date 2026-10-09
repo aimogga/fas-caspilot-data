@@ -29,3 +29,10 @@ Did: `.github/workflows/nightly-audit.yml` (cron 9 AM UTC, workflow_dispatch, PR
 Evidence: PR #7
 Left: F-601 full (Phase 6).
 Decisions: None.
+
+## 2026-10-09 02:48 (UTC) — Cloud Agent — packet TP-0004 / F-101
+Did: Supabase Auth (@supabase/ssr) with middleware, role guards (admin/staff/board_viewer), pages (/login, /, /staff, /admin, /board), 403 page, sign-out. Role guard is pure function with unit tests (34 pass). E2e test file auth-roles.spec.ts (Playwright, mocked sessions). App builds with only NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY set.
+State: lint, typecheck, test green. Build succeeds. 626 net hand-written lines (676 added - 50 deleted), pnpm-lock.yaml generated.
+Evidence: PR pending (16dca4c).
+Left to do: QA acceptance for F-101.
+Decisions needed: None.
