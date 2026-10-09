@@ -3,28 +3,15 @@ import { cookies } from 'next/headers';
 
 export async function createClient() {
   const cookieStore = await cookies();
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error(
-      'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.'
-    );
-  }
-
-  return createServerClient(supabaseUrl, supabaseKey, {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !key) return null;
+  return createServerClient(url, key, {
     cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
+      getAll() { return cookieStore.getAll(); },
       setAll(cookiesToSet) {
-        try {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          );
-        } catch {
-          // Ignore in Server Components
-        }
+        try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)); }
+        catch { /* Server Components cannot set cookies */ }
       },
     },
   });

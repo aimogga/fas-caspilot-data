@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isRouteAllowed, getAllowedRoles, isPublicRoute, type UserRole } from './role-guards';
+import { isRouteAllowed, getAllowedRoles, isPublicRoute, safeRedirect, type UserRole } from './role-guards';
 
 describe('role-guards', () => {
   const routes = ['/', '/staff', '/admin', '/board', '/login'];
@@ -22,9 +22,12 @@ describe('role-guards', () => {
     expect(getAllowedRoles('/staff')).toEqual(['admin', 'staff']);
     expect(getAllowedRoles('/admin')).toEqual(['admin']);
   });
-  it('identifies public routes', () => {
+  it('identifies public routes and safe redirects', () => {
     expect(isPublicRoute('/login')).toBe(true);
     expect(isPublicRoute('/api/auth/signout')).toBe(true);
     expect(isPublicRoute('/')).toBe(false);
+    expect(safeRedirect('/staff')).toBe('/staff');
+    expect(safeRedirect('//evil')).toBe('/');
+    expect(safeRedirect('https://evil')).toBe('/');
   });
 });

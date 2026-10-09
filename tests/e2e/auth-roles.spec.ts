@@ -1,29 +1,28 @@
 import { test, expect, type Page } from '@playwright/test';
 
-async function mockSession(page: Page, role: 'admin' | 'staff' | 'board_viewer' | null) {
-  if (role === null) {
-    await page.evaluate(() => localStorage.clear());
-    return;
-  }
-  await page.addInitScript((session) => {
-    localStorage.setItem(`sb-${window.location.hostname.split('.')[0]}-auth-token`, JSON.stringify(session));
-  }, { access_token: 'mock', user: { id: 'test', email: `${role}@test.com`, app_metadata: { role } } });
+async function signIn(page: Page, email: string) {
+  await page.goto('/login');
+  await page.fill('#email', email);
+  await page.fill('#password', 'testpass123');
+  await Promise.all([
+    page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 10000 }),
+    page.click('button[type="submit"]'),
+  ]);
 }
 
 test.describe('auth-roles', () => {
   test('unauthenticated redirects to login', async ({ page }) => {
-    await mockSession(page, null);
     await page.goto('/');
     await expect(page).toHaveURL(/\/login/);
   });
-  const roleTests: Array<[string, string[], string[]]> = [
-    ['admin', ['/', '/staff', '/admin', '/board'], []],
-    ['staff', ['/', '/staff', '/board'], ['/admin']],
-    ['board_viewer', ['/', '/board'], ['/staff', '/admin']],
+  const cases: Array<[string, string, string[], string[]]> = [
+    ['admin', 'admin@example.test', ['/', '/staff', '/admin', '/board'], []],
+    ['staff', 'staff@example.test', ['/', '/staff', '/board'], ['/admin']],
+    ['board_viewer', 'board@example.test', ['/', '/board'], ['/staff', '/admin']],
   ];
-  for (const [role, allowed, denied] of roleTests) {
-    test(`${role} access`, async ({ page }) => {
-      await mockSession(page, role as 'admin' | 'staff' | 'board_viewer');
+  for (const [role, email, allowed, denied] of cases) {
+    test(`${role} access and sign out`, async ({ page }) => {
+      await signIn(page, email);
       for (const route of allowed) {
         await page.goto(route);
         await expect(page.locator('h1')).not.toContainText('403');
@@ -32,6 +31,9 @@ test.describe('auth-roles', () => {
         await page.goto(route);
         await expect(page.locator('h1')).toContainText('403');
       }
+      await page.goto('/');
+      await page.click('button[type="submit"]');
+      await expect(page).toHaveURL(/\/login/);
     });
   }
 });
