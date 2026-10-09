@@ -89,8 +89,12 @@
         "unit: role guards"
       ],
       "human_gate": "none",
-      "status": "failing",
-      "evidence": []
+      "status": "passing",
+      "evidence": [
+        "https://github.com/aimogga/fas-caspilot-data/pull/10#issuecomment-6073835253 (QA PASS at c9c9115, TP-0004; deploy proof: READY preview fas-caspilot-data-m561u3afy, real sign-ins as admin/staff/board_viewer)",
+        "https://github.com/aimogga/fas-caspilot-data/commit/c9c9115790f9339a8f7da9813830f17a9a0b581f (tested sha c9c9115)",
+        "https://github.com/aimogga/fas-caspilot-data/commit/d4e5c66df3aa25e94fd8574b2a5ca7cb878767b8 (PR #10 squash merge d4e5c66; file blobs identical to c9c9115)"
+      ]
     },
     {
       "id": "F-102",
