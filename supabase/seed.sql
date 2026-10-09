@@ -37,3 +37,27 @@ INSERT INTO need_score (version, geo_fips, score, components) VALUES ('v1', '490
 INSERT INTO org (id, name, ein, uei, state) VALUES
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'FAS Synthetic', '00-0000001', 'UEIFAS0001', 'UT'),
   ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Other Synthetic', '00-0000002', 'UEIOTH0002', 'UT');
+INSERT INTO upload_batch (id, org_id, file_path, mapping, rows_ok, rows_error, status) VALUES
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee1', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '/synthetic/a.csv', '{}', 1, 0, 'ok'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee2', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '/synthetic/b.csv', '{}', 1, 0, 'ok');
+INSERT INTO provider (id, org_id, name, npi, provider_affiliated) VALUES
+  ('ffffffff-ffff-ffff-ffff-fffffffffff1', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Synth Prov A', '0000000001', true),
+  ('ffffffff-ffff-ffff-ffff-fffffffffff2', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Synth Prov B', '0000000002', false);
+INSERT INTO "case" (id, org_id, referral_source, court_involved, court_order_date, referral_date, county_fips, household_size, income_band, prior_services, upload_batch_id) VALUES
+  ('88888888-8888-8888-8888-888888888881', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'court', true, '2024-01-15', '2024-01-01', '49035', 3, 'a', '[]', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee1'),
+  ('88888888-8888-8888-8888-888888888882', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'self', false, null, '2024-02-01', '49049', 2, 'b', '[]', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee2');
+INSERT INTO application (id, org_id, case_id, application_date, decision, award_amount, family_contribution) VALUES
+  ('99999999-9999-9999-9999-999999999991', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '88888888-8888-8888-8888-888888888881', '2024-01-10', 'approved', 1, 0),
+  ('99999999-9999-9999-9999-999999999992', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '88888888-8888-8888-8888-888888888882', '2024-02-10', 'approved', 1, 0);
+INSERT INTO "authorization" (id, org_id, application_id, service_type, provider_id, units, rate, total_authorized) VALUES
+  ('a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a1', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '99999999-9999-9999-9999-999999999991', 'therapy', 'ffffffff-ffff-ffff-ffff-fffffffffff1', 1, 1, 1),
+  ('a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a2', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '99999999-9999-9999-9999-999999999992', 'therapy', 'ffffffff-ffff-ffff-ffff-fffffffffff2', 1, 1, 1);
+INSERT INTO delivery_episode (id, org_id, authorization_id, sessions_attended, no_shows, discharge_status, dollars_paid) VALUES
+  ('b1b1b1b1-b1b1-b1b1-b1b1-b1b1b1b1b1b1', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a1', 1, 0, 'done', 1),
+  ('b1b1b1b1-b1b1-b1b1-b1b1-b1b1b1b1b1b2', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a2', 1, 0, 'done', 1);
+INSERT INTO outcome_measure (id, org_id, case_id, measure_code, baseline_score, baseline_date) VALUES
+  ('c2c2c2c2-c2c2-c2c2-c2c2-c2c2c2c2c2c1', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '88888888-8888-8888-8888-888888888881', 'syn', 1, '2024-01-01'),
+  ('c2c2c2c2-c2c2-c2c2-c2c2-c2c2c2c2c2c2', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '88888888-8888-8888-8888-888888888882', 'syn', 1, '2024-02-01');
+INSERT INTO aggregate_submission (id, org_id, period, metric_code, value, n, notes) VALUES
+  ('d3d3d3d3-d3d3-d3d3-d3d3-d3d3d3d3d3d1', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '2024-Q1', 'm1', 1, 20, 'n'),
+  ('d3d3d3d3-d3d3-d3d3-d3d3-d3d3d3d3d3d2', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '2024-Q1', 'm1', 1, 20, 'n');

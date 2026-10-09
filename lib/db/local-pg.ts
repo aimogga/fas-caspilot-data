@@ -16,3 +16,9 @@ export function assertLocalSupabase(api: string, db: string, env: Record<string,
   if (!IDENT.test(user) || !IDENT.test(database)) throw new Error('SUPABASE_DB_URL user and dbname must match /^\\w+$/');
   return { host: d.hostname.toLowerCase(), port: d.port || '5432', user, database, password: decodeURIComponent(d.password) };
 }
+
+export function localPgEnv(pg: LocalPg, env: Record<string, string | undefined> = process.env): NodeJS.ProcessEnv {
+  const out: NodeJS.ProcessEnv = { ...env, PGPASSWORD: pg.password };
+  for (const k of ['PGHOST', 'PGHOSTADDR', 'PGSERVICE', 'PGOPTIONS'] as const) delete out[k];
+  return out;
+}

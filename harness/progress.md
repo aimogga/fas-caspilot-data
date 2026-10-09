@@ -51,3 +51,8 @@ Did: parse URLs at load; reject search/hash and PGHOST*; psql -h/-p/-U/-d + PGPA
 
 ## 2026-10-09 07:35 (UTC) — TP-0005 QA FAIL #4
 Did: reject dbname/user unless /^\w+$/; clear PGOPTIONS in sql() child env; unit tests for non-loopback SUPABASE_URL and conninfo dbnames.
+
+## 2026-10-09 08:00 (UTC) — Cloud Agent — packet TP-0006 / F-102 part 2
+Did: 8 FAS tables with org_id + same-org composite FKs; admin/staff SELECT/INSERT/UPDATE and admin DELETE via a policy DO loop; synthetic seed for orgs aaaa/bbbb; rls.test.ts matrix plus org-move/child-FK cases; localPgEnv() for psql child env.
+State: compiling; tests pending reset.
+Left: F-102 part 3 (grants/exports). Decisions: none.

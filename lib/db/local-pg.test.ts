@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assertLocalSupabase } from './local-pg';
+import { assertLocalSupabase, localPgEnv } from './local-pg';
 
 const API = 'http://127.0.0.1:54321';
 const B = 'postgresql://postgres:postgres@127.0.0.1:54322';
@@ -21,5 +21,13 @@ describe('assertLocalSupabase', () => {
   ])('rejects %s %s', (api, db) => { expect(() => assertLocalSupabase(api, db, {})).toThrow(); });
   it.each(['PGHOST', 'PGHOSTADDR', 'PGSERVICE'])('rejects env %s', (k) => {
     expect(() => assertLocalSupabase(API, OK, { [k]: 'x' })).toThrow();
+  });
+  it('localPgEnv sets PGPASSWORD and drops libpq host overrides', () => {
+    const env = localPgEnv(assertLocalSupabase(API, OK, {}), {
+      PGHOST: 'x', PGHOSTADDR: 'y', PGSERVICE: 'z', PGOPTIONS: 'w', KEEP: '1',
+    });
+    expect(env.PGPASSWORD).toBe('postgres');
+    expect(env.KEEP).toBe('1');
+    expect(env.PGHOST ?? env.PGHOSTADDR ?? env.PGSERVICE ?? env.PGOPTIONS).toBeUndefined();
   });
 });
