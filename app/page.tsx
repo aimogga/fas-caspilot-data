@@ -1,57 +1,48 @@
-"use client";
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import Link from 'next/link';
+import SignOutButton from '@/components/SignOutButton';
 
-import { useState } from "react";
-import { isHealthReport, type HealthReport } from "@/lib/health";
-import styles from "./page.module.css";
+export default async function HomePage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-export default function HomePage() {
-  const [report, setReport] = useState<HealthReport | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
-
-  async function onCheck(): Promise<void> {
-    setPending(true);
-    setError(null);
-    try {
-      const response = await fetch("/api/health");
-      const body: unknown = await response.json();
-      if (!response.ok || !isHealthReport(body)) {
-        throw new Error("Health check did not return a usable report");
-      }
-      setReport(body);
-    } catch (cause) {
-      setReport(null);
-      setError(cause instanceof Error ? cause.message : "Health check failed");
-    } finally {
-      setPending(false);
-    }
+  if (!user) {
+    redirect('/login');
   }
 
+  const role = user.app_metadata?.role || 'unknown';
+
   return (
-    <main className={styles.page}>
-      <p className={styles.kicker}>Local development</p>
-      <h1>CasePilot × FAS</h1>
-      <p className={styles.lede}>
-        Public Data to Proof shell. This page confirms the app and the local
-        Supabase API are running. Product screens arrive in later phases.
-      </p>
-      <button className={styles.button} type="button" onClick={() => void onCheck()} disabled={pending}>
-        {pending ? "Checking…" : "Check local services"}
-      </button>
-      {error ? <p className={styles.error}>{error}</p> : null}
-      {report ? (
-        <section className={styles.panel} aria-live="polite">
-          <h2>{report.ok ? "All checks passed" : "A check failed"}</h2>
-          <ul className={styles.checks}>
-            {report.checks.map((check) => (
-              <li key={check.name}>
-                <span>{check.name}</span>
-                <span className={check.ok ? styles.ok : styles.bad}>{check.ok ? "up" : "down"}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-    </main>
+    <div style={{ maxWidth: '800px', margin: '50px auto', padding: '20px' }}>
+      <h1>CasePilot - Home</h1>
+      <p>Welcome, {user.email}</p>
+      <p>Your role: <strong>{role}</strong></p>
+      
+      <nav style={{ margin: '30px 0' }}>
+        <ul style={{ listStyle: 'none', padding: 0 }}>
+          <li style={{ marginBottom: '10px' }}>
+            <Link href="/" style={{ color: '#0070f3' }}>Home</Link>
+          </li>
+          {(role === 'admin' || role === 'staff') && (
+            <li style={{ marginBottom: '10px' }}>
+              <Link href="/staff" style={{ color: '#0070f3' }}>Staff Page</Link>
+            </li>
+          )}
+          {role === 'admin' && (
+            <li style={{ marginBottom: '10px' }}>
+              <Link href="/admin" style={{ color: '#0070f3' }}>Admin Page</Link>
+            </li>
+          )}
+          <li style={{ marginBottom: '10px' }}>
+            <Link href="/board" style={{ color: '#0070f3' }}>Board Page</Link>
+          </li>
+        </ul>
+      </nav>
+
+      <SignOutButton />
+    </div>
   );
 }
