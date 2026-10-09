@@ -104,3 +104,7 @@ Left: none. Decisions: none.
 ## 2026-10-09 17:11 (UTC) — Cloud Agent — TP-0009 QA FAIL #3 PR #22
 Did: Dup id+package ignore RED; stale ≥YELLOW; N7/N10/N11/S3/N12/V7/V9 tests.
 Left: none. Decisions: none.
+
+## 2026-10-09 17:35 (UTC) — Cloud Agent — TP-0009 QA FAIL #4 PR #22
+Did: One id per ignore (CVE|GHSA); braces split into two same-expiry entries; alias overlap with later expiry is RED.
+Left: none. Decisions: none.

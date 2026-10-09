@@ -35,24 +35,9 @@ function validateIgnore(ig) {
   for (const k of IGNORE_KEYS) {
     if (typeof ig?.[k] !== 'string' || !ig[k].trim()) return `invalid ignore: ${k}`;
   }
+  if (!/^(CVE-\d{4}-\d+|GHSA(-[a-z0-9]{4}){3})$/.test(ig.id)) return 'invalid ignore: id';
   if (!parseIsoDate(ig.expires)) return 'invalid ignore: expires';
   if (!SEV.includes(ig.severity.toLowerCase())) return 'invalid ignore: severity';
-}
-
-export function ignoreIds(ig) {
-  return String(ig.id || '').split(/[/,]+/).map(s => s.trim()).filter(Boolean);
-}
-
-export function matchIgnore(a, ignores, today) {
-  const ids = new Set([a.github_advisory_id, ...(a.cves || [])].filter(Boolean));
-  const s = String(a.severity || '').toLowerCase();
-  for (const ig of ignores) {
-    if (ig.package !== a.module_name) continue;
-    if (!ignoreIds(ig).some(id => ids.has(id))) continue;
-    if (parseIsoDate(today) > parseIsoDate(ig.expires)) continue;
-    if ((RANK[s] ?? 0) > (RANK[ig.severity.toLowerCase()] ?? 0)) continue;
-    return ig;
-  }
 }
 
 export function formatIgnored(i) {
@@ -89,12 +74,12 @@ export function parseAudit(out, opts = {}) {
       const s = a?.severity == null || a.severity === '' ? '' : String(a.severity).toLowerCase();
       if (!SEV.includes(s)) return failRun('unknown severity');
       const ids = new Set([a.github_advisory_id, ...(a.cves || [])].filter(Boolean));
-      for (const x of ignores) {
-        if (x.package === a.module_name && ignoreIds(x).some(id => ids.has(id))) touched.add(x.id);
-      }
-      const ig = matchIgnore(a, ignores, today);
-      if (ig) {
-        ignored.push({id: ig.id, package: ig.package, severity: s, reason: ig.reason, reviewer: ig.reviewer, expires: ig.expires});
+      const hits = ignores.filter(x => x.package === a.module_name && ids.has(x.id));
+      if (new Set(hits.map(h => h.expires)).size > 1) return failRun('duplicate ignore');
+      hits.forEach(h => touched.add(h.id));
+      const igs = hits.filter(h => !(parseIsoDate(today) > parseIsoDate(h.expires)) && (RANK[s] ?? 0) <= (RANK[h.severity.toLowerCase()] ?? 0));
+      if (igs.length) {
+        igs.forEach(ig => ignored.push({id: ig.id, package: ig.package, severity: s, reason: ig.reason, reviewer: ig.reviewer, expires: ig.expires}));
         ignCounts[s]++;
         continue;
       }
@@ -109,8 +94,8 @@ export function parseAudit(out, opts = {}) {
   const stale = ignores.filter(ig => !touched.has(ig.id));
   const [c, h, m, l] = [counted.critical, counted.high, counted.moderate, counted.low];
   if (c || h) return {status: 'RED', finding: `${c} critical, ${h} high`, ignored, stale};
-  if (stale.length) return {status: 'YELLOW', finding: `${stale.length} stale ignore(s)`, ignored, stale};
-  if (m) return {status: 'YELLOW', finding: `${m} moderate`, ignored, stale};
+  const bits = [...(m ? [`${m} moderate`] : []), ...(stale.length ? [`${stale.length} stale ignore(s)`] : [])];
+  if (bits.length) return {status: 'YELLOW', finding: bits.join('; '), ignored, stale};
   return {status: 'GREEN', finding: `No high/critical (${l} low)`, ignored, stale};
 }
 export function checkDocRefs(listDocs, readFile, fileExists) {

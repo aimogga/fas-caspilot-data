@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'child_process';
 import { worst, generateReport, matchSecretLine, checkProgressLog, parseAgentsCommands, parseAudit, checkSecretScan, checkDocRefs, auditExitCode, writeAndPrintReport, checkDeps, main, runPnpmAudit } from './nightly-audit.mjs';
-const BRACES_IG = {id: 'CVE-2026-93687 / GHSA-vfj7-8cjw-p6xm', package: 'braces', reason: 'dev-only lint toolchain transitive dep, no patched release', reviewer: 'QA bot', expires: '2026-11-08', severity: 'high'};
+const CVE_IG = {id: 'CVE-2026-93687', package: 'braces', reason: 'dev-only lint toolchain transitive dep, no patched release', reviewer: 'QA bot', expires: '2026-11-08', severity: 'high'};
+const GHSA_IG = {...CVE_IG, id: 'GHSA-vfj7-8cjw-p6xm'};
 const BRACES_JSON = JSON.stringify({advisories: {'1240992': {severity: 'high', module_name: 'braces', cves: ['CVE-2026-93687'], github_advisory_id: 'GHSA-vfj7-8cjw-p6xm'}}, metadata: {vulnerabilities: {critical: 0, high: 1, moderate: 0, low: 0}}});
 describe('worst', () => {
   it('ranks RED > YELLOW > GREEN > SKIPPED', () => {
@@ -21,9 +22,9 @@ describe('generateReport', () => {
     expect(md).toContain('High: [other] Issue');
   });
   it('lists ignored and stale with literal report text', () => {
-    const stale = {...BRACES_IG, id: 'CVE-0000-0000', package: 'nope'};
-    const md = generateReport({date: '2026-10-09', overall: 'YELLOW', checks: {}, ignored: [BRACES_IG], stale: [stale]});
-    expect(md).toContain('Ignored: CVE-2026-93687 / GHSA-vfj7-8cjw-p6xm (braces, high): dev-only lint toolchain transitive dep, no patched release, reviewer QA bot, re-review by 2026-11-08');
+    const stale = {...CVE_IG, id: 'CVE-0000-0000', package: 'nope'};
+    const md = generateReport({date: '2026-10-09', overall: 'YELLOW', checks: {}, ignored: [CVE_IG], stale: [stale]});
+    expect(md).toContain('Ignored: CVE-2026-93687 (braces, high): dev-only lint toolchain transitive dep, no patched release, reviewer QA bot, re-review by 2026-11-08');
     expect(md).toContain('Stale: CVE-0000-0000 (nope, high): dev-only lint toolchain transitive dep, no patched release, reviewer QA bot, re-review by 2026-11-08');
   });
 });
@@ -42,6 +43,7 @@ describe('writeAndPrintReport', () => {
     const {md, exitCode} = writeAndPrintReport(res, {mkdirSync() {}, writeFileSync(p, c) { files[p] = c; }, log: s => logs.push(s)});
     expect(exitCode).not.toBe(0);
     expect(logs.join('\n')).toBe(md);
+    expect(md).toContain('# Nightly Audit — 2026-10-09');
     expect(md).toContain('Overall: RED');
     expect(files['harness/audits/2026-10-09.md']).toBe(md);
   });
@@ -90,38 +92,52 @@ describe('parseAudit', () => {
     '{"advisories":{"1":{"module_name":"x"}},"metadata":{"vulnerabilities":{"low":1}}}',
   ])('unknown severity is an error not low %s', out => expect(parseAudit(out)).toMatchObject({status: 'RED', finding: 'unknown severity'}));
   it('unexpired ignore is GREEN and listed', () => {
-    const r = parseAudit(BRACES_JSON, {ignores: [BRACES_IG], today: '2026-10-09'});
+    const r = parseAudit(BRACES_JSON, {ignores: [CVE_IG], today: '2026-10-09'});
     expect(r.status).toBe('GREEN');
-    expect(r.ignored[0]).toMatchObject({id: BRACES_IG.id, package: 'braces', severity: 'high', reviewer: 'QA bot', expires: '2026-11-08'});
+    expect(r.ignored[0]).toMatchObject({id: 'CVE-2026-93687', package: 'braces', severity: 'high', reviewer: 'QA bot', expires: '2026-11-08'});
   });
   it('expired ignore is RED', () => {
-    expect(parseAudit(BRACES_JSON, {ignores: [BRACES_IG], today: '2026-11-09'})).toMatchObject({status: 'RED', finding: '0 critical, 1 high', ignored: []});
+    expect(parseAudit(BRACES_JSON, {ignores: [CVE_IG], today: '2026-11-09'})).toMatchObject({status: 'RED', finding: '0 critical, 1 high', ignored: []});
   });
   it.each([
     [{expires: undefined}, 'expiry missing'], [{expires: 'never'}, 'never'], [{expires: '2026/11/08'}, 'slash date'],
     [{expires: 20261108}, 'numeric expires'], [{reviewer: undefined}, 'missing reviewer'], [{reason: undefined}, 'missing reason'],
     [{package: undefined}, 'missing package'], [{id: ''}, 'empty id'],
     [{reviewer: '   '}, 'whitespace reviewer'], [{expires: '2026-02-30'}, 'Feb 30'],
+    [{id: 'CVE-2026-93687 / GHSA-vfj7-8cjw-p6xm'}, 'combined id'], [{id: 'CVE-2026-93687,GHSA-vfj7-8cjw-p6xm'}, 'comma id'],
   ])('invalid ignore %s is RED', (over) => {
-    const r = parseAudit(BRACES_JSON, {ignores: [{...BRACES_IG, ...over}], today: '2026-10-09'});
+    const r = parseAudit(BRACES_JSON, {ignores: [{...CVE_IG, ...over}], today: '2026-10-09'});
     expect(r.status).toBe('RED');
     expect(r.finding).toMatch(/^invalid ignore/);
   });
   it('ignore requires id and package match', () => {
-    expect(parseAudit(BRACES_JSON, {ignores: [{...BRACES_IG, package: 'left-pad'}], today: '2026-10-09'})).toMatchObject({status: 'RED', finding: '0 critical, 1 high', ignored: []});
+    expect(parseAudit(BRACES_JSON, {ignores: [{...CVE_IG, package: 'left-pad'}], today: '2026-10-09'})).toMatchObject({status: 'RED', finding: '0 critical, 1 high', ignored: []});
   });
   it('stops ignoring when severity rises', () => {
-    expect(parseAudit(BRACES_JSON, {ignores: [{...BRACES_IG, severity: 'moderate'}], today: '2026-10-09'})).toMatchObject({status: 'RED', ignored: []});
+    expect(parseAudit(BRACES_JSON, {ignores: [{...CVE_IG, severity: 'moderate'}], today: '2026-10-09'})).toMatchObject({status: 'RED', ignored: []});
   });
   it('reports stale ignores as YELLOW', () => {
-    const r = parseAudit(BRACES_JSON, {ignores: [BRACES_IG, {...BRACES_IG, id: 'CVE-0000-0000', package: 'nope'}], today: '2026-10-09'});
+    const r = parseAudit(BRACES_JSON, {ignores: [CVE_IG, {...CVE_IG, id: 'CVE-0000-0000', package: 'nope'}], today: '2026-10-09'});
     expect(r.status).toBe('YELLOW');
     expect(r.stale.map(s => s.id)).toContain('CVE-0000-0000');
   });
   it('duplicate id+package ignore is RED', () => {
-    const r = parseAudit(BRACES_JSON, {ignores: [BRACES_IG, {...BRACES_IG, expires: '2027-12-31'}], today: '2026-10-09'});
+    const r = parseAudit(BRACES_JSON, {ignores: [CVE_IG, {...CVE_IG, expires: '2027-12-31'}], today: '2026-10-09'});
     expect(r.status).toBe('RED');
     expect(r.status).not.toBe('GREEN');
+  });
+  it('alias overlap with later expiry is RED', () => {
+    const r = parseAudit(BRACES_JSON, {ignores: [CVE_IG, {...GHSA_IG, expires: '2027-12-31'}], today: '2026-10-09'});
+    expect(r.status).toBe('RED');
+  });
+  it('same-expiry CVE and GHSA ignore is GREEN', () => {
+    expect(parseAudit(BRACES_JSON, {ignores: [CVE_IG, GHSA_IG], today: '2026-10-09'}).status).toBe('GREEN');
+  });
+  it('reports moderate and stale together', () => {
+    const r = parseAudit(JSON.stringify({advisories: {1: {severity: 'moderate', module_name: 'x', cves: ['CVE-2020-1']}}, metadata: {vulnerabilities: {moderate: 1}}}), {ignores: [{...CVE_IG, id: 'CVE-0000-1', package: 'nope'}], today: '2026-10-09'});
+    expect(r.status).toBe('YELLOW');
+    expect(r.finding).toMatch(/moderate/);
+    expect(r.finding).toMatch(/stale/);
   });
 });
 describe('checkSecretScan', () => {
@@ -169,10 +185,10 @@ describe('main', () => {
     let md = '';
     await main({
       secretScan: greenStub, build: greenStub, harness: greenStub,
-      deps: () => ({status: 'YELLOW', findings: ['stale'], details: [], ignored: [BRACES_IG], stale: [{...BRACES_IG, id: 'CVE-0', package: 'x'}]}),
+      deps: () => ({status: 'YELLOW', findings: ['stale'], details: [], ignored: [CVE_IG], stale: [{...CVE_IG, id: 'CVE-0', package: 'x'}]}),
       emit: (res) => ({path: 'x', md: md = generateReport(res), exitCode: 0}), log: () => {},
     });
-    expect(md).toContain('Ignored: CVE-2026-93687 / GHSA-vfj7-8cjw-p6xm (braces, high):');
+    expect(md).toContain('Ignored: CVE-2026-93687 (braces, high):');
     expect(md).toContain('Stale: CVE-0 (x, high):');
   });
   it('CLI entry exits non-zero for RED fixture', () => {

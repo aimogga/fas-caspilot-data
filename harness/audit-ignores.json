@@ -1,10 +1,4 @@
 [
-  {
-    "id": "CVE-2026-93687 / GHSA-vfj7-8cjw-p6xm",
-    "package": "braces",
-    "reason": "dev-only lint toolchain transitive dep, no patched release",
-    "reviewer": "QA bot",
-    "expires": "2026-11-08",
-    "severity": "high"
-  }
+  {"id": "CVE-2026-93687", "package": "braces", "reason": "dev-only lint toolchain transitive dep, no patched release", "reviewer": "QA bot", "expires": "2026-11-08", "severity": "high"},
+  {"id": "GHSA-vfj7-8cjw-p6xm", "package": "braces", "reason": "dev-only lint toolchain transitive dep, no patched release", "reviewer": "QA bot", "expires": "2026-11-08", "severity": "high"}
 ]
