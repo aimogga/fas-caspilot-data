@@ -110,25 +110,21 @@ export function matchSecretLine(line) {
   ].some(p => p.test(line));
 }
 
-function checkSecretScan(gitRunner = execSync) {
+export function checkSecretScan(gitRunner = execSync) {
   const r = {status: 'GREEN', findings: [], details: []};
   try {
     const yesterday = new Date(Date.now() - 86400000).toISOString();
     const commits = gitRunner(`git log --since="${yesterday}" --format="%H"`, {encoding: 'utf-8'}).trim().split('\n').filter(c => c);
-    
     if (!commits.length) {
       r.details.push('No commits in last 24h');
       return r;
     }
-    
     r.details.push(`Scanned ${commits.length} commit(s)`);
-    
     let found = 0;
     for (const c of commits) {
       const diff = gitRunner(`git show ${c} --format="" --no-color`, {encoding: 'utf-8', maxBuffer: 10*1024*1024});
       const lines = diff.split('\n');
       let inLock = false;
-      
       for (const line of lines) {
         if (line.startsWith('diff --git') && line.includes('lock.')) {
           inLock = true;
@@ -137,18 +133,16 @@ function checkSecretScan(gitRunner = execSync) {
         if (line.startsWith('diff --git')) inLock = false;
         if (inLock || !line.startsWith('+') || line.startsWith('+++')) continue;
         if (/example|test_/i.test(line)) continue;
-        
         if (matchSecretLine(line)) found++;
       }
     }
-    
     if (found) {
       r.status = 'RED';
       r.findings.push(`${found} potential secret(s)`);
     } else r.details.push('No obvious secrets');
-  } catch (e) {
+  } catch {
     r.status = 'YELLOW';
-    r.findings.push(e.message?.includes('git') ? 'could not read git history' : `Error: ${e.message}`);
+    r.findings.push('could not read git history');
   }
   return r;
 }

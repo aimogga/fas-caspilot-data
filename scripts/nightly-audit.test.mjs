@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { worst, generateReport, matchSecretLine, checkProgressLog, parseAgentsCommands, parseAudit } from './nightly-audit.mjs';
+import { worst, generateReport, matchSecretLine, checkProgressLog, parseAgentsCommands, parseAudit, checkSecretScan } from './nightly-audit.mjs';
 
 describe('worst', () => {
   it('ranks RED > YELLOW > GREEN > SKIPPED', () => {
@@ -42,10 +42,10 @@ describe('checkProgressLog', () => {
 
 describe('parseAgentsCommands', () => {
   it('parses pnpm scripts, skips builtins and non-pnpm', () => {
-    expect(parseAgentsCommands(`## Commands\n\`\`\`\npnpm install\npnpm dev\npnpm lint\npnpm typecheck\npnpm test\npnpm test:db\npnpm test:e2e\npnpm seed:synthetic\nsupabase start\n\`\`\``)).toEqual(['dev', 'lint', 'typecheck', 'test', 'test:db', 'test:e2e', 'seed:synthetic']);
+    expect(parseAgentsCommands(`## Commands\n> Phase 1 finalizes these.\n\`\`\`\npnpm install\npnpm dev\npnpm lint\npnpm typecheck\npnpm test\npnpm test:db\npnpm test:e2e\npnpm seed:synthetic\nsupabase start\n\`\`\``)).toEqual(['dev', 'lint', 'typecheck', 'test', 'test:db', 'test:e2e', 'seed:synthetic']);
   });
   it('returns empty when no fence', () => expect(parseAgentsCommands('## Commands\nNo code')).toEqual([]));
-  it('stops at next heading', () => expect(parseAgentsCommands('## Commands\ntext\n## Other')).toEqual([]));
+  it('stops at next heading', () => expect(parseAgentsCommands('## Commands\ntext\n## Other\n```\npnpm dev\n```')).toEqual([]));
 });
 
 describe('parseAudit', () => {
@@ -54,4 +54,11 @@ describe('parseAudit', () => {
   });
   it('returns RED on high', () => expect(parseAudit('{"metadata":{"vulnerabilities":{"high":1}}}')).toEqual({status: 'RED', finding: '0 critical, 1 high'}));
   it('returns GREEN on no high/critical', () => expect(parseAudit('{"metadata":{"vulnerabilities":{"low":2}}}')).toEqual({status: 'GREEN', finding: 'No high/critical (2 low)'}));
+});
+
+describe('checkSecretScan', () => {
+  it('returns YELLOW on git failure', () => {
+    const failGit = () => { throw new Error('Command failed: git log'); };
+    expect(checkSecretScan(failGit)).toEqual({status: 'YELLOW', findings: ['could not read git history'], details: []});
+  });
 });
