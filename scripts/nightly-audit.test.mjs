@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { worst, generateReport, matchSecretLine, checkProgressLog, parseAgentsCommands } from './nightly-audit.mjs';
+import { worst, generateReport, matchSecretLine, checkProgressLog, parseAgentsCommands, parseAudit } from './nightly-audit.mjs';
 
 describe('worst', () => {
   it('ranks RED > YELLOW > GREEN > SKIPPED', () => {
@@ -51,4 +51,19 @@ describe('parseAgentsCommands', () => {
     expect(cmds).toEqual(['dev', 'lint', 'typecheck', 'test', 'test:db', 'test:e2e', 'seed:synthetic']);
   });
   it('returns empty when no fence', () => expect(parseAgentsCommands('## Commands\nNo code')).toEqual([]));
+  it('stops at next heading', () => expect(parseAgentsCommands('## Commands\ntext\n## Other\n```\npnpm dev\n```')).toEqual([]));
+});
+
+describe('parseAudit', () => {
+  it('returns YELLOW on empty or invalid JSON', () => {
+    expect(parseAudit('')).toEqual({status: 'YELLOW', finding: 'audit could not run'});
+    expect(parseAudit('not json')).toEqual({status: 'YELLOW', finding: 'audit could not run'});
+    expect(parseAudit('{}')).toEqual({status: 'YELLOW', finding: 'audit could not run'});
+  });
+  it('returns RED on high vulnerabilities', () => {
+    expect(parseAudit('{"metadata":{"vulnerabilities":{"high":1}}}')).toEqual({status: 'RED', finding: '0 critical, 1 high'});
+  });
+  it('returns GREEN on no high/critical', () => {
+    expect(parseAudit('{"metadata":{"vulnerabilities":{"low":2}}}')).toEqual({status: 'GREEN', finding: 'No high/critical (2 low)'});
+  });
 });

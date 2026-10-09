@@ -10,8 +10,26 @@ import { execSync } from 'child_process';
 const DATE = new Date().toISOString().split('T')[0];
 
 export function parseAgentsCommands(md) {
-  const m = md.match(/## Commands\n([\s\S]*?)```\n([\s\S]*?)\n```/);
-  return m ? [...new Set(m[2].split('\n').filter(l => l.trim().startsWith('pnpm ')).map(l => l.split('#')[0].trim().replace(/^pnpm /, '').split(/\s+/)[0]).filter(c => c !== 'install'))] : [];
+  const m = md.match(/## Commands\n([\s\S]*?)(```\n([\s\S]*?)\n```|\n## )/);
+  return m && m[3] ? [...new Set(m[3].split('\n').filter(l => l.trim().startsWith('pnpm ')).map(l => l.split('#')[0].trim().replace(/^pnpm /, '').split(/\s+/)[0]).filter(c => c !== 'install'))] : [];
+}
+
+function gitLines(fmt, gitRunner = execSync) {
+  return gitRunner(`git log --format="${fmt}"`, {encoding: 'utf-8'}).trim().split('\n').filter(l => l);
+}
+
+export function parseAudit(out) {
+  if (!out || !out.trim()) return {status: 'YELLOW', finding: 'audit could not run'};
+  try {
+    const v = JSON.parse(out).metadata?.vulnerabilities;
+    if (!v) return {status: 'YELLOW', finding: 'audit could not run'};
+    const [c, h, m, l] = [v.critical||0, v.high||0, v.moderate||0, v.low||0];
+    if (c || h) return {status: 'RED', finding: `${c} critical, ${h} high`};
+    if (m) return {status: 'YELLOW', finding: `${m} moderate`};
+    return {status: 'GREEN', finding: `No high/critical (${l} low)`};
+  } catch {
+    return {status: 'YELLOW', finding: 'audit could not run'};
+  }
 }
 
 function checkHarnessIntegrity() {
@@ -56,14 +74,19 @@ function checkHarnessIntegrity() {
     }
 
     // Progress log validation
-    const yesterday = new Date(Date.now() - 86400000).toISOString();
-    const commits = execSync(`git log --since="${yesterday}" --format="%s" 2>/dev/null || echo ""`, {encoding: 'utf-8'}).trim().split('\n').filter(c => c);
-    const progLog = checkProgressLog(commits, existsSync('harness/progress.md') ? readFileSync('harness/progress.md', 'utf-8') : '');
-    if (progLog.missing.length) {
+    try {
+      const yesterday = new Date(Date.now() - 86400000).toISOString();
+      const commits = gitLines(`--since="${yesterday}" %s`);
+      const progLog = checkProgressLog(commits, existsSync('harness/progress.md') ? readFileSync('harness/progress.md', 'utf-8') : '');
+      if (progLog.missing.length) {
+        r.status = worst(r.status, 'YELLOW');
+        r.findings.push(`Missing progress entries: PR ${progLog.missing.join(', ')}`);
+      } else if (commits.length) {
+        r.details.push(`All ${progLog.found.length} merged PR(s) documented`);
+      }
+    } catch {
       r.status = worst(r.status, 'YELLOW');
-      r.findings.push(`Missing progress entries: PR ${progLog.missing.join(', ')}`);
-    } else if (commits.length) {
-      r.details.push(`All ${progLog.found.length} merged PR(s) documented`);
+      r.findings.push('could not read git history');
     }
   } catch (e) {
     r.status = 'RED';
@@ -91,11 +114,11 @@ export function matchSecretLine(line) {
   ].some(p => p.test(line));
 }
 
-function checkSecretScan() {
+function checkSecretScan(gitRunner = execSync) {
   const r = {status: 'GREEN', findings: [], details: []};
   try {
     const yesterday = new Date(Date.now() - 86400000).toISOString();
-    const commits = execSync(`git log --since="${yesterday}" --format="%H" 2>/dev/null || echo ""`, {encoding: 'utf-8'}).trim().split('\n').filter(c => c);
+    const commits = gitRunner(`git log --since="${yesterday}" --format="%H"`, {encoding: 'utf-8'}).trim().split('\n').filter(c => c);
     
     if (!commits.length) {
       r.details.push('No commits in last 24h');
@@ -106,7 +129,7 @@ function checkSecretScan() {
     
     let found = 0;
     for (const c of commits) {
-      const diff = execSync(`git show ${c} --format="" --no-color`, {encoding: 'utf-8', maxBuffer: 10*1024*1024});
+      const diff = gitRunner(`git show ${c} --format="" --no-color`, {encoding: 'utf-8', maxBuffer: 10*1024*1024});
       const lines = diff.split('\n');
       let inLock = false;
       
@@ -131,7 +154,7 @@ function checkSecretScan() {
     }
   } catch (e) {
     r.status = 'YELLOW';
-    r.findings.push(`Error: ${e.message}`);
+    r.findings.push(e.message?.includes('git') ? 'could not read git history' : `Error: ${e.message}`);
   }
   return r;
 }
@@ -143,14 +166,12 @@ function checkDeps() {
     try {
       out = execSync('pnpm audit --json', {encoding: 'utf-8', stdio: 'pipe'});
     } catch (e) {
-      out = e.stdout || '{}';
+      out = e.stdout || '';
     }
-    const v = JSON.parse(out).metadata?.vulnerabilities || {};
-    const [c, h, m, l] = [v.critical||0, v.high||0, v.moderate||0, v.low||0];
-    
-    if (c || h) { r.status = 'RED'; r.findings.push(`${c} critical, ${h} high`); }
-    else if (m) { r.status = 'YELLOW'; r.findings.push(`${m} moderate`); }
-    else r.details.push(`No high/critical (${l} low)`);
+    const {status, finding} = parseAudit(out);
+    r.status = status;
+    if (status === 'GREEN') r.details.push(finding);
+    else r.findings.push(finding);
   } catch (e) {
     r.status = 'YELLOW';
     r.findings.push(`Error: ${e.message}`);
