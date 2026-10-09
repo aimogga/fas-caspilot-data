@@ -36,3 +36,18 @@ State: lint/typecheck/unit/e2e green vs local Supabase.
 Evidence: PR #10.
 Left: QA re-check. Denied-route 200 later.
 Decisions: None.
+
+## 2026-10-09 04:50 (UTC) — TP-0005 / F-102 part 1
+Did: 7 tables + helpers + deny-by-default RLS; table-driven rls.test.ts; test:db from status -o env. Left: parts 2–3. Decisions: public SELECT-only; org SELECT own + known role; UPDATE admin own; no INSERT/DELETE.
+
+## 2026-10-09 05:50 (UTC) — TP-0005 QA FAIL #1
+Did: org-norole; user_metadata test; guard probe; REVOKE anon; keys from status -o env only.
+
+## 2026-10-09 06:20 (UTC) — TP-0005 QA FAIL #2
+Did: staff role-only + rpc helpers; partitioned probe; loopback host check.
+
+## 2026-10-09 07:05 (UTC) — TP-0005 QA FAIL #3
+Did: parse URLs at load; reject search/hash and PGHOST*; psql -h/-p/-U/-d + PGPASSWORD.
+
+## 2026-10-09 07:35 (UTC) — TP-0005 QA FAIL #4
+Did: reject dbname/user unless /^\w+$/; clear PGOPTIONS in sql() child env; unit tests for non-loopback SUPABASE_URL and conninfo dbnames.
