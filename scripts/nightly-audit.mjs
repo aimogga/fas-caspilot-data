@@ -1,19 +1,12 @@
 #!/usr/bin/env node
-/**
- * Nightly Audit (TP-0003) - First slice toward F-601
- */
-
-import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'fs';
+import { writeFileSync, mkdirSync, readFileSync, existsSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
-
 const DATE = new Date().toISOString().split('T')[0];
-
 export function parseAgentsCommands(md) {
   const m = md.match(/## Commands\n([\s\S]*?)(```\n([\s\S]*?)\n```|\n## )/);
   return m && m[3] ? [...new Set(m[3].split('\n').filter(l => l.trim().startsWith('pnpm ')).map(l => l.split('#')[0].trim().replace(/^pnpm /, '').split(/\s+/)[0]).filter(c => c !== 'install'))] : [];
 }
-
 export function parseAudit(out) {
   if (!out || !out.trim()) return {status: 'YELLOW', finding: 'audit could not run'};
   try {
@@ -27,6 +20,29 @@ export function parseAudit(out) {
     return {status: 'YELLOW', finding: 'audit could not run'};
   }
 }
+export function checkDocRefs(listDocs, readFile, fileExists) {
+  try {
+    const docs = listDocs();
+    let broken = [], refCount = 0;
+    for (const doc of docs) {
+      const txt = readFile(doc);
+      const refs = txt.match(/\[.*?\]\(([^)]+)\)/g) || [];
+      for (const ref of refs) {
+        const p = ref.match(/\[.*?\]\(([^)]+)\)/)?.[1];
+        if (p && !p.startsWith('#') && !p.startsWith('http')) {
+          refCount++;
+          const dir = doc.substring(0, doc.lastIndexOf('/'));
+          if (!fileExists(join(dir, p))) broken.push(`${doc}: ${p}`);
+        }
+      }
+    }
+    if (broken.length) return {status: 'YELLOW', finding: `${broken.length} broken doc ref(s)`};
+    if (refCount === 0) return {status: null, detail: `Doc refs: nothing to check (0 refs in ${docs.length} doc(s))`};
+    return {status: null, detail: `Checked ${refCount} ref(s) in ${docs.length} doc(s), none broken`};
+  } catch (e) {
+    return {status: 'YELLOW', finding: `Doc refs: could not run (${e.message})`};
+  }
+}
 
 function checkHarnessIntegrity() {
   const r = {status: 'GREEN', findings: [], details: []};
@@ -37,7 +53,6 @@ function checkHarnessIntegrity() {
     const noEv = passing.filter(f => !f.evidence?.length);
     if (noEv.length) addYellow(`${noEv.length} passing feature(s) lack evidence`);
     else r.details.push(passing.length ? `All ${passing.length} passing feature(s) have evidence` : 'No passing features yet');
-
     const cmds = parseAgentsCommands(readFileSync('AGENTS.md', 'utf-8'));
     if (!cmds.length) {
       addYellow('AGENTS.md: parsed 0 commands from ## Commands');
@@ -46,30 +61,12 @@ function checkHarnessIntegrity() {
       if (missing.length) addYellow(`Missing commands: ${missing.join(', ')}`);
       else r.details.push('All AGENTS.md commands exist');
     }
-
     if (existsSync('docs')) {
-      const docs = execSync('find docs -name "*.md" 2>/dev/null || true', {encoding: 'utf-8'}).trim().split('\n').filter(f => f);
-      let broken = [];
-      for (const doc of docs) {
-        const txt = readFileSync(doc, 'utf-8');
-        const refs = txt.match(/\[.*?\]\(([^)]+)\)/g) || [];
-        for (const ref of refs) {
-          const p = ref.match(/\[.*?\]\(([^)]+)\)/)?.[1];
-          if (p && !p.startsWith('#') && !p.startsWith('http')) {
-            const dir = doc.substring(0, doc.lastIndexOf('/'));
-            if (!existsSync(join(dir, p))) broken.push(`${doc}: ${p}`);
-          }
-        }
-      }
-      if (broken.length) {
-        r.status = 'YELLOW';
-        r.findings.push(`${broken.length} broken doc ref(s)`);
-      } else if (docs.length) {
-        r.details.push(`No broken refs in ${docs.length} doc(s)`);
-      }
+      const listDocs = () => readdirSync('docs', {recursive: true, encoding: 'utf-8'}).filter(f => f.endsWith('.md')).map(f => join('docs', f));
+      const docCheck = checkDocRefs(listDocs, (p) => readFileSync(p, 'utf-8'), existsSync);
+      if (docCheck.status) { r.status = docCheck.status; r.findings.push(docCheck.finding); }
+      else r.details.push(docCheck.detail);
     }
-
-    // Progress log validation
     try {
       const yesterday = new Date(Date.now() - 86400000).toISOString();
       const commits = execSync(`git log --since="${yesterday}" --format="%s"`, {encoding: 'utf-8'}).trim().split('\n').filter(c => c);
