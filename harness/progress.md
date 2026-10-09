@@ -30,9 +30,9 @@ Evidence: PR #7
 Left: F-601 full (Phase 6).
 Decisions: None.
 
-## 2026-10-09 03:05 (UTC) — Cloud Agent — packet TP-0004 / F-101
-Did: App shell with Supabase Auth + role guards. Real local users in supabase/seed.sql. E2e signs in via /login. Missing env shows a config message. Open-redirect guard on ?redirect=.
-State: lint, typecheck, unit, e2e green against local Supabase.
+## 2026-10-09 03:16 (UTC) — Cloud Agent — packet TP-0004 / F-101
+Did: Harden safeRedirect (origin + backslash/control reject). Public routes allowlisted. Removed unused page.module.css. E2e covers /%5Cevil.com.
+State: lint, typecheck, unit, e2e green.
 Evidence: PR #10.
-Left to do: QA acceptance for F-101.
+Left to do: QA re-check F-101. Denied-route 200 left for later.
 Decisions needed: None.

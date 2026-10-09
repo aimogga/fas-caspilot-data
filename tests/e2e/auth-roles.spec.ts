@@ -20,6 +20,15 @@ test.describe('auth-roles', () => {
     ['staff', 'staff@example.test', ['/', '/staff', '/board'], ['/admin']],
     ['board_viewer', 'board@example.test', ['/', '/board'], ['/staff', '/admin']],
   ];
+  test('encoded backslash redirect stays on app origin', async ({ page }) => {
+    await page.goto('/login?redirect=/%5Cevil.com');
+    await page.fill('#email', 'admin@example.test');
+    await page.fill('#password', 'testpass123');
+    await page.click('button[type="submit"]');
+    await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 10000 });
+    expect(new URL(page.url()).origin).toBe('http://127.0.0.1:3000');
+    expect(page.url()).not.toContain('evil.com');
+  });
   for (const [role, email, allowed, denied] of cases) {
     test(`${role} access and sign out`, async ({ page }) => {
       await signIn(page, email);

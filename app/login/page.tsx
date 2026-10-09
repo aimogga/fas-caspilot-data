@@ -10,7 +10,7 @@ function LoginForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const redirect = safeRedirect(useSearchParams().get('redirect'));
+  const rawRedirect = useSearchParams().get('redirect');
   const client = createClient();
   if (!client) {
     return <p>Supabase not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.</p>;
@@ -23,7 +23,7 @@ function LoginForm() {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) setError(error.message);
-      else { router.push(redirect); router.refresh(); }
+      else { router.push(safeRedirect(rawRedirect, window.location.origin)); router.refresh(); }
     } catch { setError('An unexpected error occurred'); }
     finally { setLoading(false); }
   }

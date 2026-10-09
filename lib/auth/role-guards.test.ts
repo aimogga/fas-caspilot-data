@@ -22,12 +22,28 @@ describe('role-guards', () => {
     expect(getAllowedRoles('/staff')).toEqual(['admin', 'staff']);
     expect(getAllowedRoles('/admin')).toEqual(['admin']);
   });
-  it('identifies public routes and safe redirects', () => {
+  it('allowlists public routes only', () => {
     expect(isPublicRoute('/login')).toBe(true);
+    expect(isPublicRoute('/403')).toBe(true);
     expect(isPublicRoute('/api/auth/signout')).toBe(true);
+    expect(isPublicRoute('/api/health')).toBe(false);
     expect(isPublicRoute('/')).toBe(false);
-    expect(safeRedirect('/staff')).toBe('/staff');
-    expect(safeRedirect('//evil')).toBe('/');
-    expect(safeRedirect('https://evil')).toBe('/');
+  });
+  const origin = 'http://localhost:3000';
+  it.each([
+    ['/%5Cevil.com', '/'],
+    ['/%5C/evil.com', '/'],
+    ['/%09/evil.com', '/'],
+    ['/%0A/evil.com', '/'],
+    ['/\\evil.com', '/'],
+    ['//evil.com', '/'],
+    ['https://evil.com', '/'],
+    ['javascript:alert(1)', '/'],
+    ['', '/'],
+    [null, '/'],
+    ['/staff', '/staff'],
+    ['/board?x=1#y', '/board?x=1#y'],
+  ])('safeRedirect(%j) → %j', (input, expected) => {
+    expect(safeRedirect(input, origin)).toBe(expected);
   });
 });
