@@ -258,13 +258,13 @@ describe('rls', () => {
   });
 
   it.each([
-    { table: 'case' as const, col: 'upload_batch_id', row: { org_id: ORG1, referral_source: 'fk', upload_batch_id: UB2 }, q: { referral_source: 'fk' } },
-    { table: 'application' as const, col: 'case_id', row: { org_id: ORG1, case_id: C2, decision: 'fk' }, q: { decision: 'fk' } },
-    { table: 'authorization' as const, col: 'application_id', row: { org_id: ORG1, application_id: A2, service_type: 'fk-app' }, q: { service_type: 'fk-app' } },
-    { table: 'authorization' as const, col: 'provider_id', row: { org_id: ORG1, application_id: A1, provider_id: P2, service_type: 'fk-prov' }, q: { service_type: 'fk-prov' } },
-    { table: 'delivery_episode' as const, col: 'authorization_id', row: { org_id: ORG1, authorization_id: Z2, discharge_status: 'fk' }, q: { discharge_status: 'fk' } },
-    { table: 'outcome_measure' as const, col: 'case_id', row: { org_id: ORG1, case_id: C2, measure_code: 'fk' }, q: { measure_code: 'fk' } },
-  ])('child cannot attach $table.$col across orgs', async ({ table, row, q }) => {
+    { table: 'case', col: 'upload_batch_id', row: { org_id: ORG1, referral_source: 'fk', upload_batch_id: UB2 }, q: { referral_source: 'fk' } },
+    { table: 'application', col: 'case_id', row: { org_id: ORG1, case_id: C2, decision: 'fk' }, q: { decision: 'fk' } },
+    { table: 'authorization', col: 'application_id', row: { org_id: ORG1, application_id: A2, service_type: 'fk-app' }, q: { service_type: 'fk-app' } },
+    { table: 'authorization', col: 'provider_id', row: { org_id: ORG1, application_id: A1, provider_id: P2, service_type: 'fk-prov' }, q: { service_type: 'fk-prov' } },
+    { table: 'delivery_episode', col: 'authorization_id', row: { org_id: ORG1, authorization_id: Z2, discharge_status: 'fk' }, q: { discharge_status: 'fk' } },
+    { table: 'outcome_measure', col: 'case_id', row: { org_id: ORG1, case_id: C2, measure_code: 'fk' }, q: { measure_code: 'fk' } },
+  ] as { table: Table; col: string; row: Rec; q: Rec }[])('child cannot attach $table.$col across orgs', async ({ table, row, q }) => {
     const { error } = await svc.from(table).insert(row);
     const { data } = await svc.from(table).select('id').match(q).limit(1);
     if (data?.length) await svc.from(table).delete().match(q);
