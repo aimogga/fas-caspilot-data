@@ -60,3 +60,16 @@ Left: F-102 part 3 (grants/exports). Decisions: none.
 ## 2026-10-09 08:35 (UTC) — Cloud Agent — TP-0006 QA FAIL
 Did: INSERT via return-minimal then svc tag lookup+cleanup; table-driven 6 composite child FKs; catalog org_id NOT NULL on all 8 FAS tables.
 Left: F-102 part 3. Decisions: none.
+
+## 2026-10-09 09:25 (UTC) — Cloud Agent — packet TP-0007 / F-102 part 3
+Did: 8 grants/export/audit tables with CHECK enums, org-scoped RLS (export_job created_by=auth.uid(), audit_log actor uuid append-only), view security_invoker guard, synthetic seed, rls matrix + ARCH catalog.
+State: lint/typecheck green; unit 60/60; test:db 767/767; e2e 5/5; `/api/health` ok vs local Supabase.
+Left: none (F-102 schema complete). Decisions: none.
+
+## 2026-10-09 10:35 (UTC) — Cloud Agent — TP-0007 QA FAIL
+Did: CHECK bogus inserts; guard true/on (ci) + false probe + matviews; pg_constraint PK/FKs; stamp_now() on audit_log.at / export_job.created_at.
+Left: none. Decisions: none.
+
+## 2026-10-09 12:25 (UTC) — Cloud Agent — TP-0007 QA FAIL #2
+Did: exact CHECK defs in `$t has $def`; view probes off/0/no; REVOKE TRUNCATE,TRIGGER from anon/authenticated + catalog.
+Left: none. Decisions: none.
