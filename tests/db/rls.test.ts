@@ -1,7 +1,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { execFileSync } from 'node:child_process';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { assertLocalSupabase } from '@/lib/db/local-pg';
+import { assertLocalSupabase } from '../../lib/db/local-pg';
 
 function need(name: string): string {
   const v = process.env[name];
