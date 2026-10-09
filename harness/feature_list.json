@@ -136,8 +136,13 @@
         "golden: fixture with hand-computed metrics"
       ],
       "human_gate": "none",
-      "status": "failing",
-      "evidence": []
+      "status": "passing",
+      "evidence": [
+        "https://github.com/aimogga/fas-caspilot-data/pull/21#issuecomment-6084301298 (QA PASS at d07a512, TP-0008)",
+        "https://github.com/aimogga/fas-caspilot-data/commit/d07a5122fdc9d88fa930ec66d9170eb35b6098ec (tested sha d07a512)",
+        "https://github.com/aimogga/fas-caspilot-data/commit/4e89a1e42fca6f7b6ea5bddad774d18ddcd0e53a (PR #21 squash merge 4e89a1e)",
+        "fas-dev zlizvzpatfyhdydfmxef verified read-only by QA 2026-10-09 09:59 MT: seed-103 counts and md5 match, synthetic only, RLS probes pass"
+      ]
     },
     {
       "id": "F-104",
