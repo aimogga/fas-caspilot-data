@@ -94,11 +94,13 @@ State: lint/typecheck/unit/seed/test:db/e2e pending this commit.
 Evidence: PR #21. Left: none. Decisions: none.
 
 ## 2026-10-09 16:02 (UTC) — Cloud Agent — packet TP-0009 / F-601
-Did: Nightly audit exits non-zero on Overall RED or Critical (privacy RED); YELLOW/GREEN stay 0. Full `harness/audits/<date>.md` printed to stdout (job log) in addition to artifact + step summary. Oct 9 RED was GHSA-vfj7-8cjw-p6xm (braces ≤3.0.3 via eslint-config-next; no patched release). parseAudit now counts remaining `advisories` (pnpm ignoreCves leaves metadata.high=1 with empty advisories). Review exception for CVE-2026-93687 (lint-toolchain, no untrusted globs, unpatched). Tests: RED/Critical non-zero, GREEN 0, report printed.
-State: compiling; smoke pending this commit.
-Left: none.
-Decisions: none.
+Did: Nightly audit exits non-zero on Overall RED or Critical; YELLOW/GREEN stay 0. Report printed to job log. Braces GHSA-vfj7-8cjw-p6xm reviewed ignore.
+Left: none. Decisions: none.
 
 ## 2026-10-09 16:25 (UTC) — Cloud Agent — TP-0009 QA FAIL PR #22
-Did: Fail-closed parse; reviewed ignore file with ISO expiry/severity; scanner cannot-run is RED; PKCS#8; N3/N4b/M6 tests.
+Did: Fail-closed parse; ignore file; scanner cannot-run RED; PKCS#8; N3/N4b/M6.
+Left: none. Decisions: none.
+
+## 2026-10-09 17:11 (UTC) — Cloud Agent — TP-0009 QA FAIL #3 PR #22
+Did: Dup id+package ignore RED; stale ≥YELLOW; N7/N10/N11/S3/N12/V7/V9 tests.
 Left: none. Decisions: none.

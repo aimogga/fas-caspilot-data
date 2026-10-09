@@ -72,9 +72,13 @@ export function parseAudit(out, opts = {}) {
   if (hasAdv && (!adv || typeof adv !== 'object' || Array.isArray(adv))) return failRun('audit could not run');
   const today = opts.today || DATE;
   const ignores = opts.ignores || [];
+  const seen = new Set();
   for (const ig of ignores) {
     const err = validateIgnore(ig);
     if (err) return failRun(err);
+    const k = `${ig.id}\0${ig.package}`;
+    if (seen.has(k)) return failRun('duplicate ignore');
+    seen.add(k);
   }
   const counted = {critical: 0, high: 0, moderate: 0, low: 0, info: 0};
   const ignCounts = {critical: 0, high: 0, moderate: 0, low: 0, info: 0};
@@ -100,14 +104,12 @@ export function parseAudit(out, opts = {}) {
       if ((counted[k] || 0) + (ignCounts[k] || 0) !== (meta[k] || 0)) return failRun('advisories/metadata mismatch');
     }
   } else {
-    counted.critical = meta.critical || 0;
-    counted.high = meta.high || 0;
-    counted.moderate = meta.moderate || 0;
-    counted.low = meta.low || 0;
+    Object.assign(counted, {critical: meta.critical || 0, high: meta.high || 0, moderate: meta.moderate || 0, low: meta.low || 0});
   }
   const stale = ignores.filter(ig => !touched.has(ig.id));
   const [c, h, m, l] = [counted.critical, counted.high, counted.moderate, counted.low];
   if (c || h) return {status: 'RED', finding: `${c} critical, ${h} high`, ignored, stale};
+  if (stale.length) return {status: 'YELLOW', finding: `${stale.length} stale ignore(s)`, ignored, stale};
   if (m) return {status: 'YELLOW', finding: `${m} moderate`, ignored, stale};
   return {status: 'GREEN', finding: `No high/critical (${l} low)`, ignored, stale};
 }
