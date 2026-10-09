@@ -1,0 +1,20 @@
+{
+  "seed": 20,
+  "nCases": 20,
+  "courtBits": "11000110001100011000",
+  "summary": {
+    "court": 8,
+    "nonCourt": 12,
+    "nonStarts": { "moved": 1, "declined": 1, "waitlist": 1 },
+    "completed": 10,
+    "dropped": 4,
+    "affiliatedShare": 0.4706,
+    "meanChange": { "PHQ-9": 0.5, "GAD-7": 0.25, "OQ-45": -1, "YOQ": -0.3333 }
+  },
+  "meanWorked": {
+    "PHQ-9": "(0+3-1+0)/4",
+    "GAD-7": "(0-2+0+3)/4",
+    "OQ-45": "(3-3-3)/3",
+    "YOQ": "(-4+3+0)/3"
+  }
+}

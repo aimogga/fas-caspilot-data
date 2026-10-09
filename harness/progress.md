@@ -73,3 +73,22 @@ Left: none. Decisions: none.
 ## 2026-10-09 12:25 (UTC) — Cloud Agent — TP-0007 QA FAIL #2
 Did: exact CHECK defs in `$t has $def`; view probes off/0/no; REVOKE TRUNCATE,TRIGGER from anon/authenticated + catalog.
 Left: none. Decisions: none.
+
+## 2026-10-09 14:00 (UTC) — Cloud Agent — packet TP-0008 / F-103
+Did: Pure seeded generator in `lib/synthetic/` (~200 cases, 29 UT counties); `pnpm seed:synthetic` loads local Supabase (idempotent f103 ids, keeps seed.sql fixtures) or `--sql` export; unit invariants + golden 20-case fixture. Renamed F-102 migrations to fas-dev versions (no content change).
+State: lint/typecheck/unit 64/64; test:db 785/785 after seed; e2e 5/5; `/api/health` ok.
+Evidence: https://github.com/aimogga/fas-caspilot-data/pull/21
+Left: none (QA packet requested on the PR).
+Decisions: none.
+
+## 2026-10-09 14:27 (UTC) — Cloud Agent — TP-0008 QA FAIL / F-103
+Did: Realism: followup ≥ last session/baseline; sessions/paid/auth vs award; outcome mix; all 12 providers; denied skip episodes/outcomes; weighted counties; vary court lag. Mutant invariants + toSql org/f103/idempotent test. Golden hand-recomputed.
+State: lint/typecheck/unit 66/66; seed x2; test:db 785/785; e2e 5/5.
+Evidence: PR #21.
+Left: none (QA re-check).
+Decisions: none.
+
+## 2026-10-09 15:14 (UTC) — Cloud Agent — TP-0008 QA FAIL #2 / F-103
+Did: Court order 1–30 days before referral (≥5 distinct gaps); followup mix ≥20% improve/flat/worsen (kills after-20-worsens). Golden unchanged.
+State: lint/typecheck/unit/seed/test:db/e2e pending this commit.
+Evidence: PR #21. Left: none. Decisions: none.
