@@ -3,6 +3,12 @@
 *Repo location: `docs/DESIGN_WORKFLOW.md` (per the Supervisor). Specs live in `docs/design/specs/<ID>.md`, one file per PR, with mockups in `docs/design/mockups/`.*
 *Order confirmed by the Supervisor: PR #28 rename → DS-01a → DS-01b → DS-01c → DS-02 → DS-03 → DS-04 → F-201.*
 
+## Source documents (not yet in repo)
+
+- `docs/design/design-system-v1.md` (token values; DS-01a uses §4–5), `docs/design/fas-screen-plan.md` (DS-02 nav comes from §1.2), and the mockups in `docs/design/mockups/` (PNG at 375/1024/1440 plus HTML source) are maintained by UX/UI Design Bot. They are handed to each implementing cloud agent as attachments.
+- They land in the repo in a separate design-sources PR, committed by a cloud agent because they include binaries. That PR is excluded from the 400-line cap as reference material and must merge before DS-01b starts.
+- DS-01a was built from the attached `design-system-v1.md`.
+
 ## Steps
 1. **Spec first.** Design commits `docs/design/specs/<ID>.md` (scope, files, acceptance criteria, states, a11y, line budget) before any code. An engineer starts only from a merged or linked spec.
 2. **One packet, one agent, one PR.** Only one cloud agent works at a time. The hand-written diff stays at 400 lines or fewer (D-012: only lockfiles and *untouched* generator output, e.g. unmodified `shadcn add` files, are excluded, and they are listed by name. Any hand edit to a generated file counts toward the 400 lines, and so does the whole file once it is edited). The PR body links the spec and maps each acceptance criterion to its evidence.

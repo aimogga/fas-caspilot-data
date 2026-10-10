@@ -1,4 +1,5 @@
 # DS-01a — Tailwind v4 + design tokens
+Source docs: see DESIGN_WORKFLOW.md → Source documents (land before DS-01b).
 **Depends on:** PR #28 (rename) merged. **Budget:** ≤ 400 hand-written lines.
 
 **Pins** (npm latest as of 2026-10-10; all peer-compatible with React 19). Confirm with `pnpm build` on Next 16.4.0 / React 19.3.0 and pin exact versions with no `^`:
