@@ -25,9 +25,13 @@ describe("design tokens", () => {
   });
 
   it("defines the FAS Evidence primary token", () => {
-    expect(readFileSync(join(root, "app/globals.css"), "utf8")).toContain(
-      "--primary: oklch(0.38 0.06 160)",
-    );
+    const css = readFileSync(join(root, "app/globals.css"), "utf8");
+    expect(css).toContain("--primary: oklch(0.38 0.06 160)");
+    expect(css).toContain("--tap-min: 44px");
+    expect(css).toContain("--input-font: 16px");
+    expect(css).toContain("--page-gutter-mobile: 16px");
+    expect(css).toContain("--breakpoint-md: 768px");
+    expect(css).toContain("--breakpoint-lg: 1024px");
   });
 
   it("has no raw hex in app CSS", () => {
