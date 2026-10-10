@@ -104,3 +104,9 @@ Left: none. Decisions: none.
 ## 2026-10-09 18:42 (UTC) — Cloud Agent — TP-0009 QA FAIL #6 PR #22
 Did: Exact severity match (upgrade RED, downgrade not GREEN); missing GHSA counted; second braces GHSA counted.
 Left: none. Decisions: none.
+
+## 2026-10-10 13:50 (UTC) — Cloud Agent — packet TP-0010 / F-601
+Did: Moved Nightly Audit cron off the hour to `23 9 * * *`. Added fail-closed staleness check (`scripts/audit-staleness.mjs`) plus workflow cron `41 */6 * * *` that fails when main has no successful schedule-triggered Nightly Audit in 24h.
+State: lint/typecheck/unit 136/136 green.
+Left: none.
+Decisions: none.

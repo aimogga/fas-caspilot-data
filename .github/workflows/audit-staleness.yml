@@ -1,0 +1,63 @@
+name: Nightly Audit Staleness
+
+on:
+  schedule:
+    - cron: '41 */6 * * *'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/audit-staleness.yml'
+      - '.github/workflows/nightly-audit.yml'
+      - 'scripts/audit-staleness.mjs'
+      - 'scripts/audit-staleness.test.mjs'
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  test:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.3
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run staleness unit tests
+        run: pnpm exec vitest run scripts/audit-staleness.test.mjs
+
+  staleness:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check nightly audit staleness
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/audit-staleness.mjs
