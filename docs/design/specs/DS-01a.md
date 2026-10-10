@@ -8,7 +8,7 @@
 
 **Scope**
 - `postcss.config.mjs` with `@tailwindcss/postcss`.
-- Replace `app/globals.css` with: `@import "tailwindcss"`, `@import "tw-animate-css"`, the full `:root` + `.dark` oklch tokens, `@theme inline` and the shadow/motion tokens from design-system §4–5, plus a base layer (`button,input,select,textarea{font:inherit}`, `:focus-visible` ring, reduced motion).
+- Replace `app/globals.css` with: `@import "tailwindcss"`, `@import "tw-animate-css"`, the full `:root` + `.dark` oklch tokens, `@theme inline` and the shadow/motion tokens from design-system §4–5, plus a base layer (`button,input,select,textarea{font:inherit}`, `:focus-visible` ring, reduced motion). Add tokens `--tap-min: 44px`, `--input-font: 16px` and `--page-gutter-mobile: 16px`, and the Tailwind breakpoints `md: 768px` (tablet) and `lg: 1024px` (desktop). Layout uses no other breakpoints.
 - `app/layout.tsx`:
   - `next/font/google`: Inter (variable, `--font-inter`), Source Serif 4 (`--font-source-serif`), JetBrains Mono (`--font-jetbrains`);
   - `lang="en"`;
@@ -22,3 +22,5 @@
 4. Screenshot of `/login` at 1440 attached. It's still unstyled form-wise, but now in Inter.
 
 **Out of scope:** components, shell, page redesigns.
+
+**Mobile hard requirements (QA-checked at 375):** labels stacked above full-width fields; ≥ 16px side padding on login and pages; input text ≥ 16px; every tappable control ≥ 44×44px; no horizontal scroll. Contrast meets WCAG 2.2 AA (text 4.5:1, large text/UI 3:1).
