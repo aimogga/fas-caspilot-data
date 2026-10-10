@@ -161,3 +161,9 @@ Did: Corrected product name from FAS Grants to FAS Evidence in branding, UI, pro
 State: lint/typecheck/unit 172/172 green; e2e 7/7 green.
 Left: none.
 Decisions: none.
+
+## 2026-10-10 22:05 (UTC) — Cloud Agent — DS-01a Tailwind v4 + design tokens
+Did: Pinned tailwindcss/@tailwindcss/postcss 4.3.3 and tw-animate-css 1.4.0. Replaced raw-hex globals with §4–5 oklch tokens, @theme, Inter/Source Serif 4/JetBrains Mono, and title template `%s · FAS Evidence`. Kept `page.module.css` on the new tokens (DS-04 does not replace `/`).
+State: implementing; smoke + e2e next.
+Left: lint/typecheck/unit/build/e2e + 1440 login screenshot.
+Decisions: none.
