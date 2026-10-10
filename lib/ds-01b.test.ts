@@ -4,38 +4,29 @@ import { describe, expect, it } from "vitest";
 import { isDevGalleryEnabled } from "./dev-gallery";
 
 const read = (rel: string) => readFileSync(join(import.meta.dirname, "..", rel), "utf8");
+const ui = (f: string) => read(`components/ui/${f}.tsx`);
 
 describe("DS-01b", () => {
-  it("pins exact shadcn packages", () => {
-    const pkg = JSON.parse(read("package.json"));
-    const d = { ...pkg.dependencies, ...pkg.devDependencies };
-    expect(d["class-variance-authority"]).toBe("0.7.1");
-    expect(d.clsx).toBe("2.1.1");
-    expect(d["tailwind-merge"]).toBe("3.7.0");
-    expect(d["radix-ui"]).toBe("1.7.0");
-    expect(d["lucide-react"]).toBe("1.55.0");
-  });
-
-  it("shows the gallery in preview and 404s on Vercel production", () => {
-    expect(isDevGalleryEnabled("development")).toBe(true);
-    expect(isDevGalleryEnabled("production", "preview")).toBe(true);
-    expect(isDevGalleryEnabled("production", "production")).toBe(false);
-    expect(isDevGalleryEnabled("development", "production")).toBe(false);
-    expect(isDevGalleryEnabled("production")).toBe(false);
-    expect(read("app/(dev)/ui/page.tsx")).toMatch(/isDevGalleryEnabled|notFound/);
-  });
-
-  it("applies the documented hand-edits", () => {
-    const [button, input, label, badge, alert] = ["button", "input", "label", "badge", "alert"].map((f) => read(`components/ui/${f}.tsx`));
+  it("pins packages, uses @/lib/utils cn, gates /ui, and applies hand-edits", () => {
+    const d = { ...JSON.parse(read("package.json")).dependencies, ...JSON.parse(read("package.json")).devDependencies };
+    expect(d).toMatchObject({ "class-variance-authority": "0.7.1", clsx: "2.1.1", "tailwind-merge": "3.7.0", "radix-ui": "1.7.0", "lucide-react": "1.55.0" });
+    expect(d.cn).toBeUndefined();
+    expect(read("pnpm-lock.yaml")).not.toMatch(/^ {2}cn:/m);
+    for (const f of ["button", "input", "label", "badge", "alert", "card", "separator"]) {
+      expect(ui(f)).toContain('from "@/lib/utils"');
+      expect(ui(f)).not.toMatch(/from ["']cn["']/);
+    }
+    expect([isDevGalleryEnabled("development"), isDevGalleryEnabled("production", "preview"), isDevGalleryEnabled("production", "production"), isDevGalleryEnabled("development", "production"), isDevGalleryEnabled("production")]).toEqual([true, true, false, false, false]);
+    const [button, input, label, badge, alert, gallery] = ["button", "input", "label", "badge", "alert"].map(ui).concat(read("app/(dev)/ui/page.tsx"));
+    expect(gallery).toMatch(/isDevGalleryEnabled|notFound/);
     expect(button).toContain('default: "h-11');
     expect(button).toMatch(/lg:h-10[\s\S]*sm: "h-11[\s\S]*lg:h-8[\s\S]*lg: "h-11[\s\S]*size-11 lg:size-10[\s\S]*loading/);
+    expect(button).toContain("var(--ring)");
     expect(input).toMatch(/h-12 md:h-11[\s\S]*w-full[\s\S]*text-base/);
     expect(input).not.toMatch(/(?<!file:)text-sm/);
     expect(label).toMatch(/mb-2[\s\S]*\bblock\b/);
-    expect(badge).toMatch(/success:[\s\S]*warning:[\s\S]*destructive:[\s\S]*info:[\s\S]*muted:/);
-    expect(badge).toContain("success-soft");
-    expect(badge).toContain("prefix");
-    expect(alert).toContain("warning:");
-    expect(alert).toContain('variant === "destructive" ? "alert"');
+    expect(badge).toMatch(/success:[\s\S]*success-soft[\s\S]*warning:[\s\S]*destructive:[\s\S]*info:[\s\S]*muted:[\s\S]*prefix/);
+    expect(alert).toMatch(/warning:[\s\S]*variant === "destructive" \? "alert"/);
+    expect(gallery).toMatch(/disabled[\s\S]*aria-invalid[\s\S]*aria-describedby/);
   });
 });

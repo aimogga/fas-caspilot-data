@@ -149,6 +149,8 @@
 }
 
 @layer base {
+  * { border-color: var(--border); }
+
   body {
     background: var(--background);
     color: var(--foreground);
@@ -188,10 +190,11 @@
     border-radius: var(--radius-md); padding-inline: 12px;
   }
 
-  button {
-    min-height: var(--tap-min); min-width: var(--tap-min);
+  button:not([data-slot]) {
     border: 1px solid var(--input); border-radius: var(--radius-md); padding-inline: 16px;
   }
+
+  @media (width < 1024px) { button { min-height: var(--tap-min); min-width: var(--tap-min); } }
 
   :focus-visible {
     outline: 2px solid var(--ring);
