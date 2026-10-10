@@ -30,8 +30,11 @@ describe("design tokens", () => {
     expect(css).toContain("--tap-min: 44px");
     expect(css).toContain("--input-font: 16px");
     expect(css).toContain("--page-gutter-mobile: 16px");
+    expect(css).toMatch(/--input: oklch\(0\.60 0\.014 80\)[\s\S]*--input: oklch\(0\.55 0\.010 70\)/);
+    expect(css).toContain("--breakpoint-*: initial");
     expect(css).toContain("--breakpoint-md: 768px");
     expect(css).toContain("--breakpoint-lg: 1024px");
+    expect(css).not.toMatch(/--breakpoint-sm:|--breakpoint-xl:/);
   });
 
   it("has no raw hex in app CSS", () => {

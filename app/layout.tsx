@@ -34,10 +34,7 @@ const fontVariables = `${inter.variable} ${sourceSerif.variable} ${jetbrainsMono
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={fontVariables}>
-      <body>
-        <style>{`:root { --primary: oklch(0.38 0.06 160); }`}</style>
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

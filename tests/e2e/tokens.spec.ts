@@ -4,17 +4,24 @@ test("login uses design tokens, Inter, and Source Serif 4", async ({ page }) => 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/login");
   await page.evaluate(() => document.fonts.ready);
-
   const computed = await page.evaluate(() => {
+    const used = (value: string) => {
+      const el = document.createElement("span");
+      el.style.color = value;
+      document.body.append(el);
+      const { color } = getComputedStyle(el);
+      el.remove();
+      return color;
+    };
     const h1 = document.querySelector("h1");
     return {
-      primary: getComputedStyle(document.documentElement).getPropertyValue("--primary").trim(),
+      primary: used("var(--primary)"),
+      expected: used("oklch(0.38 0.06 160)"),
       bodyFont: getComputedStyle(document.body).fontFamily,
       h1Font: h1 ? getComputedStyle(h1).fontFamily : "",
     };
   });
-
-  expect(computed.primary).toBe("oklch(0.38 0.06 160)");
+  expect(computed.primary).toBe(computed.expected);
   expect(computed.bodyFont).toMatch(/Inter/i);
   expect(computed.h1Font).toMatch(/Source Serif/i);
 });
@@ -38,6 +45,9 @@ test("login at 375 uses mobile tokens and stacked fields", async ({ page }) => {
       btnW: box(button).width,
       labelBlock: label ? getComputedStyle(label).display === "block" : false,
       noHScroll: document.documentElement.scrollWidth <= 375 + 1,
+      inputBorder: input ? parseFloat(getComputedStyle(input).borderTopWidth) : 0,
+      inputBorderColor: input ? getComputedStyle(input).borderTopColor : "",
+      bodyBg: getComputedStyle(document.body).backgroundColor,
     };
   });
   expect(m).toMatchObject({ tap: "44px", font: "16px", gutter: "16px", labelBlock: true, noHScroll: true });
@@ -46,4 +56,7 @@ test("login at 375 uses mobile tokens and stacked fields", async ({ page }) => {
   expect(m.inputH).toBeGreaterThanOrEqual(44);
   expect(m.btnH).toBeGreaterThanOrEqual(44);
   expect(m.btnW).toBeGreaterThanOrEqual(44);
+  expect(m.inputBorder).toBeGreaterThanOrEqual(1);
+  expect(m.inputBorderColor).not.toBe("rgba(0, 0, 0, 0)");
+  expect(m.inputBorderColor).not.toBe(m.bodyBg);
 });

@@ -162,8 +162,8 @@ State: lint/typecheck/unit 172/172 green; e2e 7/7 green.
 Left: none.
 Decisions: none.
 
-## 2026-10-10 22:15 (UTC) — Cloud Agent — DS-01a Tailwind v4 + design tokens
-Did: Tailwind 4.3.3 tokens + Inter/Source Serif 4/JetBrains Mono. Added `--tap-min` 44px, `--input-font` 16px, `--page-gutter-mobile` 16px, and md/lg breakpoints. Kept `page.module.css` on the new tokens (DS-04 does not replace `/`).
-State: lint/typecheck/unit 175/175 green; build green; e2e 9/9 green (auth-roles, branding, tokens).
-Left: none.
+## 2026-10-10 22:25 (UTC) — Cloud Agent — DS-01a design review
+Did: Removed inline `--primary` style; base-layer input/button border+radius; `--input` 0.60/0.55; `--breakpoint-*: initial`. Kept `page.module.css`.
+State: addressing PR #33 review; tests next.
+Left: smoke + e2e + 375 screenshot.
 Decisions: none.
