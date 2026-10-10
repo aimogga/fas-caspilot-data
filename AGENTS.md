@@ -73,3 +73,8 @@ Commit working code only. If you must stop mid-feature, leave the code compiling
 - Secrets come from Cursor's Secrets tab as environment variables. If one is missing, stop and report; don't hardcode. No secrets are required to boot this shell.
 - Cloud agents may reach preview/dev services only. Never production.
 - Long-running dev server: `start` already runs it in tmux session `web` (`/tmp/web.log`). Do not start a second `pnpm dev`.
+
+## Supabase projects
+- `fas-dev` (ref `zlizvzpatfyhdydfmxef`) is the only FAS Supabase project. It holds synthetic data only and is used by Vercel previews.
+- The other project in the account, `dhlvtisumrvhnqbeidlt`, is NOT FAS and NOT production. Do not use it.
+- There is no FAS production database yet.
