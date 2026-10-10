@@ -3,8 +3,8 @@
 
 ---
 ## 1. Cover
-**From public data to proof.** How FAS and FAS Grants will turn free government data and our own case records into evidence funders trust.
-> Notes: Two kinds of proof: that the need is real, and that our help works. FAS Grants is the tracking system we are building for FAS.
+**From public data to proof.** How FAS and FAS Evidence will turn free government data and our own case records into evidence funders trust.
+> Notes: Two kinds of proof: that the need is real, and that our help works. FAS Evidence is the tracking system we are building for FAS.
 
 ## 2. Every funder asks us two questions
 - **Is the need real?** Public data answers this: who is uninsured, where therapists are scarce, and how many families are in court. *(Proved with public data)*
@@ -33,7 +33,7 @@
 All free to use. Most refresh every year; the shortage list updates daily.
 
 ## 6. How the pieces fit together
-**Free public data** (Census, HRSA, CDC, Utah Courts, VA, Grants.gov) → **FAS Grants** (updates itself monthly, adds FAS case records, keeps families private) → **What our team sees** (county need map, weekly grant alerts, funder list, grant reports).
+**Free public data** (Census, HRSA, CDC, Utah Courts, VA, Grants.gov) → **FAS Evidence** (updates itself monthly, adds FAS case records, keeps families private) → **What our team sees** (county need map, weekly grant alerts, funder list, grant reports).
 Once it's set up, no one re-types data. Updates run on their own.
 
 ## 7. What we'll build 1 of 4 — A need score for every Utah county
@@ -49,7 +49,7 @@ Bonus: see which Utah groups already won similar federal grants, and for how muc
 
 ## 9. What we'll build 3 of 4 — A list of who funds work like ours
 Step 1 Find groups like FAS (nonprofit tax filings) → Step 2 See who funds them (foundation filings list the grants they give, and to whom) → Step 3 Build our ask list.
-Bonus for FAS Grants: the same search finds similar nonprofits in other states.
+Bonus for FAS Evidence: the same search finds similar nonprofits in other states.
 
 ## 10. What we'll build 4 of 4 — Grant reports in one click
 A funder summary per county combining **public need data** with **FAS's own results**: pulls the need numbers from public data, adds FAS results automatically, exports a page funders can read. Built last, once our own data is clean and consistent.
@@ -80,7 +80,7 @@ FAS families answer a short check-in survey when therapy starts and again later 
 Before any provider shares session data with us, we get a legal review.
 
 ## 15. Our path from here
-01 This month: pick outcome surveys; track why families don't start · 02 Next 60 days: load the free public data; launch need score and grant alerts · 03 Before we share dashboards: privacy rules built in; legal review done · 04 Year two: offer FAS Grants to similar nonprofits in other states.
+01 This month: pick outcome surveys; track why families don't start · 02 Next 60 days: load the free public data; launch need score and grant alerts · 03 Before we share dashboards: privacy rules built in; legal review done · 04 Year two: offer FAS Evidence to similar nonprofits in other states.
 
 ## 16. Three ways the team can help
 - **Case managers:** record the court order date, the referral date, and why a family doesn't start.

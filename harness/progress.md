@@ -155,3 +155,9 @@ Did: User-visible product name is now FAS Grants; org name Family Advocacy Servi
 State: lint/typecheck/unit 172/172 green; e2e 7/7 green.
 Left: none.
 Decisions: none.
+
+## 2026-10-10 21:16 (UTC) — Cloud Agent — packet TP-0012 / user-visible product name
+Did: Corrected product name from FAS Grants to FAS Evidence in branding, UI, product-facing docs, and tests. Login/title assert FAS Evidence; rendered pages must not contain FAS Grants or CasePilot.
+State: pending lint/typecheck/unit/e2e this commit.
+Left: none.
+Decisions: none.

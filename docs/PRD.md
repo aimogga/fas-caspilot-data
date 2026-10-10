@@ -5,7 +5,7 @@
 ## 1. Problem and goal
 Every funder asks FAS two questions: *Is the need real?* and *Does your help work?* Free public data can answer the first. Only FAS's own records can answer the second. Today FAS has no system that does either reliably.
 
-**Goal:** one FAS Grants tool that keeps public need data fresh, captures FAS's own results, shows both clearly, finds grants that fit, explains the fit, drafts a cited response strategy, and exports packets FAS can print or attach.
+**Goal:** one FAS Evidence tool that keeps public need data fresh, captures FAS's own results, shows both clearly, finds grants that fit, explains the fit, drafts a cited response strategy, and exports packets FAS can print or attach.
 
 ## 2. Users and roles
 | Role | Who | Can |
