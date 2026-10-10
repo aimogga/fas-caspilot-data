@@ -126,6 +126,8 @@
   --color-success: var(--success); --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning); --color-warning-foreground: var(--warning-foreground);
   --color-info: var(--info); --color-info-foreground: var(--info-foreground);
+  --color-success-soft: var(--success-soft); --color-warning-soft: var(--warning-soft);
+  --color-destructive-soft: var(--destructive-soft); --color-info-soft: var(--info-soft);
   --color-border: var(--border); --color-input: var(--input); --color-ring: var(--ring);
   --color-chart-1: var(--chart-1); --color-chart-2: var(--chart-2); --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4); --color-chart-5: var(--chart-5);
@@ -147,6 +149,7 @@
 }
 
 @layer base {
+  * { border-color: var(--border); }
   body {
     background: var(--background);
     color: var(--foreground);
@@ -186,11 +189,12 @@
     border-radius: var(--radius-md); padding-inline: 12px;
   }
 
-  button {
+  button:not([data-slot]) {
     min-height: var(--tap-min); min-width: var(--tap-min);
     border: 1px solid var(--input); border-radius: var(--radius-md); padding-inline: 16px;
   }
 
+  @media (width < 1024px) { [data-slot=button] { min-height: var(--tap-min); min-width: var(--tap-min); } }
   :focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;

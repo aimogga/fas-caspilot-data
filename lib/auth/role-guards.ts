@@ -10,7 +10,7 @@ export function getAllowedRoles(path: string): UserRole[] {
   return RULES[path] ?? [];
 }
 export function isPublicRoute(path: string): boolean {
-  return path === '/login' || path === '/403' || path === '/api/auth/signout' || path === '/api/health';
+  return path === '/login' || path === '/403' || path === '/api/auth/signout' || path === '/api/health' || path === '/ui';
 }
 
 const UNSAFE = /[\\\x00-\x1F\x7F]/;
