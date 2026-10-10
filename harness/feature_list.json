@@ -173,8 +173,15 @@
         "preview URL in PR"
       ],
       "human_gate": "none",
-      "status": "failing",
-      "evidence": []
+      "status": "passing",
+      "evidence": [
+        "Vercel project fas-caspilot-data (prj_h82wuvUsj0xky8eBSvyrnXZaUO2b, team_6gHyCrnPwAadJtOdkdgiM1WB), Git repo aimogga/fas-caspilot-data: exactly 2 env vars NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (sb_publishable_, not service_role), both scoped preview+development only, hiddenProductionEnvCount 0; production builds canceled by Ignored Build Step (e.g. dpl_Atfw8wNfnQPkBgxikFprU57B117z on main 4c2d83a)",
+        "Supabase fas-dev zlizvzpatfyhdydfmxef (non-production; https://zlizvzpatfyhdydfmxef.supabase.co) verified read-only by QA 2026-10-10 15:10 MT: seed-103 synthetic only (org 'FAS Synthetic', 200 f103 cases, 12 'Provider NNN' providers, 3 auth users all @example.test)",
+        "https://github.com/aimogga/fas-caspilot-data/pull/25 (vercel[bot] preview https://fas-caspilot-data-git-cursor-ci-pipeli-a4819f-aimoggas-projects.vercel.app, dpl_CpRggKfosCiiZQocTFdpzJnr7dJ4 READY target preview at 829dc10)",
+        "https://github.com/aimogga/fas-caspilot-data/pull/27 (vercel[bot] preview https://fas-caspilot-data-git-docs-progress-checklist-aimoggas-projects.vercel.app, dpl_6LBcVFuS1w7xC9btWkk5SJBgP3uY READY target preview at cd9d849; docs-only PR also gets a preview)",
+        "Sign-in on dpl_6LBcVFuS1w7xC9btWkk5SJBgP3uY as admin@example.test by QA 2026-10-10: auth request to zlizvzpatfyhdydfmxef.supabase.co/auth/v1/token, cookie sb-zlizvzpatfyhdydfmxef-auth-token, admin/staff/board pages render, sign-out to /login",
+        "Every PR since preview env setup (#10, #11, #15, #17, #19, #21, #22, #24, #25, #27, #28) has a READY preview deployment"
+      ]
     },
     {
       "id": "F-201",
