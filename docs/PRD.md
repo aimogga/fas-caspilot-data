@@ -14,7 +14,7 @@ Every funder asks FAS two questions: *Is the need real?* and *Does your help wor
 | `staff` | FAS program director, case managers, grant writer | Enter/upload FAS data, view everything for FAS, run matches, request strategy drafts, export |
 | `board_viewer` | FAS board members | View the board dashboard and download board packets (suppressed, aggregate only) |
 
-Design for `org_id` (tenant) on every FAS table from day one so other nonprofits can be added later. No billing in v1.
+Every FAS table carries `org_id` so RLS isolates data by organization. FAS Evidence is for FAS only.
 
 ## 3. Capabilities and acceptance criteria
 Feature IDs refer to `harness/feature_list.json`.
