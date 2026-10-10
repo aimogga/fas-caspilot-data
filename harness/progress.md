@@ -137,3 +137,9 @@ Did: Secret scan now flags ghp/gho/ghu/ghs/ghr/github_pat, service_role JWTs (de
 State: lint/typecheck/unit 176/176 green.
 Left: none.
 Decisions: none.
+
+## 2026-10-10 15:39 (UTC) — Cloud Agent — TP-0011 QA FAIL #2 PR #25
+Did: Replaced string-ban ci.yml test with parseYaml+assertCi (in-tree subset parser). Check steps must be exact allowlisted runs; rejects job/step if and continue-on-error. Negatives: if ${{ false }}, `; exit 0`, --passWithNoTests, echo, || :. Start log prints migrate/seed only.
+State: lint/typecheck/unit 175/175 green.
+Left: none.
+Decisions: none.

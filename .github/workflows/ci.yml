@@ -69,7 +69,11 @@ jobs:
           version: 2.120.0
 
       - name: Start local Supabase
-        run: supabase start
+        run: |
+          supabase start > /tmp/supabase-start.log 2>&1
+          status=$?
+          awk 'BEGIN{IGNORECASE=1} /migrat|seed/' /tmp/supabase-start.log
+          exit $status
 
       - name: Database tests
         run: pnpm test:db
@@ -77,7 +81,7 @@ jobs:
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: E2E smoke
+      - name: Write local Next.js env
         run: |
           eval "$(supabase status -o env)"
           umask 077
@@ -85,4 +89,6 @@ jobs:
             printf 'NEXT_PUBLIC_SUPABASE_URL=%s\n' "$API_URL"
             printf 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=%s\n' "$ANON_KEY"
           } > .env.local
-          pnpm test:e2e
+
+      - name: E2E smoke
+        run: pnpm test:e2e

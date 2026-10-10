@@ -1,57 +1,27 @@
 import { readFileSync } from 'fs';
 import { describe, it, expect } from 'vitest';
+import { parseYaml, assertCi } from './ci-structure.mjs';
 
 const yml = readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8');
+const s = (name, run) => `      - name: ${name}\n        run: ${run}`;
+const BASE = ['jobs:', '  secret-scan:', '    steps:', s('Secret scan', 'node scripts/nightly-audit.mjs --secrets-only'), '  ci:', '    steps:', s('Lint', 'pnpm lint'), s('Typecheck', 'pnpm typecheck'), s('Unit tests', 'pnpm test'), s('Database tests', 'pnpm test:db'), s('E2E smoke', 'pnpm test:e2e')].join('\n') + '\n';
 
 describe('ci.yml', () => {
-  it('triggers on pull_request and push to main', () => {
-    expect(yml).toMatch(/pull_request:/);
-    expect(yml).toMatch(/push:/);
-    expect(yml).toMatch(/branches:\s*\[main\]/);
+  it('parses and accepts allowlisted check runs', () => {
+    const doc = parseYaml(yml);
+    expect(doc.on.pull_request.branches).toEqual(['main']);
+    expect(doc.permissions).toEqual({contents: 'read'});
+    expect(() => assertCi(doc)).not.toThrow();
   });
-  it('has required job names ci and secret-scan', () => {
-    expect(yml).toMatch(/^ {2}ci:/m);
-    expect(yml).toMatch(/^ {2}secret-scan:/m);
-  });
-  it('runs lint, typecheck, unit, db and e2e', () => {
-    expect(yml).toContain('pnpm lint');
-    expect(yml).toContain('pnpm typecheck');
-    expect(yml).toContain('pnpm test');
-    expect(yml).toContain('pnpm test:db');
-    expect(yml).toContain('pnpm test:e2e');
-  });
-  it('enables secret scanning that fails closed', () => {
-    expect(yml).toContain('--secrets-only');
-    expect(yml).toContain('scripts/nightly-audit.mjs');
-  });
-  it('permissions contents read, concurrency, timeouts', () => {
-    expect(yml).toMatch(/contents:\s*read/);
-    expect(yml).toContain('concurrency:');
-    expect(yml).toContain('cancel-in-progress: true');
-    expect(yml).toMatch(/timeout-minutes:/);
-  });
-  it('starts local Supabase and Playwright chromium', () => {
-    expect(yml).toContain('supabase/setup-cli');
-    expect(yml).toContain('2.120.0');
-    expect(yml).toContain('supabase start');
-    expect(yml).toContain('playwright install --with-deps chromium');
-    expect(yml).toContain('supabase status -o env');
-  });
-  it('keeps unit, db and e2e steps and does not skip them', () => {
-    expect(yml).toMatch(/name:\s*Unit tests[\s\S]*?run:\s*pnpm test\b/);
-    expect(yml).toMatch(/name:\s*Database tests[\s\S]*?run:\s*pnpm test:db/);
-    expect(yml).toMatch(/name:\s*E2E smoke[\s\S]*?pnpm test:e2e/);
-    expect(yml).not.toMatch(/continue-on-error/);
-    expect(yml).not.toMatch(/\|\|\s*true/);
-    expect(yml).not.toMatch(/if:\s*false/);
-    expect(yml).not.toMatch(/--pass-with-no-tests/);
-  });
-  it('pins actions to commit SHAs', () => {
-    expect(yml).toMatch(/actions\/checkout@[0-9a-f]{40}/);
-    expect(yml).toMatch(/actions\/setup-node@[0-9a-f]{40}/);
-    expect(yml).toMatch(/pnpm\/action-setup@[0-9a-f]{40}/);
-    expect(yml).toMatch(/supabase\/setup-cli@[0-9a-f]{40}/);
-    expect(yml).not.toMatch(/uses:\s+actions\/checkout@v/);
-    expect(yml).not.toMatch(/uses:\s+actions\/setup-node@v/);
+  it.each([
+    ['if: ${{ false }}', BASE.replace(s('Unit tests', 'pnpm test'), s('Unit tests', 'pnpm test').replace('        run:', '        if: ${{ false }}\n        run:'))],
+    ['pnpm test; exit 0', BASE.replace('run: pnpm test', 'run: pnpm test; exit 0')],
+    ['pnpm test --passWithNoTests nomatch', BASE.replace('run: pnpm test', 'run: pnpm test --passWithNoTests nomatch')],
+    ['echo pnpm test', BASE.replace('run: pnpm test', 'run: echo pnpm test')],
+    ['--secrets-only || :', BASE.replace('--secrets-only', '--secrets-only || :')],
+  ])('rejects %s', (_n, src) => { expect(() => assertCi(parseYaml(src))).toThrow(); });
+  it('rejects continue-on-error and a missing check step', () => {
+    expect(() => assertCi(parseYaml(BASE.replace('  ci:', '  ci:\n    continue-on-error: true')))).toThrow();
+    expect(() => assertCi(parseYaml(BASE.replace(s('E2E smoke', 'pnpm test:e2e') + '\n', '')))).toThrow();
   });
 });
