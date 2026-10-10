@@ -158,8 +158,14 @@
         "CI run link"
       ],
       "human_gate": "none",
-      "status": "failing",
-      "evidence": []
+      "status": "passing",
+      "evidence": [
+        "https://github.com/aimogga/fas-caspilot-data/pull/25#issuecomment-6099456206 (QA PASS on repo-side F-104 criteria at 829dc10)",
+        "https://github.com/aimogga/fas-caspilot-data/actions/runs/38065466261 (CI at 829dc10: lint, typecheck, unit 168, local Supabase migrate+seed, db 785, e2e smoke 5, secret-scan 87 files clean)",
+        "https://github.com/aimogga/fas-caspilot-data/rules/24855179 (ruleset 'main: CI required': enforcement active on ~DEFAULT_BRANCH, bypass_actors [], rules deletion + non_fast_forward + pull_request + required_status_checks ci and secret-scan)",
+        "George ruled directly in chat 2026-10-10 3:16 PM MT that the required CI secret-scan job meets 'Secret scanning enabled' (native GitHub secret scanning is unavailable for this private user-owned repo)",
+        "Enforcement proof on https://github.com/aimogga/fas-caspilot-data/pull/28 at 5d8f1a1, recorded by QA 2026-10-10: mergeable_state blocked while ci was in_progress (3:20 PM MT), then clean after ci and secret-scan both succeeded (3:23 PM MT, run 38086992812); flip PR itself repeats the check"
+      ]
     },
     {
       "id": "F-105",
