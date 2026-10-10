@@ -4,7 +4,8 @@ Last updated: Oct 10, 2026
 
 ## Summary
 
-- **Done:** 5 of 44 features (11%).
+- **Done:** 4 of 44 features (9%): F-003, F-101, F-102 and F-103.
+- **In progress:** F-105 preview environments and F-601 nightly audit (partly working).
 - **Next up:** F-105 preview environments (waiting on a Vercel reconnect), then the Phase 2 public data imports.
 - **Blocked:** F-104 branch protection. Locking the main branch so checks must pass needs a paid GitHub Pro plan. George chose to stay on the free plan, so this stays open. The automatic checks and secret scan already run on every change (PR #25).
 
@@ -67,7 +68,7 @@ Last updated: Oct 10, 2026
 
 ## Phase 6: Safety checks and launch
 
-- [x] **Done** F-601 Nightly audit script: an automatic check every night that writes a dated health report on the system.
+- [ ] **In progress** F-601 Nightly audit script: Nightly audit runs and fails on serious problems, but it's partial: it doesn't yet check data freshness, data sanity, grants or cost, it doesn't file its report as a PR or issue, it hasn't been run against a preview, and the new schedule hasn't fired yet.
 - [ ] **Not started** F-602 Security review: a full check that data access rules, passwords and software are all safe.
 - [ ] **Not started** F-603 Legal review gate: a written legal opinion on health privacy rules and court records, with required agreements signed.
 - [ ] **Not started** F-604 Real-data onboarding runbook and migration: a step-by-step plan for loading FAS's real data, practiced first on fake data.
