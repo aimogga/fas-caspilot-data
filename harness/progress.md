@@ -167,3 +167,9 @@ Did: Removed inline `--primary` style; base-layer input/button border+radius; `-
 State: lint/typecheck/unit 175/175; build green; e2e 9/9.
 Left: none.
 Decisions: none.
+
+## 2026-10-10 22:47 (UTC) — Cloud Agent — DS-01b shadcn + base components
+Did: shadcn@4.21.4 new-york/neutral; hand-edits on button/input/label/badge/alert; `/ui` gallery when NODE_ENV!==production or VERCEL_ENV=preview, 404 when VERCEL_ENV=production.
+State: lint/typecheck/unit 178/178. e2e/screenshots next.
+Left: none.
+Decisions: gallery also shown on Vercel preview (production builds).
