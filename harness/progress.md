@@ -149,3 +149,15 @@ Did: Removed ci.yml structure test and scripts/ci-structure.mjs (B5 bypasses; 39
 State: lint/typecheck/unit 168/168 green.
 Left: structure guard in a follow-up (actionlint + exact-key allowlist).
 Decisions: none.
+
+## 2026-10-10 20:50 (UTC) — Cloud Agent — packet TP-0012 / user-visible product name
+Did: User-visible product name is now FAS Grants; org name Family Advocacy Services on login, document title, PageLayout header/footer, and product-facing docs (PRD, deck, progress checklist). Unit + e2e assert login/title show FAS Grants and rendered pages have no CasePilot.
+State: lint/typecheck/unit 172/172 green; e2e 7/7 green.
+Left: none.
+Decisions: none.
+
+## 2026-10-10 21:16 (UTC) — Cloud Agent — packet TP-0012 / user-visible product name
+Did: Corrected product name from FAS Grants to FAS Evidence in branding, UI, product-facing docs, and tests. Login/title assert FAS Evidence; rendered pages must not contain FAS Grants or CasePilot.
+State: lint/typecheck/unit 172/172 green; e2e 7/7 green.
+Left: none.
+Decisions: none.

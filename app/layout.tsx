@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { PRODUCT_NAME } from "@/lib/branding";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CasePilot × FAS",
+  title: PRODUCT_NAME,
   description: "Local development shell for Public Data to Proof",
 };
 
