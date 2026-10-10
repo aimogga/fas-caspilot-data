@@ -4,10 +4,20 @@ Last updated: Oct 10, 2026
 
 ## Summary
 
-- **Done:** 5 of 44 features (11%): F-003, F-101, F-102, F-103 and F-105.
-- **In progress:** F-601 nightly audit (partly working), and renaming the product to "FAS Evidence".
-- **Next up:** Phase 2 public data imports, starting with F-201 (a record of every data import and its results).
-- **Blocked:** F-104 branch protection, pending George's GitHub Pro upgrade. Locking the main branch so checks must pass needs the paid plan. The automatic checks and secret scan already run on every change (PR #25).
+- **Done:** 6 of 44 features (14%): F-003, F-101, F-102, F-103, F-104 and F-105.
+- **In progress:** F-601 nightly audit (partly working). Design system DS-01b (shadcn base components).
+- **Next up:** Finish design foundation (DS-01b → DS-01c → DS-02 role shell → DS-03 login → DS-04 403), then Phase 2 starting with F-201 (a record of every data import and its results), then cleanup of open issues #12, #13, #23 and #26.
+- **Blocked:** None right now.
+
+## Design system
+
+- Rename to FAS Evidence: done (PR #28, merged at e20b7a0).
+- Deck and PRD are FAS-only: done (PR #34, merged at f989572).
+- Design workflow and DS specs: done (PR #32, docs/DESIGN_WORKFLOW.md).
+- Design-system v1 source: done (PR #35).
+- **DS-01a** Tailwind v4 + tokens: done (PR #33, squash-merged at cfab531). QA PASS and DESIGN APPROVED.
+- **DS-01b** shadcn base components: in progress.
+- After that: DS-01c, DS-02 (role shell), DS-03 (login), DS-04 (403).
 
 ## Phase 0: Getting ready
 
@@ -21,7 +31,7 @@ Last updated: Oct 10, 2026
 - [x] **Done** F-101 App shell with Supabase Auth and roles: people can sign in and out, and admins, staff and board members each only see the pages meant for them.
 - [x] **Done** F-102 Database schema v1 with RLS deny-by-default: the database is built, and each organization can only see its own data; nothing is visible unless a rule allows it.
 - [x] **Done** F-103 Synthetic data generator: about 200 realistic fake cases across Utah counties, so we can test without any real people's information.
-- [ ] **Blocked** F-104 CI pipeline: every change is checked and scanned for leaked passwords automatically (working), but locking the main branch needs paid GitHub Pro.
+- [x] **Done** F-104 CI pipeline: Every change is automatically tested and scanned for leaked secrets, and main can't be changed without passing checks.
 - [x] **Done** F-105 Preview environments: Every PR gets its own preview site, connected only to the test database with fake data.
 
 ## Phase 2: Public data and county need
