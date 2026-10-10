@@ -5,7 +5,7 @@ Last updated: Oct 10, 2026
 ## Summary
 
 - **Done:** 6 of 44 features (14%): F-003, F-101, F-102, F-103, F-104 and F-105.
-- **In progress:** F-601 nightly audit (partly working), and renaming the product to "FAS Evidence" (PR #28, in QA).
+- **In progress:** F-601 nightly audit (partly working). Rename to FAS Evidence: done (PR #28).
 - **Next up:** Phase 2 public data imports, starting with F-201 (a record of every data import and its results).
 - **Blocked:** None right now.
 
