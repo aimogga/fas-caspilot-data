@@ -7,9 +7,9 @@ const alertVariants = cva(
   {
     variants: {
       variant: {
-        destructive: "bg-destructive-soft text-destructive *:data-[slot=alert-description]:text-destructive/90",
-        warning: "bg-warning-soft text-warning *:data-[slot=alert-description]:text-warning/90",
-        info: "bg-info-soft text-info *:data-[slot=alert-description]:text-info/90",
+        destructive: "bg-destructive-soft text-destructive *:data-[slot=alert-description]:text-destructive",
+        warning: "bg-warning-soft text-warning *:data-[slot=alert-description]:text-warning",
+        info: "bg-info-soft text-info *:data-[slot=alert-description]:text-info",
       },
     },
     defaultVariants: { variant: "info" },
@@ -25,7 +25,7 @@ function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function AlertDescription({ className, ...props }: React.ComponentProps<"div">) {
-  return <div data-slot="alert-description" className={cn("col-start-2 grid justify-items-start gap-1 text-sm text-muted-foreground [&_p]:leading-relaxed", className)} {...props} />
+  return <div data-slot="alert-description" className={cn("col-start-2 grid justify-items-start gap-1 text-sm [&_p]:leading-relaxed", className)} {...props} />
 }
 
 export { Alert, AlertTitle, AlertDescription }

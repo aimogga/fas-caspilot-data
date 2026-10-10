@@ -32,13 +32,21 @@ test("gallery sizes, axe, and screenshots", async ({ page }) => {
   await page.screenshot({ path: `${ART}/gallery-1024.png`, fullPage: true });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.screenshot({ path: `${ART}/gallery-1440.png`, fullPage: true });
+  await page.goto("/ui");
+  await page.keyboard.press("Tab");
   const button = page.locator("[data-slot=button]").first();
-  const input = page.locator("[data-slot=input]").first();
-  await button.focus();
-  await page.screenshot({ path: `${ART}/gallery-focus.png`, fullPage: true });
-  for (const el of [button, input]) {
-    await el.focus();
-    const ring = await el.evaluate((n) => `${getComputedStyle(n).outlineStyle} ${getComputedStyle(n).boxShadow}`);
-    expect(ring).not.toMatch(/none rgba\(0, 0, 0, 0\)/);
+  await expect(button).toBeFocused();
+  expect(await button.evaluate((n) => getComputedStyle(n).outlineStyle)).toBe("solid");
+  expect(await button.evaluate((n) => getComputedStyle(n).outlineWidth)).toBe("2px");
+  const box = await button.boundingBox();
+  if (box) {
+    await page.screenshot({
+      path: `${ART}/gallery-focus-button.png`,
+      clip: { x: box.x - 10, y: box.y - 10, width: box.width + 20, height: box.height + 20 },
+    });
   }
+  await page.screenshot({ path: `${ART}/gallery-focus.png`, fullPage: true });
+  await page.getByRole("button", { name: "Add" }).press("Tab");
+  expect(await page.locator("[data-slot=input]").evaluate((n) => getComputedStyle(n).outlineStyle)).toBe("solid");
+  expect(await page.locator("[data-slot=input]").evaluate((n) => getComputedStyle(n).outlineWidth)).toBe("2px");
 });

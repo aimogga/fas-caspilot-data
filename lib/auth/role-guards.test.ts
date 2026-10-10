@@ -27,6 +27,7 @@ describe('role-guards', () => {
     expect(isPublicRoute('/403')).toBe(true);
     expect(isPublicRoute('/api/auth/signout')).toBe(true);
     expect(isPublicRoute('/api/health')).toBe(true);
+    expect(isPublicRoute('/ui')).toBe(true);
     expect(isPublicRoute('/')).toBe(false);
   });
   const origin = 'http://localhost:3000';

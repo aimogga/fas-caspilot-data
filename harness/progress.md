@@ -173,3 +173,9 @@ Did: shadcn@4.21.4 new-york/neutral; hand-edits on button/input/label/badge/aler
 State: lint/typecheck/unit 178/178. e2e/screenshots next.
 Left: none.
 Decisions: gallery also shown on Vercel preview (production builds).
+
+## 2026-10-10 22:56 (UTC) — Cloud Agent — DS-01b tests + evidence
+Did: `/ui` public; warning alert contrast; solid focus-visible outline. Screenshots 375/1024/1440 + focus.
+State: lint/typecheck/unit 178/178; e2e 10/10; `pnpm build` green.
+Left: none.
+Decisions: none.
