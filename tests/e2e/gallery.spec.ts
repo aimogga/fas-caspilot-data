@@ -12,7 +12,7 @@ test("gallery sizes, axe, and screenshots", async ({ page }) => {
     const inputs = [...document.querySelectorAll("[data-slot=input]")];
     const label = document.querySelector("[data-slot=label]");
     const ring = (n: HTMLElement) => {
-      n.focus();
+      n.focus({ focusVisible: true });
       const p = document.createElement("i"); p.style.color = "var(--ring)";
       document.body.append(p);
       const expected = getComputedStyle(p).color;

@@ -150,7 +150,6 @@
 
 @layer base {
   * { border-color: var(--border); }
-
   body {
     background: var(--background);
     color: var(--foreground);
@@ -195,8 +194,7 @@
   }
 
   @media (width < 1024px) { button { min-height: var(--tap-min); min-width: var(--tap-min); } }
-
-  :focus-visible {
+  :focus, :focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
