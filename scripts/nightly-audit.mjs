@@ -172,26 +172,81 @@ export function checkProgressLog(commits, progressText) {
   return {found, missing};
 }
 
-export function matchSecretLine(line) {
-  return !/"env\([^)]+\)"/.test(line) && [
-    /AKIA[0-9A-Z]{16}/,
-    new RegExp('-----BEGIN (?:[A-Z0-9]+ )?(?:ENCRYPTED )?PRIVATE KEY-----'),
-    /(password|secret|token|api[_-]?key)\s*[:=]\s*['"][^'"]{12,}['"]/i
-  ].some(p => p.test(line));
+const PLACEHOLDERS = new Set([
+  'changeme', 'placeholder', 'redacted', 'dummy', 'xxx', 'not-a-secret',
+  'your_api_key_here', 'your-api-key-here', 'your-token-here', 'insert_token_here',
+  'dummy_secret_here',
+]);
+const LOCAL_PG = new Set([
+  'postgresql://postgres:postgres@127.0.0.1:54322',
+  'postgresql://postgres:postgres@127.0.0.1:54322/postgres',
+  'postgresql://postgres:postgres@localhost:54322',
+  'postgresql://postgres:postgres@localhost:54322/postgres',
+  'postgres://postgres:postgres@127.0.0.1:54322',
+  'postgres://postgres:postgres@127.0.0.1:54322/postgres',
+  'postgres://postgres:postgres@localhost:54322',
+  'postgres://postgres:postgres@localhost:54322/postgres',
+]);
+function localServiceRoleJwts() {
+  return [
+    ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9', 'eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0', 'EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU'],
+    ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9', 'eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ', 'DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q'],
+  ].map(p => p.join('.'));
+}
+const LOCAL_JWT = new Set(localServiceRoleJwts());
+export { localServiceRoleJwts, LOCAL_PG, PLACEHOLDERS };
+
+function jwtRole(tok) {
+  try {
+    return JSON.parse(Buffer.from(tok.split('.')[1], 'base64url').toString()).role;
+  } catch { return null; }
+}
+function hasServiceRoleJwt(line) {
+  for (const tok of line.match(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g) || []) {
+    if (!LOCAL_JWT.has(tok) && jwtRole(tok) === 'service_role') return true;
+  }
+  return false;
+}
+function hasRemotePgUrl(line) {
+  for (const raw of line.match(/postgres(?:ql)?:\/\/[^\s'"`]+/gi) || []) {
+    const url = raw.replace(/[.,;)]+$/, '');
+    if (LOCAL_PG.has(url)) continue;
+    try { if (new URL(url).password) return true; }
+    catch { if (/:\/\/[^/@]+:[^/@]+@/.test(url)) return true; }
+  }
+  return false;
+}
+function assignedSecrets(line) {
+  const quoted = /(password|secret|token|api[_-]?key)\s*[:=]\s*['"]([^'"]{12,})['"]/gi;
+  let m;
+  while ((m = quoted.exec(line))) {
+    const val = m[2];
+    if (/^env\([^)]+\)$/i.test(val) || PLACEHOLDERS.has(val.toLowerCase())) continue;
+    return true;
+  }
+  const aws = line.match(/AWS_SECRET_ACCESS_KEY\s*[:=]\s*['"]?([A-Za-z0-9/+=]{40})['"]?/i);
+  if (aws && !PLACEHOLDERS.has(aws[1].toLowerCase()) && !/^env\(/i.test(aws[1])) return true;
+  const sr = line.match(/SUPABASE_SERVICE_ROLE_KEY\s*[:=]\s*['"]?([A-Za-z0-9._-]+)['"]?/);
+  return Boolean(sr && !LOCAL_JWT.has(sr[1]) && !PLACEHOLDERS.has(sr[1].toLowerCase()));
 }
 
-function isLockPath(p) {
-  return /(?:^|\/)(?:[^/]*lock\.[^/]*|pnpm-lock\.yaml)$/.test(p);
+export function matchSecretLine(line) {
+  return /AKIA[0-9A-Z]{16}/.test(line)
+    || new RegExp('-----BEGIN (?:[A-Z0-9]+ )?(?:ENCRYPTED )?PRIVATE KEY-----').test(line)
+    || /\b(gh[pousr])_[A-Za-z0-9]{36}\b/.test(line)
+    || /\bgithub_pat_[A-Za-z0-9]{22}_[A-Za-z0-9]{59}\b/.test(line)
+    || /\bsb_secret_[A-Za-z0-9_]{16,}\b/.test(line)
+    || hasServiceRoleJwt(line)
+    || hasRemotePgUrl(line)
+    || assignedSecrets(line);
 }
 
 export function scanFileContents(files) {
   const r = {status: 'GREEN', findings: [], details: []};
   let found = 0, scanned = 0;
-  for (const [path, text] of Object.entries(files)) {
-    if (isLockPath(path)) continue;
+  for (const text of Object.values(files)) {
     scanned++;
     for (const line of String(text).split('\n')) {
-      if (/example|test_/i.test(line)) continue;
       if (matchSecretLine(line)) found++;
     }
   }
@@ -232,15 +287,8 @@ export function checkSecretScan(gitRunner = execSync) {
     for (const c of commits) {
       const diff = gitRunner(`git show ${c} --format="" --no-color`, {encoding: 'utf-8', maxBuffer: 10*1024*1024});
       const lines = diff.split('\n');
-      let inLock = false;
       for (const line of lines) {
-        if (line.startsWith('diff --git') && line.includes('lock.')) {
-          inLock = true;
-          continue;
-        }
-        if (line.startsWith('diff --git')) inLock = false;
-        if (inLock || !line.startsWith('+') || line.startsWith('+++')) continue;
-        if (/example|test_/i.test(line)) continue;
+        if (!line.startsWith('+') || line.startsWith('+++')) continue;
         if (matchSecretLine(line)) found++;
       }
     }

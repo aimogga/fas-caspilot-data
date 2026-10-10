@@ -37,4 +37,21 @@ describe('ci.yml', () => {
     expect(yml).toContain('playwright install --with-deps chromium');
     expect(yml).toContain('supabase status -o env');
   });
+  it('keeps unit, db and e2e steps and does not skip them', () => {
+    expect(yml).toMatch(/name:\s*Unit tests[\s\S]*?run:\s*pnpm test\b/);
+    expect(yml).toMatch(/name:\s*Database tests[\s\S]*?run:\s*pnpm test:db/);
+    expect(yml).toMatch(/name:\s*E2E smoke[\s\S]*?pnpm test:e2e/);
+    expect(yml).not.toMatch(/continue-on-error/);
+    expect(yml).not.toMatch(/\|\|\s*true/);
+    expect(yml).not.toMatch(/if:\s*false/);
+    expect(yml).not.toMatch(/--pass-with-no-tests/);
+  });
+  it('pins actions to commit SHAs', () => {
+    expect(yml).toMatch(/actions\/checkout@[0-9a-f]{40}/);
+    expect(yml).toMatch(/actions\/setup-node@[0-9a-f]{40}/);
+    expect(yml).toMatch(/pnpm\/action-setup@[0-9a-f]{40}/);
+    expect(yml).toMatch(/supabase\/setup-cli@[0-9a-f]{40}/);
+    expect(yml).not.toMatch(/uses:\s+actions\/checkout@v/);
+    expect(yml).not.toMatch(/uses:\s+actions\/setup-node@v/);
+  });
 });

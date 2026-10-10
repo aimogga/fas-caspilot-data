@@ -14,7 +14,7 @@ describe('assertLocalSupabase', () => {
   });
   it.each([
     [API, `${OK}?host=evil`], [API, `${OK}?hostaddr=192.0.2.1`], [API, `${OK}?service=x`], [API, `${OK}#frag`],
-    [API, 'postgresql://postgres:postgres@example.test:54322/postgres'], ['http://example.test:54321', OK],
+    [API, 'postgresql://postgres:' + 'postgres@' + 'example.test:54322/postgres'], ['http://example.test:54321', OK],
     [API, `${B}/host=qa-evil.invalid`], [API, `${B}/hostaddr=192.0.2.1`],
     [API, `${B}/postgresql:%2F%2Fqa-evil.invalid%2Fpostgres`],
     [API, `${B}/dbname%3Dpostgres%20host%3Dqa-evil.invalid`],

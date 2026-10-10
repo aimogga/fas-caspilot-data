@@ -131,3 +131,9 @@ Did: Added `.github/workflows/ci.yml` (`ci` + `secret-scan` jobs) on PR/push to 
 State: lint/typecheck/unit 157/157 green. Awaiting this PR's CI run.
 Left: none (supervisor: branch protection + GitHub secret scanning toggle).
 Decisions: none.
+
+## 2026-10-10 15:22 (UTC) — Cloud Agent — TP-0011 QA FAIL PR #25
+Did: Secret scan now flags ghp/gho/ghu/ghs/ghr/github_pat, service_role JWTs (decode payload), sb_secret_, remote postgres URLs with passwords, AWS_SECRET_ACCESS_KEY; dropped example/test_ skip (placeholders only). Planted-format tests; lock paths scanned; ci.yml SHA pins + start logs; structure test.
+State: lint/typecheck/unit 176/176 green.
+Left: none.
+Decisions: none.

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'child_process';
-import { worst, generateReport, matchSecretLine, checkProgressLog, parseAgentsCommands, parseAudit, checkSecretScan, checkSecretScanTree, scanFileContents, secretsOnlyExit, checkDocRefs, auditExitCode, writeAndPrintReport, checkDeps, main, runPnpmAudit } from './nightly-audit.mjs';
+import { worst, generateReport, matchSecretLine, checkProgressLog, parseAgentsCommands, parseAudit, checkSecretScan, checkSecretScanTree, scanFileContents, secretsOnlyExit, localServiceRoleJwts, checkDocRefs, auditExitCode, writeAndPrintReport, checkDeps, main, runPnpmAudit } from './nightly-audit.mjs';
 const GHSA_IG = {id: 'GHSA-vfj7-8cjw-p6xm', package: 'braces', reason: 'CVE-2026-93687; dev-only lint toolchain transitive dep, no patched release', reviewer: 'QA bot', expires: '2026-11-08', severity: 'high'};
 const STALE_IG = {...GHSA_IG, id: 'GHSA-aaaa-bbbb-cccc', package: 'nope'};
 const BRACES_JSON = JSON.stringify({advisories: {'1240992': {severity: 'high', module_name: 'braces', cves: ['CVE-2026-93687'], github_advisory_id: 'GHSA-vfj7-8cjw-p6xm'}}, metadata: {vulnerabilities: {critical: 0, high: 1, moderate: 0, low: 0}}});
@@ -47,6 +47,15 @@ describe('writeAndPrintReport', () => {
     expect(files['harness/audits/2026-10-09.md']).toBe(md);
   });
 });
+function gh(p) { return p + '_' + 'A'.repeat(36); }
+function pat() { return ['github', 'pat', 'A'.repeat(22), 'B'.repeat(59)].join('_'); }
+function sb() { return 'sb' + '_secret_' + 'x'.repeat(24); }
+function srJwt() {
+  const h = Buffer.from('{"alg":"HS256","typ":"JWT"}').toString('base64url');
+  const p = Buffer.from('{"role":"service_role","iss":"plant"}').toString('base64url');
+  return h + '.' + p + '.sig';
+}
+function akia() { return 'AKIA' + '0123456789ABCDEF'; }
 describe('matchSecretLine', () => {
   it('ignores env(...) placeholders', () => expect(matchSecretLine('+ api_key = "env(API_KEY)"')).toBe(false));
   it('flags fake secrets and PEM keys', () => {
@@ -56,6 +65,37 @@ describe('matchSecretLine', () => {
     expect(matchSecretLine('+ ' + '-----BEGIN ' + 'OPENSSH PRIVATE' + ' KEY-----')).toBe(true);
     expect(matchSecretLine('+ -----' + 'BEGIN PRIVATE KEY-----')).toBe(true);
     expect(matchSecretLine('+ -----' + 'BEGIN ENCRYPTED PRIVATE KEY-----')).toBe(true);
+  });
+  it.each([
+    ['ghp', () => gh('ghp')],
+    ['gho', () => gh('gho')],
+    ['ghu', () => gh('ghu')],
+    ['ghs', () => gh('ghs')],
+    ['ghr', () => gh('ghr')],
+    ['github_pat', pat],
+    ['sb_secret', sb],
+    ['service_role jwt bare', srJwt],
+    ['service_role jwt quoted', () => '"' + srJwt() + '"'],
+    ['SUPABASE_SERVICE_ROLE_KEY', () => 'SUPABASE_SERVICE_ROLE_KEY=' + srJwt()],
+    ['postgres url', () => 'postgres://u:' + 'p@' + 'evil.test/db'],
+    ['postgresql url', () => 'postgresql://u:' + 'p@' + 'evil.test/db'],
+    ['AKIA with example', () => 'example cred ' + akia()],
+    ['AWS_SECRET_ACCESS_KEY', () => 'AWS_SECRET_ACCESS_KEY=' + 'A'.repeat(40)],
+  ])('flags planted %s', (_n, make) => {
+    expect(matchSecretLine(make())).toBe(true);
+    expect(scanFileContents({'lock.yaml': make()}).status).toBe('RED');
+  });
+  it('exempts local supabase defaults by exact value', () => {
+    expect(matchSecretLine('postgresql://postgres:postgres@127.0.0.1:54322/postgres')).toBe(false);
+    expect(matchSecretLine('postgresql://postgres:postgres@localhost:54322/postgres')).toBe(false);
+    for (const j of localServiceRoleJwts()) {
+      expect(matchSecretLine(j)).toBe(false);
+      expect(matchSecretLine('SUPABASE_SERVICE_ROLE_KEY=' + j)).toBe(false);
+    }
+  });
+  it('allows listed placeholders only', () => {
+    expect(matchSecretLine('api_key = "your_api_key_here"')).toBe(false);
+    expect(matchSecretLine('api_key = "' + 'supersecret12345' + '"')).toBe(true);
   });
 });
 describe('checkProgressLog', () => {
@@ -161,6 +201,9 @@ describe('checkSecretScanTree', () => {
   it('scanFileContents flags a planted secret fixture', () => {
     expect(scanFileContents({'cfg.ts': planted}).status).toBe('RED');
     expect(secretsOnlyExit(scanFileContents({'cfg.ts': planted}))).toBe(1);
+  });
+  it('scans lock.* paths', () => {
+    expect(scanFileContents({'pnpm-lock.yaml': gh('ghp')}).status).toBe('RED');
   });
   it('passes a clean tree', () => {
     const r = checkSecretScanTree({listFiles: () => ['app/ok.ts'], readFile: () => 'export const x = 1;'});
