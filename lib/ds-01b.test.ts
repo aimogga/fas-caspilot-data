@@ -9,13 +9,10 @@ const ui = (f: string) => read(`components/ui/${f}.tsx`);
 describe("DS-01b", () => {
   it("pins packages, uses @/lib/utils cn, gates /ui, and applies hand-edits", () => {
     const d = { ...JSON.parse(read("package.json")).dependencies, ...JSON.parse(read("package.json")).devDependencies };
-    expect(d).toMatchObject({ "class-variance-authority": "0.7.1", clsx: "2.1.1", "tailwind-merge": "3.7.0", "radix-ui": "1.7.0", "lucide-react": "1.55.0" });
-    expect(d.cn).toBeUndefined();
-    expect(read("pnpm-lock.yaml")).not.toMatch(/^ {2}cn:/m);
-    for (const f of ["button", "input", "label", "badge", "alert", "card", "separator"]) {
-      expect(ui(f)).toContain('from "@/lib/utils"');
-      expect(ui(f)).not.toMatch(/from ["']cn["']/);
-    }
+    expect(d).toMatchObject({ "class-variance-authority": "0.7.1", clsx: "2.1.1", cn: "0.4.0", "tailwind-merge": "3.7.0", "radix-ui": "1.7.0", "lucide-react": "1.55.0" });
+    for (const f of ["button", "input", "label", "badge", "alert"]) expect(ui(f)).toContain('from "@/lib/utils"');
+    expect(ui("card")).toContain('from "cn"');
+    expect(ui("separator")).toContain('from "cn"');
     expect([isDevGalleryEnabled("development"), isDevGalleryEnabled("production", "preview"), isDevGalleryEnabled("production", "production"), isDevGalleryEnabled("development", "production"), isDevGalleryEnabled("production")]).toEqual([true, true, false, false, false]);
     const [button, input, label, badge, alert, gallery] = ["button", "input", "label", "badge", "alert"].map(ui).concat(read("app/(dev)/ui/page.tsx"));
     expect(gallery).toMatch(/isDevGalleryEnabled|notFound/);

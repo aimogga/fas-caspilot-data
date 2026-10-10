@@ -169,6 +169,6 @@ Left: none.
 Decisions: none.
 
 ## 2026-10-10 23:30 (UTC) — Cloud Agent — DS-01b shadcn + design review
-Did: shadcn@4.21.4; `@/lib/utils` cn (no `cn@0.4.0`); focus `var(--ring)` 2px; `--border`; tap-min <1024; `/ui` gallery with disabled/error/icons.
-State: HW = git diff --numstat origin/main minus pnpm-lock.yaml.
+Did: shadcn@4.21.4; pin `cn@0.4.0`; card/separator untouched generator; focus `var(--ring)` 2px; `--border`; tap-min <1024; gallery disabled/error/icons.
+State: HW = git diff --numstat origin/main minus pnpm-lock.yaml, card.tsx, separator.tsx.
 Left: none.

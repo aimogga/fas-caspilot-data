@@ -18,7 +18,7 @@ test("gallery sizes, axe, and screenshots", async ({ page }) => {
       const expected = getComputedStyle(p).color;
       p.remove();
       const s = getComputedStyle(n);
-      return s.outlineColor === expected && s.outlineWidth === "2px" && s.outlineStyle === "solid";
+      return s.outlineColor === expected && s.outlineWidth === "2px" && s.outlineStyle === "solid" && s.outlineOffset === "2px";
     };
     const btn = buttons[0] as HTMLElement;
     const light = ring(btn);
@@ -41,12 +41,13 @@ test("gallery sizes, axe, and screenshots", async ({ page }) => {
   await page.screenshot({ path: `${ART}/gallery-375.png`, fullPage: true });
   await page.setViewportSize({ width: 1024, height: 900 });
   await page.screenshot({ path: `${ART}/gallery-1024.png`, fullPage: true });
-  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.setViewportSize({ width: 1280, height: 900 });
   expect(await page.evaluate(() => {
     const h = (t: string) => [...document.querySelectorAll("[data-slot=button]")].find((el) => el.textContent === t)!.getBoundingClientRect().height;
     const b = (name: string) => getComputedStyle(document.querySelector(`[data-variant="${name}"]`)!).borderTopWidth;
     return { sm: h("sm"), def: h("default"), ghost: b("ghost"), link: b("link") };
   })).toMatchObject({ sm: 32, def: 40, ghost: "0px", link: "0px" });
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.screenshot({ path: `${ART}/gallery-1440.png`, fullPage: true });
   await page.locator("[data-slot=button]").first().focus();
   const box = await page.locator("[data-slot=button]").first().boundingBox();
