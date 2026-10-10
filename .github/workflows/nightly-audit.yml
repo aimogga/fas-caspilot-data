@@ -2,13 +2,16 @@ name: Nightly Audit
 
 on:
   schedule:
-    - cron: '0 9 * * *'
+    - cron: '23 9 * * *'
   workflow_dispatch:
   pull_request:
     paths:
       - '.github/workflows/nightly-audit.yml'
+      - '.github/workflows/audit-staleness.yml'
       - 'scripts/nightly-audit.mjs'
       - 'scripts/nightly-audit.test.mjs'
+      - 'scripts/audit-staleness.mjs'
+      - 'scripts/audit-staleness.test.mjs'
       - 'package.json'
       - 'harness/audit-ignores.json'
 

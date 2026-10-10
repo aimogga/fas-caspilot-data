@@ -104,3 +104,24 @@ Left: none. Decisions: none.
 ## 2026-10-09 18:42 (UTC) — Cloud Agent — TP-0009 QA FAIL #6 PR #22
 Did: Exact severity match (upgrade RED, downgrade not GREEN); missing GHSA counted; second braces GHSA counted.
 Left: none. Decisions: none.
+
+## 2026-10-10 13:50 (UTC) — Cloud Agent — packet TP-0010 / F-601
+Did: Moved Nightly Audit cron off the hour to `23 9 * * *`. Added fail-closed staleness check (`scripts/audit-staleness.mjs`) plus workflow cron `41 */6 * * *` that fails when main has no successful schedule-triggered Nightly Audit in 24h.
+State: lint/typecheck/unit 136/136 green.
+Left: none.
+Decisions: none.
+
+## 2026-10-10 14:05 (UTC) — Cloud Agent — TP-0010 QA FAIL PR #24
+Did: Freshness uses created_at only; future-dated created_at (>5m after now) fails; 23h59m59s / exactly-24h literals; body-read throw exits 1; fetch AbortSignal.timeout.
+State: lint/typecheck/unit 142/142 green.
+Left: none. Decisions: none.
+
+## 2026-10-10 14:15 (UTC) — Cloud Agent — TP-0010 QA FAIL #2 PR #24
+Did: Injectable timeoutMs; abort-stub test exits 1 within 1s; FETCH_TIMEOUT_MS < 5min job cap.
+State: lint/typecheck/unit 144/144 green.
+Left: none. Decisions: none.
+
+## 2026-10-10 14:22 (UTC) — Cloud Agent — TP-0010 QA FAIL #3 PR #24
+Did: Same AbortSignal covers headers and body read; spy asserts default FETCH_TIMEOUT_MS; body-read abort exits 1 in <1s.
+State: lint/typecheck/unit 146/146 green.
+Left: none. Decisions: none.
