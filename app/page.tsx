@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ORGANIZATION_NAME, PRODUCT_NAME } from "@/lib/branding";
 import { isHealthReport, type HealthReport } from "@/lib/health";
 import styles from "./page.module.css";
 
@@ -29,8 +30,8 @@ export default function HomePage() {
 
   return (
     <main className={styles.page}>
-      <p className={styles.kicker}>Local development</p>
-      <h1>CasePilot × FAS</h1>
+      <p className={styles.kicker}>{ORGANIZATION_NAME}</p>
+      <h1>{PRODUCT_NAME}</h1>
       <p className={styles.lede}>
         Public Data to Proof shell. This page confirms the app and the local
         Supabase API are running. Product screens arrive in later phases.

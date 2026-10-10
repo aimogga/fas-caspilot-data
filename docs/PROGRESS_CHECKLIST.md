@@ -1,4 +1,4 @@
-# CasePilot Progress Checklist
+# FAS Grants Progress Checklist
 
 Last updated: Oct 10, 2026
 
