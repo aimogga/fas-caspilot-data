@@ -4,10 +4,10 @@ Last updated: Oct 10, 2026
 
 ## Summary
 
-- **Done:** 4 of 44 features (9%): F-003, F-101, F-102 and F-103.
-- **In progress:** F-105 preview environments and F-601 nightly audit (partly working).
-- **Next up:** F-105 preview environments (waiting on a Vercel reconnect), then the Phase 2 public data imports.
-- **Blocked:** F-104 branch protection. Locking the main branch so checks must pass needs a paid GitHub Pro plan. George chose to stay on the free plan, so this stays open. The automatic checks and secret scan already run on every change (PR #25).
+- **Done:** 5 of 44 features (11%): F-003, F-101, F-102, F-103 and F-105.
+- **In progress:** F-601 nightly audit (partly working), and renaming the product to "FAS Evidence".
+- **Next up:** Phase 2 public data imports, starting with F-201 (a record of every data import and its results). The "FAS Evidence" rename is also in progress.
+- **Blocked:** F-104 branch protection, pending George's GitHub Pro upgrade. Locking the main branch so checks must pass needs the paid plan. The automatic checks and secret scan already run on every change (PR #25).
 
 ## Phase 0: Getting ready
 
@@ -22,7 +22,7 @@ Last updated: Oct 10, 2026
 - [x] **Done** F-102 Database schema v1 with RLS deny-by-default: the database is built, and each organization can only see its own data; nothing is visible unless a rule allows it.
 - [x] **Done** F-103 Synthetic data generator: about 200 realistic fake cases across Utah counties, so we can test without any real people's information.
 - [ ] **Blocked** F-104 CI pipeline: every change is checked and scanned for leaked passwords automatically (working), but locking the main branch needs paid GitHub Pro.
-- [ ] **In progress** F-105 Preview environments: every proposed change gets its own test website with fake data so it can be tried before it goes live.
+- [x] **Done** F-105 Preview environments: Every PR gets its own preview site, connected only to the test database with fake data.
 
 ## Phase 2: Public data and county need
 
