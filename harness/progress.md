@@ -164,6 +164,6 @@ Decisions: none.
 
 ## 2026-10-10 22:25 (UTC) — Cloud Agent — DS-01a design review
 Did: Removed inline `--primary` style; base-layer input/button border+radius; `--input` 0.60/0.55; `--breakpoint-*: initial`. Kept `page.module.css`.
-State: addressing PR #33 review; tests next.
-Left: smoke + e2e + 375 screenshot.
+State: lint/typecheck/unit 175/175; build green; e2e 9/9.
+Left: none.
 Decisions: none.
