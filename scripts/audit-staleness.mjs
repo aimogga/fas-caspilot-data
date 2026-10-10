@@ -2,10 +2,12 @@
 import { pathToFileURL } from 'url';
 
 export const STALE_AFTER_MS = 24 * 60 * 60 * 1000;
+export const FUTURE_SKEW_MS = 5 * 60 * 1000;
+export const FETCH_TIMEOUT_MS = 15000;
 export const WORKFLOW_FILE = 'nightly-audit.yml';
 
-function runTime(run) {
-  const s = run?.updated_at ?? run?.run_started_at ?? run?.created_at;
+function runCreatedAt(run) {
+  const s = run?.created_at;
   if (typeof s !== 'string' || !s.trim()) return null;
   const n = Date.parse(s);
   return Number.isFinite(n) ? n : null;
@@ -29,7 +31,7 @@ function parsePayload(apiJson) {
   return data;
 }
 
-/** Pure: API JSON + current time. Never passes vacuously. */
+/** Pure: API JSON + current time. Never passes vacuously. Uses created_at only. */
 export function evaluateStaleness(apiJson, now) {
   if (typeof now !== 'number' || !Number.isFinite(now)) {
     return { ok: false, reason: 'invalid now' };
@@ -39,8 +41,9 @@ export function evaluateStaleness(apiJson, now) {
   let newest = null;
   for (const run of data.workflow_runs) {
     if (!isScheduleSuccessOnMain(run)) continue;
-    const at = runTime(run);
+    const at = runCreatedAt(run);
     if (at == null) return { ok: false, reason: 'malformed JSON' };
+    if (at - now > FUTURE_SKEW_MS) return { ok: false, reason: 'future-dated run' };
     if (newest == null || at > newest) newest = at;
   }
   if (newest == null) return { ok: false, reason: 'no successful schedule run' };
@@ -61,7 +64,7 @@ export async function main(opts = {}) {
           event: 'schedule',
           head_branch: 'main',
           conclusion: 'success',
-          updated_at: '2026-10-08T12:00:00.000Z',
+          created_at: '2026-10-08T12:00:00.000Z',
         }],
       }, Date.parse('2026-10-10T12:00:00.000Z'));
       return r.ok ? 0 : fail(r.reason);
@@ -80,6 +83,7 @@ export async function main(opts = {}) {
           Authorization: `Bearer ${token}`,
           'X-GitHub-Api-Version': '2022-11-28',
         },
+        signal: AbortSignal.timeout(opts.timeoutMs ?? FETCH_TIMEOUT_MS),
       });
     } catch (e) {
       return fail(`API error${e instanceof Error ? `: ${e.message}` : ''}`);

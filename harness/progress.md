@@ -110,3 +110,8 @@ Did: Moved Nightly Audit cron off the hour to `23 9 * * *`. Added fail-closed st
 State: lint/typecheck/unit 136/136 green.
 Left: none.
 Decisions: none.
+
+## 2026-10-10 14:05 (UTC) — Cloud Agent — TP-0010 QA FAIL PR #24
+Did: Freshness uses created_at only; future-dated created_at (>5m after now) fails; 23h59m59s / exactly-24h literals; body-read throw exits 1; fetch AbortSignal.timeout.
+State: lint/typecheck/unit 142/142 green.
+Left: none. Decisions: none.

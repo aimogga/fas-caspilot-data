@@ -1,10 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'child_process';
-import { evaluateStaleness, main, STALE_AFTER_MS } from './audit-staleness.mjs';
+import { evaluateStaleness, main } from './audit-staleness.mjs';
 
 const NOW = Date.parse('2026-10-10T12:00:00.000Z');
 const FRESH = '2026-10-10T06:00:00.000Z';
-const STALE = new Date(NOW - STALE_AFTER_MS - 60_000).toISOString();
 
 function body(runs) {
   return { total_count: runs.length, workflow_runs: runs };
@@ -15,7 +14,7 @@ function run(over = {}) {
     head_branch: 'main',
     conclusion: 'success',
     status: 'completed',
-    updated_at: FRESH,
+    created_at: FRESH,
     ...over,
   };
 }
@@ -25,7 +24,7 @@ describe('evaluateStaleness', () => {
     expect(evaluateStaleness(body([run()]), NOW)).toMatchObject({ ok: true });
   });
   it('stale fails', () => {
-    expect(evaluateStaleness(body([run({ updated_at: STALE })]), NOW).ok).toBe(false);
+    expect(evaluateStaleness(body([run({ created_at: '2026-10-08T12:00:00.000Z' })]), NOW).ok).toBe(false);
   });
   it('no runs fails', () => {
     expect(evaluateStaleness(body([]), NOW).ok).toBe(false);
@@ -41,7 +40,7 @@ describe('evaluateStaleness', () => {
     [{ documentation_url: 'https://docs.github.com' }],
     [{ workflow_runs: null }],
     [{ workflow_runs: 'x' }],
-    [body([run({ updated_at: 'not-a-date' })])],
+    [body([run({ created_at: 'not-a-date' })])],
   ])('malformed or error %j fails', (payload) => {
     expect(evaluateStaleness(payload, NOW).ok).toBe(false);
   });
@@ -55,6 +54,21 @@ describe('evaluateStaleness', () => {
     ]);
     expect(evaluateStaleness(json, NOW).ok).toBe(false);
   });
+  it('future-dated created_at more than 5 minutes after now fails', () => {
+    expect(evaluateStaleness(body([run({ created_at: '2026-10-10T12:06:00.000Z' })]), Date.parse('2026-10-10T12:00:00.000Z')).ok).toBe(false);
+  });
+  it('old created_at with a fresh updated_at fails', () => {
+    expect(evaluateStaleness(body([run({
+      created_at: '2026-10-08T12:00:00.000Z',
+      updated_at: '2026-10-10T11:55:00.000Z',
+    })]), Date.parse('2026-10-10T12:00:00.000Z')).ok).toBe(false);
+  });
+  it('23h59m59s old created_at passes', () => {
+    expect(evaluateStaleness(body([run({ created_at: '2026-10-09T12:00:01.000Z' })]), Date.parse('2026-10-10T12:00:00.000Z')).ok).toBe(true);
+  });
+  it('exactly 24h old created_at fails', () => {
+    expect(evaluateStaleness(body([run({ created_at: '2026-10-09T12:00:00.000Z' })]), Date.parse('2026-10-10T12:00:00.000Z')).ok).toBe(false);
+  });
 });
 
 describe('main fail-closed', () => {
@@ -65,6 +79,30 @@ describe('main fail-closed', () => {
     ['missing token', { token: '', repo: 'o/r', fetch: async () => ({ status: 200, text: async () => '{"workflow_runs":[]}' }) }],
   ])('%s exits non-zero', async (_name, opts) => {
     expect(await main(opts)).not.toBe(0);
+  });
+  it('exits 1 when reading the response body throws', async () => {
+    const code = await main({
+      token: 'x',
+      repo: 'o/r',
+      fetch: async () => ({ status: 200, text: async () => { throw new Error('read'); } }),
+    });
+    expect(code).toBe(1);
+  });
+  it('query URL has event=schedule, branch=main and status=success', async () => {
+    let url = '';
+    const code = await main({
+      token: 'x',
+      repo: 'o/r',
+      now: NOW,
+      fetch: async (u) => {
+        url = String(u);
+        return { status: 200, text: async () => JSON.stringify(body([run({ created_at: FRESH })])) };
+      },
+    });
+    expect(code).toBe(0);
+    expect(url).toMatch(/[?&]event=schedule\b/);
+    expect(url).toMatch(/[?&]branch=main\b/);
+    expect(url).toMatch(/[?&]status=success\b/);
   });
 });
 
