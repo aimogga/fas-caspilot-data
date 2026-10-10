@@ -212,13 +212,15 @@ These are derived from the current hex values: `#f4f1ea` → oklch(0.959 0.01 87
 | warning / card | 6.1:1 | 9.3:1 |
 | info / card | 6.7:1 | 7.7:1 |
 | ring / background (focus, needs 3:1) | 5.4:1 | 7.3:1 |
+| input / background (form boundary, needs 3:1) | 3.7:1 (`oklch(0.60 0.014 80)`) | 3.9:1 (`oklch(0.55 0.010 70)`) |
+| input / card (popover in dark) | 3.9:1 | 3.4:1 |
 | border / background | 1.3:1 (decorative only) | 1.4:1 |
 
-Every text pair passes AA (4.5:1). `--border` is decorative. Form-control boundaries use `--input`, which meets WCAG 1.4.11 (≥ 3:1) on background, card and popover in both themes: light 0.60 (3.7:1 on background) and dark 0.55 (see the ratios measured in the PR #33 review).
+Every text pair passes AA (4.5:1). `--border` is decorative. Form-control boundaries use `--input`, which meets WCAG 1.4.11 (≥ 3:1) on background, card and popover in both themes.
 
 ## 5. Radius, spacing, shadows, motion
 - **Radius:** base `--radius: 0.5rem` (8px). Inputs and buttons use `md` (6px), cards and dialogs `lg` (8px), sheets and large panels `xl` (12px), badges full pill. Restrained, not bubbly.
-- **Spacing:** Tailwind 4px base. Use only 1, 2, 3, 4, 6, 8, 12, 16 (4–64px). Page gutters are 24px (mobile 16px). Card padding is 24px. Table cell padding is 12px × 16px. Gaps between form fields are 16px and between sections 32–48px. The content max width is 1280px. Prose and forms are max 640px.
+- **Spacing:** Tailwind 4px base. Use only 1, 2, 3, 4, 6, 8, 12, 16 (4–64px). Page gutters are 16px on mobile (< 768, never less), 24px on tablet and 32px on desktop. Card padding is 24px. Table cell padding is 12px × 16px. Gaps between form fields are 16px and between sections 32–48px. The content max width is 1200px (a container width, not a breakpoint). Breakpoints: mobile < 768, tablet 768–1023 (56px rail), desktop ≥ 1024 (256px sidebar). Prose and forms are max 640px.
 - **Density:** default comfortable. A `data-density="compact"` table variant (row height 36px vs 44px) is for staff power views.
 - **Shadows** (warm-tinted, low):
   - `--shadow-xs: 0 1px 2px oklch(0.22 0.012 70 / 0.05)` for inputs and buttons
@@ -229,9 +231,9 @@ Every text pair passes AA (4.5:1). `--border` is decorative. Form-control bounda
 - **Motion:** `--ease-out: cubic-bezier(0.2, 0, 0, 1)`. Durations are 120ms (hover/press), 180ms (popover, tooltip, accordion) and 240ms (dialog, sheet). Use fade plus 4px translate only, with no bounce or scale over 0.98. Honor `prefers-reduced-motion` by turning transitions into opacity-only or none. Skeleton shimmer is off under reduced motion.
 
 ## 6. Component guidelines (shadcn/ui)
-**Buttons** (`button`): variants are `default` (primary green, one per view region), `secondary`, `outline`, `ghost` and `destructive`, plus `link`. Sizes are sm 32px, default 40px, lg 44px (use lg on touch targets and login). Labels are sentence case with verb first ("Export packet"). Loading state uses an inline spinner and keeps the width. The disabled state is 50% opacity plus `aria-disabled`, with no hover. Don't put two primary buttons side by side.
+**Buttons** (`button`): variants are `default` (primary green, one per view region), `secondary`, `outline`, `ghost` and `destructive`, plus `link`. Every button is 44px tall below 1024px. `sm` (32px) and `default` (40px) apply only at ≥ 1024px via responsive classes (`h-11 lg:h-8`, `h-11 lg:h-10`); `lg` is 44px everywhere. Labels are sentence case with verb first ("Export packet"). Loading state uses an inline spinner and keeps the width. The disabled state is 50% opacity plus `aria-disabled`, with no hover. Don't put two primary buttons side by side.
 
-**Inputs & forms** (`input`, `label`, `select`, `textarea`, `form` with react-hook-form + zod): labels always sit above the field, never as placeholder-only labels. Helper text is `text-sm muted-foreground`. Errors appear inline under the field in `destructive` with an icon and are tied by `aria-describedby`. On submit, focus moves to the first invalid field. Mark the required field type, or mark optional fields "(optional)" — this proposal recommends marking optional, because most FAS forms are mostly required. Number fields are right-aligned with tabular nums. Upload (F-301) uses a dashed `--input` dropzone with the mapping preview in a table.
+**Inputs & forms** (`input`, `label`, `select`, `textarea`, `form` with react-hook-form + zod): labels always sit above a full-width field, never as placeholder-only labels. Input text is at least 16px (`--input-font`) at every width, and inputs are at least 44px tall (48px on mobile login). Helper text is `text-sm muted-foreground`. Errors appear inline under the field in `destructive` with an icon and are tied by `aria-describedby`. On submit, focus moves to the first invalid field. Mark the required field type, or mark optional fields "(optional)" — this proposal recommends marking optional, because most FAS forms are mostly required. Number fields are right-aligned with tabular nums. Upload (F-301) uses a dashed `--input` dropzone with the mapping preview in a table.
 
 **Cards** (`card`): `bg-card`, 1px border, `shadow-sm`, radius lg. KPI card layout: label (`text-sm muted`), metric (`text-metric`), delta badge, then a footer line **"Source · vintage · n"** in `text-xs`. A provenance popover opens from that footer and shows source_id, ingest_run, and last_success_at.
 
@@ -265,7 +267,7 @@ Every text pair passes AA (4.5:1). `--border` is decorative. Form-control bounda
 - WCAG 2.2 AA target. All text token pairs above measure at least 4.5:1, and focus ring contrast is at least 3:1 in both themes.
 - Visible focus: `outline-none ring-2 ring-ring ring-offset-2 ring-offset-background` on every interactive element, shown only for keyboard focus (`:focus-visible`).
 - Never use color alone. Status badges carry an icon and a label. Chart series get direct labels or patterns. The map legend has numeric bins.
-- Target size is at least 24×24px (WCAG 2.5.8), and 44px for primary actions on touch.
+- Every tappable control is at least 44×44px on mobile and tablet (< 1024px), with no exceptions. At ≥ 1024px, 32/40px button sizes are allowed.
 - Use semantic landmarks (`header`, `nav`, `main`) and a "Skip to content" link in the shell.
 - Tables use `<th scope>`. Sortable headers announce `aria-sort`.
 - Respect `prefers-reduced-motion` and `prefers-color-scheme`, and let users override the theme in the user menu.
@@ -275,12 +277,12 @@ Every text pair passes AA (4.5:1). `--border` is decorative. Form-control bounda
 ## 8. Live preview validation (2026-10-10, 2:25 PM MT)
 I checked preview `fas-caspilot-data-m561u3afy-aimoggas-projects.vercel.app` (the F-101 QA preview) with a temporary Vercel share link. I signed in with the synthetic fas-dev admin, staff and board_viewer test accounts.
 
-Screenshots are on the shared box (`/workspace/casepilot-ds/`): `live-login.png`, `live-shell-admin.png`, `live-shell-staff.png`, `live-shell-board.png`, `live-board-blocked-staff.png`.
+Screenshots are in `docs/design/reviews/live/`: `live-login.png`, `live-shell-admin.png`, `live-shell-staff.png`, `live-shell-board.png`, `live-board-blocked-staff.png`.
 
 | Area | Seen live | Versus draft |
 |---|---|---|
 | Global type & color | Body text is Georgia serif, background rgb(244,241,234) = `#f4f1ea`, text `#1c1915`. | **Confirmed.** The palette basis for the tokens is correct. |
-| Form controls | Inputs and buttons use browser defaults: Arial, 21px-high inputs with a 2px inset grey border and 0 radius. The button is grey `#efefef` with an outset border and 1×6px padding. | Worse than the code suggested, because the serif body doesn't reach the controls. The draft's 40px inputs and buttons, `--input` border, 6px radius and Inter everywhere fix this. Add the shadcn base layer `button,input{font:inherit}`. |
+| Form controls | Inputs and buttons use browser defaults: Arial, 21px-high inputs with a 2px inset grey border and 0 radius. The button is grey `#efefef` with an outset border and 1×6px padding. | Worse than the code suggested, because the serif body doesn't reach the controls. The draft's 44px inputs and buttons, `--input` border, 6px radius and Inter everywhere fix this. Add the shadcn base layer `button,input{font:inherit}`. |
 | Login layout | `Sign In` H1 at 32px. Label, field, label, field and button run **inline on one row**, flush to the left edge (0 margin). No card, brand or helper text. | Confirms that §6 auth/login is the top priority. Add: labels stacked above fields (draft rule), a max-width 400px card, and a centered layout. |
 | Post-login landing (all roles) | Every role lands on `/`, which shows a "LOCAL DEVELOPMENT" dev placeholder (the repo copy still says "CasePilot × FAS"; replace it with FAS Evidence) with "Check local services" and Sign Out. There is no role-aware home. | **New finding.** The shell must route each role to its home (admin → /admin, staff → /staff, board_viewer → /board), or show a role-aware dashboard. Remove the "local development" banner from preview/prod, or turn it into an environment badge in the top bar. |
 | Role pages | `/admin`, `/staff`, `/board` are identical. Each has an H1 ("Admin Page" and so on), "Role: X", one access sentence and a native Sign Out button in a centered 800px column. There's no nav, so a user can only reach other pages by URL. | Confirms the draft's sidebar shell recommendation. The role badge belongs in the user menu, not the page body. |
@@ -290,7 +292,7 @@ Screenshots are on the shared box (`/workspace/casepilot-ds/`): `live-login.png`
 No change to the tokens was needed. The changes are to §6: stacked labels inside a login card, role-based post-login redirect, a 403 empty state, an environment badge, and `font: inherit` on form controls.
 
 ## 9. Reference examples
-Public marketing pages, captured 2026-10-10. Images are in `/workspace/casepilot-ds/refs/`.
+Public marketing pages, captured 2026-10-10. Images are in `docs/design/refs/`.
 
 1. **Mercury: business banking** · https://mercury.com/ · `refs/mercury.png`. A calm, premium finance brand: soft neutrals, generous whitespace, one restrained accent, quiet sans typography and pill buttons. It shows how a money/compliance product earns trust through restraint, which is the tone we want for board viewers and for the login.
 2. **Linear: product development system** · https://linear.app/ · `refs/linear.png`. The homepage shows the real app shell: a collapsible left sidebar grouped into sections (Workspace, Favorites), a quiet top bar, dense but readable lists, and an activity feed. It is the model for our role shell, the compact table density, and the dark mode built from surface lightness steps.
