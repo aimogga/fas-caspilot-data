@@ -172,3 +172,8 @@ Decisions: none.
 Did: shadcn@4.21.4; pin `cn@0.4.0`; card/separator untouched generator; focus `var(--ring)` 2px; `--border`; tap-min <1024; gallery disabled/error/icons.
 State: HW = git diff --numstat origin/main minus pnpm-lock.yaml, card.tsx, separator.tsx.
 Left: none.
+
+## 2026-10-10 23:40 (UTC) — Cloud Agent — DS-01b B4
+Did: Native buttons keep tap-min at every width; only `[data-slot=button]` drops it at lg. e2e Sign In/Out ≥44 at 1280.
+State: recount vs main minus lockfile, card, separator.
+Left: none.

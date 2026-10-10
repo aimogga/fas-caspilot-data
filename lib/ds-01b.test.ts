@@ -25,5 +25,6 @@ describe("DS-01b", () => {
     expect(badge).toMatch(/success:[\s\S]*success-soft[\s\S]*warning:[\s\S]*destructive:[\s\S]*info:[\s\S]*muted:[\s\S]*prefix/);
     expect(alert).toMatch(/warning:[\s\S]*variant === "destructive" \? "alert"/);
     expect(gallery).toMatch(/disabled[\s\S]*aria-invalid[\s\S]*aria-describedby/);
+    expect(read("app/globals.css")).toMatch(/button:not\(\[data-slot\]\)[\s\S]*--tap-min[\s\S]*\[data-slot=button\]/);
   });
 });

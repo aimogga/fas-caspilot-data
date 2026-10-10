@@ -190,11 +190,12 @@
   }
 
   button:not([data-slot]) {
+    min-height: var(--tap-min); min-width: var(--tap-min);
     border: 1px solid var(--input); border-radius: var(--radius-md); padding-inline: 16px;
   }
 
-  @media (width < 1024px) { button { min-height: var(--tap-min); min-width: var(--tap-min); } }
-  :focus, :focus-visible {
+  @media (width < 1024px) { [data-slot=button] { min-height: var(--tap-min); min-width: var(--tap-min); } }
+  :focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }

@@ -60,3 +60,13 @@ test("login at 375 uses mobile tokens and stacked fields", async ({ page }) => {
   expect(m.inputBorderColor).not.toBe("rgba(0, 0, 0, 0)");
   expect(m.inputBorderColor).not.toBe(m.bodyBg);
 });
+
+test("native Sign In and Sign Out are 44px at 1280", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/login");
+  expect(await page.getByRole("button", { name: "Sign In" }).evaluate((el) => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+  await page.fill("#email", "staff@example.test");
+  await page.fill("#password", "testpass123");
+  await Promise.all([page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 10000 }), page.click("button[type=submit]")]);
+  expect(await page.getByRole("button", { name: "Sign Out" }).evaluate((el) => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+});

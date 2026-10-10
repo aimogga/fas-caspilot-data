@@ -31,7 +31,7 @@ export default function UiGalleryPage() {
       <Input id="gallery-disabled" disabled defaultValue="disabled@example.test" />
       <Label htmlFor="gallery-err">County</Label>
       <Input id="gallery-err" aria-invalid="true" aria-describedby="gallery-err-msg" />
-      <p id="gallery-err-msg">Enter a Utah county.</p>
+        <p id="gallery-err-msg" className="flex items-center gap-1 text-destructive"><CircleAlert className="size-4" aria-hidden />Enter a Utah county.</p>
       <section className="flex flex-wrap gap-2" aria-label="Badges">
         <Badge variant="success" prefix={<CircleCheck />}>success</Badge>
         <Badge variant="warning" prefix={<TriangleAlert />}>warning</Badge>
