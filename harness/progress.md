@@ -162,8 +162,8 @@ State: lint/typecheck/unit 172/172 green; e2e 7/7 green.
 Left: none.
 Decisions: none.
 
-## 2026-10-10 22:10 (UTC) — Cloud Agent — DS-01a Tailwind v4 + design tokens
+## 2026-10-10 22:15 (UTC) — Cloud Agent — DS-01a Tailwind v4 + design tokens
 Did: Tailwind 4.3.3 tokens + Inter/Source Serif 4/JetBrains Mono. Added `--tap-min` 44px, `--input-font` 16px, `--page-gutter-mobile` 16px, and md/lg breakpoints. Kept `page.module.css` on the new tokens (DS-04 does not replace `/`).
-State: lint/typecheck/unit next; e2e + 1440 screenshot after.
-Left: e2e auth-roles + tokens + login screenshot.
+State: lint/typecheck/unit 175/175 green; build green; e2e 9/9 green (auth-roles, branding, tokens).
+Left: none.
 Decisions: none.
