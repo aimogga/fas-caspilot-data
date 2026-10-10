@@ -1,12 +1,11 @@
 .page {
   margin: 0 auto;
   max-width: 40rem;
-  padding: 4rem 1.5rem;
+  padding-block: 4rem;
 }
 
 .kicker {
-  color: var(--muted);
-  font-family: "Segoe UI", sans-serif;
+  color: var(--muted-foreground);
   font-size: 0.8rem;
   letter-spacing: 0.08em;
   margin: 0 0 0.75rem;
@@ -27,12 +26,11 @@
 }
 
 .button {
-  background: var(--accent);
+  background: var(--primary);
   border: 0;
   border-radius: 999px;
-  color: var(--accent-text);
+  color: var(--primary-foreground);
   cursor: pointer;
-  font-family: "Segoe UI", sans-serif;
   font-size: 1rem;
   padding: 0.7rem 1.2rem;
 }
@@ -43,15 +41,14 @@
 }
 
 .panel {
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
   border-radius: 1rem;
-  background: var(--panel);
+  background: var(--card);
   margin-top: 1.5rem;
   padding: 1rem 1.2rem;
 }
 
 .panel h2 {
-  font-family: "Segoe UI", sans-serif;
   font-size: 0.95rem;
   font-weight: 600;
   margin: 0 0 0.75rem;
@@ -71,15 +68,13 @@
 }
 
 .ok {
-  color: var(--ok);
-  font-family: "Segoe UI", sans-serif;
+  color: var(--success);
 }
 
 .bad {
-  color: var(--bad);
-  font-family: "Segoe UI", sans-serif;
+  color: var(--destructive);
 }
 
 .error {
-  color: var(--bad);
+  color: var(--destructive);
 }

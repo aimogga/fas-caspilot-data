@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
   // Keep the repo AGENTS.md. Next must not rewrite it on `pnpm dev`.
   agentRules: false,
+  experimental: { lightningCssFeatures: { exclude: ["oklab-colors"] } },
 };
 
 export default nextConfig;
