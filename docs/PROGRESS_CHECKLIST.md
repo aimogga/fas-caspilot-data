@@ -6,7 +6,7 @@ Last updated: Oct 10, 2026
 
 - **Done:** 5 of 44 features (11%): F-003, F-101, F-102, F-103 and F-105.
 - **In progress:** F-601 nightly audit (partly working), and renaming the product to "FAS Evidence".
-- **Next up:** Phase 2 public data imports, starting with F-201 (a record of every data import and its results). The "FAS Evidence" rename is also in progress.
+- **Next up:** Phase 2 public data imports, starting with F-201 (a record of every data import and its results).
 - **Blocked:** F-104 branch protection, pending George's GitHub Pro upgrade. Locking the main branch so checks must pass needs the paid plan. The automatic checks and secret scan already run on every change (PR #25).
 
 ## Phase 0: Getting ready
