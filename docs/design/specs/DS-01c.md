@@ -1,4 +1,5 @@
 # DS-01c — Layout primitives
+Source docs: none additional (inherits design-system via DS-01a / source PR 1).
 **Depends on:** DS-01b. **Budget:** ≤ 400 lines. **No new dependencies.**
 
 **Scope** (`components/layout/`):

@@ -1,4 +1,5 @@
 # DS-01b — shadcn init + base components
+Source docs: none additional (inherits design-system via DS-01a / source PR 1).
 **Depends on:** DS-01a. **Budget:** ≤ 400 hand-written lines. Only *untouched* `shadcn add` output counts as generated (D-012), and it is listed by name. Any file we hand-edit (button, badge, alert, input, label) counts toward the 400 lines in full. QA diffs the untouched files against `shadcn add` output.
 
 **Pins:**
