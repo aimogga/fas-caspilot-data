@@ -180,6 +180,45 @@ export function matchSecretLine(line) {
   ].some(p => p.test(line));
 }
 
+function isLockPath(p) {
+  return /(?:^|\/)(?:[^/]*lock\.[^/]*|pnpm-lock\.yaml)$/.test(p);
+}
+
+export function scanFileContents(files) {
+  const r = {status: 'GREEN', findings: [], details: []};
+  let found = 0, scanned = 0;
+  for (const [path, text] of Object.entries(files)) {
+    if (isLockPath(path)) continue;
+    scanned++;
+    for (const line of String(text).split('\n')) {
+      if (/example|test_/i.test(line)) continue;
+      if (matchSecretLine(line)) found++;
+    }
+  }
+  r.details.push(`Scanned ${scanned} file(s)`);
+  if (found) {
+    r.status = 'RED';
+    r.findings.push(`${found} potential secret(s)`);
+  } else r.details.push('No obvious secrets');
+  return r;
+}
+
+export function checkSecretScanTree({listFiles, readFile} = {}) {
+  try {
+    const names = (listFiles ?? (() => execSync('git ls-files', {encoding: 'utf-8'}).trim().split('\n').filter(Boolean)))();
+    const read = readFile ?? readFileSync;
+    const files = {};
+    for (const p of names) files[p] = read(p, 'utf-8');
+    return scanFileContents(files);
+  } catch {
+    return {status: 'RED', findings: ['secret scan could not run'], details: []};
+  }
+}
+
+export function secretsOnlyExit(result) {
+  return result.status === 'GREEN' ? 0 : 1;
+}
+
 export function checkSecretScan(gitRunner = execSync) {
   const r = {status: 'GREEN', findings: [], details: []};
   try {
@@ -355,6 +394,12 @@ export async function main(opts = {}) {
 // Only run main when executed directly
 import { pathToFileURL } from 'url';
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  if (process.argv.includes('--secrets-only')) {
+    const r = checkSecretScanTree();
+    for (const d of r.details) console.log(d);
+    for (const f of r.findings) console.error(f);
+    process.exit(secretsOnlyExit(r));
+  }
   const ok = () => ({status: 'GREEN', findings: [], details: [], ignored: [], stale: []});
   const opts = process.env.NIGHTLY_AUDIT_FIXTURE === 'red'
     ? {secretScan: ok, build: ok, harness: ok, deps: () => ({status: 'RED', findings: ['fixture'], details: [], ignored: [], stale: []})}

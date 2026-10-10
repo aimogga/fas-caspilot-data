@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'child_process';
-import { worst, generateReport, matchSecretLine, checkProgressLog, parseAgentsCommands, parseAudit, checkSecretScan, checkDocRefs, auditExitCode, writeAndPrintReport, checkDeps, main, runPnpmAudit } from './nightly-audit.mjs';
+import { worst, generateReport, matchSecretLine, checkProgressLog, parseAgentsCommands, parseAudit, checkSecretScan, checkSecretScanTree, scanFileContents, secretsOnlyExit, checkDocRefs, auditExitCode, writeAndPrintReport, checkDeps, main, runPnpmAudit } from './nightly-audit.mjs';
 const GHSA_IG = {id: 'GHSA-vfj7-8cjw-p6xm', package: 'braces', reason: 'CVE-2026-93687; dev-only lint toolchain transitive dep, no patched release', reviewer: 'QA bot', expires: '2026-11-08', severity: 'high'};
 const STALE_IG = {...GHSA_IG, id: 'GHSA-aaaa-bbbb-cccc', package: 'nope'};
 const BRACES_JSON = JSON.stringify({advisories: {'1240992': {severity: 'high', module_name: 'braces', cves: ['CVE-2026-93687'], github_advisory_id: 'GHSA-vfj7-8cjw-p6xm'}}, metadata: {vulnerabilities: {critical: 0, high: 1, moderate: 0, low: 0}}});
@@ -148,6 +148,33 @@ describe('checkSecretScan', () => {
   it('returns RED on git missing', () => {
     const failGit = () => { throw new Error('Command failed: git log'); };
     expect(checkSecretScan(failGit)).toEqual({status: 'RED', findings: ['secret scan could not run'], details: []});
+  });
+});
+describe('checkSecretScanTree', () => {
+  const planted = 'api_key = "' + 'supersecret12345' + '"';
+  it('fails on a planted secret', () => {
+    const r = checkSecretScanTree({listFiles: () => ['app/config.ts'], readFile: () => planted});
+    expect(r.status).toBe('RED');
+    expect(r.findings[0]).toMatch(/secret/);
+    expect(secretsOnlyExit(r)).not.toBe(0);
+  });
+  it('scanFileContents flags a planted secret fixture', () => {
+    expect(scanFileContents({'cfg.ts': planted}).status).toBe('RED');
+    expect(secretsOnlyExit(scanFileContents({'cfg.ts': planted}))).toBe(1);
+  });
+  it('passes a clean tree', () => {
+    const r = checkSecretScanTree({listFiles: () => ['app/ok.ts'], readFile: () => 'export const x = 1;'});
+    expect(r.status).toBe('GREEN');
+    expect(secretsOnlyExit(r)).toBe(0);
+  });
+  it('cannot-run is RED', () => {
+    expect(checkSecretScanTree({listFiles: () => { throw new Error('no git'); }})).toEqual({
+      status: 'RED', findings: ['secret scan could not run'], details: [],
+    });
+  });
+  it('CLI --secrets-only exits 0 on this repo', () => {
+    const r = spawnSync(process.execPath, ['scripts/nightly-audit.mjs', '--secrets-only'], {encoding: 'utf8', timeout: 15000});
+    expect(r.status).toBe(0);
   });
 });
 describe('checkDeps', () => {

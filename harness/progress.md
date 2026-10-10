@@ -125,3 +125,9 @@ Left: none. Decisions: none.
 Did: Same AbortSignal covers headers and body read; spy asserts default FETCH_TIMEOUT_MS; body-read abort exits 1 in <1s.
 State: lint/typecheck/unit 146/146 green.
 Left: none. Decisions: none.
+
+## 2026-10-10 15:05 (UTC) — Cloud Agent — packet TP-0011 / F-104
+Did: Added `.github/workflows/ci.yml` (`ci` + `secret-scan` jobs) on PR/push to main. Secret scan reuses `scripts/nightly-audit.mjs --secrets-only` (working-tree scan) and fails on a planted secret. Local Supabase + Playwright chromium for `test:db` / e2e smoke.
+State: lint/typecheck/unit 157/157 green. Awaiting this PR's CI run.
+Left: none (supervisor: branch protection + GitHub secret scanning toggle).
+Decisions: none.
