@@ -75,6 +75,7 @@ export async function main(opts = {}) {
       return fail('missing or invalid GITHUB_TOKEN/GITHUB_REPOSITORY');
     }
     const url = `https://api.github.com/repos/${repo}/actions/workflows/${WORKFLOW_FILE}/runs?event=schedule&branch=main&status=success&per_page=20`;
+    const timeoutMs = opts.timeoutMs ?? FETCH_TIMEOUT_MS;
     let res;
     try {
       res = await (opts.fetch ?? globalThis.fetch)(url, {
@@ -83,7 +84,7 @@ export async function main(opts = {}) {
           Authorization: `Bearer ${token}`,
           'X-GitHub-Api-Version': '2022-11-28',
         },
-        signal: AbortSignal.timeout(opts.timeoutMs ?? FETCH_TIMEOUT_MS),
+        signal: AbortSignal.timeout(timeoutMs),
       });
     } catch (e) {
       return fail(`API error${e instanceof Error ? `: ${e.message}` : ''}`);

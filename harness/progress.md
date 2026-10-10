@@ -115,3 +115,8 @@ Decisions: none.
 Did: Freshness uses created_at only; future-dated created_at (>5m after now) fails; 23h59m59s / exactly-24h literals; body-read throw exits 1; fetch AbortSignal.timeout.
 State: lint/typecheck/unit 142/142 green.
 Left: none. Decisions: none.
+
+## 2026-10-10 14:15 (UTC) — Cloud Agent — TP-0010 QA FAIL #2 PR #24
+Did: Injectable timeoutMs; abort-stub test exits 1 within 1s; FETCH_TIMEOUT_MS < 5min job cap.
+State: lint/typecheck/unit 144/144 green.
+Left: none. Decisions: none.

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'child_process';
-import { evaluateStaleness, main } from './audit-staleness.mjs';
+import { evaluateStaleness, main, FETCH_TIMEOUT_MS } from './audit-staleness.mjs';
 
 const NOW = Date.parse('2026-10-10T12:00:00.000Z');
 const FRESH = '2026-10-10T06:00:00.000Z';
@@ -87,6 +87,26 @@ describe('main fail-closed', () => {
       fetch: async () => ({ status: 200, text: async () => { throw new Error('read'); } }),
     });
     expect(code).toBe(1);
+  });
+  it('timeoutMs abort exits 1 within 1s', async () => {
+    const t0 = Date.now();
+    const code = await main({
+      token: 'x',
+      repo: 'o/r',
+      timeoutMs: 50,
+      fetch: (_u, init) => new Promise((_, reject) => {
+        const s = init?.signal;
+        if (!s) return;
+        const onAbort = () => reject(s.reason instanceof Error ? s.reason : new Error('aborted'));
+        if (s.aborted) { onAbort(); return; }
+        s.addEventListener('abort', onAbort, { once: true });
+      }),
+    });
+    expect(code).toBe(1);
+    expect(Date.now() - t0).toBeLessThan(1000);
+  });
+  it('default fetch timeout is under the job timeout-minutes', () => {
+    expect(FETCH_TIMEOUT_MS).toBeLessThan(5 * 60 * 1000);
   });
   it('query URL has event=schedule, branch=main and status=success', async () => {
     let url = '';
