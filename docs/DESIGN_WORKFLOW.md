@@ -7,7 +7,7 @@
 
 - `docs/design/design-system-v1.md` (token values; DS-01a uses §4–5), `docs/design/fas-screen-plan.md` (DS-02 nav comes from §1.2), and the mockups in `docs/design/mockups/` (PNG at 375/1024/1440 plus HTML source) are maintained by UX/UI Design Bot. They are handed to each implementing cloud agent as attachments until they land in the repo.
 - The sources land in design-sources PRs, each at most 400 hand-written lines (markdown/HTML count; PNG binaries do not count), split as needed: (1) `design-system-v1.md`; (2) and (3) `fas-screen-plan.md` in two parts; (4) mockups (PNG binaries plus HTML source, split if the HTML is over 400).
-- DS-01a merges only after source PR (1) is merged; DS-02 after (2) and (3); DS-03 and DS-04 after (4).
+- DS-01a merges only after source PR (1) is merged; DS-02 after (2), (3) and (4); DS-03 and DS-04 after (4).
 
 ## Steps
 1. **Spec first.** Design commits `docs/design/specs/<ID>.md` (scope, files, acceptance criteria, states, a11y, line budget) before any code. An engineer starts only from a merged or linked spec.
