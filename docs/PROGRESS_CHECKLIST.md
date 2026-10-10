@@ -1,13 +1,23 @@
-# CasePilot Progress Checklist
+# FAS Evidence Progress Checklist
 
 Last updated: Oct 10, 2026
 
 ## Summary
 
 - **Done:** 6 of 44 features (14%): F-003, F-101, F-102, F-103, F-104 and F-105.
-- **In progress:** F-601 nightly audit (partly working). Rename to FAS Evidence: done (PR #28).
-- **Next up:** Phase 2 public data imports, starting with F-201 (a record of every data import and its results).
+- **In progress:** F-601 nightly audit (partly working). Design system DS-01b (shadcn base components).
+- **Next up:** Finish design foundation (DS-01b → DS-01c → DS-02 role shell → DS-03 login → DS-04 403), then Phase 2 starting with F-201 (a record of every data import and its results), then cleanup of open issues #12, #13, #23 and #26.
 - **Blocked:** None right now.
+
+## Design system
+
+- Rename to FAS Evidence: done (PR #28, merged at e20b7a0).
+- Deck and PRD are FAS-only: done (PR #34, merged at f989572).
+- Design workflow and DS specs: done (PR #32, docs/DESIGN_WORKFLOW.md).
+- Design-system v1 source: done (PR #35).
+- **DS-01a** Tailwind v4 + tokens: done (PR #33, squash-merged at cfab531). QA PASS and DESIGN APPROVED.
+- **DS-01b** shadcn base components: in progress.
+- After that: DS-01c, DS-02 (role shell), DS-03 (login), DS-04 (403).
 
 ## Phase 0: Getting ready
 
