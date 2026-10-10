@@ -143,3 +143,9 @@ Did: Replaced string-ban ci.yml test with parseYaml+assertCi (in-tree subset par
 State: lint/typecheck/unit 175/175 green.
 Left: none.
 Decisions: none.
+
+## 2026-10-10 15:52 (UTC) — Cloud Agent — TP-0011 QA FAIL #3 PR #25
+Did: Removed ci.yml structure test and scripts/ci-structure.mjs (B5 bypasses; 396/400, follow-up packet). Kept ci.yml (both jobs, PR/push, concurrency, timeouts, SHA pins, migrate/seed log) and the full secret scanner + planted-format tests.
+State: lint/typecheck/unit 168/168 green.
+Left: structure guard in a follow-up (actionlint + exact-key allowlist).
+Decisions: none.
