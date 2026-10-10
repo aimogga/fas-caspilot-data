@@ -120,3 +120,8 @@ Left: none. Decisions: none.
 Did: Injectable timeoutMs; abort-stub test exits 1 within 1s; FETCH_TIMEOUT_MS < 5min job cap.
 State: lint/typecheck/unit 144/144 green.
 Left: none. Decisions: none.
+
+## 2026-10-10 14:22 (UTC) — Cloud Agent — TP-0010 QA FAIL #3 PR #24
+Did: Same AbortSignal covers headers and body read; spy asserts default FETCH_TIMEOUT_MS; body-read abort exits 1 in <1s.
+State: lint/typecheck/unit 146/146 green.
+Left: none. Decisions: none.

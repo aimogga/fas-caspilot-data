@@ -51,6 +51,21 @@ export function evaluateStaleness(apiJson, now) {
   return { ok: true, ageMs: now - newest };
 }
 
+function abortError(signal) {
+  return signal?.reason instanceof Error ? signal.reason : new Error('aborted');
+}
+
+function readText(res, signal) {
+  if (signal?.aborted) return Promise.reject(abortError(signal));
+  const pending = typeof res?.text === 'function' ? res.text(signal) : Promise.reject(new Error('no body'));
+  if (!signal) return pending;
+  return new Promise((resolve, reject) => {
+    const onAbort = () => reject(abortError(signal));
+    signal.addEventListener('abort', onAbort, { once: true });
+    Promise.resolve(pending).then(resolve, reject).finally(() => signal.removeEventListener('abort', onAbort));
+  });
+}
+
 function fail(msg) {
   console.error(`Nightly Audit staleness: ${msg}`);
   return 1;
@@ -76,6 +91,7 @@ export async function main(opts = {}) {
     }
     const url = `https://api.github.com/repos/${repo}/actions/workflows/${WORKFLOW_FILE}/runs?event=schedule&branch=main&status=success&per_page=20`;
     const timeoutMs = opts.timeoutMs ?? FETCH_TIMEOUT_MS;
+    const signal = AbortSignal.timeout(timeoutMs);
     let res;
     try {
       res = await (opts.fetch ?? globalThis.fetch)(url, {
@@ -84,14 +100,14 @@ export async function main(opts = {}) {
           Authorization: `Bearer ${token}`,
           'X-GitHub-Api-Version': '2022-11-28',
         },
-        signal: AbortSignal.timeout(timeoutMs),
+        signal,
       });
     } catch (e) {
       return fail(`API error${e instanceof Error ? `: ${e.message}` : ''}`);
     }
     if (!res || res.status !== 200) return fail(`non-200 ${res && res.status}`);
     let text;
-    try { text = await res.text(); }
+    try { text = await readText(res, signal); }
     catch { return fail('API error'); }
     let json;
     try { json = JSON.parse(text); }

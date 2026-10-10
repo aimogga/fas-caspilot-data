@@ -1,6 +1,15 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { spawnSync } from 'child_process';
 import { evaluateStaleness, main, FETCH_TIMEOUT_MS } from './audit-staleness.mjs';
+
+function abortOnSignal(signal) {
+  return new Promise((_, reject) => {
+    if (!signal) return;
+    const onAbort = () => reject(signal.reason instanceof Error ? signal.reason : new Error('aborted'));
+    if (signal.aborted) { onAbort(); return; }
+    signal.addEventListener('abort', onAbort, { once: true });
+  });
+}
 
 const NOW = Date.parse('2026-10-10T12:00:00.000Z');
 const FRESH = '2026-10-10T06:00:00.000Z';
@@ -94,12 +103,34 @@ describe('main fail-closed', () => {
       token: 'x',
       repo: 'o/r',
       timeoutMs: 50,
-      fetch: (_u, init) => new Promise((_, reject) => {
-        const s = init?.signal;
-        if (!s) return;
-        const onAbort = () => reject(s.reason instanceof Error ? s.reason : new Error('aborted'));
-        if (s.aborted) { onAbort(); return; }
-        s.addEventListener('abort', onAbort, { once: true });
+      fetch: (_u, init) => abortOnSignal(init?.signal),
+    });
+    expect(code).toBe(1);
+    expect(Date.now() - t0).toBeLessThan(1000);
+  });
+  it('main without timeoutMs uses FETCH_TIMEOUT_MS', async () => {
+    const spy = vi.spyOn(AbortSignal, 'timeout');
+    try {
+      await main({
+        token: 'x',
+        repo: 'o/r',
+        now: NOW,
+        fetch: async () => ({ status: 200, text: async () => JSON.stringify(body([run()])) }),
+      });
+      expect(spy).toHaveBeenCalledWith(FETCH_TIMEOUT_MS);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+  it('timeout signal covers body read', async () => {
+    const t0 = Date.now();
+    const code = await main({
+      token: 'x',
+      repo: 'o/r',
+      timeoutMs: 50,
+      fetch: async () => ({
+        status: 200,
+        text: (signal) => abortOnSignal(signal),
       }),
     });
     expect(code).toBe(1);
