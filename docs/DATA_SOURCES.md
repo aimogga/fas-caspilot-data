@@ -1,5 +1,7 @@
 # Data Source Registry
 
+**Data use (D-015):** Public and FAS data in FAS Evidence is used only (1) for FAS to measure and validate the problem it solves, and (2) to provide or attach that data in FAS's grant applications for government grants and through GrantAdvance. No resale, no paid product, no other use. License checks below are for that use only.
+
 Status key: **Use** = cleared for build · **Verify first** = Deep Research must confirm endpoint + license before code · **Manual reference** = cite in documents, don't ingest · **Avoid** = don't use in the product.
 Facts below were checked in October 2026 research unless marked *verify*. Deep Research re-confirms every Phase 2 and Phase 5 row in Phase 0 and records a source card in `docs/research/`.
 
@@ -29,7 +31,7 @@ Facts below were checked in October 2026 research unless marked *verify*. Deep R
 | Source | Why |
 |---|---|
 | NSDUH (SAMHSA) state estimates | State-level only; good for narrative context |
-| N-SUMHSS / FindTreatment.gov (SAMHSA) | Facility data; FindTreatment API needs registration; *verify* before productizing |
+| N-SUMHSS / FindTreatment.gov (SAMHSA) | Facility data; FindTreatment API needs registration; *verify* before ingesting |
 | Utah SUMH Mental Health Treatment Scorecards (OQ/YOQ) | PDFs; enter benchmark values manually once a year for the outcome comparison panel |
 | DCFS annual reports, Legislative Auditor reports | PDFs; narrative citations |
 | Child Welfare Outcomes data site (ACF) | State-level context |
