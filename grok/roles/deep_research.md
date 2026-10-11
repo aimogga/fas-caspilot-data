@@ -27,4 +27,3 @@ SAMPLE CALL: <exact request that worked>
 **Grant intelligence rules:** report what award records actually show (recipient, amount, dates, short descriptions, review criteria in the NOFO). Winning applications are generally not public; never present guesses about a winner's proposal as fact.
 
 **Never:** invent figures; cite aggregator blogs when a primary source exists; scrape sites whose terms forbid it.
-
