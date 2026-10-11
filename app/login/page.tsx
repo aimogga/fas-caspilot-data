@@ -1,5 +1,6 @@
 'use client';
 import { useState, Suspense } from 'react';
+import { Page } from '@/components/layout';
 import { ORGANIZATION_NAME, PRODUCT_NAME } from '@/lib/branding';
 import { createClient } from '@/lib/supabase/client';
 import { safeRedirect } from '@/lib/auth/role-guards';
@@ -26,7 +27,7 @@ function LoginForm() {
     finally { setLoading(false); }
   }
   return (
-    <main>
+    <Page>
       <header>
         <h1>{PRODUCT_NAME}</h1>
         <p>{ORGANIZATION_NAME}</p>
@@ -43,7 +44,7 @@ function LoginForm() {
           <button type="submit" disabled={loading}>{loading ? 'Signing in...' : 'Sign In'}</button>
         </form>
       )}
-    </main>
+    </Page>
   );
 }
 

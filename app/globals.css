@@ -156,7 +156,6 @@
     font-family: var(--font-sans);
     font-feature-settings: "cv11", "ss01";
     min-height: 100vh;
-    padding-inline: var(--page-gutter-mobile);
   }
 
   h1,
@@ -210,4 +209,42 @@
       scroll-behavior: auto !important;
     }
   }
+
+  @media (width < 768px) { body { font-size: 15px; } }
 }
+
+[data-slot=page] {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  margin-inline: auto;
+  padding: 20px var(--page-gutter-mobile) 40px;
+}
+@media (min-width: 768px) { [data-slot=page] { max-width: 1200px; padding-inline: 24px; } }
+@media (min-width: 1024px) { [data-slot=page] { padding-inline: 32px; } }
+[data-slot=page-header] { display: flex; flex-direction: column; gap: 12px; }
+[data-slot=page-header] h1 { font-size: 28px; font-weight: 600; line-height: 1.15; }
+@media (min-width: 1024px) { [data-slot=page-header] h1 { font-size: 32px; } }
+[data-slot=actions] { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+[data-slot=actions] > * { width: 100%; min-height: var(--tap-min); }
+[data-slot=empty-state] { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+[data-slot=empty-state] svg { width: 40px; height: 40px; color: var(--muted-foreground); }
+[data-slot=suppressed] {
+  background-color: var(--suppressed);
+  background-image: repeating-linear-gradient(-45deg, transparent, transparent 3px, color-mix(in oklch, var(--foreground) 12%, transparent) 3px, color-mix(in oklch, var(--foreground) 12%, transparent) 4px);
+  padding: 4px 8px;
+}
+[data-slot=form-field] { display: flex; flex-direction: column; width: 100%; }
+[data-slot=form-field] :is(input, [data-slot=input]) { max-width: none; }
+[data-slot=table-scroll] { overflow-x: auto; }
+[data-slot=table-scroll] table { min-width: 40rem; }
+.scroll-hint { font-size: 12px; color: var(--muted-foreground); }
+@media (width < 768px) {
+  [data-slot=table-stack] thead { display: none; }
+  [data-slot=table-stack] tbody tr { display: grid; grid-template-columns: 1fr auto; }
+  [data-slot=table-stack] tbody td:first-child { grid-column: 1 / -1; }
+  [data-slot=table-stack] tbody td:last-child { justify-self: end; min-width: var(--tap-min); min-height: var(--tap-min); }
+}
+[data-slot=card] :is([data-slot=card-header], [data-slot=card-content], [data-slot=card-footer]) { padding-inline: 0; }
+@media (width < 1024px) { [data-slot=card] { padding: 16px; } }
+@media (min-width: 1024px) { [data-slot=card] { padding: 20px 24px; } }

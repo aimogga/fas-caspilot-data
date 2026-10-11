@@ -177,3 +177,9 @@ Left: none.
 Did: Native buttons keep tap-min at every width; only `[data-slot=button]` drops it at lg. e2e Sign In/Out ≥44 at 1280.
 State: recount vs main minus lockfile, card, separator.
 Left: none.
+
+## 2026-10-11 02:48 (UTC) — Cloud Agent — packet DS-01c
+Did: Layout + trust primitives; gallery; moved body side padding to `[data-slot=page]` (16px mobile / 24 tablet / 32 desktop). Unit: SuppressedCell never a count, FreshnessChip always text, SourceFooter `asOf` required.
+State: lint/typecheck/unit 180/180.
+Left: e2e + 375/1024/1440 screenshots.
+Decisions: none.

@@ -2,6 +2,7 @@
   margin: 0 auto;
   max-width: 40rem;
   padding-block: 4rem;
+  padding-inline: var(--page-gutter-mobile);
 }
 
 .kicker {
