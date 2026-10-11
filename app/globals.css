@@ -223,6 +223,7 @@
 }
 @media (min-width: 768px) { [data-slot=page] { max-width: 1200px; padding-inline: 24px; } }
 @media (min-width: 1024px) { [data-slot=page] { padding-inline: 32px; } }
+body:has(> [data-slot=page]) { padding-inline: 0; }
 [data-slot=page-header] { display: flex; flex-direction: column; gap: 12px; }
 [data-slot=page-header] h1 { font-size: 28px; font-weight: 600; line-height: 1.15; }
 @media (min-width: 1024px) { [data-slot=page-header] h1 { font-size: 32px; } }

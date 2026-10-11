@@ -44,14 +44,18 @@ test("gallery sizes, axe, and screenshots", async ({ page }) => {
   expect(v.inputPx).toBeGreaterThanOrEqual(16);
   expect(v.ok).toBe(true);
   expect(v.scroll).toBeLessThanOrEqual(375);
-  expect(v.pagePad).toBeGreaterThanOrEqual(16);
+  expect(v.pagePad).toBe(16);
+  expect(await page.locator("[data-slot=page-header] h1").evaluate((el) => Math.round(el.getBoundingClientRect().left))).toBe(16);
   expect(v.fresh).toBe(true);
   expect(v.suppressedOk).toBe(true);
   await expect(page.locator(".scroll-hint")).toBeVisible();
   expect(await page.locator(".scroll-hint [aria-hidden]").textContent()).toContain("Scroll");
   expect((await new AxeBuilder({ page }).analyze()).violations.filter((x) => x.impact === "serious" || x.impact === "critical")).toEqual([]);
   await page.screenshot({ path: `${ART}/gallery-375.png`, fullPage: true });
+  await page.setViewportSize({ width: 800, height: 900 });
+  expect(await page.evaluate(() => ({ pad: Math.round(parseFloat(getComputedStyle(document.querySelector("[data-slot=page]")!).paddingLeft)), left: Math.round(document.querySelector("[data-slot=page-header] h1")!.getBoundingClientRect().left) }))).toEqual({ pad: 24, left: 24 });
   await page.setViewportSize({ width: 1024, height: 900 });
+  expect(await page.evaluate(() => ({ pad: Math.round(parseFloat(getComputedStyle(document.querySelector("[data-slot=page]")!).paddingLeft)), left: Math.round(document.querySelector("[data-slot=page-header] h1")!.getBoundingClientRect().left) }))).toEqual({ pad: 32, left: 32 });
   await page.screenshot({ path: `${ART}/gallery-1024.png`, fullPage: true });
   await page.setViewportSize({ width: 1280, height: 900 });
   expect(await page.evaluate(() => {
@@ -60,6 +64,7 @@ test("gallery sizes, axe, and screenshots", async ({ page }) => {
     return { sm: h("sm"), def: h("default"), ghost: b("ghost"), link: b("link") };
   })).toMatchObject({ sm: 32, def: 40, ghost: "0px", link: "0px" });
   await page.setViewportSize({ width: 1440, height: 900 });
+  expect(await page.evaluate(() => ({ pad: Math.round(parseFloat(getComputedStyle(document.querySelector("[data-slot=page]")!).paddingLeft)), left: Math.round(document.querySelector("[data-slot=page-header] h1")!.getBoundingClientRect().left) }))).toEqual({ pad: 32, left: 152 });
   await expect(page.locator(".scroll-hint")).toHaveCount(0);
   await page.screenshot({ path: `${ART}/gallery-1440.png`, fullPage: true });
   await page.locator("[data-slot=button]").first().focus();

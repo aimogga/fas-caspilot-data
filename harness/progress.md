@@ -191,3 +191,7 @@ Left: none.
 ## 2026-10-11 03:55 (UTC) — Cloud Agent — DS-01c design+QA
 Did: ErrorState on destructive Alert + icon; Page only on `/ui`; restored body pad and login/403/PageLayout from main; box e2e vs main at 375/1280. Extras: left `th`, NotPublished reason, SuppressedCell single announce.
 Left: none.
+
+## 2026-10-11 04:10 (UTC) — Cloud Agent — DS-01c double gutter
+Did: `body:has(> [data-slot=page]) { padding-inline: 0 }` so `/ui` gutters are 16/24/32. Legacy routes unchanged. Gallery e2e asserts h1 left 16/24/32/152 at 375/800/1024/1440.
+Left: none.

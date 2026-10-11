@@ -55,6 +55,7 @@ describe("DS-01c", () => {
   it("keeps Page on the gallery only and lists primitives", () => {
     const css = read("app/globals.css");
     expect(css).toMatch(/body\s*\{[^}]*padding-inline:\s*var\(--page-gutter-mobile\)/);
+    expect(css).toContain("body:has(> [data-slot=page]) { padding-inline: 0; }");
     expect(css).toContain("[data-slot=page]");
     expect(css).not.toMatch(/\[data-slot=card\]\s*\{/);
     expect(css).toContain("[data-slot=card][data-pad]");
