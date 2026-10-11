@@ -86,4 +86,3 @@ Before any provider shares session data with us, we get a legal review.
 - **Case managers:** record the court order date, the referral date, and why a family doesn't start.
 - **Leaders and board:** approve the outcome surveys and a conflict-of-interest policy for our sister clinic.
 - **Everyone:** share the funders and grants you already know, so our list starts strong.
-
