@@ -26,20 +26,36 @@ test("gallery sizes, axe, and screenshots", async ({ page }) => {
     const dark = ring(btn);
     document.documentElement.classList.remove("dark");
     const err = document.querySelector("#gallery-err");
+    const natives = [...document.querySelectorAll("button:not([data-slot])")];
+    const page = document.querySelector("[data-slot=page]");
+    const fresh = [...document.querySelectorAll("[data-slot=freshness]")].map((el) => (el.textContent ?? "").trim());
+    const suppressed = document.querySelector("[data-slot=suppressed]")?.textContent ?? "";
     return {
-      minTap: Math.min(...buttons.flatMap((el) => [box(el).height, box(el).width]), ...inputs.map((el) => box(el).height)),
+      minTap: Math.min(...buttons.flatMap((el) => [box(el).height, box(el).width]), ...inputs.map((el) => box(el).height), ...natives.flatMap((el) => [box(el).height, box(el).width])),
       inputPx: Math.min(...inputs.map((el) => parseFloat(getComputedStyle(el).fontSize))),
       ok: !!label && getComputedStyle(label).display === "block" && !!inputs[0] && box(label).bottom <= box(inputs[0]).top + 1 && err?.getAttribute("aria-invalid") === "true" && err.getAttribute("aria-describedby") === "gallery-err-msg" && light && dark && ring(document.querySelector("#gallery-email") as HTMLElement),
       scroll: document.documentElement.scrollWidth,
+      pagePad: page ? parseFloat(getComputedStyle(page).paddingLeft) : 0,
+      fresh: fresh.every((t) => t.length > 0) && fresh.length === 3,
+      suppressedOk: suppressed.includes("n<11") && !suppressed.includes("7"),
     };
   });
   expect(v.minTap).toBeGreaterThanOrEqual(44);
   expect(v.inputPx).toBeGreaterThanOrEqual(16);
   expect(v.ok).toBe(true);
-  expect(v.scroll).toBeLessThanOrEqual(376);
+  expect(v.scroll).toBeLessThanOrEqual(375);
+  expect(v.pagePad).toBe(16);
+  expect(await page.locator("[data-slot=page-header] h1").evaluate((el) => Math.round(el.getBoundingClientRect().left))).toBe(16);
+  expect(v.fresh).toBe(true);
+  expect(v.suppressedOk).toBe(true);
+  await expect(page.locator(".scroll-hint")).toBeVisible();
+  expect(await page.locator(".scroll-hint [aria-hidden]").textContent()).toContain("Scroll");
   expect((await new AxeBuilder({ page }).analyze()).violations.filter((x) => x.impact === "serious" || x.impact === "critical")).toEqual([]);
   await page.screenshot({ path: `${ART}/gallery-375.png`, fullPage: true });
+  await page.setViewportSize({ width: 800, height: 900 });
+  expect(await page.evaluate(() => ({ pad: Math.round(parseFloat(getComputedStyle(document.querySelector("[data-slot=page]")!).paddingLeft)), left: Math.round(document.querySelector("[data-slot=page-header] h1")!.getBoundingClientRect().left) }))).toEqual({ pad: 24, left: 24 });
   await page.setViewportSize({ width: 1024, height: 900 });
+  expect(await page.evaluate(() => ({ pad: Math.round(parseFloat(getComputedStyle(document.querySelector("[data-slot=page]")!).paddingLeft)), left: Math.round(document.querySelector("[data-slot=page-header] h1")!.getBoundingClientRect().left) }))).toEqual({ pad: 32, left: 32 });
   await page.screenshot({ path: `${ART}/gallery-1024.png`, fullPage: true });
   await page.setViewportSize({ width: 1280, height: 900 });
   expect(await page.evaluate(() => {
@@ -48,6 +64,8 @@ test("gallery sizes, axe, and screenshots", async ({ page }) => {
     return { sm: h("sm"), def: h("default"), ghost: b("ghost"), link: b("link") };
   })).toMatchObject({ sm: 32, def: 40, ghost: "0px", link: "0px" });
   await page.setViewportSize({ width: 1440, height: 900 });
+  expect(await page.evaluate(() => ({ pad: Math.round(parseFloat(getComputedStyle(document.querySelector("[data-slot=page]")!).paddingLeft)), left: Math.round(document.querySelector("[data-slot=page-header] h1")!.getBoundingClientRect().left) }))).toEqual({ pad: 32, left: 152 });
+  await expect(page.locator(".scroll-hint")).toHaveCount(0);
   await page.screenshot({ path: `${ART}/gallery-1440.png`, fullPage: true });
   await page.locator("[data-slot=button]").first().focus();
   const box = await page.locator("[data-slot=button]").first().boundingBox();
