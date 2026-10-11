@@ -1,4 +1,6 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 
@@ -40,16 +42,17 @@ export function Section({ title, children }: { title?: string; children: ReactNo
   return <section data-slot="section" className="flex flex-col gap-4">{title ? <h2 className="font-serif text-xl font-semibold">{title}</h2> : null}{children}</section>;
 }
 
-export function EmptyState({ icon, title, children, action }: { icon?: ReactNode; title: string; children: ReactNode; action?: ReactNode }) {
-  return <div data-slot="empty-state">{icon}<h3 className="text-xl font-semibold">{title}</h3><p>{children}</p>{action}</div>;
+export function EmptyState({ icon, title, children, action, headingLevel = "h2" }: { icon?: ReactNode; title: string; children?: ReactNode; action?: ReactNode; headingLevel?: "h2" | "h3" | "h4" }) {
+  const Heading = headingLevel;
+  return <div data-slot="empty-state">{icon}<Heading className="text-xl font-semibold">{title}</Heading>{children ? <p>{children}</p> : null}{action}</div>;
 }
 
-export function ErrorState({ message, referenceId, retry }: { message: string; referenceId: string; retry?: ReactNode }) {
+export function ErrorState({ message, referenceId, onRetry, href }: { message: string; referenceId: string; onRetry?: () => void; href?: string }) {
   return (
     <div data-slot="error-state" role="alert">
       <p>{message}</p>
       <p className="font-mono text-xs">Reference {referenceId}</p>
-      {retry ?? <button type="button">Retry</button>}
+      {href ? <a href={href}>Retry</a> : onRetry ? <button type="button" onClick={onRetry}>Retry</button> : null}
     </div>
   );
 }
@@ -63,9 +66,20 @@ export function FormField({ label, htmlFor, children }: { label: string; htmlFor
 }
 
 export function ResponsiveTable({ stack = false, children }: { stack?: boolean; children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [overflow, setOverflow] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || stack) return;
+    const check = () => setOverflow(el.scrollWidth > el.clientWidth);
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [stack]);
   return (
-    <div data-slot={stack ? "table-stack" : "table-scroll"}>
-      {stack ? null : <p className="scroll-hint">Scroll →</p>}
+    <div ref={ref} data-slot={stack ? "table-stack" : "table-scroll"}>
+      {stack || !overflow ? null : <p className="scroll-hint"><span aria-hidden>Scroll →</span><span className="sr-only">Scroll</span></p>}
       <table>{children}</table>
     </div>
   );

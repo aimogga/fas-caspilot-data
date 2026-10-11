@@ -47,6 +47,8 @@ test("gallery sizes, axe, and screenshots", async ({ page }) => {
   expect(v.pagePad).toBeGreaterThanOrEqual(16);
   expect(v.fresh).toBe(true);
   expect(v.suppressedOk).toBe(true);
+  await expect(page.locator(".scroll-hint")).toBeVisible();
+  expect(await page.locator(".scroll-hint [aria-hidden]").textContent()).toContain("Scroll");
   expect((await new AxeBuilder({ page }).analyze()).violations.filter((x) => x.impact === "serious" || x.impact === "critical")).toEqual([]);
   await page.screenshot({ path: `${ART}/gallery-375.png`, fullPage: true });
   await page.setViewportSize({ width: 1024, height: 900 });
@@ -58,6 +60,7 @@ test("gallery sizes, axe, and screenshots", async ({ page }) => {
     return { sm: h("sm"), def: h("default"), ghost: b("ghost"), link: b("link") };
   })).toMatchObject({ sm: 32, def: 40, ghost: "0px", link: "0px" });
   await page.setViewportSize({ width: 1440, height: 900 });
+  await expect(page.locator(".scroll-hint")).toHaveCount(0);
   await page.screenshot({ path: `${ART}/gallery-1440.png`, fullPage: true });
   await page.locator("[data-slot=button]").first().focus();
   const box = await page.locator("[data-slot=button]").first().boundingBox();

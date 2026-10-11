@@ -42,18 +42,18 @@ export default function UiGalleryPage() {
         <Badge variant="muted" prefix="n&lt;11">muted</Badge>
       </section>
       {ALERTS.map(([v, Icon, title]) => <Alert key={v} variant={v}><Icon /><AlertTitle>{title}</AlertTitle><AlertDescription>{v} status.</AlertDescription></Alert>)}
-      <Card><CardHeader><CardTitle>Card</CardTitle></CardHeader><CardContent>Every variant is on this page.</CardContent></Card>
+      <Card data-pad><CardHeader><CardTitle>Card</CardTitle></CardHeader><CardContent>Every variant is on this page.</CardContent></Card>
       <Section title="Layout">
         <Stack gap={3}><p>Stack</p><Skeleton className="h-8 w-full" /></Stack>
         <Cluster gap={2}><Badge variant="info" prefix={<Info />}>wraps</Badge><Badge variant="muted" prefix="n&lt;11">min-width 0</Badge></Cluster>
-        <Grid cols={4}>{["A", "B", "C", "D"].map((t) => <Card key={t}><CardHeader><CardTitle>{t}</CardTitle></CardHeader></Card>)}</Grid>
-        <EmptyState icon={<Inbox />} title="No uploads yet" action={<Button>Upload a file</Button>}>Upload your first case file.</EmptyState>
+        <Grid cols={4}>{["A", "B", "C", "D"].map((t) => <Card key={t} data-pad><CardHeader><CardTitle>{t}</CardTitle></CardHeader></Card>)}</Grid>
+        <EmptyState icon={<Inbox />} title="No uploads yet" headingLevel="h3" action={<Button>Upload a file</Button>}>Upload your first case file.</EmptyState>
         <ErrorState message="Ingest failed." referenceId="run_demo" />
         <ResponsiveTable stack>
           <thead><tr><th>County</th><th>n</th><th>Open</th></tr></thead>
           <tbody><tr><td>Utah</td><td>24</td><td><button type="button">Open</button></td></tr></tbody>
         </ResponsiveTable>
-        <Card>
+        <Card data-pad>
           <ResponsiveTable>
             <thead><tr>{cols.map((c) => <th key={c}>{c}</th>)}</tr></thead>
             <tbody><tr><td>Utah</td><td>24</td><td>120</td><td>Current</td><td><button type="button">View</button></td></tr></tbody>

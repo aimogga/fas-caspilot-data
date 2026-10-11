@@ -183,3 +183,7 @@ Did: Layout + trust primitives; gallery; moved body side padding to `[data-slot=
 State: lint/typecheck/unit 180/180; e2e 11/11; screenshots 375/1024/1440.
 Left: none.
 Decisions: none.
+
+## 2026-10-11 03:35 (UTC) — Cloud Agent — DS-01c design review
+Did: Scoped card padding to `[data-pad]`; ErrorState Retry only with onRetry/href; FreshnessChip glyph `aria-hidden`; scroll hint only on overflow; EmptyState `headingLevel` default h2; PageHeader actions full-width below 768 only.
+Left: none.

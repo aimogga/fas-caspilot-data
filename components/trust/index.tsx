@@ -26,7 +26,7 @@ const FRESHNESS = {
 
 export function FreshnessChip({ status }: { status: keyof typeof FRESHNESS }) {
   const { word, variant, glyph } = FRESHNESS[status];
-  return <span data-slot="freshness"><Badge variant={variant} prefix={glyph}>{word}</Badge></span>;
+  return <span data-slot="freshness"><Badge variant={variant} prefix={<span aria-hidden>{glyph}</span>}>{word}</Badge></span>;
 }
 
 export function NotPublished() {
