@@ -21,6 +21,7 @@ Decision: ___ · Date: ___
 Options: (A) CasePilot-owned GitHub org, Vercel team and Supabase org under casepilot.io identities; (B) existing personal or ModernLine accounts.
 Recommendation: **A.** CasePilot's Google Cloud already runs under a casepilot.io account; keep the product's code, hosting and data under CasePilot too, so it's clean to transfer, audit or sell later.
 Decision: **A**, per recommendation. Decided by George in chat. · Date: 2026-10-08
+Note (2026-10-10): selling the data or a paid product is ruled out by D-015.
 
 ### D-002 Scheduler for data pulls and alerts
 Options: (A) n8n at n8n.casepilot.io triggers ingest functions in the repo and sends alerts/digests; (B) Supabase scheduled jobs + Edge Functions only; (C) GitHub Actions cron.
@@ -77,4 +78,4 @@ Supersedes: earlier gate lists that kept production deploys, production migratio
 
 ### D-015 Data use: FAS-only, grants only
 Context: earlier planning notes described FAS Evidence as a product CasePilot could later offer or sell to other nonprofits, and asked Deep Research to clear sources for a future paid product.
-Decision: Public and FAS data in FAS Evidence is used only (1) for FAS to measure and validate the problem it solves, and (2) to provide or attach that data in FAS's grant applications for government grants and through GrantAdvance. No resale, no paid product, no other use. Docs and copy that implied commercial or paid reuse are corrected to match. Decided by George. · Date: 2026-10-10
+Decision: Public and FAS data in FAS Evidence is used only (1) for FAS to measure and validate the problem it solves, and (2) to provide or attach that data in FAS's grant applications for government grants and through GrantAdvance. No resale, no paid product, no other use. Docs and copy that implied commercial or paid reuse are corrected to match. Decided by George Mogga; relayed by George Chief of staff (agent message to the Engineer Supervisor) on 2026-10-10 at 8:47 PM MT. · Date: 2026-10-10
