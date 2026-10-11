@@ -11,7 +11,8 @@ async function box(page: Page, path: string, width: number) {
   await page.goto(path);
   await expect(page.locator("h1")).toBeVisible();
   return page.evaluate(() => {
-    const el = document.querySelector("main") ?? document.body.firstElementChild;
+    const h1 = document.querySelector("h1");
+    const el = h1?.closest("main") ?? h1?.parentElement;
     if (!el) return { left: 0, top: 0, width: 0 };
     const r = el.getBoundingClientRect();
     const s = getComputedStyle(el);
