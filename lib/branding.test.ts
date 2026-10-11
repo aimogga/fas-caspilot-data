@@ -28,9 +28,12 @@ describe("product branding", () => {
       "app/page.tsx",
       "app/login/page.tsx",
       "app/403/page.tsx",
-      "app/admin/page.tsx",
-      "app/staff/page.tsx",
-      "app/board/page.tsx",
+      "app/(app)/admin/page.tsx",
+      "app/(app)/staff/page.tsx",
+      "app/(app)/board/page.tsx",
+      "app/(app)/layout.tsx",
+      "components/shell/AppShell.tsx",
+      "components/shell/ShellFrame.tsx",
       "components/PageLayout.tsx",
     ];
     for (const rel of files) {

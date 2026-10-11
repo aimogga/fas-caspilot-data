@@ -195,3 +195,8 @@ Left: none.
 ## 2026-10-11 04:10 (UTC) — Cloud Agent — DS-01c double gutter
 Did: `body:has(> [data-slot=page]) { padding-inline: 0 }` so `/ui` gutters are 16/24/32. Legacy routes unchanged. Gallery e2e asserts h1 left 16/24/32/152 at 375/800/1024/1440.
 Left: none.
+
+## 2026-10-11 22:45 (UTC) — Cloud Agent — packet TP-0013 / DS-02
+Did: AppShell on /staff, /admin, and /board. Role nav hides missing routes. Page gutters, 256/56 sidebar, mobile sheet.
+State: lint/typecheck/unit green. e2e recorded after this commit.
+Left: none. Decisions: none.
