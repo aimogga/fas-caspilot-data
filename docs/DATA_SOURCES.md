@@ -46,4 +46,3 @@ Facts below were checked in October 2026 research unless marked *verify*. Deep R
 | NDACAN restricted files (AFCARS, NCANDS, NYTD microdata) | Licensed-researcher access, IRB, one machine per user; not usable in a product |
 | Scraped court case lists (Xchange, weekly reports) | Ethically and legally fraught; not needed |
 | Scraping funder or third-party sites | Use APIs and public filings instead |
-
