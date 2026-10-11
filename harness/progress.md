@@ -198,5 +198,5 @@ Left: none.
 
 ## 2026-10-11 22:45 (UTC) — Cloud Agent — packet TP-0013 / DS-02
 Did: AppShell on /staff, /admin, and /board. Role nav hides missing routes. Page gutters, 256/56 sidebar, mobile sheet.
-State: lint/typecheck/unit green. e2e recorded after this commit.
+State: lint/typecheck/unit 183/183. e2e 13/13.
 Left: none. Decisions: none.
