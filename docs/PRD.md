@@ -90,4 +90,3 @@ Clinical notes or EHR integration · submitting applications on FAS's behalf · 
 - FAS can produce a board packet and a grant attachment in under 10 minutes.
 - Grant match precision ≥ 70% on the labeled eval set (F-509).
 - Zero privacy test failures in nightly audits after Phase 3.
-
