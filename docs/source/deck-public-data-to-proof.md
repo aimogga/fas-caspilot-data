@@ -77,6 +77,7 @@ FAS families answer a short check-in survey when therapy starts and again later 
 4. Leave out substance use details — those records carry extra federal protection
 5. Be open about our sister clinic — show what goes to Connections Counseling and what goes to others
 Before any provider shares session data with us, we get a legal review.
+> Data use: Public and FAS data in FAS Evidence is used only (1) for FAS to measure and validate the problem it solves, and (2) to provide or attach that data in FAS's grant applications for government grants and through GrantAdvance. No resale, no paid product, no other use.
 
 ## 15. Our path from here
 01 This month: pick outcome surveys; track why families don't start · 02 Next 60 days: load the free public data; launch need score and grant alerts · 03 Before we share dashboards: privacy rules built in; legal review done.
@@ -85,3 +86,4 @@ Before any provider shares session data with us, we get a legal review.
 - **Case managers:** record the court order date, the referral date, and why a family doesn't start.
 - **Leaders and board:** approve the outcome surveys and a conflict-of-interest policy for our sister clinic.
 - **Everyone:** share the funders and grants you already know, so our list starts strong.
+

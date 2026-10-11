@@ -74,3 +74,7 @@ Decision: George no longer reviews or merges PRs. The Engineer Supervisor squash
 ### D-014 Production approvals
 Decision: Once QA PASSes at the current head sha and the preview works, the team may merge, deploy to production, apply production DB migrations, and create, edit and activate n8n workflows on n8n.casepilot.io without asking George. Only money or plan decisions go to George, through Chief of staff. Still gated on George (`human_gate: george`): real FAS data (Phase 6 legal gate; synthetic only until then), outbound emails, and acceptance-criteria changes. Note: Vercel project fas-caspilot-data currently skips production builds via an Ignored Build Step, which must be removed when production deploys start. Confirmed by George 2026-10-08. · Date: 2026-10-08
 Supersedes: earlier gate lists that kept production deploys, production migrations and n8n workflow changes on George.
+
+### D-015 Data use: FAS-only, grants only
+Context: earlier planning notes described FAS Evidence as a product CasePilot could later offer or sell to other nonprofits, and asked Deep Research to clear sources for a future paid product.
+Decision: Public and FAS data in FAS Evidence is used only (1) for FAS to measure and validate the problem it solves, and (2) to provide or attach that data in FAS's grant applications for government grants and through GrantAdvance. No resale, no paid product, no other use. Docs and copy that implied commercial or paid reuse are corrected to match. Decided by George. · Date: 2026-10-10

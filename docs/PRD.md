@@ -16,6 +16,8 @@ Every funder asks FAS two questions: *Is the need real?* and *Does your help wor
 
 Every FAS table carries `org_id` so RLS isolates data by organization. FAS Evidence is for FAS only.
 
+**Data use (D-015):** Public and FAS data in FAS Evidence is used only (1) for FAS to measure and validate the problem it solves, and (2) to provide or attach that data in FAS's grant applications for government grants and through GrantAdvance. No resale, no paid product, no other use.
+
 ## 3. Capabilities and acceptance criteria
 Feature IDs refer to `harness/feature_list.json`.
 
@@ -81,10 +83,11 @@ All metrics: filter by date range, county and referral source; small-cell suppre
 - Roles + RLS; audit log of uploads, edits, exports, strategy approvals; data-source settings; nightly audit reports visible to admins.
 
 ## 4. Non-goals for v1
-Clinical notes or EHR integration · submitting applications on FAS's behalf · scraping court case lists or any site whose terms forbid it · KIDS COUNT or NDACAN restricted data inside the product · billing and multi-org self-service signup (design for it, don't build it).
+Clinical notes or EHR integration · submitting applications on FAS's behalf · scraping court case lists or any site whose terms forbid it · KIDS COUNT or NDACAN restricted data inside the product · billing, paid plans, multi-org self-service signup, or any resale or paid reuse of public or FAS data (ruled out by D-015).
 
 ## 5. Success measures
 - Public data refreshes without human help for 30 consecutive days.
 - FAS can produce a board packet and a grant attachment in under 10 minutes.
 - Grant match precision ≥ 70% on the labeled eval set (F-509).
 - Zero privacy test failures in nightly audits after Phase 3.
+
