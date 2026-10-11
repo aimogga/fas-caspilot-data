@@ -12,7 +12,7 @@ export function SuppressedCell({ count }: { count?: number }) {
   void count;
   return (
     <span data-slot="suppressed" title="Suppressed (n < 11) to protect privacy.">
-      — n&lt;11
+      <span aria-hidden>— n&lt;11</span>
       <span className="sr-only">Suppressed because the count is under 11, to protect privacy.</span>
     </span>
   );
@@ -29,8 +29,8 @@ export function FreshnessChip({ status }: { status: keyof typeof FRESHNESS }) {
   return <span data-slot="freshness"><Badge variant={variant} prefix={<span aria-hidden>{glyph}</span>}>{word}</Badge></span>;
 }
 
-export function NotPublished() {
-  return <p data-slot="not-published" className="text-sm text-muted-foreground">Not published</p>;
+export function NotPublished({ reason }: { reason?: string }) {
+  return <p data-slot="not-published" className="text-sm text-muted-foreground">Not published{reason ? ` — ${reason}` : ""}</p>;
 }
 
 export function DraftBanner() {

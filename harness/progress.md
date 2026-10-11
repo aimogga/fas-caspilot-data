@@ -187,3 +187,7 @@ Decisions: none.
 ## 2026-10-11 03:35 (UTC) — Cloud Agent — DS-01c design review
 Did: Scoped card padding to `[data-pad]`; ErrorState Retry only with onRetry/href; FreshnessChip glyph `aria-hidden`; scroll hint only on overflow; EmptyState `headingLevel` default h2; PageHeader actions full-width below 768 only.
 Left: none.
+
+## 2026-10-11 03:55 (UTC) — Cloud Agent — DS-01c design+QA
+Did: ErrorState on destructive Alert + icon; Page only on `/ui`; restored body pad and login/403/PageLayout from main; box e2e vs main at 375/1280. Extras: left `th`, NotPublished reason, SuppressedCell single announce.
+Left: none.

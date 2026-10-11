@@ -64,7 +64,7 @@ export default function UiGalleryPage() {
         <SourceFooter source="ACS S0101" period="2024" n={42} asOf="2024-06" />
         <p>Suppressed <SuppressedCell count={7} /></p>
         <Cluster gap={2}><FreshnessChip status="current" /><FreshnessChip status="stale" /><FreshnessChip status="failed" /></Cluster>
-        <NotPublished />
+        <NotPublished reason="Fewer than 11 families" />
         <DraftBanner />
       </Section>
     </Page>

@@ -156,6 +156,7 @@
     font-family: var(--font-sans);
     font-feature-settings: "cv11", "ss01";
     min-height: 100vh;
+    padding-inline: var(--page-gutter-mobile);
   }
 
   h1,
@@ -210,7 +211,7 @@
     }
   }
 
-  @media (width < 768px) { body { font-size: 15px; } }
+  @media (width < 768px) { [data-slot=page] { font-size: 15px; } }
 }
 
 [data-slot=page] {
@@ -244,6 +245,7 @@
 [data-slot=form-field] :is(input, [data-slot=input]) { max-width: none; }
 [data-slot=table-scroll] { overflow-x: auto; }
 [data-slot=table-scroll] table { min-width: 40rem; }
+[data-slot=table-scroll] th, [data-slot=table-stack] th { text-align: left; }
 .scroll-hint { font-size: 12px; color: var(--muted-foreground); }
 @media (width < 768px) {
   [data-slot=table-stack] thead { display: none; }

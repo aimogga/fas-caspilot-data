@@ -29,8 +29,14 @@ describe("DS-01c", () => {
     }
   });
 
-  it("ErrorState omits Retry unless onRetry or href is set", () => {
-    expect(html(createElement(ErrorState, { message: "Ingest failed.", referenceId: "run_demo" }))).not.toMatch(/Retry|<button|<a /);
+  it("ErrorState uses the destructive Alert with its status icon", () => {
+    const markup = html(createElement(ErrorState, { message: "Ingest failed.", referenceId: "run_demo" }));
+    expect(markup).toContain('role="alert"');
+    expect(markup).toContain("text-destructive");
+    expect(markup).toContain("data-slot=\"alert-title\"");
+    expect(markup).toContain("Ingest failed.");
+    expect(markup).toMatch(/<svg/);
+    expect(markup).not.toMatch(/Retry|<button|<a /);
     expect(html(createElement(ErrorState, { message: "Ingest failed.", referenceId: "run_demo", href: "/ui" }))).toContain("Retry");
   });
 
@@ -46,16 +52,16 @@ describe("DS-01c", () => {
     expect(html(createElement(SourceFooter, { source: "ACS", period: "2024", n: 42, asOf: "2024-06" }))).toContain("2024-06");
   });
 
-  it("moves side padding from body to the page container and lists primitives in the gallery", () => {
+  it("keeps Page on the gallery only and lists primitives", () => {
     const css = read("app/globals.css");
-    expect(css).not.toMatch(/body\s*\{[^}]*padding-inline:\s*var\(--page-gutter-mobile\)/);
+    expect(css).toMatch(/body\s*\{[^}]*padding-inline:\s*var\(--page-gutter-mobile\)/);
     expect(css).toContain("[data-slot=page]");
-    expect(css).toContain("var(--page-gutter-mobile)");
     expect(css).not.toMatch(/\[data-slot=card\]\s*\{/);
     expect(css).toContain("[data-slot=card][data-pad]");
     expect(css).toContain("[data-slot=page-header] [data-slot=actions] > * { width: 100%");
     expect(css).toMatch(/@media \(min-width: 768px\)[\s\S]*\[data-slot=actions\][\s\S]*width: auto/);
     expect(read("components/layout/index.tsx") + read("components/trust/index.tsx")).not.toMatch(/style=\{\{/);
+    for (const rel of ["app/login/page.tsx", "app/403/page.tsx", "components/PageLayout.tsx"]) expect(read(rel)).not.toContain("components/layout");
     const gallery = read("app/(dev)/ui/page.tsx");
     for (const name of ["PageHeader", "EmptyState", "ErrorState", "SourceFooter", "SuppressedCell", "FreshnessChip", "NotPublished", "DraftBanner", "ResponsiveTable", "FormField"]) expect(gallery).toContain(name);
   });

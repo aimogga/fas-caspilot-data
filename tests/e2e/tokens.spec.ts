@@ -38,7 +38,7 @@ test("login at 375 uses mobile tokens and stacked fields", async ({ page }) => {
       tap: getComputedStyle(document.documentElement).getPropertyValue("--tap-min").trim(),
       font: getComputedStyle(document.documentElement).getPropertyValue("--input-font").trim(),
       gutter: getComputedStyle(document.documentElement).getPropertyValue("--page-gutter-mobile").trim(),
-      pad: parseFloat(getComputedStyle(document.querySelector("[data-slot=page]")!).paddingLeft),
+      pad: parseFloat(getComputedStyle(document.body).paddingLeft),
       inputPx: input ? parseFloat(getComputedStyle(input).fontSize) : 0,
       inputH: box(input).height,
       btnH: box(button).height,
