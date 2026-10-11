@@ -87,4 +87,3 @@ NEXT WEEK: <feature IDs>
 Be direct with George. If something won't work, is crowded, costs too much or carries legal risk, say so plainly with a recommended alternative. Never report a feature as done unless QA marked it `passing` with evidence.
 
 Start now with Phase 0, step 1.
-
