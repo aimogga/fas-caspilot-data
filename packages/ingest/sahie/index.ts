@@ -10,28 +10,22 @@ const FIELDS = {
   uninsured_rate: ['PCTUI_PT', 'PCTUI_MOE'],
 } as const;
 const FILTERS = { AGECAT: '0', SEXCAT: '0', RACECAT: '0', IPRCAT: '0' } as const;
+const UTAH = new Set(COUNTIES.map((c) => c.fips));
+
+export type SahieParse = { rows: IndicatorRow[]; rejects: string[] };
 
 export class Sahie {
   static readonly SOURCE_NAME = 'census-sahie';
   static readonly ENDPOINT = 'https://api.census.gov/data/timeseries/healthins/sahie';
   static readonly NOT_PUBLISHED = 'not_published';
-  static readonly DEFAULT_YEAR = '2024';
 
   static requestUrl(year: string, key: string): URL {
-    const url = new URL(Sahie.ENDPOINT);
-    url.searchParams.set('get', 'NAME,GEOID,NUI_PT,NUI_MOE,PCTUI_PT,PCTUI_MOE,YEAR');
-    url.searchParams.set('for', 'county:*');
-    url.searchParams.set('in', 'state:49');
-    url.searchParams.set('time', year);
-    for (const [k, v] of Object.entries(FILTERS)) {
-      url.searchParams.set(k, v);
-    }
-    url.searchParams.set('key', key);
-    return url;
+    const q = `get=NAME,GEOID,NUI_PT,NUI_MOE,PCTUI_PT,PCTUI_MOE,YEAR&for=county:*&in=state:49&time=${year}&AGECAT=0&SEXCAT=0&RACECAT=0&IPRCAT=0&key=${encodeURIComponent(key)}`;
+    return new URL(`${Sahie.ENDPOINT}?${q}`);
   }
 
   static async fetch(
-    year = Sahie.DEFAULT_YEAR,
+    year: string,
     env: Record<string, string | undefined> = process.env,
     httpFetch: typeof fetch = fetch,
   ): Promise<unknown> {
@@ -42,79 +36,90 @@ export class Sahie {
     return res.json();
   }
 
-  static num(raw: string | undefined): number | null {
+  static num(raw: string | undefined): number | null | undefined {
     if (raw == null || raw === '' || raw === 'N/A') return null;
     const n = Number(raw);
-    return Number.isFinite(n) ? n : null;
+    return Number.isFinite(n) ? n : undefined;
   }
 
   static fips(row: Record<string, string>): string | null {
     const geo = (row.GEOID ?? '').replace(/\D/g, '');
     if (/^49\d{3}$/.test(geo)) return geo;
     const county = (row.county ?? '').replace(/\D/g, '');
-    const state = (row.state ?? '').replace(/\D/g, '');
-    const fips = `${state}${county.padStart(3, '0')}`;
-    if (county.length === 0) return null;
-    return /^49\d{3}$/.test(fips) ? fips : null;
+    const fips = `${(row.state ?? '').replace(/\D/g, '')}${county.padStart(3, '0')}`;
+    return county.length > 0 && /^49\d{3}$/.test(fips) ? fips : null;
   }
 
   static kept(row: Record<string, string>): boolean {
-    for (const [key, want] of Object.entries(FILTERS)) {
-      if (key in row && row[key] !== want) return false;
-    }
-    return true;
+    return Object.entries(FILTERS).every(([k, v]) => !(k in row) || row[k] === v);
   }
 
-  static parse(json: unknown): IndicatorRow[] {
-    const out: IndicatorRow[] = [];
+  static bad(
+    code: (typeof CODES)[number],
+    value: number | null | undefined,
+    moe: number | null | undefined,
+    fips: string,
+  ): string | null {
+    if (value === undefined) return `${fips} ${code} not numeric`;
+    if (moe === undefined) return `${fips} ${code} moe not numeric`;
+    if (value != null && code === 'uninsured_count' && value < 0) return `${fips} count < 0`;
+    if (value != null && code === 'uninsured_rate' && (value < 0 || value > 100)) {
+      return `${fips} rate out of range`;
+    }
+    return moe != null && moe < 0 ? `${fips} ${code} moe < 0` : null;
+  }
+
+  static parse(json: unknown): SahieParse {
+    const rows: IndicatorRow[] = [];
+    const rejects: string[] = [];
     for (const row of CensusTable.parse(json)) {
       if (!Sahie.kept(row)) continue;
       const geo_fips = Sahie.fips(row);
-      const vintage = row.YEAR ?? row.time;
-      if (!geo_fips || !vintage) continue;
+      const vintage = (row.YEAR ?? row.time ?? '').trim();
+      if (!geo_fips) {
+        rejects.push('missing FIPS');
+        continue;
+      }
+      if (!vintage) {
+        rejects.push(`${geo_fips} missing year`);
+        continue;
+      }
+      if (!UTAH.has(geo_fips)) continue;
       for (const code of CODES) {
         const value = Sahie.num(row[FIELDS[code][0]]);
-        out.push({
+        const moe = Sahie.num(row[FIELDS[code][1]]);
+        const err = Sahie.bad(code, value, moe, geo_fips);
+        if (err) {
+          rejects.push(err);
+          continue;
+        }
+        rows.push({
           indicator_code: code,
           geo_fips,
           period: vintage,
-          value,
-          moe: Sahie.num(row[FIELDS[code][1]]),
+          value: value ?? null,
+          moe: moe ?? null,
           unit: value == null ? Sahie.NOT_PUBLISHED : UNITS[code],
           vintage,
         });
       }
     }
-    return out;
+    return { rows, rejects };
   }
 
-  static coverUtah(rows: IndicatorRow[]): IndicatorRow[] {
-    const vintage = rows[0]?.vintage;
-    const period = rows[0]?.period;
-    if (!vintage || !period) throw new Error('SAHIE rows need vintage and period');
-    const seen = new Set(rows.map((r) => `${r.geo_fips}:${r.indicator_code}`));
-    const out = [...rows];
-    for (const c of COUNTIES) {
-      for (const code of CODES) {
-        if (seen.has(`${c.fips}:${code}`)) continue;
-        out.push({
-          indicator_code: code,
-          geo_fips: c.fips,
-          period,
-          value: null,
-          moe: null,
-          unit: Sahie.NOT_PUBLISHED,
-          vintage,
-        });
-      }
+  static requireComplete(parsed: SahieParse): IndicatorRow[] {
+    if (parsed.rejects.length > 0) throw new Error(`SAHIE rejected ${parsed.rejects.length} rows`);
+    const n = new Map<string, number>();
+    for (const r of parsed.rows) n.set(r.geo_fips, (n.get(r.geo_fips) ?? 0) + 1);
+    if ([...n.values()].some((c) => c !== 2) || n.size !== COUNTIES.length) {
+      throw new Error(`SAHIE partial response: ${n.size} counties`);
     }
-    return out;
+    return parsed.rows;
   }
 
   static checksum(rows: IndicatorRow[]): string {
-    const sorted = [...rows].sort((a, b) => {
-      return `${a.geo_fips}:${a.indicator_code}`.localeCompare(`${b.geo_fips}:${b.indicator_code}`);
-    });
+    const key = (r: IndicatorRow) => `${r.geo_fips}:${r.indicator_code}`;
+    const sorted = [...rows].sort((a, b) => key(a).localeCompare(key(b)));
     return createHash('sha256').update(JSON.stringify(sorted)).digest('hex');
   }
 }
