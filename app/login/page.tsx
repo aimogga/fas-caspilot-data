@@ -42,9 +42,14 @@ function LoginForm() {
     setError(null);
     setLoading(true);
     try {
-      const { error } = await client.auth.signInWithPassword({ email, password });
-      if (error) {
-        setError(mapLoginError(error));
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = (await res.json().catch(() => null)) as { ok?: true; error?: LoginError } | null;
+      if (!res.ok || !data?.ok) {
+        setError(data?.error ?? mapLoginError(null));
       } else {
         router.push(safeRedirect(rawRedirect, window.location.origin));
         router.refresh();

@@ -244,8 +244,8 @@ Left: DS-04b pages in PR #64; prefix guards in #63.
 Did: shared status card, signed-out 56px wordmark bar, 403 in the shell with an "Account not set up" variant and plain-text guidance "Ask your FAS admin to change your role.", not-found/error/global-error pages (reference only, no stack or env names), dev-only /dev-error route, global body padding removed, layout parity for /403 and signed-out screens, status-pages e2e at 375/1024/1440 with axe; DS-04 spec records the a/b split and deviations (squash-merged at b69df8b).
 Left: #63, #65, #66, #67; next #60.
 
-## 2026-10-12 20:00 (UTC) — Cloud Agent — PR #61 checklist DS-03
-Did: checklist DS-03 login done (PR #56 at 7ee6ca0), next up DS-04, follow-up issues #57–#60 listed; progress entry for PR #56 (PR #61 merged at 7506eb5).
+## 2026-10-12 20:00 (UTC) — Cloud Agent — PR #61 checklist DS-03 (merged at 7506eb5)
+Did: checklist DS-03 login done (PR #56 at 7ee6ca0), next up DS-04, follow-up issues #57–#60 listed; progress entry for PR #56.
 Left: none.
 
 ## 2026-10-12 20:00 (UTC) — Cloud Agent — PR #70 copilot-setup-steps workflow
@@ -280,9 +280,25 @@ Left: #78 (breadcrumb on encoded URLs), #79 (guard-list check); next #66 cookie 
 Did: `lib/auth/route-guard-coverage.test.ts` walks `app/` for page.* and route.* (.tsx/.ts/.jsx/.js, or next.config `pageExtensions` if set; QA fix) (route groups stripped, `_private` skipped) and fails if any route is not `/`, under a guarded prefix or in `isPublicRoute`; dynamic segments outside a guarded prefix fail; `/reports` asserted to fail. Runs in `pnpm test` inside the required `ci` job.
 Left: QA.
 
+## 2026-10-12 21:22 (UTC) — Engineer Supivisor Bot — PR #80 checklist #76
+Did: checklist and progress for #76 (#63 closed), next up #66 cookie flags; added the missing progress entry for PR #75 (PR #80 squash-merged at a0d9c7b, 2026-10-12 21:22:35 UTC).
+Left: none.
+
+## 2026-10-12 21:41 (UTC) — Engineer Bot — PR #81 route guard coverage test
+Did: QA passed; route guard coverage test squash-merged at 438f7c0 (2026-10-12 21:41:17 UTC), closes #79.
+Left: none.
+
 ## 2026-10-12 21:50 (UTC) — Cloud Agent — issue #83 / feature F-202
 Did: `packages/ingest/sahie` fetches, parses, validates and loads into `public_indicator` with provenance; all 29 Utah counties present or `not_published`; inactive `n8n/census-sahie.json`.
 State: `pnpm lint`, `typecheck`, `test`, and `test:db` green.
-Evidence: PR opened this session, Closes #83.
+Evidence: PR #86, Closes #83.
 Left: QA packet.
 Decisions needed: none.
+
+## 2026-10-12 21:52 (UTC) — Cloud Agent — PR #82 auth cookie flags
+Did: Supabase auth cookies set HttpOnly, Secure and SameSite=lax; logout clears them. QA PASS and DESIGN APPROVED at 0729e7e; squash-merged at 3ba8f7f (2026-10-12 21:52:03 UTC), closes #66.
+Left: #84 (login CSRF and cookie Max-Age), #85 (sign-in unavailable message), #87 (403 breadcrumb).
+
+## 2026-10-12 22:00 (UTC) — Engineer Supivisor Bot — checklist #81 and #82
+Did: checklist and progress for #81 and #82 (#66 done); #61 entry sha moved to its heading; next F-201, F-202 (#83) in progress by Engineer Bot; #77 Copilot pilot blocked on #65.
+Left: none.
