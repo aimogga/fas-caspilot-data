@@ -71,9 +71,18 @@ One sentence.
 - Hand-written diff ≤ 400 lines, added plus deleted (D-012).
 - One statement per line; no line packing.
 - Synthetic data only; no secrets.
-- Don't touch .github/workflows, ruleset, auth/middleware, supabase/migrations, n8n.
-- No money, plan or billing changes, no email in George's name, no acceptance-criteria edits.
-- If one of those is needed, stop: it goes to George through the Engineer Supervisor and Chief of staff.
+- Do not touch (George-gated):
+  - `.github/workflows/` (CI, secret scan, nightly audit, staleness check)
+  - The main ruleset or any repo settings
+  - Auth and sessions: `middleware.ts`, `lib/supabase/`, login/session code
+  - `supabase/migrations/` and RLS policies
+  - `n8n/`
+  - `harness/DECISIONS.md`, statuses in `harness/feature_list.json`
+  - Acceptance-criteria edits
+  - Money, plan or billing changes
+  - Email in George's name
+- If one of those is needed, stop; don't work around it and don't decide it in the PR.
+- Say so in the PR; the Engineer Supervisor takes it to George through Chief of staff.
 
 ## Out of scope
 - ...
