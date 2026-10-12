@@ -1,10 +1,11 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, LayoutDashboard, Shield, type LucideIcon } from "lucide-react";
+import { House, LayoutDashboard, Menu, Shield, type LucideIcon } from "lucide-react";
 import { Page } from "@/components/layout";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ORGANIZATION_NAME, PRODUCT_NAME } from "@/lib/branding";
 import { CRUMB, navForRole, PREVIEW_FOOTER, type NavGroup } from "@/lib/shell/nav";
 
@@ -40,6 +41,12 @@ function NavLinks({ groups, pathname, onNavigate }: { groups: NavGroup[]; pathna
 export function ShellFrame({ role, roleLabel, name, showSynthetic, children }: { role: string; roleLabel: string; name: string; showSynthetic: boolean; children: ReactNode }) {
   const pathname = usePathname();
   const { groups, footer } = navForRole(role);
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLButtonElement>(null);
+  const closeSheet = () => {
+    setOpen(false);
+    menuRef.current?.focus();
+  };
   return (
     <div data-slot="app-shell">
       <a href="#main" data-slot="skip">Skip to content</a>
@@ -51,6 +58,33 @@ export function ShellFrame({ role, roleLabel, name, showSynthetic, children }: {
       <div data-slot="column">
         <header data-slot="topbar">
           <div data-slot="topbar-tools">
+            <Sheet open={open} onOpenChange={setOpen}>
+              <SheetTrigger asChild>
+                <button ref={menuRef} type="button" data-slot="menu-button" aria-label="Open navigation" aria-expanded={open} aria-controls="nav-sheet"><Menu aria-hidden /></button>
+              </SheetTrigger>
+              <SheetContent
+                id="nav-sheet"
+                side="left"
+                aria-describedby={undefined}
+                onOpenAutoFocus={(event) => {
+                  event.preventDefault();
+                  document.querySelector<HTMLElement>("#nav-sheet nav a")?.focus();
+                }}
+                onCloseAutoFocus={(event) => {
+                  event.preventDefault();
+                  menuRef.current?.focus();
+                }}
+              >
+                <SheetHeader>
+                  <SheetTitle className="sr-only">Navigation</SheetTitle>
+                  <Wordmark />
+                  <p data-slot="org">{ORGANIZATION_NAME}</p>
+                </SheetHeader>
+                <nav aria-label="Primary"><NavLinks groups={groups} pathname={pathname} onNavigate={closeSheet} /></nav>
+                {footer || showSynthetic ? <p data-slot={footer ? "board-footer" : "preview-footer"}>{footer ?? PREVIEW_FOOTER}</p> : null}
+              </SheetContent>
+            </Sheet>
+            <div data-slot="topbar-brand"><Wordmark /></div>
             <details data-slot="user-menu">
               <summary aria-label="Account menu"><span data-slot="avatar" aria-hidden>{name.slice(0, 1).toUpperCase()}</span><span data-slot="user-name">{name}<small data-slot="user-role">{roleLabel}</small></span></summary>
               <div><p>{name}</p><p data-slot="role-label">{roleLabel}</p><form action="/api/auth/signout" method="post"><button type="submit">Sign out</button></form></div>

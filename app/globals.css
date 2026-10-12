@@ -281,7 +281,9 @@ body:has(> [data-slot=app-shell]) { padding-inline: 0; }
 }
 [data-slot=topbar] { position: sticky; top: 0; z-index: 30; display: flex; flex-direction: column; box-sizing: border-box; background: var(--background); border-bottom: 1px solid var(--border); }
 [data-slot=topbar-tools] { display: flex; align-items: center; gap: 12px; box-sizing: border-box; height: 56px; padding-inline: 12px; }
+[data-slot=topbar-brand] { flex: 1; min-width: 0; }
 [data-slot=topbar-sub] { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; box-sizing: border-box; min-height: 36px; padding: 8px 16px; }
+[data-slot=menu-button] { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; width: 44px; height: 44px; margin: 0; padding: 0; border: 1px solid var(--input); border-radius: var(--radius); background: var(--background); color: var(--foreground); }
 [data-slot=crumbs] ol { display: flex; margin: 0; padding: 0; list-style: none; }
 [data-slot=crumbs] { min-width: 0; font-size: 15px; line-height: 20px; }
 [data-slot=env-badge] { display: inline-flex; align-items: center; border-radius: 999px; background: var(--warning-soft); color: var(--warning); padding: 2px 8px; font-size: 12px; font-weight: 600; line-height: 16px; }
@@ -294,6 +296,7 @@ body:has(> [data-slot=app-shell]) { padding-inline: 0; }
 [data-slot=user-menu][open] > div { position: absolute; top: 100%; right: 0; z-index: 40; display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; width: max-content; max-width: calc(100vw - 32px); padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--popover); color: var(--popover-foreground); box-shadow: var(--shadow-md); }
 [data-slot=user-menu] p { margin: 0; }
 @media (min-width: 768px) {
+  [data-slot=menu-button], [data-slot=topbar-brand] { display: none; }
   [data-slot=topbar] { flex-direction: row; align-items: center; gap: 12px; min-height: 56px; padding-inline: 16px; }
   [data-slot=topbar-tools] { display: contents; }
   [data-slot=topbar-sub] { flex: 1; order: -1; min-height: 0; padding: 0; }
@@ -301,6 +304,12 @@ body:has(> [data-slot=app-shell]) { padding-inline: 0; }
 }
 [data-slot=skip] { position: fixed; left: 8px; top: 8px; z-index: 70; transform: translateY(-200%); box-sizing: border-box; min-width: 44px; min-height: 44px; padding: 8px 16px; background: var(--background); color: var(--foreground); }
 [data-slot=skip]:focus { transform: none; }
+[data-slot=sheet-overlay] { background: oklch(0.22 0.012 70 / 45%); }
+[data-slot=sheet-content] { width: 300px; max-width: 85vw; background: var(--sidebar); color: var(--sidebar-foreground); box-shadow: var(--shadow-lg); animation-duration: 200ms; }
+[data-slot=sheet-content] > button { top: 8px; right: 8px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; width: 44px; height: 44px; min-width: 44px; min-height: 44px; margin: 0; padding: 0; opacity: 1; }
+[data-slot=sheet-header] { padding-right: 56px; }
+[data-slot=sheet-content] [data-slot=board-footer], [data-slot=sheet-content] [data-slot=preview-footer] { padding: 12px 16px 16px; }
+@media (prefers-reduced-motion: reduce) { [data-slot=sheet-content], [data-slot=sheet-overlay] { animation: none !important; transition: none !important; } }
 [data-slot=card][data-pad] :is([data-slot=card-header], [data-slot=card-content], [data-slot=card-footer]) { padding-inline: 0; }
 @media (width < 1024px) { [data-slot=card][data-pad] { padding: 16px; } }
 @media (min-width: 1024px) { [data-slot=card][data-pad] { padding: 20px 24px; } }
