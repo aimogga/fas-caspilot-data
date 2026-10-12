@@ -280,6 +280,10 @@ Left: #78 (breadcrumb on encoded URLs), #79 (guard-list check); next #66 cookie 
 Did: `lib/auth/route-guard-coverage.test.ts` walks `app/` for page.* and route.* (.tsx/.ts/.jsx/.js, or next.config `pageExtensions` if set; QA fix) (route groups stripped, `_private` skipped) and fails if any route is not `/`, under a guarded prefix or in `isPublicRoute`; dynamic segments outside a guarded prefix fail; `/reports` asserted to fail. Runs in `pnpm test` inside the required `ci` job.
 Left: QA.
 
+## 2026-10-12 21:22 (UTC) — Engineer Supivisor Bot — PR #80 checklist #76
+Did: checklist and progress for #76 (#63 closed), next up #66 cookie flags; added the missing progress entry for PR #75 (PR #80 squash-merged at a0d9c7b, 2026-10-12 21:22:35 UTC).
+Left: none.
+
 ## 2026-10-12 21:41 (UTC) — Engineer Bot — PR #81 route guard coverage test
 Did: QA passed; route guard coverage test squash-merged at 438f7c0 (2026-10-12 21:41:17 UTC), closes #79.
 Left: none.
