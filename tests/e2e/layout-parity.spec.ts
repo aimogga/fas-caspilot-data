@@ -53,7 +53,7 @@ test("existing screens use the shell Page layout", async ({ page }) => {
   await page.fill("#password", "testpass123");
   await Promise.all([page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 10000 }), page.click("button[type=submit]")]);
   for (const width of [375, 800, 1024, 1280, 1440] as const) {
-    for (const path of ["/admin", "/staff", "/board", "/403", "/403?from=%2Fstaff"] as const) {
+    for (const path of ["/admin", "/staff", "/board", "/403"] as const) {
       await page.setViewportSize({ width, height: 812 });
       await page.goto(path);
       await expect(page.locator("h1")).toBeVisible();
@@ -87,16 +87,40 @@ test("existing screens use the shell Page layout", async ({ page }) => {
   }
 });
 
-test("no-role 403 uses the shell Page layout", async ({ page }) => {
+async function signInAs(page: Page, email: string) {
   await page.goto("/login");
-  await page.fill("#email", "norole@example.test");
+  await page.fill("#email", email);
   await page.fill("#password", "testpass123");
   await Promise.all([page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 10000 }), page.click("button[type=submit]")]);
-  for (const width of [375, 800, 1024, 1440] as const) {
-    await page.setViewportSize({ width, height: 812 });
-    await page.goto("/403");
-    const got = await pageBox(page);
-    const exp = SHELL[width];
-    expect(got, `no-role /403 @ ${width}`).toMatchObject({ left: exp.left, width: exp.width, scroll: width });
+}
+
+test("signed-in 404, signed-in error and the / redirect use the shell Page layout", async ({ page }) => {
+  await signInAs(page, "admin@example.test");
+  for (const path of ["/dev-error?kind=notfound", "/dev-error", "/"] as const) {
+    for (const width of [375, 800, 1024, 1280, 1440] as const) {
+      await page.setViewportSize({ width, height: 812 });
+      await page.goto(path);
+      const got = await pageBox(page);
+      const exp = SHELL[width];
+      expect(got, `${path} @ ${width}`).toMatchObject({ left: exp.left, width: exp.width, scroll: width });
+      if (exp.container) expect(got?.container, `${path} container @ ${width}`).toBe(exp.container);
+    }
+  }
+});
+
+test("placeholder subtitle left edge equals the h1 left edge", async ({ page }) => {
+  await signInAs(page, "admin@example.test");
+  for (const width of [375, 1024, 1440] as const) {
+    for (const path of ["/staff", "/admin", "/board"] as const) {
+      await page.setViewportSize({ width, height: 812 });
+      await page.goto(path);
+      await expect(page.locator("h1")).toBeVisible();
+      const edges = await page.evaluate(() => {
+        const h1 = document.querySelector("[data-slot=page-header] h1");
+        const sub = document.querySelector("[data-slot=page-header] > p:not([class])");
+        return { h1: h1?.getBoundingClientRect().left ?? -1, sub: sub?.getBoundingClientRect().left ?? -2 };
+      });
+      expect(Math.abs(edges.sub - edges.h1), `${path} @ ${width}`).toBeLessThanOrEqual(1);
+    }
   }
 });

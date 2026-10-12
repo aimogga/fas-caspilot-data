@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BOARD_FOOTER, CRUMB, HIDDEN_LABELS, navForRole, roleLabel, syntheticBadgeVisible } from "./nav";
+import { BOARD_FOOTER, CRUMB, crumbFor, HIDDEN_LABELS, navForRole, roleLabel, syntheticBadgeVisible } from "./nav";
 
 describe("DS-02 nav", () => {
   it("shows only existing routes for each role", () => {
@@ -22,5 +22,22 @@ describe("DS-02 nav", () => {
     expect(roleLabel("board_viewer")).toBe("Board · read-only");
     expect(syntheticBadgeVisible("production")).toBe(false);
     expect(syntheticBadgeVisible(undefined)).toBe(true);
+  });
+});
+
+describe("shell breadcrumb", () => {
+  it("shows Account not set up for a user with no role, whatever the URL", () => {
+    for (const role of ["unknown", "", "other"]) {
+      for (const path of ["/board", "/staff", "/admin", "/403", "/nope"]) {
+        expect(crumbFor(role, path, "FAS Evidence")).toBe("Account not set up");
+      }
+    }
+  });
+
+  it("keeps the existing crumbs for roles that have a home", () => {
+    expect(crumbFor("admin", "/admin", "FAS Evidence")).toBe("Admin · Overview");
+    expect(crumbFor("staff", "/staff", "FAS Evidence")).toBe("Home");
+    expect(crumbFor("board_viewer", "/board", "FAS Evidence")).toBe("Board dashboard");
+    expect(crumbFor("board_viewer", "/403", "FAS Evidence")).toBe("FAS Evidence");
   });
 });

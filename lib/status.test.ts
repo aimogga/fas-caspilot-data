@@ -7,6 +7,11 @@ describe("DS-04 status helpers", () => {
     expect(areaName("/admin")).toBe("admin tools");
     expect(areaName("/staff/reports")).toBe("staff tools");
     expect(areaName("/staffing")).toBe("this page");
+    expect(areaName("/STAFF")).toBe("staff tools");
+    expect(areaName("/Admin")).toBe("admin tools");
+    expect(areaName("/aDmIn/Users")).toBe("admin tools");
+    expect(areaName("/BOARD")).toBe("the board dashboard");
+    expect(areaName("/STAFFING")).toBe("this page");
     expect(areaName("/nope")).toBe("this page");
     expect(areaName(null)).toBe("this page");
     expect(homeLabel("board_viewer")).toBe("Board dashboard");

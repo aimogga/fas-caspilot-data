@@ -33,6 +33,13 @@ export const HIDDEN_LABELS = [
 
 export const CRUMB: Record<string, string> = { "/staff": "Home", "/admin": "Admin · Overview", "/board": "Board dashboard" };
 
+export const NO_ROLE_CRUMB = "Account not set up";
+
+export function crumbFor(role: string, pathname: string, fallback: string): string {
+  if (!(role in ROLE_LABEL)) return NO_ROLE_CRUMB;
+  return CRUMB[pathname] ?? fallback;
+}
+
 export function navForRole(role: string): { groups: NavGroup[]; footer: string | null } {
   if (role === "board_viewer") return { groups: [{ label: "Board", items: [BOARD] }], footer: BOARD_FOOTER };
   if (role === "staff") return { groups: [{ label: "Workspace", items: [STAFF] }], footer: null };

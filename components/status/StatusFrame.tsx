@@ -13,7 +13,7 @@ export async function getViewer(): Promise<Viewer> {
   return { signedIn: !!user, role, home: roleHome(role) };
 }
 
-export function StatusFrame({ viewer, crumb, children }: { viewer: Viewer; crumb?: string; children: ReactNode }) {
-  if (viewer.signedIn) return <AppShell crumb={crumb}>{children}</AppShell>;
+export function StatusFrame({ viewer, children }: { viewer: Viewer; children: ReactNode }) {
+  if (viewer.signedIn) return <AppShell>{children}</AppShell>;
   return <SignedOutFrame>{children}</SignedOutFrame>;
 }

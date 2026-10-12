@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { roleLabel, syntheticBadgeVisible } from "@/lib/shell/nav";
 import { ShellFrame } from "./ShellFrame";
 
-export async function AppShell({ children, crumb }: { children: ReactNode; crumb?: string }) {
+export async function AppShell({ children }: { children: ReactNode }) {
   const supabase = await createClient();
   if (!supabase) {
     return (
@@ -21,7 +21,7 @@ export async function AppShell({ children, crumb }: { children: ReactNode; crumb
   if (!user) redirect("/login");
   const role = typeof user.app_metadata?.role === "string" ? user.app_metadata.role : "unknown";
   return (
-    <ShellFrame role={role} roleLabel={roleLabel(role)} name={user.email ?? "Signed in"} showSynthetic={syntheticBadgeVisible(process.env.NEXT_PUBLIC_ENV)} crumb={crumb}>
+    <ShellFrame role={role} roleLabel={roleLabel(role)} name={user.email ?? "Signed in"} showSynthetic={syntheticBadgeVisible(process.env.NEXT_PUBLIC_ENV)}>
       {children}
     </ShellFrame>
   );
