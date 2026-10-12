@@ -1,0 +1,10 @@
+{
+  "name": "census-sahie (pending #89)",
+  "active": false,
+  "nodes": [
+    {"parameters":{"rule":{"interval":[{"field":"cronExpression","expression":"0 15 1 9 *"}]}},"id":"sahie-schedule","name":"Schedule SAHIE (pending #89)","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1.2,"position":[0,0]},
+    {"parameters":{},"id":"sahie-pending","name":"Handler pending #89","type":"n8n-nodes-base.noOp","typeVersion":1,"position":[240,0]}
+  ],
+  "connections": {"Schedule SAHIE (pending #89)":{"main":[[{"node":"Handler pending #89","type":"main","index":0}]]}},
+  "settings":{"executionOrder":"v1","timezone":"UTC"}
+}
