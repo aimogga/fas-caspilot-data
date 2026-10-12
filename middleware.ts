@@ -30,6 +30,12 @@ export async function middleware(request: NextRequest) {
     return deny(request, response, rawPath);
   }
 
+  if (canonical !== rawPath) {
+    const dest = new URL(canonical, request.url);
+    dest.search = request.nextUrl.search;
+    return withCookies(response, NextResponse.redirect(dest, 308));
+  }
+
   if (canonical === '/login' && user) {
     const target = signedInLoginTarget(userRole, request.nextUrl.searchParams.get('redirect'), request.nextUrl.origin);
     return withCookies(response, NextResponse.redirect(new URL(target, request.url)));

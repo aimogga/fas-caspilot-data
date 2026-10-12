@@ -48,10 +48,32 @@ test('norole on each guarded prefix gets 403', async ({ page }) => {
 
 test('a non-admin on an encoded admin path gets 403', async ({ page }) => {
   await signIn(page, 'staff@example.test');
-  const encoded = await page.request.get('/%61dmin', { maxRedirects: 0 });
-  expect(encoded.status()).toBe(403);
+  const probe = await page.request.get('/%61dmin', { maxRedirects: 0 });
+  expect(probe.status()).toBe(308);
+  expect(probe.headers().location).toMatch(/\/admin$/);
   const nav = await page.goto('/%61dmin');
   expect(nav?.status()).toBe(403);
+  await expect(page).toHaveURL(/\/admin$/);
+});
+
+test('a role on its own encoded prefix gets 308 then 200', async ({ page }) => {
+  const cases = [
+    ['staff@example.test', '/%73taff', '/staff'],
+    ['board@example.test', '/%62oard', '/board'],
+    ['admin@example.test', '/%61dmin', '/admin'],
+  ] as const;
+  for (const [email, encoded, decoded] of cases) {
+    await page.context().clearCookies();
+    await signIn(page, email);
+    const probe = await page.request.get(encoded, { maxRedirects: 0 });
+    expect(probe.status()).toBe(308);
+    expect(probe.status()).not.toBe(500);
+    expect(probe.headers().location).toMatch(new RegExp(`${decoded}$`));
+    const nav = await page.goto(encoded);
+    expect(nav?.status()).toBe(200);
+    expect(nav?.status()).not.toBe(500);
+    await expect(page).toHaveURL(new RegExp(`${decoded}$`));
+  }
 });
 
 test('norole is default-denied on an unknown path', async ({ page }) => {
