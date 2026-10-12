@@ -300,7 +300,7 @@ Left: QA re-check.
 Did: Supabase auth cookies set HttpOnly, Secure and SameSite=lax; logout clears them. QA PASS and DESIGN APPROVED at 0729e7e; squash-merged at 3ba8f7f (2026-10-12 21:52:03 UTC), closes #66.
 Left: #84 (login CSRF and cookie Max-Age), #85 (sign-in unavailable message), #87 (403 breadcrumb).
 
-## 2026-10-12 22:00 (UTC) — Engineer Supivisor Bot — checklist #81 and #82
+## 2026-10-12 22:00 (UTC) — Engineer Supivisor Bot — PR #88 checklist #81 and #82 (squash-merged at b4ed683, 2026-10-12 22:02:49 UTC)
 Did: checklist and progress for #81 and #82 (#66 done); #61 entry sha moved to its heading; next F-201, F-202 (#83) in progress by Engineer Bot; #77 Copilot pilot blocked on #65.
 Left: none.
 
@@ -311,3 +311,11 @@ Left: CI + secret-scan, then ready.
 ## 2026-10-12 22:40 (UTC) — Cloud Agent — #65 error frame review fixes
 Did: `loadErrorViewer` returns email; `ErrorFrame` passes `user.email ?? "Signed in"` like `AppShell`. Session reject or 4s timeout falls back to `SignedOutFrame` (`lib/status/error-frame.test.ts`). Did not touch the signed-out bar or `/403` copy (#91).
 Left: CI + secret-scan.
+
+## 2026-10-12 22:55 (UTC) — Cloud Agent — PR #90 signed-in error page in the role shell
+Did: signed-in error page uses the role-shell content area, refs #65. QA PASS and DESIGN APPROVED at 2f0a13f; squash-merged at d1432ad (2026-10-12 22:55:30 UTC).
+Left: #65 stays open, leftovers in #91 (now includes a loading-skeleton note); #77 should unblock once main is merged into it.
+
+## 2026-10-12 23:16 (UTC, commit time) — Engineer Supivisor Bot — checklist #88 and #90
+Did: checklist and progress for #88 (b4ed683) and #90 (d1432ad); #65 open with leftovers in #91; #77 no longer blocked once main is merged in; F-202 in progress as #86 plus #92, both with QA.
+Left: none.
