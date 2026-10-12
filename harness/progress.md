@@ -215,3 +215,15 @@ Left: none.
 ## 2026-10-12 16:07 (UTC) — Cloud Agent — PR #41 DS-02a signed-in app shell
 Did: route move to app/(app), role nav per screen-plan §1.2, desktop sidebar/rail, top bar with wordmark below 768px (squash-merged at 4176aae). Split per QA: mobile sheet is PR #50 (DS-02b, in review); deferred e2e and hidden nav items are issue #49.
 Left: PR #50, issue #49.
+
+## 2026-10-12 16:26 (UTC) — Cloud Agent — PR #51 checklist DS-02a
+Did: checklist DS-02a done, DS-02b in review, F-601 note made truthful; progress entries for PR #41 and PR #48 (merged at 1f06fb3).
+Left: none.
+
+## 2026-10-12 16:40 (UTC) — Cloud Agent — PR #50 DS-02b mobile top bar and nav sheet
+Did: menu button, nav sheet with sheet-header wordmark (untouched shadcn sheet.tsx; the top-bar wordmark came in PR #41), 20px hamburger, 12px mobile top-bar padding, 375 e2e (open by button; close by Esc, scrim and Close with focus return; 44px targets; axe) (squash-merged at 515e046).
+Left: issue #49 (focus trap, scroll lock, reduced motion e2e, hidden nav items); issue #52 (audit fixture leak).
+
+## 2026-10-12 16:51 (UTC) — Cloud Agent — PR #54 DS-02 follow-ups
+Did: 375 e2e for sheet focus trap, scroll lock and reduced motion; HIDDEN_LABELS (19 §1.2 names) asserted absent in unit and e2e; board crumb "Board dashboard" (squash-merged at 4f14df6, closes #49).
+Left: scroll-lock e2e should assert actual scroll (new issue).
