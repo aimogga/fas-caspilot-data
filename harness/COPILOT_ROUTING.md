@@ -25,14 +25,21 @@ Cursor is on the $20 plan: one cloud agent at a time, $0 on-demand.
 - Anything that needs judgment or a decision not in `docs/` or `harness/DECISIONS.md`.
 
 ### Concurrency
-- At most one Cursor agent and one Copilot agent at a time (pending George, see open question 4).
+- George decided: at most one Cursor cloud agent plus one Copilot agent may run at once.
+- The D-009 budget caps are still open.
 - Never on the same packet or the same files.
 
 ## Same gates for both
 - Packet is a GitHub Issue built from `grok/task_packet_template.md`.
 - Copilot issues inline the spec links, AC, the 400-line cap and the files allowed (QA requirement).
 - D-012: at most 400 hand-written lines, added plus deleted; one statement per line.
-- QA posts `PASS @ <sha>` on every AC (plus the 375px check for UI PRs).
+- QA posts `PASS @ <sha>` on every AC.
+- QA's verdict on a UI PR includes its own 375px check at the head sha.
+- UI PRs attach Playwright screenshots at 375, 1024 and 1440, in light and dark.
+- UI PRs that touch the tablet rail (768–1023) also attach 800 screenshots.
+- UI PRs with a nav attach a 375 screenshot with the nav sheet open.
+- UI PRs attach the axe-core result (WCAG 2.2 AA, 0 serious/critical).
+- UI PRs attach a comparison with the mockup in `docs/design/mockups/`.
 - UI PRs also need `DESIGN APPROVED @ <sha>` at the same head.
 - Any push voids both verdicts.
 - `ci` and `secret-scan` green; the main ruleset is unchanged.
@@ -71,7 +78,7 @@ Nothing below is settled: caps, model choice and thresholds are proposals until 
 1. Confirm Copilot billing type (AI credits vs legacy annual premium requests).
 2. Set $0 stopping budgets for AI credits and for Actions? A $0 Actions budget would also stop `ci` once minutes run out.
 3. Actions-minute headroom: accept the risk, trim other repos' usage, or allow a small paid Actions budget?
-4. Approve one Cursor + one Copilot agent concurrently (DESIGN_WORKFLOW step 2 says one agent).
+4. Concurrency: decided by George (one Cursor cloud agent plus one Copilot agent at once).
 5. Fill D-009 cost caps with the Copilot caps above.
 
 ## Sources

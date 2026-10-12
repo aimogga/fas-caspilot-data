@@ -1,6 +1,6 @@
-# AGENTS.md — CasePilot × FAS "Public Data to Proof"
+# AGENTS.md — FAS Evidence (Public Data to Proof)
 
-You are working in the repo for a free CasePilot tool built for **Family Advocacy Services (FAS)**, a Utah nonprofit that pays for therapy for families who can't afford it, many referred through courts. The tool collects free public data, accepts FAS's own data, shows both, matches FAS to grants and produces evidence packets. Keep this file short; details live in the linked docs.
+You are working in the repo for FAS Evidence, a free tool built for **Family Advocacy Services (FAS)**, a Utah nonprofit that pays for therapy for families who can't afford it, many referred through courts. The tool collects free public data, accepts FAS's own data, shows both, matches FAS to grants and produces evidence packets. Keep this file short; details live in the linked docs.
 
 ## Read order (every session)
 1. This file.

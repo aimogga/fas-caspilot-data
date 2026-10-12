@@ -43,7 +43,7 @@ See `docs/DESIGN_WORKFLOW.md` for the full design-review checklist.
 - Tap targets are at least 44×44px below 1024px wide.
 - Input text is at least 16px.
 - Labels go above fields; errors use `role="alert"`.
-- Focus ring is the 2px `--ring` token.
+- Focus ring: `:focus-visible` only (keyboard focus), 2px `--ring` with 2px offset, ≥ 3:1 contrast.
 - Never show status by colour alone.
 - No horizontal scroll at 375px (`document.documentElement.scrollWidth <= 375`).
 - WCAG 2.2 AA in light and dark: text contrast ≥ 4.5:1, UI and focus rings ≥ 3:1.
@@ -77,5 +77,11 @@ Run `pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck && pnpm test`
 ## Gates
 - Use `.github/pull_request_template.md`.
 - QA posts `PASS @ <sha>`; UI PRs also need `DESIGN APPROVED @ <sha>`, at the same head.
+- UI PRs attach Playwright screenshots at 375, 1024 and 1440, in light and dark.
+- UI PRs that touch the tablet rail (768–1023) also attach 800 screenshots.
+- UI PRs with a nav attach a 375 screenshot with the nav sheet open.
+- UI PRs attach the axe-core result (WCAG 2.2 AA, 0 serious/critical).
+- UI PRs attach a comparison with the mockup in `docs/design/mockups/`.
+- QA's verdict on a UI PR includes its own 375px check at the head sha.
 - Any new push voids both.
 - Routing and gates: `harness/COPILOT_ROUTING.md`.
