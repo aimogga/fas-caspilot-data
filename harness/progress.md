@@ -319,3 +319,10 @@ Left: #65 stays open, leftovers in #91 (now includes a loading-skeleton note); #
 ## 2026-10-12 23:16 (UTC, commit time) — Engineer Supivisor Bot — checklist #88 and #90
 Did: checklist and progress for #88 (b4ed683) and #90 (d1432ad); #65 open with leftovers in #91; #77 no longer blocked once main is merged in; F-202 in progress as #86 plus #92, both with QA.
 Left: none.
+
+## 2026-10-12 23:46 (UTC) — Cloud Agent — PR #95 health probe from env URL
+Did: `/api/health` probes `${NEXT_PUBLIC_SUPABASE_URL}/auth/v1/health` with the publishable `apikey`; falls back to local `127.0.0.1:54321` only when the URL is unset. Closes #12.
+State: lint/typecheck/unit 286/286 green; local `/api/health` ok vs GoTrue.
+Evidence: https://github.com/aimogga/fas-caspilot-data/pull/95
+Left: CI + secret-scan, then QA.
+Decisions: none.
