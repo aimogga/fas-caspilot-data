@@ -6,7 +6,7 @@ Last updated: 2026-10-12
 
 - **Done:** 6 of 44 features (14%): F-003, F-101, F-102, F-103, F-104 and F-105.
 - **In progress:** F-601 nightly audit (partly working). DS-02 signed-in app shell (PR #41, in QA/design review at 37364cf).
-- **Next up:** Finish design foundation (DS-02 role shell → DS-03 login → DS-04 403, plus design sources 2–4), then Phase 2 starting with F-201 (a record of every data import and its results), then cleanup of open issues #12, #13, #23 and #26.
+- **Next up:** Finish design foundation (DS-02 role shell → DS-03 login → DS-04 403, design sources 2–4 are merged), then Phase 2 starting with F-201 (a record of every data import and its results), then cleanup of open issues #12, #13, #23 and #26.
 - **Blocked:** None right now.
 
 ## Design system
@@ -14,7 +14,7 @@ Last updated: 2026-10-12
 - Rename to FAS Evidence: done (PR #28, merged at e20b7a0).
 - Deck and PRD are FAS-only: done (PR #34, merged at f989572).
 - Design workflow and DS specs: done (PR #32, docs/DESIGN_WORKFLOW.md).
-- Design-system v1 source (sources 1/4): done (PR #35). Sources 2–4: not started.
+- Design-system v1 source (sources 1/4): done (PR #35). Sources 2/4 screen plan part 1: done (PR #43, merged at 4913fba). Sources 3/4 screen plan part 2: done (PR #44, merged at a6a043b). Sources 4/4 mockups: done (PR #45, merged at 976dcc1; generator PR #46, merged at 96c712b).
 - **DS-01a** Tailwind v4 + tokens: done (PR #33, squash-merged at cfab531). QA PASS and DESIGN APPROVED.
 - **DS-01b** shadcn base components: done (PR #36, merged at 5a38f52).
 - **DS-01c** layout and trust primitives: done (PR #37, merged at 4b59f96).
@@ -87,7 +87,7 @@ Last updated: 2026-10-12
 
 ## Phase 6: Safety checks and launch
 
-- [ ] **In progress** F-601 Nightly audit script: Nightly audit runs and fails on serious problems, but it's partial: it doesn't yet check data freshness, data sanity, grants or cost, it doesn't file its report as a PR or issue, it hasn't been run against a preview, and the new schedule hasn't fired yet.
+- [ ] **In progress** F-601 Nightly audit script: Nightly audit runs and fails on serious problems, but it's partial: it doesn't yet check data freshness, data sanity, grants or cost, it doesn't file its report as a PR or issue, it hasn't been run against a preview, and the new schedule hasn't fired yet. Backup trigger for a missed schedule: done (PR #47, merged at 04684db).
 - [ ] **Not started** F-602 Security review: a full check that data access rules, passwords and software are all safe.
 - [ ] **Not started** F-603 Legal review gate: a written legal opinion on health privacy rules and court records, with required agreements signed.
 - [ ] **Not started** F-604 Real-data onboarding runbook and migration: a step-by-step plan for loading FAS's real data, practiced first on fake data.

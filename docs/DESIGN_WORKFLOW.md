@@ -3,9 +3,9 @@
 *Repo location: `docs/DESIGN_WORKFLOW.md` (per the Supervisor). Specs live in `docs/design/specs/<ID>.md`, one file per PR, with mockups in `docs/design/mockups/`.*
 *Order confirmed by the Supervisor: PR #28 rename → DS-01a → DS-01b → DS-01c → DS-02 → DS-03 → DS-04 → F-201.*
 
-## Source documents (not yet in repo)
+## Source documents
 
-- `docs/design/design-system-v1.md` (token values; DS-01a uses §4–5), `docs/design/fas-screen-plan.md` (DS-02 nav comes from §1.2), and the mockups in `docs/design/mockups/` (PNG at 375/1024/1440 plus HTML source) are maintained by UX/UI Design Bot. They are handed to each implementing cloud agent as attachments until they land in the repo.
+- `docs/design/design-system-v1.md` (token values; DS-01a uses §4–5), `docs/design/fas-screen-plan.md` (DS-02 nav comes from §1.2), and the mockups in `docs/design/mockups/` (PNG at 375/1024/1440 plus HTML source) are maintained by UX/UI Design Bot. All four sources are merged on main (#35, #43, #44, #45, #46); `docs/design/` is the source of truth.
 - The sources land in design-sources PRs, each at most 400 hand-written lines (markdown/HTML count; PNG binaries do not count), split as needed: (1) `design-system-v1.md`; (2) and (3) `fas-screen-plan.md` in two parts; (4) mockups (PNG binaries plus HTML source, split if the HTML is over 400).
 - DS-01a merges only after source PR (1) is merged; DS-02 after (2), (3) and (4); DS-03 and DS-04 after (4).
 
@@ -86,6 +86,6 @@
 
 ## References (repo paths)
 - Design system: `docs/design/design-system-v1.md`.
-- Screen plan: `docs/design/fas-screen-plan.md`.
+- Screen plan: `docs/design/fas-screen-plan.md` (§0–3, incl. §1.2 nav) and `docs/design/fas-screen-plan-part2.md` (§4–7).
 - Specs: `docs/design/specs/<ID>.md`.
 - Mockups: `docs/design/mockups/*.png` (desktop 1440 plus `-375` mobile variants); HTML sources in `docs/design/mockups/src/`.
