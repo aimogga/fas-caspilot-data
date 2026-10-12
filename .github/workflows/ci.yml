@@ -10,9 +10,9 @@ permissions:
   contents: read
 
 concurrency:
-  # One run per PR; a new push cancels the older PR run.
-  # Pushes to main are never cancelled.
-  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # PR runs: one per PR ref; a new push cancels the older PR run.
+  # Push runs: keyed by sha, so main runs are never cancelled or dropped.
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -55,7 +55,7 @@ jobs:
         run: |
           docs_only=false
           if [ "$EVENT_NAME" = "pull_request" ]; then
-            changed="$(git diff --name-only "$BASE_SHA...$HEAD_SHA")"
+            changed="$(git diff --no-renames --name-only "$BASE_SHA...$HEAD_SHA")"
             echo "$changed"
             other="$(printf '%s\n' "$changed" | grep -v -E '^docs/|\.md$' | grep -v '^$' || true)"
             if [ -n "$changed" ] && [ -z "$other" ]; then
