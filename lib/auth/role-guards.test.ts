@@ -29,6 +29,7 @@ describe('role-guards', () => {
     expect(isPublicRoute('/api/health')).toBe(true);
     expect(isPublicRoute('/ui')).toBe(true);
     expect(isPublicRoute('/health')).toBe(true);
+    expect(isPublicRoute('/dev-error')).toBe(true);
     expect(isPublicRoute('/')).toBe(false);
   });
   it('does not treat lookalike paths as public (#13)', () => {

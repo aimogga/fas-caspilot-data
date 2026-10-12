@@ -32,7 +32,7 @@ test("board on /staff and /admin gets a real 403 with the requested path", async
     const response = await page.goto(path);
     expect(response?.status()).toBe(403);
     await expect(page).toHaveURL(new RegExp(`${path}$`));
-    await expect(page.locator("h1")).toContainText("403");
+    await expect(page.locator("[data-slot=status-eyebrow]")).toContainText("403");
   }
 });
 
