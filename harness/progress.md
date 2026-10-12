@@ -293,6 +293,10 @@ Left: none.
 Did: QA passed; route guard coverage test squash-merged at 438f7c0 (2026-10-12 21:41:17 UTC), closes #79.
 Left: none.
 
+## 2026-10-12 21:52 (UTC) — Cloud Agent — PR #82 auth cookie flags
+Did: Supabase auth cookies set HttpOnly, Secure and SameSite=lax; logout clears them. QA PASS and DESIGN APPROVED at 0729e7e; squash-merged at 3ba8f7f (2026-10-12 21:52:03 UTC), closes #66.
+Left: #84 (login CSRF and cookie Max-Age), #85 (sign-in unavailable message), #87 (403 breadcrumb).
+
 ## 2026-10-12 21:50 (UTC) — Cloud Agent — issue #83 / feature F-202
 Did: packages/ingest/sahie + inactive n8n (PR #86). QA FAIL 80d2b6c.
 Left: QA.
@@ -301,11 +305,7 @@ Left: QA.
 Did: reject bad cells; fail closed on partial set; census-sahie migration; n8n pending #89; merge origin/main (#82).
 Left: QA re-check.
 
-## 2026-10-12 21:52 (UTC) — Cloud Agent — PR #82 auth cookie flags
-Did: Supabase auth cookies set HttpOnly, Secure and SameSite=lax; logout clears them. QA PASS and DESIGN APPROVED at 0729e7e; squash-merged at 3ba8f7f (2026-10-12 21:52:03 UTC), closes #66.
-Left: #84 (login CSRF and cookie Max-Age), #85 (sign-in unavailable message), #87 (403 breadcrumb).
-
-## 2026-10-12 22:00 (UTC) — Engineer Supivisor Bot — checklist #81 and #82
+## 2026-10-12 22:00 (UTC) — Engineer Supivisor Bot — PR #88 checklist #81 and #82 (squash-merged at b4ed683, 2026-10-12 22:02:49 UTC)
 Did: checklist and progress for #81 and #82 (#66 done); #61 entry sha moved to its heading; next F-201, F-202 (#83) in progress by Engineer Bot; #77 Copilot pilot blocked on #65.
 Left: none.
 
@@ -316,3 +316,30 @@ Left: CI + secret-scan, then ready.
 ## 2026-10-12 22:40 (UTC) — Cloud Agent — #65 error frame review fixes
 Did: `loadErrorViewer` returns email; `ErrorFrame` passes `user.email ?? "Signed in"` like `AppShell`. Session reject or 4s timeout falls back to `SignedOutFrame` (`lib/status/error-frame.test.ts`). Did not touch the signed-out bar or `/403` copy (#91).
 Left: CI + secret-scan.
+
+## 2026-10-12 22:55 (UTC) — Cloud Agent — PR #90 signed-in error page in the role shell
+Did: signed-in error page uses the role-shell content area, refs #65. QA PASS and DESIGN APPROVED at 2f0a13f; squash-merged at d1432ad (2026-10-12 22:55:30 UTC).
+Left: #65 stays open, leftovers in #91 (now includes a loading-skeleton note); #77 should unblock once main is merged into it.
+
+## 2026-10-12 23:16 (UTC, commit time) — Engineer Supivisor Bot — PR #93 checklist #88 and #90
+Did: checklist and progress for #88 (b4ed683) and #90 (d1432ad); #65 open with leftovers in #91; #77 no longer blocked once main is merged in; F-202 in progress as #86 plus #92, both with QA.
+Left: none.
+
+## 2026-10-12 22:55 (UTC) — Cloud Agent — issue #89 / feature F-202
+Did: SAHIE n8n entry: SahieHttp fetch→parse→fill→load, POST /api/ingest/sahie with fail-closed INGEST_TOKEN, inactive n8n HTTP to $env.FAS_INGEST_SAHIE_URL and no hardcoded year. Moved F-202 progress after #82.
+State: lint/typecheck/unit 286/286 green. Live POST without token 401; unset secret still 401.
+Evidence: PR #92.
+Left: QA. #83 stays open until QA checks the whole flow.
+Decisions: none.
+
+## 2026-10-12 23:13 (UTC) — Cloud Agent — PR #92 QA FAIL
+Did: spy `load` tests so SahieHttp.run never loads a 28-county or unparseable payload, and asserts source, checksum, and year; added PR #88 and PR #90 to their progress entries.
+Left: QA re-check.
+
+## 2026-10-12 23:29 (UTC) — Cloud Agent — PR #92 merge main (#93)
+Did: Merged origin/main. Kept main's #88 and #90 entries; dropped the moved copies and (PR #88)/(PR #90) tags; F-202 stays after #82; named PR #93.
+Left: QA re-check.
+
+## 2026-10-12 23:50 (UTC) — QA — PR #97 flip F-202 passing
+Did: F-202 set to passing in harness/feature_list.json with evidence: PR #86 QA PASS at 513d3b0 (squash-merged at 2d44deb, 2026-10-12 22:40:43 UTC) and PR #92 QA PASS at 6741f21 (squash-merged at 5f547d3, 2026-10-12 23:46:49 UTC). Live fas-dev ingest at 23:46:22 UTC loaded 58 rows (29 counties × 2 indicators, 2024); re-run at 23:46:31 UTC stayed at 58 with 0 duplicates. Checklist: 7 of 44 done. Closes #83.
+Left: follow-up to log SahieHttp ingest errors server-side (no secrets).

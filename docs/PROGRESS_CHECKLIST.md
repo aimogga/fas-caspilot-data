@@ -4,10 +4,10 @@ Last updated: 2026-10-12
 
 ## Summary
 
-- **Done:** 6 of 44 features (14%): F-003, F-101, F-102, F-103, F-104 and F-105.
+- **Done:** 7 of 44 features (16%): F-003, F-101, F-102, F-103, F-104, F-105 and F-202.
 - **In progress:** F-601 nightly audit (partly working).
-- **Next up:** F-201 source registry and ingest logging. F-202 SAHIE ingest (#83) in progress by Engineer Bot.
-- **Blocked:** #77 Copilot pilot, blocked on the error-page layout (#65).
+- **Next up:** F-201 source registry and ingest logging.
+- **Blocked:** None right now. #77 Copilot pilot should unblock once main is merged into it (error-page layout fix landed in PR #90).
 
 ## Design system
 
@@ -34,7 +34,7 @@ Last updated: 2026-10-12
 - **DS-04** 403/404/error and role redirect: done. DS-04a role redirect, real 403 status, session expired (PR #62, squash-merged at 21c693b, closes #59); DS-04b 403, 404 and error pages (PR #64, squash-merged at b69df8b).
 - DS-04 follow-up issues:
   - #63: prefix-based route guards so unknown paths can 404 (closed by PR #76).
-  - #65: DS-04 design follow-ups (non-blocking).
+  - #65: DS-04 design follow-ups (non-blocking; stays open, leftovers tracked in #91).
   - #66: auth hardening: Supabase session cookie isn't HttpOnly or Secure (closed by PR #82).
   - #67: DS-04 QA follow-ups: no-role e2e, parity entries, area names on 403.
 - Docs: checklist DS-04 done, follow-ups, next #60 (PR #68, merged at 7291b82).
@@ -50,7 +50,9 @@ Last updated: 2026-10-12
   - #84: login CSRF and cookie Max-Age.
   - #85: "sign-in unavailable" message.
   - #87: 403 breadcrumb.
-- #77 Copilot pilot: blocked on the error-page layout (#65).
+- Docs: checklist and progress for #81 and #82, #66 done (PR #88, squash-merged at b4ed683, 2026-10-12 22:02:49 UTC).
+- Fix: signed-in error page uses the role-shell content area (PR #90, QA PASS and DESIGN APPROVED at 2f0a13f, squash-merged at d1432ad, 2026-10-12 22:55:30 UTC, refs #65). #65 stays open; its leftovers are tracked in #91, which now includes a loading-skeleton note.
+- #77 Copilot pilot: should unblock once main is merged into it (PR #90 landed the error-page layout).
 
 ## Decisions
 
@@ -75,7 +77,7 @@ Last updated: 2026-10-12
 ## Phase 2: Public data and county need
 
 - [ ] **Not started** F-201 Source registry, ingest run logging and failure alerts: we keep a record of every data import and get an alert if one fails, with no duplicate data on re-runs.
-- [ ] **Not started** F-202 Ingest: Census SAHIE uninsured by county: brings in how many people lack health insurance in each Utah county.
+- [x] **Done** F-202 Ingest: Census SAHIE uninsured by county: brings in how many people lack health insurance in each Utah county. QA PASS on #86 (2d44deb) and #92 (5f547d3), plus a live run on fas-dev that loaded all 29 counties.
 - [ ] **Not started** F-203 Ingest: Census SAIPE poverty by county: brings in poverty levels for each Utah county.
 - [ ] **Not started** F-204 Ingest: ACS 5-year denominators: brings in population counts so rates can be calculated fairly.
 - [ ] **Not started** F-205 Ingest: HRSA mental health HPSA: brings in which counties have a shortage of mental health providers.
