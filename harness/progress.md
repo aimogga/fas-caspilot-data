@@ -226,4 +226,8 @@ Left: issue #49 (focus trap, scroll lock, reduced motion e2e, hidden nav items);
 
 ## 2026-10-12 16:51 (UTC) — Cloud Agent — PR #54 DS-02 follow-ups
 Did: 375 e2e for sheet focus trap, scroll lock and reduced motion; HIDDEN_LABELS (19 §1.2 names) asserted absent in unit and e2e; board crumb "Board dashboard" (squash-merged at 4f14df6, closes #49).
-Left: scroll-lock e2e should assert actual scroll (new issue).
+Left: scroll-lock e2e should assert actual scroll (#55).
+
+## 2026-10-12 17:00 (UTC) — Cloud Agent — PR #53 checklist DS-02b
+Did: checklist DS-02b done (PR #50), DS-02 follow-ups done (PR #54, closes #49), PR #51 and issue #52 noted, next up DS-03; progress entries for PR #50, PR #51 and PR #54 (merged at af9a3ee).
+Left: none.
