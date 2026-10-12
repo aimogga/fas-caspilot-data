@@ -37,6 +37,7 @@ describe('role-guards', () => {
     expect(isPublicRoute('/login')).toBe(true);
     expect(isPublicRoute('/403')).toBe(true);
     expect(isPublicRoute('/api/auth/signout')).toBe(true);
+    expect(isPublicRoute('/api/auth/login')).toBe(true);
     expect(isPublicRoute('/api/health')).toBe(true);
     expect(isPublicRoute('/ui')).toBe(true);
     expect(isPublicRoute('/health')).toBe(true);
@@ -45,6 +46,8 @@ describe('role-guards', () => {
   });
   it('does not treat lookalike paths as public (#13)', () => {
     expect(isPublicRoute('/api/healthz')).toBe(false);
+    expect(isPublicRoute('/api/auth/login/')).toBe(false);
+    expect(isPublicRoute('/api/auth/loginz')).toBe(false);
     expect(isPublicRoute('/api/health/')).toBe(false);
     expect(isPublicRoute('/healthz')).toBe(false);
     expect(isPublicRoute('/403/x')).toBe(false);
