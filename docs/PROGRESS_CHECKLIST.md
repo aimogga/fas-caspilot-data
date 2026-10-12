@@ -1,12 +1,12 @@
 # FAS Evidence Progress Checklist
 
-Last updated: Oct 10, 2026
+Last updated: 2026-10-12
 
 ## Summary
 
 - **Done:** 6 of 44 features (14%): F-003, F-101, F-102, F-103, F-104 and F-105.
-- **In progress:** F-601 nightly audit (partly working). Design system DS-01b (shadcn base components).
-- **Next up:** Finish design foundation (DS-01b → DS-01c → DS-02 role shell → DS-03 login → DS-04 403), then Phase 2 starting with F-201 (a record of every data import and its results), then cleanup of open issues #12, #13, #23 and #26.
+- **In progress:** F-601 nightly audit (partly working). DS-02 signed-in app shell (PR #41, in QA/design review at 37364cf).
+- **Next up:** Finish design foundation (DS-02 role shell → DS-03 login → DS-04 403, plus design sources 2–4), then Phase 2 starting with F-201 (a record of every data import and its results), then cleanup of open issues #12, #13, #23 and #26.
 - **Blocked:** None right now.
 
 ## Design system
@@ -14,10 +14,19 @@ Last updated: Oct 10, 2026
 - Rename to FAS Evidence: done (PR #28, merged at e20b7a0).
 - Deck and PRD are FAS-only: done (PR #34, merged at f989572).
 - Design workflow and DS specs: done (PR #32, docs/DESIGN_WORKFLOW.md).
-- Design-system v1 source: done (PR #35).
+- Design-system v1 source (sources 1/4): done (PR #35). Sources 2–4: not started.
 - **DS-01a** Tailwind v4 + tokens: done (PR #33, squash-merged at cfab531). QA PASS and DESIGN APPROVED.
-- **DS-01b** shadcn base components: in progress.
-- After that: DS-01c, DS-02 (role shell), DS-03 (login), DS-04 (403).
+- **DS-01b** shadcn base components: done (PR #36, merged at 5a38f52).
+- **DS-01c** layout and trust primitives: done (PR #37, merged at 4b59f96).
+- DS-02/03/04 spec amendments (adopt DS-01c Page container): done (PR #40, merged at 488bbe6).
+- **DS-02** signed-in app shell: in review (PR #41, QA/design review at 37364cf).
+- **DS-03** login: not started.
+- **DS-04** 403: not started.
+
+## Decisions
+
+- **D-015** Data-use ruling (FAS-only, grants only): merged (PR #38, at b7c2ec8).
+- **D-016** GitHub admin standing permission: merged (PR #39, at 6fc8976).
 
 ## Phase 0: Getting ready
 
@@ -86,4 +95,4 @@ Last updated: Oct 10, 2026
 
 ---
 
-This checklist is updated after every merge.
+Standing rule: this checklist is updated by a small QA-reviewed docs PR after every merge.
