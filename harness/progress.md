@@ -293,7 +293,7 @@ Did: Supabase auth cookies set HttpOnly, Secure and SameSite=lax; logout clears 
 Left: #84 (login CSRF and cookie Max-Age), #85 (sign-in unavailable message), #87 (403 breadcrumb).
 
 ## 2026-10-12 22:00 (UTC) — Engineer Supivisor Bot — checklist #81 and #82
-Did: checklist and progress for #81 and #82 (#66 done); #61 entry sha moved to its heading; next F-201, F-202 (#83) in progress by Engineer Bot; #77 Copilot pilot blocked on #65.
+Did: checklist and progress for #81 and #82 (#66 done); #61 entry sha moved to its heading; next F-201, F-202 (#83) in progress by Engineer Bot; #77 Copilot pilot blocked on #65 (PR #88).
 Left: none.
 
 ## 2026-10-12 21:50 (UTC) — Cloud Agent — issue #83 / feature F-202
@@ -305,7 +305,7 @@ Did: reject bad cells; fail closed on partial set; census-sahie migration; n8n p
 Left: QA re-check.
 
 ## 2026-10-12 22:05 (UTC) — Cloud Agent — #65 error page shell layout
-Did: signed-in `app/error.tsx` uses `ErrorFrame` → `ShellFrame` so the content area matches the role shell (80/696 at 800; sidebar from 1024; 1200 max). Signed-out stays on `SignedOutFrame`. Brought PR #77's signed-in 404/error/`/` layout-parity assertion.
+Did: signed-in `app/error.tsx` uses `ErrorFrame` → `ShellFrame` so the content area matches the role shell (80/696 at 800; sidebar from 1024; 1200 max). Signed-out stays on `SignedOutFrame`. Brought PR #77's signed-in 404/error/`/` layout-parity assertion (PR #90).
 Left: CI + secret-scan, then ready.
 
 ## 2026-10-12 22:40 (UTC) — Cloud Agent — #65 error frame review fixes
@@ -318,3 +318,7 @@ State: lint/typecheck/unit 286/286 green. Live POST without token 401; unset sec
 Evidence: PR #92.
 Left: QA. #83 stays open until QA checks the whole flow.
 Decisions: none.
+
+## 2026-10-12 23:13 (UTC) — Cloud Agent — PR #92 QA FAIL
+Did: spy `load` tests so SahieHttp.run never loads a 28-county or unparseable payload, and asserts source, checksum, and year; added PR #88 and PR #90 to their progress entries.
+Left: QA re-check.

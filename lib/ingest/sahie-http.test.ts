@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { COUNTIES } from '../synthetic/generate';
+import type { IndicatorRow } from '../../packages/ingest/public-indicator';
 import { Sahie } from '../../packages/ingest/sahie';
 import { SahieHttp } from './sahie-http';
 
@@ -10,13 +11,27 @@ const HDR = [
   'AGECAT', 'SEXCAT', 'RACECAT', 'IPRCAT', 'state', 'county',
 ];
 
-function table(year: string): unknown {
+function table(year: string, counties = COUNTIES): unknown {
   return [
     HDR,
-    ...COUNTIES.map((c) => [
+    ...counties.map((c) => [
       c.name, c.fips, '100', '1', '8.0', '0.1', year, '0', '0', '0', '0', '49', c.fips.slice(2),
     ]),
   ];
+}
+
+function spyLoad() {
+  const calls: Array<{ name: string; checksum: string; rows: IndicatorRow[] }> = [];
+  const load = async (
+    _client: SupabaseClient,
+    name: string,
+    checksum: string,
+    rows: IndicatorRow[],
+  ) => {
+    calls.push({ name, checksum, rows });
+    return { ingestRunId: 'run-1', rowsLoaded: rows.length, sourceId: 'src-1' };
+  };
+  return { calls, load };
 }
 
 function req(token?: string, body?: string): Request {
@@ -54,9 +69,9 @@ describe('SahieHttp year is not hardcoded', () => {
 });
 
 describe('SahieHttp.run reuses Sahie fetch, parse, fill, and load', () => {
-  it('loads the complete Utah set from a mocked Census table', async () => {
+  it('loads the complete Utah set and passes source, checksum, and year', async () => {
     const year = '2023';
-    const loaded: number[] = [];
+    const spy = spyLoad();
     const result = await SahieHttp.run({
       year,
       env: { CENSUS_API_KEY: 'x' },
@@ -66,27 +81,73 @@ describe('SahieHttp.run reuses Sahie fetch, parse, fill, and load', () => {
         return new Response(JSON.stringify(table(year)), { status: 200 });
       },
       client: {} as SupabaseClient,
-      load: async (_client, name, checksum, rows) => {
-        expect(name).toBe(Sahie.SOURCE_NAME);
-        expect(checksum).toBe(Sahie.checksum(rows));
-        loaded.push(rows.length);
-        return { ingestRunId: 'run-1', rowsLoaded: rows.length, sourceId: 'src-1' };
-      },
+      load: spy.load,
     });
     expect(result.ingestRunId).toBe('run-1');
     expect(result.rowsLoaded).toBe(COUNTIES.length * 2);
-    expect(loaded).toEqual([COUNTIES.length * 2]);
+    expect(spy.calls).toHaveLength(1);
+    const call = spy.calls[0];
+    expect(call?.name).toBe(Sahie.SOURCE_NAME);
+    expect(call?.checksum).toBe(Sahie.checksum(call?.rows ?? []));
+    expect(call?.rows.every((row) => row.vintage === year && row.period === year)).toBe(true);
+  });
+
+  it('does not call load when 28 counties come back', async () => {
+    const spy = spyLoad();
+    const year = '2023';
+    const partial = table(year, COUNTIES.slice(0, 28));
+    await expect(
+      SahieHttp.run({
+        year,
+        env: { CENSUS_API_KEY: 'x' },
+        httpFetch: async () => new Response(JSON.stringify(partial), { status: 200 }),
+        client: {} as SupabaseClient,
+        load: spy.load,
+      }),
+    ).rejects.toThrow(/partial/);
+    expect(spy.calls).toEqual([]);
+  });
+
+  it('does not call load when the payload is not a table', async () => {
+    const spy = spyLoad();
+    await expect(
+      SahieHttp.run({
+        year: '2023',
+        env: { CENSUS_API_KEY: 'x' },
+        httpFetch: async () => new Response('{}', { status: 200 }),
+        client: {} as SupabaseClient,
+        load: spy.load,
+      }),
+    ).rejects.toThrow(/census table/);
+    expect(spy.calls).toEqual([]);
+  });
+
+  it('does not call load when the payload is not JSON', async () => {
+    const spy = spyLoad();
+    await expect(
+      SahieHttp.run({
+        year: '2023',
+        env: { CENSUS_API_KEY: 'x' },
+        httpFetch: async () => new Response('not-json', { status: 200 }),
+        client: {} as SupabaseClient,
+        load: spy.load,
+      }),
+    ).rejects.toThrow();
+    expect(spy.calls).toEqual([]);
   });
 
   it('does not need CENSUS_API_KEY when the key is missing', async () => {
+    const spy = spyLoad();
     await expect(
       SahieHttp.run({
         year: '2023',
         env: {},
         httpFetch: async () => new Response('[]'),
         client: {} as SupabaseClient,
+        load: spy.load,
       }),
     ).rejects.toThrow('CENSUS_API_KEY is not set');
+    expect(spy.calls).toEqual([]);
   });
 });
 
