@@ -1,16 +1,18 @@
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import nextConfig from '../../next.config';
 import { isPublicRoute, matchGuardedPrefix } from './role-guards';
 
 const APP_DIR = join(__dirname, '..', '..', 'app');
-const ROUTE_FILES = ['page.tsx', 'route.ts'];
+const DEFAULT_EXTENSIONS = ['tsx', 'ts', 'jsx', 'js'];
+const EXTENSIONS = nextConfig.pageExtensions ?? DEFAULT_EXTENSIONS;
 
 class RouteCoverage {
   static collect(dir: string, segments: string[] = []): string[] {
     const found: string[] = [];
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      if (entry.isFile() && ROUTE_FILES.includes(entry.name)) {
+      if (entry.isFile() && RouteCoverage.isRouteFile(entry.name)) {
         found.push(RouteCoverage.toPath(segments));
       }
       if (!entry.isDirectory() || entry.name.startsWith('_')) {
@@ -21,6 +23,13 @@ class RouteCoverage {
       found.push(...RouteCoverage.collect(join(dir, entry.name), next));
     }
     return found;
+  }
+
+  static isRouteFile(name: string): boolean {
+    const dot = name.lastIndexOf('.');
+    const base = name.slice(0, dot);
+    const ext = name.slice(dot + 1);
+    return (base === 'page' || base === 'route') && EXTENSIONS.includes(ext);
   }
 
   static toPath(segments: string[]): string {
@@ -53,6 +62,16 @@ describe('route guard coverage (#79)', () => {
   it('strips route groups and skips private folders', () => {
     expect(routes.some((path) => path.includes('('))).toBe(false);
     expect(routes.some((path) => path.split('/').some((part) => part.startsWith('_')))).toBe(false);
+  });
+
+  it('treats page.* and route.* with any page extension as route files', () => {
+    expect(RouteCoverage.isRouteFile('page.js')).toBe(true);
+    expect(RouteCoverage.isRouteFile('route.js')).toBe(true);
+    expect(RouteCoverage.isRouteFile('page.jsx')).toBe(true);
+    expect(RouteCoverage.isRouteFile('route.tsx')).toBe(true);
+    expect(RouteCoverage.isRouteFile('page.ts')).toBe(true);
+    expect(RouteCoverage.isRouteFile('layout.tsx')).toBe(false);
+    expect(RouteCoverage.isRouteFile('page.css')).toBe(false);
   });
 
   it('guards or allowlists every app route', () => {

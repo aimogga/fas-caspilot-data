@@ -277,5 +277,5 @@ Did: `/admin`, `/staff` and `/board` guarded by prefix on a canonical path (deco
 Left: #78 (breadcrumb on encoded URLs), #79 (guard-list check); next #66 cookie flags.
 
 ## 2026-10-12 21:30 (UTC) — Cloud Agent — #79 route guard coverage test
-Did: `lib/auth/route-guard-coverage.test.ts` walks `app/` for page.tsx and route.ts (route groups stripped, `_private` skipped) and fails if any route is not `/`, under a guarded prefix or in `isPublicRoute`; dynamic segments outside a guarded prefix fail; `/reports` asserted to fail. Runs in `pnpm test` inside the required `ci` job.
+Did: `lib/auth/route-guard-coverage.test.ts` walks `app/` for page.* and route.* (.tsx/.ts/.jsx/.js, or next.config `pageExtensions` if set; QA fix) (route groups stripped, `_private` skipped) and fails if any route is not `/`, under a guarded prefix or in `isPublicRoute`; dynamic segments outside a guarded prefix fail; `/reports` asserted to fail. Runs in `pnpm test` inside the required `ci` job.
 Left: QA.
