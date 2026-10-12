@@ -235,3 +235,7 @@ Left: none.
 ## 2026-10-12 17:56 (UTC) — Cloud Agent — PR #56 DS-03 login
 Did: /login in the DS-01c Page with the split layout (one column below 1024), DS-02 wordmark, Show/Hide (aria-pressed), 48px fields and button on mobile, mapped errors with neutral copy and a focused role=alert, missing-config alert without env names, skeleton fallback, sample-card Example chip; e2e at 375/1024/1440 plus layout parity (squash-merged at 7ee6ca0).
 Left: issues #57 (forgot password), #58 (DS-03 follow-ups), #59 (role home after sign-in), #60 (signed-in user on /login).
+
+## 2026-10-12 18:35 (UTC) — Cloud Agent — PR #62 DS-04a role redirect, real 403, session expired
+Did: `/` redirects each role to its home; middleware rewrites denied routes to `/403?from=…` with a real 403 status and cookies kept; expired sessions return to `/login?redirect=…&reason=expired` with an info alert; dev health UI moved to `app/(dev)/health` behind the dev gate; `roleHome` and `hadSession` with unit tests; role-redirect e2e (squash-merged at 21c693b, fixes #59).
+Left: DS-04b pages in PR #64; prefix guards in #63.
