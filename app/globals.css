@@ -280,7 +280,7 @@ body:has(> [data-slot=app-shell]) { padding-inline: 0; }
   [data-slot=sidebar] nav a { justify-content: center; padding-inline: 0; }
 }
 [data-slot=topbar] { position: sticky; top: 0; z-index: 30; display: flex; flex-direction: column; box-sizing: border-box; background: var(--background); border-bottom: 1px solid var(--border); }
-[data-slot=topbar-tools] { display: flex; align-items: center; gap: 12px; box-sizing: border-box; height: 56px; padding-inline: 16px; }
+[data-slot=topbar-tools] { display: flex; align-items: center; gap: 12px; box-sizing: border-box; height: 56px; padding-inline: 12px; }
 [data-slot=topbar-brand] { flex: 1; min-width: 0; }
 [data-slot=topbar-sub] { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; box-sizing: border-box; min-height: 36px; padding: 8px 16px; }
 [data-slot=menu-button] { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; width: 44px; height: 44px; margin: 0; padding: 0; border: 1px solid var(--input); border-radius: var(--radius); background: var(--background); color: var(--foreground); }
