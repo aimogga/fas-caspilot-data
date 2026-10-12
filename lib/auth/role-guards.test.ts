@@ -39,6 +39,7 @@ describe('role-guards', () => {
     expect(isPublicRoute('/api/auth/signout')).toBe(true);
     expect(isPublicRoute('/api/auth/login')).toBe(true);
     expect(isPublicRoute('/api/health')).toBe(true);
+    expect(isPublicRoute('/api/ingest/sahie')).toBe(true);
     expect(isPublicRoute('/ui')).toBe(true);
     expect(isPublicRoute('/health')).toBe(true);
     expect(isPublicRoute('/dev-error')).toBe(true);
@@ -49,6 +50,8 @@ describe('role-guards', () => {
     expect(isPublicRoute('/api/auth/login/')).toBe(false);
     expect(isPublicRoute('/api/auth/loginz')).toBe(false);
     expect(isPublicRoute('/api/health/')).toBe(false);
+    expect(isPublicRoute('/api/ingest/sahie/')).toBe(false);
+    expect(isPublicRoute('/api/ingest')).toBe(false);
     expect(isPublicRoute('/healthz')).toBe(false);
     expect(isPublicRoute('/403/x')).toBe(false);
   });
