@@ -5,8 +5,8 @@ Last updated: 2026-10-12
 ## Summary
 
 - **Done:** 6 of 44 features (14%): F-003, F-101, F-102, F-103, F-104 and F-105.
-- **In progress:** F-601 nightly audit (partly working). DS-02 follow-ups (issue #49).
-- **Next up:** Issue #49 (DS-02 follow-ups: sheet focus-trap, scroll-lock and reduced-motion e2e, hidden nav items), then DS-03 login, then DS-04 403, then Phase 2 starting with F-201 (a record of every data import and its results), then cleanup of open issues #12, #13, #23 and #26.
+- **In progress:** F-601 nightly audit (partly working).
+- **Next up:** DS-03 login, then DS-04 403, then Phase 2 starting with F-201 (a record of every data import and its results), then cleanup of open issues #12, #13, #23 and #26.
 - **Blocked:** None right now.
 
 ## Design system
@@ -20,7 +20,8 @@ Last updated: 2026-10-12
 - **DS-01c** layout and trust primitives: done (PR #37, merged at 4b59f96).
 - DS-02/03/04 spec amendments (adopt DS-01c Page container): done (PR #40, merged at 488bbe6).
 - **DS-02a** signed-in app shell (route move, role nav, desktop sidebar/rail, top bar): done (PR #41, squash-merged at 4176aae).
-- **DS-02b** mobile top bar and nav sheet: done (PR #50, squash-merged at 515e046). Deferred e2e (focus trap, scroll lock, reduced motion) and hidden nav items: issue #49, next up.
+- **DS-02b** mobile menu button and nav sheet (with the sheet-header wordmark; the top-bar wordmark came in #41): done (PR #50, squash-merged at 515e046).
+- DS-02 follow-ups (sheet focus-trap, scroll-lock and reduced-motion e2e, hidden nav items, board crumb "Board dashboard"): done (PR #54, squash-merged at 4f14df6, closes #49).
 - Docs: checklist DS-02a done, F-601 refresh (PR #51, merged at 1f06fb3).
 - Open issue #52: the nightly-audit unit test writes a RED fixture report into the gitignored harness/audits/.
 - Docs follow-ups (design workflow refs, progress entries #42–#47, checklist): done (PR #48, merged at 9aae887).
