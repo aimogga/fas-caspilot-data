@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
-import { hadSession, isPublicRoute, isRouteAllowed, roleHome, signedInLoginTarget, type UserRole } from '@/lib/auth/role-guards';
+import { hadSession, isPublicRoute, isRouteAllowed, matchGuardedPrefix, roleHome, signedInLoginTarget, type UserRole } from '@/lib/auth/role-guards';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -33,7 +33,8 @@ export async function middleware(request: NextRequest) {
     return withCookies(response, NextResponse.redirect(new URL(home, request.url)));
   }
 
-  if (!isRouteAllowed(pathname, userRole)) {
+  const isGuarded = matchGuardedPrefix(pathname) !== null || pathname === '/';
+  if (isGuarded && !isRouteAllowed(pathname, userRole)) {
     const forbidden = new URL('/403', request.url);
     forbidden.searchParams.set('from', pathname);
     return withCookies(response, NextResponse.rewrite(forbidden, { status: 403 }));

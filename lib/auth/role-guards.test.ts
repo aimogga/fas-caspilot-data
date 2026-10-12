@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isRouteAllowed, getAllowedRoles, isPublicRoute, safeRedirect, roleHome, hadSession, signedInLoginTarget, type UserRole } from './role-guards';
+import { isRouteAllowed, getAllowedRoles, isPublicRoute, safeRedirect, roleHome, hadSession, signedInLoginTarget, matchGuardedPrefix, type UserRole } from './role-guards';
 
 describe('role-guards', () => {
   const routes = ['/', '/staff', '/admin', '/board', '/login'];
@@ -21,6 +21,17 @@ describe('role-guards', () => {
     expect(getAllowedRoles('/')).toEqual(['admin', 'staff', 'board_viewer']);
     expect(getAllowedRoles('/staff')).toEqual(['admin', 'staff']);
     expect(getAllowedRoles('/admin')).toEqual(['admin']);
+    expect(getAllowedRoles('/staff/reports')).toEqual(['admin', 'staff']);
+    expect(getAllowedRoles('/administrator')).toEqual([]);
+  });
+  it('applies the role map to nested prefix paths', () => {
+    expect(isRouteAllowed('/staff/reports', 'staff')).toBe(true);
+    expect(isRouteAllowed('/staff/reports', 'admin')).toBe(true);
+    expect(isRouteAllowed('/staff/reports', 'board_viewer')).toBe(false);
+    expect(isRouteAllowed('/admin/users', 'admin')).toBe(true);
+    expect(isRouteAllowed('/admin/users', 'staff')).toBe(false);
+    expect(isRouteAllowed('/board/packets', 'board_viewer')).toBe(true);
+    expect(isRouteAllowed('/administrator', 'admin')).toBe(false);
   });
   it('allowlists public routes only', () => {
     expect(isPublicRoute('/login')).toBe(true);
@@ -90,6 +101,55 @@ describe('role-guards', () => {
       [null, null, '/403'],
     ] as const)('%s with redirect %j → %j', (role, redirect, expected) => {
       expect(signedInLoginTarget(role, redirect, origin)).toBe(expected);
+    });
+  });
+  describe('matchGuardedPrefix (#63)', () => {
+    it.each([
+      ['/admin', '/admin'],
+      ['/admin/', '/admin'],
+      ['/admin/users', '/admin'],
+      ['/admin/users/1', '/admin'],
+      ['/staff', '/staff'],
+      ['/staff/', '/staff'],
+      ['/staff/cases/new', '/staff'],
+      ['/board', '/board'],
+      ['/board/', '/board'],
+      ['/board/packets', '/board'],
+    ] as const)('known prefix %j → %j', (path, expected) => {
+      expect(matchGuardedPrefix(path)).toBe(expected);
+    });
+    it.each([
+      '/',
+      '/login',
+      '/403',
+      '/no-such-page',
+      '/reports',
+      '/api/health',
+    ])('unknown path %j → null', (path) => {
+      expect(matchGuardedPrefix(path)).toBeNull();
+    });
+    it.each([
+      '/administrator',
+      '/staffing',
+      '/boardroom',
+      '/admin2',
+      '/admin-tools',
+      '/staff_home',
+    ])('look-alike path %j → null', (path) => {
+      expect(matchGuardedPrefix(path)).toBeNull();
+    });
+    it.each([
+      '/Admin',
+      '/ADMIN',
+      '/Staff',
+      '/Board',
+      '/Admin/users',
+    ])('does not fold letter case (%j)', (path) => {
+      expect(matchGuardedPrefix(path)).toBeNull();
+    });
+    it('keeps matching when only later segments differ in case', () => {
+      expect(matchGuardedPrefix('/staff/Reports')).toBe('/staff');
+      expect(matchGuardedPrefix('/admin/Users')).toBe('/admin');
     });
   });
 });

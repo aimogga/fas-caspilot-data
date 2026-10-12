@@ -3,11 +3,32 @@ const ALL: UserRole[] = ['admin', 'staff', 'board_viewer'];
 const RULES: Record<string, UserRole[]> = {
   '/login': ALL, '/': ALL, '/staff': ['admin', 'staff'], '/admin': ['admin'], '/board': ALL,
 };
+const GUARDED_PREFIXES = ['/admin', '/staff', '/board'] as const;
+export type GuardedPrefix = (typeof GUARDED_PREFIXES)[number];
+
+/** Role-home prefix on a path segment (#63). Case-sensitive, like RULES. */
+export function matchGuardedPrefix(path: string): GuardedPrefix | null {
+  for (const prefix of GUARDED_PREFIXES) {
+    if (path === prefix) {
+      return prefix;
+    }
+    if (path.startsWith(`${prefix}/`)) {
+      return prefix;
+    }
+  }
+  return null;
+}
+
 export function isRouteAllowed(path: string, role: UserRole | null): boolean {
-  return !!role && (RULES[path]?.includes(role) ?? false);
+  if (!role) {
+    return false;
+  }
+  const key = matchGuardedPrefix(path) ?? path;
+  return RULES[key]?.includes(role) ?? false;
 }
 export function getAllowedRoles(path: string): UserRole[] {
-  return RULES[path] ?? [];
+  const key = matchGuardedPrefix(path) ?? path;
+  return RULES[key] ?? [];
 }
 const HOME: Record<UserRole, string> = { admin: '/admin', staff: '/staff', board_viewer: '/board' };
 export function roleHome(role: UserRole | null): string | null {
