@@ -267,3 +267,15 @@ Left: the fast path matches all of `docs/`, so non-Markdown files there also ski
 ## 2026-10-12 20:07 (UTC) — Cloud Agent — PR #69 Copilot routing
 Did: `.github/copilot-instructions.md`, `harness/COPILOT_ROUTING.md`, task packet George-gated list with real FAS data and escalation path, UI PR evidence gates, focus ring per DS-01b, AGENTS.md renamed to FAS Evidence, concurrency one Cursor cloud agent plus one Copilot agent (merged at 637d40f).
 Left: D-009 budget caps and the open money questions for George.
+
+## 2026-10-12 20:14 (UTC) — Cloud Agent — PR #75 checklist #68, #72, #69
+Did: checklist and progress entries for #68, #72 and #69 with API merge times; concurrency sentence in DESIGN_WORKFLOW step 2 (PR #75 merged at 4a27989).
+Left: none.
+
+## 2026-10-12 21:13 (UTC) — Cloud Agent — PR #76 prefix route guards
+Did: `/admin`, `/staff` and `/board` guarded by prefix on a canonical path (decoded, lowercased, slashes collapsed, dot segments resolved); unknown paths reach 404; backslash and `//` tricks return 400; no-role users get a real 403 outside `/403`, `/login` and sign-out; unit and e2e route-guard tests (PR #76 merged at 3125135, closes #63).
+Left: #78 (breadcrumb on encoded URLs), #79 (guard-list check); next #66 cookie flags.
+
+## 2026-10-12 21:30 (UTC) — Cloud Agent — #79 route guard coverage test
+Did: `lib/auth/route-guard-coverage.test.ts` walks `app/` for page.* and route.* (.tsx/.ts/.jsx/.js, or next.config `pageExtensions` if set; QA fix) (route groups stripped, `_private` skipped) and fails if any route is not `/`, under a guarded prefix or in `isPublicRoute`; dynamic segments outside a guarded prefix fail; `/reports` asserted to fail. Runs in `pnpm test` inside the required `ci` job.
+Left: QA.

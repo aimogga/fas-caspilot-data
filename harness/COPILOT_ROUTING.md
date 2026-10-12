@@ -58,6 +58,8 @@ Current state, pending George (D-009 open): Cursor is on the $20 plan with $0 on
 - Never approve if the diff touches `.github/workflows/`, auth, migrations or secrets; close the PR instead.
 - Keep the repo setting "Require approval for workflow runs" ON.
 - Until approved, `ci` and `secret-scan` stay pending and the ruleset blocks merge (intended).
+- Each Copilot PR gets its own board row; once its workflow runs are approved it moves Working, then Watching 1/3, 2/3, 3/3, then Ready for review.
+- It is marked Done only when merged.
 
 ## Budget thresholds (Pending George, D-009 open)
 Nothing below is settled: caps, model choice and thresholds are proposals until George decides D-009.

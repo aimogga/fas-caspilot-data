@@ -6,7 +6,7 @@ Last updated: 2026-10-12
 
 - **Done:** 6 of 44 features (14%): F-003, F-101, F-102, F-103, F-104 and F-105.
 - **In progress:** F-601 nightly audit (partly working).
-- **Next up:** pre-F-201 hardening (#63 prefix route guards, #66 session cookie flags), then Phase 2 starting with F-201 (a record of every data import and its results), then cleanup of open issues #12, #13, #23 and #26.
+- **Next up:** #66 cookie flags (in progress), then F-201.
 - **Blocked:** None right now.
 
 ## Design system
@@ -32,14 +32,18 @@ Last updated: 2026-10-12
   - #59: after sign-in every role lands on / instead of its home (closed by PR #62).
   - #60: a signed-in user visiting /login sees the form (closed by PR #71).
 - **DS-04** 403/404/error and role redirect: done. DS-04a role redirect, real 403 status, session expired (PR #62, squash-merged at 21c693b, closes #59); DS-04b 403, 404 and error pages (PR #64, squash-merged at b69df8b).
-- DS-04 follow-up issues (open):
-  - #63: prefix-based route guards so unknown paths can 404 (before pilot).
+- DS-04 follow-up issues:
+  - #63: prefix-based route guards so unknown paths can 404 (closed by PR #76).
   - #65: DS-04 design follow-ups (non-blocking).
   - #66: auth hardening: Supabase session cookie isn't HttpOnly or Secure.
   - #67: DS-04 QA follow-ups: no-role e2e, parity entries, area names on 403.
 - Docs: checklist DS-04 done, follow-ups, next #60 (PR #68, merged at 7291b82).
 - CI: per-PR concurrency and docs-only fast path (PR #72, merged at 1f1e7ab).
 - Copilot routing, instructions and task packet gates (PR #69, merged at 637d40f).
+- Auth: prefix-based route guards so unknown paths 404 (PR #76 merged at 3125135, closes #63).
+- #76 follow-up issues (open):
+  - #78: breadcrumb shows "FAS Evidence" on encoded URLs like /%61dmin.
+  - #79: guard-list check: fail on unguarded top-level routes.
 
 ## Decisions
 
