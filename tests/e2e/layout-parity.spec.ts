@@ -86,3 +86,24 @@ test("existing screens use the shell Page layout", async ({ page }) => {
     }
   }
 });
+
+async function signInAs(page: Page, email: string) {
+  await page.goto("/login");
+  await page.fill("#email", email);
+  await page.fill("#password", "testpass123");
+  await Promise.all([page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 10000 }), page.click("button[type=submit]")]);
+}
+
+test("signed-in 404, signed-in error and the / redirect use the shell Page layout", async ({ page }) => {
+  await signInAs(page, "admin@example.test");
+  for (const path of ["/dev-error?kind=notfound", "/dev-error", "/"] as const) {
+    for (const width of [375, 800, 1024, 1280, 1440] as const) {
+      await page.setViewportSize({ width, height: 812 });
+      await page.goto(path);
+      const got = await pageBox(page);
+      const exp = SHELL[width];
+      expect(got, `${path} @ ${width}`).toMatchObject({ left: exp.left, width: exp.width, scroll: width });
+      if (exp.container) expect(got?.container, `${path} container @ ${width}`).toBe(exp.container);
+    }
+  }
+});

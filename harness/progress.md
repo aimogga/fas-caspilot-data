@@ -303,3 +303,11 @@ Left: #84 (login CSRF and cookie Max-Age), #85 (sign-in unavailable message), #8
 ## 2026-10-12 22:00 (UTC) — Engineer Supivisor Bot — checklist #81 and #82
 Did: checklist and progress for #81 and #82 (#66 done); #61 entry sha moved to its heading; next F-201, F-202 (#83) in progress by Engineer Bot; #77 Copilot pilot blocked on #65.
 Left: none.
+
+## 2026-10-12 22:05 (UTC) — Cloud Agent — #65 error page shell layout
+Did: signed-in `app/error.tsx` uses `ErrorFrame` → `ShellFrame` so the content area matches the role shell (80/696 at 800; sidebar from 1024; 1200 max). Signed-out stays on `SignedOutFrame`. Brought PR #77's signed-in 404/error/`/` layout-parity assertion.
+Left: CI + secret-scan, then ready.
+
+## 2026-10-12 22:40 (UTC) — Cloud Agent — #65 error frame review fixes
+Did: `loadErrorViewer` returns email; `ErrorFrame` passes `user.email ?? "Signed in"` like `AppShell`. Session reject or 4s timeout falls back to `SignedOutFrame` (`lib/status/error-frame.test.ts`). Did not touch the signed-out bar or `/403` copy (#91).
+Left: CI + secret-scan.
