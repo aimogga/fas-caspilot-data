@@ -296,7 +296,8 @@ body:has(> [data-slot=app-shell]) { padding-inline: 0; }
 [data-slot=user-menu][open] > div { position: absolute; top: 100%; right: 0; z-index: 40; display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; width: max-content; max-width: calc(100vw - 32px); padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--popover); color: var(--popover-foreground); box-shadow: var(--shadow-md); }
 [data-slot=user-menu] p { margin: 0; }
 @media (min-width: 768px) {
-  [data-slot=menu-button], [data-slot=topbar-brand] { display: none; }
+  [data-slot=topbar-brand] { display: none; }
+  [data-slot=menu-button] { display: none; }
   [data-slot=topbar] { flex-direction: row; align-items: center; gap: 12px; min-height: 56px; padding-inline: 16px; }
   [data-slot=topbar-tools] { display: contents; }
   [data-slot=topbar-sub] { flex: 1; order: -1; min-height: 0; padding: 0; }

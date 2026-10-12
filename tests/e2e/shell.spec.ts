@@ -40,6 +40,7 @@ test("role nav, mobile sheet, and shell screenshots", async ({ page }) => {
   await signIn(page, "admin@example.test");
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/staff");
+  await expect(page.locator("[data-slot=topbar-brand] [data-slot=wordmark]")).toBeVisible();
   const menu = page.getByRole("button", { name: "Open navigation" });
   const sheet = page.locator("#nav-sheet");
   await expect(menu).toHaveAttribute("aria-expanded", "false");
