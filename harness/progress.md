@@ -279,3 +279,7 @@ Left: #78 (breadcrumb on encoded URLs), #79 (guard-list check); next #66 cookie 
 ## 2026-10-12 21:30 (UTC) — Cloud Agent — #79 route guard coverage test
 Did: `lib/auth/route-guard-coverage.test.ts` walks `app/` for page.* and route.* (.tsx/.ts/.jsx/.js, or next.config `pageExtensions` if set; QA fix) (route groups stripped, `_private` skipped) and fails if any route is not `/`, under a guarded prefix or in `isPublicRoute`; dynamic segments outside a guarded prefix fail; `/reports` asserted to fail. Runs in `pnpm test` inside the required `ci` job.
 Left: QA.
+
+## 2026-10-12 22:05 (UTC) — Cloud Agent — #65 error page shell layout
+Did: signed-in `app/error.tsx` uses `ErrorFrame` → `ShellFrame` so the content area matches the role shell (80/696 at 800; sidebar from 1024; 1200 max). Signed-out stays on `SignedOutFrame`. Brought PR #77's signed-in 404/error/`/` layout-parity assertion.
+Left: CI + secret-scan, then ready.
