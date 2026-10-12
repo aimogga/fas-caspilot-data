@@ -1,11 +1,17 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
-import { hadSession, isPublicRoute, isRouteAllowed, roleHome, type UserRole } from '@/lib/auth/role-guards';
+import { hadSession, isPublicRoute, isRouteAllowed, roleHome, signedInLoginTarget, type UserRole } from '@/lib/auth/role-guards';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const { response, user } = await updateSession(request);
+
+  if (pathname === '/login' && user) {
+    const role = (user.app_metadata?.role as UserRole) || null;
+    const target = signedInLoginTarget(role, request.nextUrl.searchParams.get('redirect'), request.nextUrl.origin);
+    return withCookies(response, NextResponse.redirect(new URL(target, request.url)));
+  }
 
   if (isPublicRoute(pathname)) {
     return response;

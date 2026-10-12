@@ -35,3 +35,12 @@ export function safeRedirect(redirect: unknown, origin: string): string {
     return '/';
   }
 }
+
+/** Where a signed-in user on /login goes (#60): a safe ?redirect= or the role home; no role goes to /403. */
+export function signedInLoginTarget(role: UserRole | null, redirect: unknown, origin: string): string {
+  const home = roleHome(role);
+  if (!home) return '/403';
+  const target = safeRedirect(redirect, origin);
+  if (target === '/' || target === '/login' || target.startsWith('/login?') || target.startsWith('/login#')) return home;
+  return target;
+}
