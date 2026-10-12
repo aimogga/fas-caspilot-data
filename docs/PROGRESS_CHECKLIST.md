@@ -37,6 +37,9 @@ Last updated: 2026-10-12
   - #65: DS-04 design follow-ups (non-blocking).
   - #66: auth hardening: Supabase session cookie isn't HttpOnly or Secure.
   - #67: DS-04 QA follow-ups: no-role e2e, parity entries, area names on 403.
+- Docs: checklist DS-04 done, follow-ups, next #60 (PR #68, merged at 7291b82).
+- CI: per-PR concurrency and docs-only fast path (PR #72, merged at 1f1e7ab).
+- Copilot routing, instructions and task packet gates (PR #69, merged at 637d40f).
 
 ## Decisions
 

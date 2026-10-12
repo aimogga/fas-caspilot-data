@@ -11,7 +11,7 @@
 
 ## Steps
 1. **Spec first.** Design commits `docs/design/specs/<ID>.md` (scope, files, acceptance criteria, states, a11y, line budget) before any code. An engineer starts only from a merged or linked spec.
-2. **One packet, one agent, one PR.** Only one cloud agent works at a time. The hand-written diff stays at 400 lines or fewer (D-012: only lockfiles and *untouched* generator output, e.g. unmodified `shadcn add` files, are excluded, and they are listed by name. Any hand edit to a generated file counts toward the 400 lines, and so does the whole file once it is edited). The PR body links the spec and maps each acceptance criterion to its evidence.
+2. **One packet, one agent, one PR.** At most one Cursor cloud agent plus one Copilot agent at a time, never on the same packet or files. The hand-written diff stays at 400 lines or fewer (D-012: only lockfiles and *untouched* generator output, e.g. unmodified `shadcn add` files, are excluded, and they are listed by name. Any hand edit to a generated file counts toward the 400 lines, and so does the whole file once it is edited). The PR body links the spec and maps each acceptance criterion to its evidence.
 3. **Evidence on the PR:**
    - Playwright screenshots at **375, 1024 and 1440** wide (plus print, where relevant); UI PRs with a nav add a 375 shot with the mobile nav sheet open;
    - an axe-core result;
