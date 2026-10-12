@@ -85,4 +85,6 @@ Commit working code only. If you must stop mid-feature, leave the code compiling
 - There is no local Supabase there by default; run the smoke check and leave `test:db`/`test:e2e` to CI.
 - Only issues marked `Route: Copilot` go to Copilot; see `harness/COPILOT_ROUTING.md`.
 - Copilot never touches workflows, rulesets, auth/middleware, migrations/RLS, n8n or real data.
+- Copilot never makes money, plan or billing changes, sends email in George's name, or edits acceptance criteria.
+- Needs-George items stop and go to George through the Engineer Supervisor and Chief of staff.
 - Same gates as Cursor: D-012 cap, QA PASS and DESIGN APPROVED at the same head, CI and secret scan green.

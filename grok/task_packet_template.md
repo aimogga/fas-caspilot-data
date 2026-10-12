@@ -72,6 +72,8 @@ One sentence.
 - One statement per line; no line packing.
 - Synthetic data only; no secrets.
 - Don't touch .github/workflows, ruleset, auth/middleware, supabase/migrations, n8n.
+- No money, plan or billing changes, no email in George's name, no acceptance-criteria edits.
+- If one of those is needed, stop: it goes to George through the Engineer Supervisor and Chief of staff.
 
 ## Out of scope
 - ...

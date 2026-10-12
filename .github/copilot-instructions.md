@@ -26,9 +26,14 @@ This file lists the repo rules a Copilot agent would not otherwise see.
 - Auth and sessions: `middleware.ts`, `lib/supabase/`, login/session code
 - `supabase/migrations/` and RLS policies
 - `n8n/`
-- `harness/DECISIONS.md`, statuses in `harness/feature_list.json`, acceptance criteria
+- `harness/DECISIONS.md`, statuses in `harness/feature_list.json`
+- Acceptance-criteria edits
+- Money, plan or billing changes
+- Email in George's name
 
-If the task seems to need one of these, stop and ask in the PR.
+If the task seems to need one of these, stop.
+Don't work around it and don't decide it in the PR.
+Say in the PR that it needs George; the Engineer Supervisor takes it to George through Chief of staff.
 
 ## UI rules
 See `docs/DESIGN_WORKFLOW.md` for the full design-review checklist.

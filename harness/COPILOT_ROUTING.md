@@ -52,7 +52,8 @@ Cursor is on the $20 plan: one cloud agent at a time, $0 on-demand.
 - Keep the repo setting "Require approval for workflow runs" ON.
 - Until approved, `ci` and `secret-scan` stay pending and the ruleset blocks merge (intended).
 
-## Budget thresholds
+## Budget thresholds (Pending George, D-009 open)
+Nothing below is settled: caps, model choice and thresholds are proposals until George decides D-009.
 - Billing is in GitHub AI Credits (1 credit = $0.01); Pro includes 1,500/month (1,000 base + 500 flex).
 - Monthly caps: ≤ 8 Copilot agent sessions, ≤ 10 Copilot code reviews.
 - Model: Auto (10% discount) or a mid-price model; avoid the top tier.
