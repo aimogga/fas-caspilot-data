@@ -6,7 +6,7 @@ Last updated: 2026-10-12
 
 - **Done:** 6 of 44 features (14%): F-003, F-101, F-102, F-103, F-104 and F-105.
 - **In progress:** F-601 nightly audit (partly working).
-- **Next up:** #60 (signed-in user on /login), then Phase 2 starting with F-201 (a record of every data import and its results), then cleanup of open issues #12, #13, #23 and #26.
+- **Next up:** pre-F-201 hardening (#63 prefix route guards, #66 session cookie flags), then Phase 2 starting with F-201 (a record of every data import and its results), then cleanup of open issues #12, #13, #23 and #26.
 - **Blocked:** None right now.
 
 ## Design system
@@ -30,7 +30,7 @@ Last updated: 2026-10-12
   - #57: Forgot password route (the link stays hidden until it exists).
   - #58: DS-03 follow-ups: Example chip, alert title, rate-limit copy (the Example chip and neutral rate-limit copy shipped in #56).
   - #59: after sign-in every role lands on / instead of its home (closed by PR #62).
-  - #60: a signed-in user visiting /login sees the form.
+  - #60: a signed-in user visiting /login sees the form (closed by PR #71).
 - **DS-04** 403/404/error and role redirect: done. DS-04a role redirect, real 403 status, session expired (PR #62, squash-merged at 21c693b, closes #59); DS-04b 403, 404 and error pages (PR #64, squash-merged at b69df8b).
 - DS-04 follow-up issues (open):
   - #63: prefix-based route guards so unknown paths can 404 (before pilot).

@@ -243,3 +243,15 @@ Left: DS-04b pages in PR #64; prefix guards in #63.
 ## 2026-10-12 19:15 (UTC) — Cloud Agent — PR #64 DS-04b 403, 404 and error pages
 Did: shared status card, signed-out 56px wordmark bar, 403 in the shell with an "Account not set up" variant and plain-text guidance "Ask your FAS admin to change your role.", not-found/error/global-error pages (reference only, no stack or env names), dev-only /dev-error route, global body padding removed, layout parity for /403 and signed-out screens, status-pages e2e at 375/1024/1440 with axe; DS-04 spec records the a/b split and deviations (squash-merged at b69df8b).
 Left: #63, #65, #66, #67; next #60.
+
+## 2026-10-12 20:00 (UTC) — Cloud Agent — PR #61 checklist DS-03
+Did: checklist DS-03 login done (PR #56 at 7ee6ca0), next up DS-04, follow-up issues #57–#60 listed; progress entry for PR #56 (merged at 7506eb5).
+Left: none.
+
+## 2026-10-12 20:00 (UTC) — Cloud Agent — PR #70 copilot-setup-steps workflow
+Did: `.github/workflows/copilot-setup-steps.yml` for the Copilot cloud agent (Node 22, pnpm, frozen install, Playwright Chromium; read-only permissions, no secrets; does not touch ci) (squash-merged at 881f7ae).
+Left: none.
+
+## 2026-10-12 20:00 (UTC) — Cloud Agent — PR #71 signed-in user on /login
+Did: middleware redirects a signed-in user on /login to a safe ?redirect= or the role home; no role goes to /403 "Account not set up"; `signedInLoginTarget` unit tests; e2e at 375 and 1440 (squash-merged at d4e1541, fixes #60).
+Left: none.
