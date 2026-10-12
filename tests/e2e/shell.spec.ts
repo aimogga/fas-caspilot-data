@@ -10,7 +10,7 @@ async function signIn(page: Page, email: string) {
 }
 const axe = (page: Page) => new AxeBuilder({ page }).analyze().then((r) => r.violations.filter((v) => v.impact === "serious" || v.impact === "critical"));
 
-test("role nav and shell screenshots", async ({ page }) => {
+test("role nav, mobile sheet, and shell screenshots", async ({ page }) => {
   const cases = [
     ["admin@example.test", "/admin", ["Home", "Overview"], "Admin", false, "Admin · Overview"],
     ["staff@example.test", "/staff", ["Home"], "Staff", false, "Home"],
@@ -41,6 +41,38 @@ test("role nav and shell screenshots", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/staff");
   await expect(page.locator("[data-slot=topbar-brand] [data-slot=wordmark]")).toBeVisible();
+  const menu = page.getByRole("button", { name: "Open navigation" });
+  const sheet = page.locator("#nav-sheet");
+  await expect(menu).toHaveAttribute("aria-expanded", "false");
+  await expect(menu).toHaveAttribute("aria-controls", "nav-sheet");
+  expect((await menu.boundingBox())!.width).toBeGreaterThanOrEqual(44);
+  expect(await axe(page)).toEqual([]);
+  await page.screenshot({ path: `${ART}/shell-staff-375-closed.png`, fullPage: true });
+  await menu.click();
+  await expect(sheet).toBeVisible();
+  await expect(page.locator("#nav-sheet nav a").first()).toBeFocused();
+  expect(await axe(page)).toEqual([]);
+  const minTarget = await page.evaluate(() => {
+    const visible = [...document.querySelectorAll("a, button, summary")].filter((el) => {
+      const r = el.getBoundingClientRect();
+      return getComputedStyle(el).display !== "none" && r.width > 0 && r.height > 0;
+    });
+    return Math.min(...visible.map((el) => Math.min(el.getBoundingClientRect().width, el.getBoundingClientRect().height)));
+  });
+  expect(minTarget).toBeGreaterThanOrEqual(44);
+  await page.screenshot({ path: `${ART}/shell-staff-375-open.png`, fullPage: true });
+  const closers = [
+    () => page.keyboard.press("Escape"),
+    () => page.mouse.click(360, 400),
+    () => sheet.getByRole("button", { name: "Close" }).click(),
+  ];
+  for (const close of closers) {
+    if (!(await sheet.count())) await menu.click();
+    await expect(sheet).toBeVisible();
+    await close();
+    await expect(sheet).toHaveCount(0);
+    await expect(menu).toBeFocused();
+  }
   for (const width of [800, 1024]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/staff");
