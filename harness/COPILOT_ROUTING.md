@@ -2,7 +2,7 @@
 
 Status: proposed, 2026-10-12.
 Goal: send small, well-specified work to the GitHub Copilot cloud agent (aimogga, Copilot Pro) so Cursor credits go to complex packets.
-Cursor is on the $20 plan: one cloud agent at a time, $0 on-demand.
+Current state, pending George (D-009 open): Cursor is on the $20 plan with $0 on-demand.
 
 ## Routing rule
 ### To Copilot
@@ -61,12 +61,12 @@ Cursor is on the $20 plan: one cloud agent at a time, $0 on-demand.
 
 ## Budget thresholds (Pending George, D-009 open)
 Nothing below is settled: caps, model choice and thresholds are proposals until George decides D-009.
-- Billing is in GitHub AI Credits (1 credit = $0.01); Pro includes 1,500/month (1,000 base + 500 flex).
+- Current understanding, pending George (open question 1): billing is in GitHub AI Credits (1 credit = $0.01); Pro includes 1,500/month (1,000 base + 500 flex).
 - Monthly caps: ≤ 8 Copilot agent sessions, ≤ 10 Copilot code reviews.
 - Model: Auto (10% discount) or a mid-price model; avoid the top tier.
 - At 75% of credits: pause Copilot code reviews.
 - At 90%: no new Copilot agent sessions until the 1st (UTC).
-- Overage stays $0.
+- Overage is $0 today; that stays the current state, pending George (D-009 open).
 - Actions minutes: GitHub Pro includes 3,000/month across all aimogga private repos.
 - The October pace was ~3,000/month before Copilot.
 - Agent sessions and reviews use Actions minutes too.

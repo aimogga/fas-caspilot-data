@@ -30,6 +30,7 @@ This file lists the repo rules a Copilot agent would not otherwise see.
 - Acceptance-criteria edits
 - Money, plan or billing changes
 - Email in George's name
+- Real FAS data
 
 If the task seems to need one of these, stop.
 Don't work around it and don't decide it in the PR.

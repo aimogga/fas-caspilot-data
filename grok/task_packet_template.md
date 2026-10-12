@@ -81,6 +81,7 @@ One sentence.
   - Acceptance-criteria edits
   - Money, plan or billing changes
   - Email in George's name
+  - Real FAS data
 - If one of those is needed, stop; don't work around it and don't decide it in the PR.
 - Say so in the PR; the Engineer Supervisor takes it to George through Chief of staff.
 
