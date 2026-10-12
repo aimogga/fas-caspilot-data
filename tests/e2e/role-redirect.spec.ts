@@ -59,3 +59,27 @@ test("a fresh visit without a session shows no expired alert", async ({ page }) 
   await expect(page).toHaveURL(/\/login\?redirect=%2Fstaff$/);
   await expect(page.locator("[data-slot=alert][data-reason=expired]")).toHaveCount(0);
 });
+
+for (const width of [375, 1440] as const) {
+  test(`a signed-in user on /login goes to their home or a safe redirect at ${width} (#60)`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await signIn(page, "staff@example.test");
+    await page.goto("/login");
+    await expect(page).toHaveURL(/\/staff$/);
+    await expect(page.locator("#email")).toHaveCount(0);
+    await page.goto("/login?redirect=%2Fboard");
+    await expect(page).toHaveURL(/\/board$/);
+    await page.goto("/login?redirect=https%3A%2F%2Fevil.example%2F");
+    await expect(page).toHaveURL(/\/staff$/);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+  });
+
+  test(`a signed-in user with no role on /login sees Account not set up at ${width} (#60)`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await signIn(page, "norole@example.test");
+    await page.goto("/login");
+    await expect(page).toHaveURL(/\/403$/);
+    await expect(page.locator("[data-slot=status-eyebrow]")).toHaveText("Error 403 · Account not set up");
+    await expect(page.locator("#email")).toHaveCount(0);
+  });
+}

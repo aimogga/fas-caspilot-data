@@ -1,0 +1,45 @@
+name: Copilot Setup Steps
+
+# Prepares the GitHub Copilot cloud agent's environment.
+# Runs only when this file changes, or by hand, so it costs few Actions minutes.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  # The job must be named copilot-setup-steps or Copilot ignores it.
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+
+      # The repo uses pnpm (pnpm-lock.yaml), so pnpm install --frozen-lockfile is the npm ci equivalent.
+      - name: Install pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 10.33.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Chromium only, matching ci; skip the other browsers to save minutes.
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isRouteAllowed, getAllowedRoles, isPublicRoute, safeRedirect, roleHome, hadSession, type UserRole } from './role-guards';
+import { isRouteAllowed, getAllowedRoles, isPublicRoute, safeRedirect, roleHome, hadSession, signedInLoginTarget, type UserRole } from './role-guards';
 
 describe('role-guards', () => {
   const routes = ['/', '/staff', '/admin', '/board', '/login'];
@@ -72,5 +72,24 @@ describe('role-guards', () => {
     ['/board?x=1#y', '/board?x=1#y'],
   ])('safeRedirect(%j) → %j', (input, expected) => {
     expect(safeRedirect(input, origin)).toBe(expected);
+  });
+  describe('signedInLoginTarget (#60)', () => {
+    const origin = 'http://localhost:3000';
+    it.each([
+      ['admin', null, '/admin'],
+      ['staff', null, '/staff'],
+      ['board_viewer', null, '/board'],
+      ['board_viewer', '/board?tab=1', '/board?tab=1'],
+      ['staff', '/admin', '/admin'],
+      ['admin', 'https://evil.example/x', '/admin'],
+      ['admin', '//evil.example', '/admin'],
+      ['staff', '/login', '/staff'],
+      ['staff', '/login?redirect=%2Fstaff', '/staff'],
+      ['staff', '/', '/staff'],
+      [null, '/staff', '/403'],
+      [null, null, '/403'],
+    ] as const)('%s with redirect %j → %j', (role, redirect, expected) => {
+      expect(signedInLoginTarget(role, redirect, origin)).toBe(expected);
+    });
   });
 });
