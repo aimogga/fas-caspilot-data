@@ -231,3 +231,7 @@ Left: scroll-lock e2e should assert actual scroll (#55).
 ## 2026-10-12 17:00 (UTC) — Cloud Agent — PR #53 checklist DS-02b
 Did: checklist DS-02b done (PR #50), DS-02 follow-ups done (PR #54, closes #49), PR #51 and issue #52 noted, next up DS-03; progress entries for PR #50, PR #51 and PR #54 (merged at af9a3ee).
 Left: none.
+
+## 2026-10-12 17:56 (UTC) — Cloud Agent — PR #56 DS-03 login
+Did: /login in the DS-01c Page with the split layout (one column below 1024), DS-02 wordmark, Show/Hide (aria-pressed), 48px fields and button on mobile, mapped errors with neutral copy and a focused role=alert, missing-config alert without env names, skeleton fallback, sample-card Example chip; e2e at 375/1024/1440 plus layout parity (squash-merged at 7ee6ca0).
+Left: issues #57 (forgot password), #58 (DS-03 follow-ups), #59 (role home after sign-in), #60 (signed-in user on /login).
