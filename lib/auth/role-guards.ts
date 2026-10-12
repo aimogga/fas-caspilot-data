@@ -55,7 +55,14 @@ export function canonicalizePath(path: string): string | null {
   if (/[\u0000-\u001F\u007F]/.test(decoded)) {
     return null;
   }
-  return resolvePathSegments(decoded.toLowerCase());
+  if (decoded.includes('\\')) {
+    return null;
+  }
+  const resolved = resolvePathSegments(decoded.toLowerCase());
+  if (resolved.includes('\\') || resolved.startsWith('//')) {
+    return null;
+  }
+  return resolved;
 }
 
 /** Role-home prefix on a path segment (#63). Callers pass a canonical path. */

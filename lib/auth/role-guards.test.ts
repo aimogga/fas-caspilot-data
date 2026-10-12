@@ -164,6 +164,9 @@ describe('role-guards', () => {
       ['/./admin', '/admin'],
       ['/x/../admin', '/admin'],
       ['/admin/', '/admin'],
+      ['/a%20b', '/a b'],
+      ['/caf%C3%A9', '/café'],
+      ['/%2F%2Fevil.com', '/evil.com'],
     ] as const)('%j → %j', (input, expected) => {
       expect(canonicalizePath(input)).toBe(expected);
     });
@@ -171,6 +174,14 @@ describe('role-guards', () => {
       expect(canonicalizePath('/%')).toBeNull();
       expect(canonicalizePath('/%zz')).toBeNull();
       expect(isRouteAllowed('/%zz', 'admin')).toBe(false);
+    });
+    it.each([
+      '/%5C%5Cevil.com',
+      '/%2F%5Cevil.com',
+      '/%5Cevil.com',
+      '/%5C/evil.com',
+    ])('null for backslash trick %j', (path) => {
+      expect(canonicalizePath(path)).toBeNull();
     });
     it('guards encoded prefixes with the role map', () => {
       expect(isRouteAllowed('/%61dmin', 'admin')).toBe(true);

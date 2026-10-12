@@ -24,16 +24,7 @@ export async function middleware(request: NextRequest) {
   const userRole = (user?.app_metadata?.role as UserRole) || null;
 
   if (canonical === null) {
-    if (!user) {
-      return toLogin(request, rawPath);
-    }
-    return deny(request, response, rawPath);
-  }
-
-  if (canonical !== rawPath) {
-    const dest = new URL(canonical, request.url);
-    dest.search = request.nextUrl.search;
-    return withCookies(response, NextResponse.redirect(dest, 308));
+    return withCookies(response, new NextResponse(null, { status: 400 }));
   }
 
   if (canonical === '/login' && user) {
@@ -61,6 +52,12 @@ export async function middleware(request: NextRequest) {
   const isGuarded = matchGuardedPrefix(canonical) !== null || canonical === '/';
   if (isGuarded && !isRouteAllowed(canonical, userRole)) {
     return deny(request, response, rawPath);
+  }
+
+  if (canonical !== rawPath) {
+    const dest = request.nextUrl.clone();
+    dest.pathname = canonical;
+    return withCookies(response, NextResponse.rewrite(dest));
   }
 
   return response;

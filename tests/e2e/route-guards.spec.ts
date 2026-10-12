@@ -48,31 +48,37 @@ test('norole on each guarded prefix gets 403', async ({ page }) => {
 
 test('a non-admin on an encoded admin path gets 403', async ({ page }) => {
   await signIn(page, 'staff@example.test');
-  const probe = await page.request.get('/%61dmin', { maxRedirects: 0 });
-  expect(probe.status()).toBe(308);
-  expect(probe.headers().location).toMatch(/\/admin$/);
-  const nav = await page.goto('/%61dmin');
-  expect(nav?.status()).toBe(403);
-  await expect(page).toHaveURL(/\/admin$/);
+  const res = await page.request.get('/%61dmin', { maxRedirects: 0 });
+  expect(res.status()).toBe(403);
 });
 
-test('a role on its own encoded prefix gets 308 then 200', async ({ page }) => {
+test('a role on its own encoded prefix gets 200', async ({ page }) => {
   const cases = [
-    ['staff@example.test', '/%73taff', '/staff'],
-    ['board@example.test', '/%62oard', '/board'],
-    ['admin@example.test', '/%61dmin', '/admin'],
+    ['staff@example.test', '/%73taff'],
+    ['board@example.test', '/%62oard'],
+    ['admin@example.test', '/%61dmin'],
   ] as const;
-  for (const [email, encoded, decoded] of cases) {
+  for (const [email, encoded] of cases) {
     await page.context().clearCookies();
     await signIn(page, email);
-    const probe = await page.request.get(encoded, { maxRedirects: 0 });
-    expect(probe.status()).toBe(308);
-    expect(probe.status()).not.toBe(500);
-    expect(probe.headers().location).toMatch(new RegExp(`${decoded}$`));
-    const nav = await page.goto(encoded);
-    expect(nav?.status()).toBe(200);
-    expect(nav?.status()).not.toBe(500);
-    await expect(page).toHaveURL(new RegExp(`${decoded}$`));
+    const res = await page.request.get(encoded, { maxRedirects: 0 });
+    expect(res.status()).toBe(200);
+  }
+});
+
+test('backslash paths get 400 and encoded unicode does not loop', async ({ page }) => {
+  await signIn(page, 'staff@example.test');
+  for (const path of ['/%5C%5Cevil.com', '/%2F%5Cevil.com', '/%5Cevil.com', '/%5C/evil.com']) {
+    const res = await page.request.get(path, { maxRedirects: 0 });
+    expect(res.status()).toBe(400);
+    expect(res.headers().location ?? '').not.toMatch(/evil\.com/);
+  }
+  const slash = await page.request.get('/%2F%2Fevil.com', { maxRedirects: 0 });
+  expect(slash.status()).toBe(404);
+  expect(slash.headers().location ?? '').not.toMatch(/^https?:\/\/evil/);
+  for (const path of ['/a%20b', '/caf%C3%A9']) {
+    const res = await page.request.get(path, { maxRedirects: 0 });
+    expect(res.status()).toBe(404);
   }
 });
 
