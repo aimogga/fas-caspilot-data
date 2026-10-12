@@ -335,6 +335,6 @@ Left: QA re-check.
 Did: Merged origin/main. Kept main's #88 and #90 entries; dropped the moved copies and (PR #88)/(PR #90) tags; F-202 stays after #82; named PR #93.
 Left: QA re-check.
 
-## 2026-10-12 23:50 (UTC) — QA — flip F-202 passing
+## 2026-10-12 23:50 (UTC) — QA — PR #97 flip F-202 passing
 Did: F-202 set to passing in harness/feature_list.json with evidence: PR #86 QA PASS at 513d3b0 (squash-merged at 2d44deb, 2026-10-12 22:40:43 UTC) and PR #92 QA PASS at 6741f21 (squash-merged at 5f547d3, 2026-10-12 23:46:49 UTC). Live fas-dev ingest at 23:46:22 UTC loaded 58 rows (29 counties × 2 indicators, 2024); re-run at 23:46:31 UTC stayed at 58 with 0 duplicates. Checklist: 7 of 44 done. Closes #83.
 Left: follow-up to log SahieHttp ingest errors server-side (no secrets).
