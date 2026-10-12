@@ -273,7 +273,7 @@ body:has(> [data-slot=app-shell]) { padding-inline: 0; }
 [data-slot=nav-group] > p { margin: 0; padding: 8px 12px 4px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted-foreground); }
 [data-slot=sidebar] nav a, [data-slot=sheet-content] nav a { display: flex; align-items: center; gap: 12px; min-width: 44px; min-height: 44px; padding-inline: 12px; border-left: 2px solid transparent; color: inherit; font-size: 15px; line-height: 20px; text-decoration: none; }
 [data-slot=sidebar] nav a[aria-current=page], [data-slot=sheet-content] nav a[aria-current=page] { border-left-color: var(--primary); background: var(--sidebar-accent); color: var(--sidebar-accent-foreground); }
-[data-slot=sidebar] nav svg, [data-slot=sheet-content] nav svg, [data-slot=menu-button] svg { width: 16px; height: 16px; flex: none; }
+[data-slot=sidebar] nav svg, [data-slot=sheet-content] nav svg { width: 16px; height: 16px; flex: none; }
 @media (width < 1024px) {
   [data-slot=sidebar] [data-rail=hide] { position: absolute; width: 1px; height: 1px; margin: 0; padding: 0; overflow: hidden; white-space: nowrap; clip-path: inset(50%); }
   [data-slot=sidebar] [data-slot=brand-block] { align-items: center; padding-inline: 0; }
@@ -284,6 +284,7 @@ body:has(> [data-slot=app-shell]) { padding-inline: 0; }
 [data-slot=topbar-brand] { flex: 1; min-width: 0; }
 [data-slot=topbar-sub] { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; box-sizing: border-box; min-height: 36px; padding: 8px 16px; }
 [data-slot=menu-button] { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; width: 44px; height: 44px; margin: 0; padding: 0; border: 1px solid var(--input); border-radius: var(--radius); background: var(--background); color: var(--foreground); }
+[data-slot=menu-button] svg { width: 20px; height: 20px; flex: none; }
 [data-slot=crumbs] ol { display: flex; margin: 0; padding: 0; list-style: none; }
 [data-slot=crumbs] { min-width: 0; font-size: 15px; line-height: 20px; }
 [data-slot=env-badge] { display: inline-flex; align-items: center; border-radius: 999px; background: var(--warning-soft); color: var(--warning); padding: 2px 8px; font-size: 12px; font-weight: 600; line-height: 16px; }
