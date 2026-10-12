@@ -275,3 +275,7 @@ Left: none.
 ## 2026-10-12 21:13 (UTC) — Cloud Agent — PR #76 prefix route guards
 Did: `/admin`, `/staff` and `/board` guarded by prefix on a canonical path (decoded, lowercased, slashes collapsed, dot segments resolved); unknown paths reach 404; backslash and `//` tricks return 400; no-role users get a real 403 outside `/403`, `/login` and sign-out; unit and e2e route-guard tests (PR #76 merged at 3125135, closes #63).
 Left: #78 (breadcrumb on encoded URLs), #79 (guard-list check); next #66 cookie flags.
+
+## 2026-10-12 21:30 (UTC) — Cloud Agent — #79 route guard coverage test
+Did: `lib/auth/route-guard-coverage.test.ts` walks `app/` for page.* and route.* (.tsx/.ts/.jsx/.js, or next.config `pageExtensions` if set; QA fix) (route groups stripped, `_private` skipped) and fails if any route is not `/`, under a guarded prefix or in `isPublicRoute`; dynamic segments outside a guarded prefix fail; `/reports` asserted to fail. Runs in `pnpm test` inside the required `ci` job.
+Left: QA.
