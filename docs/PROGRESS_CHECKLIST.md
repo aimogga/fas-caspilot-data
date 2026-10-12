@@ -6,8 +6,8 @@ Last updated: 2026-10-12
 
 - **Done:** 6 of 44 features (14%): F-003, F-101, F-102, F-103, F-104 and F-105.
 - **In progress:** F-601 nightly audit (partly working).
-- **Next up:** #66 cookie flags (in progress), then F-201.
-- **Blocked:** None right now.
+- **Next up:** F-201 source registry and ingest logging. F-202 SAHIE ingest (#83) in progress by Engineer Bot.
+- **Blocked:** #77 Copilot pilot, blocked on the error-page layout (#65).
 
 ## Design system
 
@@ -35,7 +35,7 @@ Last updated: 2026-10-12
 - DS-04 follow-up issues:
   - #63: prefix-based route guards so unknown paths can 404 (closed by PR #76).
   - #65: DS-04 design follow-ups (non-blocking).
-  - #66: auth hardening: Supabase session cookie isn't HttpOnly or Secure.
+  - #66: auth hardening: Supabase session cookie isn't HttpOnly or Secure (closed by PR #82).
   - #67: DS-04 QA follow-ups: no-role e2e, parity entries, area names on 403.
 - Docs: checklist DS-04 done, follow-ups, next #60 (PR #68, merged at 7291b82).
 - CI: per-PR concurrency and docs-only fast path (PR #72, merged at 1f1e7ab).
@@ -43,7 +43,14 @@ Last updated: 2026-10-12
 - Auth: prefix-based route guards so unknown paths 404 (PR #76 merged at 3125135, closes #63).
 - #76 follow-up issues (open):
   - #78: breadcrumb shows "FAS Evidence" on encoded URLs like /%61dmin.
-  - #79: guard-list check: fail on unguarded top-level routes.
+  - #79: guard-list check: fail on unguarded top-level routes (closed by PR #81).
+- Auth: route guard coverage test (PR #81 by Engineer Bot, squash-merged at 438f7c0, 2026-10-12 21:41:17 UTC, closes #79).
+- Auth: HttpOnly, Secure and SameSite=lax session cookies; logout clears them (PR #82, QA PASS and DESIGN APPROVED at 0729e7e, squash-merged at 3ba8f7f, 2026-10-12 21:52:03 UTC, closes #66). #66 done.
+- #82 follow-up issues (open):
+  - #84: login CSRF and cookie Max-Age.
+  - #85: "sign-in unavailable" message.
+  - #87: 403 breadcrumb.
+- #77 Copilot pilot: blocked on the error-page layout (#65).
 
 ## Decisions
 

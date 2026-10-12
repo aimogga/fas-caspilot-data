@@ -27,7 +27,8 @@ WHERE email LIKE '%@example.test';
 INSERT INTO geo_county (fips, name, state, population_latest) VALUES
   ('49035', 'Salt Lake', 'UT', 1181857), ('49049', 'Utah', 'UT', 702100);
 INSERT INTO source_registry (id, name, owner, url, license, commercial_ok, cadence, status) VALUES
-  ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'census-sahie', 'Census', 'https://example.test/sahie', 'public-domain', true, 'annual', 'active');
+  ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'census-sahie', 'Census', 'https://api.census.gov/data/timeseries/healthins/sahie', 'public-domain', true, 'annual', 'active')
+ON CONFLICT (id) DO UPDATE SET url = EXCLUDED.url;
 INSERT INTO ingest_run (id, source_id, status, rows_loaded, checksum) VALUES
   ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'ok', 1, 'abc');
 INSERT INTO public_indicator (source_id, indicator_code, geo_fips, period, value, unit, vintage, ingest_run_id) VALUES

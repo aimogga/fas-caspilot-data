@@ -48,6 +48,14 @@ test("error page renders with status 500 and leaks nothing", async ({ page }) =>
   await checkLayout(page, "error");
 });
 
+test("signed-in error page shows the account email", async ({ page }) => {
+  await signIn(page, "admin@example.test");
+  await page.goto("/dev-error");
+  await expect(page.locator("[data-slot=app-shell]")).toBeVisible();
+  await expect(page.locator("[data-slot=user-name]")).toContainText("admin@example.test");
+  await expect(page.locator("[data-slot=avatar]")).toHaveText("A");
+});
+
 test("403 for board on /staff shows plain-text guidance in the shell", async ({ page }) => {
   await signIn(page, "board@example.test");
   const res = await page.goto("/staff");
