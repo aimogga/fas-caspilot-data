@@ -53,7 +53,7 @@ test("existing screens use the shell Page layout", async ({ page }) => {
   await page.fill("#password", "testpass123");
   await Promise.all([page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 10000 }), page.click("button[type=submit]")]);
   for (const width of [375, 800, 1024, 1280, 1440] as const) {
-    for (const path of ["/admin", "/staff", "/board", "/403"] as const) {
+    for (const path of ["/admin", "/staff", "/board", "/403", "/403?from=%2Fstaff"] as const) {
       await page.setViewportSize({ width, height: 812 });
       await page.goto(path);
       await expect(page.locator("h1")).toBeVisible();
@@ -84,5 +84,19 @@ test("existing screens use the shell Page layout", async ({ page }) => {
         expect(got?.sidebarDisplay).toBe("none");
       }
     }
+  }
+});
+
+test("no-role 403 uses the shell Page layout", async ({ page }) => {
+  await page.goto("/login");
+  await page.fill("#email", "norole@example.test");
+  await page.fill("#password", "testpass123");
+  await Promise.all([page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 10000 }), page.click("button[type=submit]")]);
+  for (const width of [375, 800, 1024, 1440] as const) {
+    await page.setViewportSize({ width, height: 812 });
+    await page.goto("/403");
+    const got = await pageBox(page);
+    const exp = SHELL[width];
+    expect(got, `no-role /403 @ ${width}`).toMatchObject({ left: exp.left, width: exp.width, scroll: width });
   }
 });

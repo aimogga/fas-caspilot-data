@@ -13,7 +13,7 @@ export default async function ForbiddenPage({ searchParams }: { searchParams: Pr
   const from = requestedPath((await searchParams).from);
   if (viewer.signedIn && !viewer.role) {
     return (
-      <StatusFrame viewer={viewer}>
+      <StatusFrame viewer={viewer} crumb="Account not set up">
         <StatusCard
           icon={<Lock />}
           eyebrow="Error 403 · Account not set up"
@@ -29,7 +29,7 @@ export default async function ForbiddenPage({ searchParams }: { searchParams: Pr
   const href = viewer.home ?? "/login";
   const label = viewer.home ? `Go to ${homeLabel(viewer.role)}` : "Go to sign in";
   return (
-    <StatusFrame viewer={viewer}>
+    <StatusFrame viewer={viewer} crumb="No permission">
       <StatusCard
         icon={<Lock />}
         eyebrow="Error 403 · No permission"

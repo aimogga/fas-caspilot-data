@@ -5,6 +5,8 @@ describe("DS-04 status helpers", () => {
   it("names areas and role homes", () => {
     expect(areaName("/staff")).toBe("staff tools");
     expect(areaName("/admin")).toBe("admin tools");
+    expect(areaName("/staff/reports")).toBe("staff tools");
+    expect(areaName("/staffing")).toBe("this page");
     expect(areaName("/nope")).toBe("this page");
     expect(areaName(null)).toBe("this page");
     expect(homeLabel("board_viewer")).toBe("Board dashboard");

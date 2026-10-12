@@ -38,7 +38,7 @@ function NavLinks({ groups, pathname, onNavigate }: { groups: NavGroup[]; pathna
   ));
 }
 
-export function ShellFrame({ role, roleLabel, name, showSynthetic, children }: { role: string; roleLabel: string; name: string; showSynthetic: boolean; children: ReactNode }) {
+export function ShellFrame({ role, roleLabel, name, showSynthetic, crumb, children }: { role: string; roleLabel: string; name: string; showSynthetic: boolean; crumb?: string; children: ReactNode }) {
   const pathname = usePathname();
   const { groups, footer } = navForRole(role);
   const [open, setOpen] = useState(false);
@@ -91,7 +91,7 @@ export function ShellFrame({ role, roleLabel, name, showSynthetic, children }: {
             </details>
           </div>
           <div data-slot="topbar-sub">
-            <nav data-slot="crumbs" aria-label="Breadcrumb"><ol><li aria-current="page">{CRUMB[pathname] ?? PRODUCT_NAME}</li></ol></nav>
+            <nav data-slot="crumbs" aria-label="Breadcrumb"><ol><li aria-current="page">{crumb ?? CRUMB[pathname] ?? PRODUCT_NAME}</li></ol></nav>
             <div data-slot="freshness-slot" hidden />
             {showSynthetic ? <span data-slot="env-badge">Synthetic data</span> : null}
           </div>
