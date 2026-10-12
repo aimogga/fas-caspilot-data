@@ -304,6 +304,14 @@ Left: QA.
 Did: reject bad cells; fail closed on partial set; census-sahie migration; n8n pending #89; merge origin/main (#82).
 Left: QA re-check.
 
+## 2026-10-12 22:05 (UTC) — Cloud Agent — #65 error page shell layout
+Did: signed-in `app/error.tsx` uses `ErrorFrame` → `ShellFrame` so the content area matches the role shell (80/696 at 800; sidebar from 1024; 1200 max). Signed-out stays on `SignedOutFrame`. Brought PR #77's signed-in 404/error/`/` layout-parity assertion.
+Left: CI + secret-scan, then ready.
+
+## 2026-10-12 22:40 (UTC) — Cloud Agent — #65 error frame review fixes
+Did: `loadErrorViewer` returns email; `ErrorFrame` passes `user.email ?? "Signed in"` like `AppShell`. Session reject or 4s timeout falls back to `SignedOutFrame` (`lib/status/error-frame.test.ts`). Did not touch the signed-out bar or `/403` copy (#91).
+Left: CI + secret-scan.
+
 ## 2026-10-12 22:55 (UTC) — Cloud Agent — issue #89 / feature F-202
 Did: SAHIE n8n entry: SahieHttp fetch→parse→fill→load, POST /api/ingest/sahie with fail-closed INGEST_TOKEN, inactive n8n HTTP to $env.FAS_INGEST_SAHIE_URL and no hardcoded year. Moved F-202 progress after #82.
 State: lint/typecheck/unit 286/286 green. Live POST without token 401; unset secret still 401.
