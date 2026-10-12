@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { HIDDEN_LABELS } from "../../lib/shell/nav";
 
 const ART = "/opt/cursor/artifacts";
 async function signIn(page: Page, email: string) {
@@ -14,13 +15,16 @@ test("role nav, mobile sheet, and shell screenshots", async ({ page }) => {
   const cases = [
     ["admin@example.test", "/admin", ["Home", "Overview"], "Admin", false, "Admin · Overview"],
     ["staff@example.test", "/staff", ["Home"], "Staff", false, "Home"],
-    ["board@example.test", "/board", ["Board dashboard"], "Board · read-only", true, "Board home"],
+    ["board@example.test", "/board", ["Board dashboard"], "Board · read-only", true, "Board dashboard"],
   ] as const;
   for (const [email, path, labels, role, footer, crumb] of cases) {
     await signIn(page, email);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(path);
     await expect(page.locator("[data-slot=sidebar] nav a")).toHaveText([...labels]);
+    for (const name of HIDDEN_LABELS) {
+      await expect(page.getByRole("link", { name, exact: true })).toHaveCount(0);
+    }
     await expect(page.locator("[data-slot=crumbs]")).toHaveText(crumb);
     await expect(page.locator("[data-slot=user-role]")).toHaveText(role);
     expect(await axe(page)).toEqual([]);
@@ -51,6 +55,13 @@ test("role nav, mobile sheet, and shell screenshots", async ({ page }) => {
   await menu.click();
   await expect(sheet).toBeVisible();
   await expect(page.locator("#nav-sheet nav a").first()).toBeFocused();
+  for (let i = 0; i < 8; i++) {
+    await page.keyboard.press("Tab");
+  }
+  const focusInSheet = await page.evaluate(() => !!document.querySelector("#nav-sheet")?.contains(document.activeElement));
+  expect(focusInSheet).toBe(true);
+  const scrollLocked = await page.evaluate(() => document.body.hasAttribute("data-scroll-locked") || getComputedStyle(document.body).overflow === "hidden");
+  expect(scrollLocked).toBe(true);
   expect(await axe(page)).toEqual([]);
   const minTarget = await page.evaluate(() => {
     const visible = [...document.querySelectorAll("a, button, summary")].filter((el) => {
@@ -73,6 +84,13 @@ test("role nav, mobile sheet, and shell screenshots", async ({ page }) => {
     await expect(sheet).toHaveCount(0);
     await expect(menu).toBeFocused();
   }
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await menu.click();
+  await expect(sheet).toBeVisible();
+  expect(await sheet.evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
+  await sheet.getByRole("link", { name: "Overview" }).click();
+  await expect(page).toHaveURL(/\/admin/);
+  await expect(menu).toBeFocused();
   for (const width of [800, 1024]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/staff");

@@ -8,8 +8,30 @@ const STAFF: NavItem = { label: "Home", href: "/staff" };
 const ADMIN: NavItem = { label: "Overview", href: "/admin" };
 const BOARD: NavItem = { label: "Board dashboard", href: "/board" };
 
+// Screen-plan §1.2 items whose routes do not exist yet; they stay hidden, not dead links.
+export const HIDDEN_LABELS = [
+  "Team dashboard",
+  "County need map",
+  "Data freshness",
+  "Upload data",
+  "Cases",
+  "Aggregate totals",
+  "Providers",
+  "Matches",
+  "Pipeline",
+  "Strategy drafts",
+  "Packets",
+  "Methodology",
+  "Users & roles",
+  "Org settings",
+  "Data sources & ingest runs",
+  "Need-score weights",
+  "Audit log",
+  "Nightly audits",
+  "Board packets",
+] as const;
 
-export const CRUMB: Record<string, string> = { "/staff": "Home", "/admin": "Admin · Overview", "/board": "Board home" };
+export const CRUMB: Record<string, string> = { "/staff": "Home", "/admin": "Admin · Overview", "/board": "Board dashboard" };
 
 export function navForRole(role: string): { groups: NavGroup[]; footer: string | null } {
   if (role === "board_viewer") return { groups: [{ label: "Board", items: [BOARD] }], footer: BOARD_FOOTER };
