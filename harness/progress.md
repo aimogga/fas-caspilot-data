@@ -288,6 +288,14 @@ Left: none.
 Did: QA passed; route guard coverage test squash-merged at 438f7c0 (2026-10-12 21:41:17 UTC), closes #79.
 Left: none.
 
+## 2026-10-12 21:52 (UTC) — Cloud Agent — PR #82 auth cookie flags
+Did: Supabase auth cookies set HttpOnly, Secure and SameSite=lax; logout clears them. QA PASS and DESIGN APPROVED at 0729e7e; squash-merged at 3ba8f7f (2026-10-12 21:52:03 UTC), closes #66.
+Left: #84 (login CSRF and cookie Max-Age), #85 (sign-in unavailable message), #87 (403 breadcrumb).
+
+## 2026-10-12 22:00 (UTC) — Engineer Supivisor Bot — checklist #81 and #82
+Did: checklist and progress for #81 and #82 (#66 done); #61 entry sha moved to its heading; next F-201, F-202 (#83) in progress by Engineer Bot; #77 Copilot pilot blocked on #65.
+Left: none.
+
 ## 2026-10-12 21:50 (UTC) — Cloud Agent — issue #83 / feature F-202
 Did: packages/ingest/sahie + inactive n8n (PR #86). QA FAIL 80d2b6c.
 Left: QA.
@@ -296,10 +304,9 @@ Left: QA.
 Did: reject bad cells; fail closed on partial set; census-sahie migration; n8n pending #89; merge origin/main (#82).
 Left: QA re-check.
 
-## 2026-10-12 21:52 (UTC) — Cloud Agent — PR #82 auth cookie flags
-Did: Supabase auth cookies set HttpOnly, Secure and SameSite=lax; logout clears them. QA PASS and DESIGN APPROVED at 0729e7e; squash-merged at 3ba8f7f (2026-10-12 21:52:03 UTC), closes #66.
-Left: #84 (login CSRF and cookie Max-Age), #85 (sign-in unavailable message), #87 (403 breadcrumb).
-
-## 2026-10-12 22:00 (UTC) — Engineer Supivisor Bot — checklist #81 and #82
-Did: checklist and progress for #81 and #82 (#66 done); #61 entry sha moved to its heading; next F-201, F-202 (#83) in progress by Engineer Bot; #77 Copilot pilot blocked on #65.
-Left: none.
+## 2026-10-12 22:55 (UTC) — Cloud Agent — issue #89 / feature F-202
+Did: SAHIE n8n entry: SahieHttp fetch→parse→fill→load, POST /api/ingest/sahie with fail-closed INGEST_TOKEN, inactive n8n HTTP to $env.FAS_INGEST_SAHIE_URL and no hardcoded year. Moved F-202 progress after #82.
+State: lint/typecheck/unit 286/286 green. Live POST without token 401; unset secret still 401.
+Evidence: this PR.
+Left: QA. #83 stays open until QA checks the whole flow.
+Decisions: none.
