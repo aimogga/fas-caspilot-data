@@ -43,7 +43,10 @@ export function ShellFrame({ role, roleLabel, name, showSynthetic, children }: {
   const { groups, footer } = navForRole(role);
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLButtonElement>(null);
-  const closeSheet = () => { setOpen(false); menuRef.current?.focus(); };
+  const closeSheet = () => {
+    setOpen(false);
+    menuRef.current?.focus();
+  };
   return (
     <div data-slot="app-shell">
       <a href="#main" data-slot="skip">Skip to content</a>
@@ -59,7 +62,19 @@ export function ShellFrame({ role, roleLabel, name, showSynthetic, children }: {
               <SheetTrigger asChild>
                 <button ref={menuRef} type="button" data-slot="menu-button" aria-label="Open navigation" aria-expanded={open} aria-controls="nav-sheet"><Menu aria-hidden /></button>
               </SheetTrigger>
-              <SheetContent id="nav-sheet" side="left" aria-describedby={undefined} onOpenAutoFocus={(event) => { event.preventDefault(); document.querySelector<HTMLElement>("#nav-sheet nav a")?.focus(); }} onCloseAutoFocus={(event) => { event.preventDefault(); menuRef.current?.focus(); }}>
+              <SheetContent
+                id="nav-sheet"
+                side="left"
+                aria-describedby={undefined}
+                onOpenAutoFocus={(event) => {
+                  event.preventDefault();
+                  document.querySelector<HTMLElement>("#nav-sheet nav a")?.focus();
+                }}
+                onCloseAutoFocus={(event) => {
+                  event.preventDefault();
+                  menuRef.current?.focus();
+                }}
+              >
                 <SheetHeader>
                   <SheetTitle className="sr-only">Navigation</SheetTitle>
                   <Wordmark />
