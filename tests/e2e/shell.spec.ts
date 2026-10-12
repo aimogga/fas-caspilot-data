@@ -38,6 +38,9 @@ test("role nav and shell screenshots", async ({ page }) => {
     await page.context().clearCookies();
   }
   await signIn(page, "admin@example.test");
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/staff");
+  await expect(page.locator("[data-slot=topbar-brand] [data-slot=wordmark]")).toBeVisible();
   for (const width of [800, 1024]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/staff");

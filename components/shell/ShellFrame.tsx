@@ -51,6 +51,7 @@ export function ShellFrame({ role, roleLabel, name, showSynthetic, children }: {
       <div data-slot="column">
         <header data-slot="topbar">
           <div data-slot="topbar-tools">
+            <div data-slot="topbar-brand"><Wordmark /></div>
             <details data-slot="user-menu">
               <summary aria-label="Account menu"><span data-slot="avatar" aria-hidden>{name.slice(0, 1).toUpperCase()}</span><span data-slot="user-name">{name}<small data-slot="user-role">{roleLabel}</small></span></summary>
               <div><p>{name}</p><p data-slot="role-label">{roleLabel}</p><form action="/api/auth/signout" method="post"><button type="submit">Sign out</button></form></div>
