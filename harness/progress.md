@@ -316,6 +316,6 @@ Left: CI + secret-scan.
 Did: signed-in error page uses the role-shell content area, refs #65. QA PASS and DESIGN APPROVED at 2f0a13f; squash-merged at d1432ad (2026-10-12 22:55:30 UTC).
 Left: #65 stays open, leftovers in #91 (now includes a loading-skeleton note); #77 should unblock once main is merged into it.
 
-## 2026-10-12 23:20 (UTC) — Engineer Supivisor Bot — checklist #88 and #90
+## 2026-10-12 23:16 (UTC, commit time) — Engineer Supivisor Bot — checklist #88 and #90
 Did: checklist and progress for #88 (b4ed683) and #90 (d1432ad); #65 open with leftovers in #91; #77 no longer blocked once main is merged in; F-202 in progress as #86 plus #92, both with QA.
 Left: none.
