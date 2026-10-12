@@ -267,3 +267,7 @@ Left: the fast path matches all of `docs/`, so non-Markdown files there also ski
 ## 2026-10-12 20:07 (UTC) — Cloud Agent — PR #69 Copilot routing
 Did: `.github/copilot-instructions.md`, `harness/COPILOT_ROUTING.md`, task packet George-gated list with real FAS data and escalation path, UI PR evidence gates, focus ring per DS-01b, AGENTS.md renamed to FAS Evidence, concurrency one Cursor cloud agent plus one Copilot agent (merged at 637d40f).
 Left: D-009 budget caps and the open money questions for George.
+
+## 2026-10-12 21:13 (UTC) — Cloud Agent — PR #76 prefix route guards
+Did: `/admin`, `/staff` and `/board` guarded by prefix on a canonical path (decoded, lowercased, slashes collapsed, dot segments resolved); unknown paths reach 404; backslash and `//` tricks return 400; no-role users get a real 403 outside `/403`, `/login` and sign-out; unit and e2e route-guard tests (PR #76 merged at 3125135, closes #63).
+Left: #78 (breadcrumb on encoded URLs), #79 (guard-list check); next #66 cookie flags.
