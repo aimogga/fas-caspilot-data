@@ -256,14 +256,14 @@ Left: none.
 Did: middleware redirects a signed-in user on /login to a safe ?redirect= or the role home; no role goes to /403 "Account not set up"; `signedInLoginTarget` unit tests; e2e at 375 and 1440 (squash-merged at d4e1541, fixes #60).
 Left: none.
 
-## 2026-10-12 20:30 (UTC) — Cloud Agent — PR #68 checklist DS-04
-Did: checklist DS-04 done (#62 at 21c693b, #64 at b69df8b), #59 closed, open follow-ups #63, #65, #66, #67, next up #60; progress entry for PR #64 (merged at 7291b82).
+## 2026-10-12 20:00 (UTC) — Cloud Agent — PR #68 checklist DS-04
+Did: checklist DS-04 done (#62 at 21c693b, #64 at b69df8b), #59 closed, open follow-ups #63, #65, #66, #67, next up #60; progress entry for PR #64 (PR #68 merged at 7291b82).
 Left: none.
 
-## 2026-10-12 20:30 (UTC) — Cloud Agent — PR #72 CI concurrency and docs-only fast path
+## 2026-10-12 20:01 (UTC) — Cloud Agent — PR #72 CI concurrency and docs-only fast path
 Did: one CI run per PR (a new push cancels the older run; main pushes not cancelled); docs-only PRs skip Supabase, `test:db`, Playwright install and `test:e2e` (merged at 1f1e7ab).
 Left: the fast path matches all of `docs/`, so non-Markdown files there also skip DB and E2E; restrict it to `.md`.
 
-## 2026-10-12 20:30 (UTC) — Cloud Agent — PR #69 Copilot routing
+## 2026-10-12 20:07 (UTC) — Cloud Agent — PR #69 Copilot routing
 Did: `.github/copilot-instructions.md`, `harness/COPILOT_ROUTING.md`, task packet George-gated list with real FAS data and escalation path, UI PR evidence gates, focus ring per DS-01b, AGENTS.md renamed to FAS Evidence, concurrency one Cursor cloud agent plus one Copilot agent (merged at 637d40f).
 Left: D-009 budget caps and the open money questions for George.
