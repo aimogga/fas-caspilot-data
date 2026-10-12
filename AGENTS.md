@@ -1,6 +1,6 @@
-# AGENTS.md — CasePilot × FAS "Public Data to Proof"
+# AGENTS.md — FAS Evidence (Public Data to Proof)
 
-You are working in the repo for a free CasePilot tool built for **Family Advocacy Services (FAS)**, a Utah nonprofit that pays for therapy for families who can't afford it, many referred through courts. The tool collects free public data, accepts FAS's own data, shows both, matches FAS to grants and produces evidence packets. Keep this file short; details live in the linked docs.
+You are working in the repo for FAS Evidence, a free tool built for **Family Advocacy Services (FAS)**, a Utah nonprofit that pays for therapy for families who can't afford it, many referred through courts. The tool collects free public data, accepts FAS's own data, shows both, matches FAS to grants and produces evidence packets. Keep this file short; details live in the linked docs.
 
 ## Read order (every session)
 1. This file.
@@ -78,3 +78,13 @@ Commit working code only. If you must stop mid-feature, leave the code compiling
 - `fas-dev` (ref `zlizvzpatfyhdydfmxef`) is the only FAS Supabase project. It holds synthetic data only and is used by Vercel previews.
 - The other project in the account, `dhlvtisumrvhnqbeidlt`, is NOT FAS and NOT production. Do not use it.
 - There is no FAS production database yet.
+
+## GitHub Copilot cloud agent
+- Copilot reads this file and `.github/copilot-instructions.md`.
+- Its environment is `.github/workflows/copilot-setup-steps.yml` (an Actions runner, not the Cursor machine).
+- There is no local Supabase there by default; run the smoke check and leave `test:db`/`test:e2e` to CI.
+- Only issues marked `Route: Copilot` go to Copilot; see `harness/COPILOT_ROUTING.md`.
+- Copilot never touches workflows, rulesets, auth/middleware, migrations/RLS, n8n or real data.
+- Copilot never makes money, plan or billing changes, sends email in George's name, or edits acceptance criteria.
+- Needs-George items stop and go to George through the Engineer Supervisor and Chief of staff.
+- Same gates as Cursor: D-012 cap, QA PASS and DESIGN APPROVED at the same head, CI and secret scan green.
