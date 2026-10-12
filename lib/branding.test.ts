@@ -25,7 +25,7 @@ describe("product branding", () => {
   it("keeps CasePilot and FAS Grants out of rendered UI source", () => {
     const files = [
       "app/layout.tsx",
-      "app/page.tsx",
+      "app/(dev)/health/page.tsx",
       "app/login/page.tsx",
       "app/403/page.tsx",
       "app/(app)/admin/page.tsx",

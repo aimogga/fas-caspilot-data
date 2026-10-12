@@ -68,5 +68,6 @@ test("Sign in and Sign Out are 44px at 1280", async ({ page }) => {
   await page.fill("#email", "staff@example.test");
   await page.fill("#password", "testpass123");
   await Promise.all([page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 10000 }), page.click("button[type=submit]")]);
-  expect(await page.getByRole("button", { name: "Sign Out" }).evaluate((el) => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+  await page.locator("[data-slot=user-menu] summary").click();
+  expect(await page.getByRole("button", { name: "Sign out" }).evaluate((el) => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
 });
