@@ -1,20 +1,20 @@
 export type NavItem = { label: string; href: string };
 export type NavGroup = { label: string; items: NavItem[] };
 
-export const BOARD_FOOTER = "Read-only access · aggregates only";
+export const BOARD_FOOTER = "Read-only access · aggregates only"; export const PREVIEW_FOOTER = "Synthetic data · preview";
 
-const STAFF: NavItem = { label: "Staff home", href: "/staff" };
-const ADMIN: NavItem = { label: "Admin home", href: "/admin" };
+const STAFF: NavItem = { label: "Home", href: "/staff" };
+const ADMIN: NavItem = { label: "Overview", href: "/admin" };
 const BOARD: NavItem = { label: "Board dashboard", href: "/board" };
 
-export const HIDDEN_LABELS = ["Packets", "Sources", "Ingest runs", "Users", "Audit log"] as const;
+export const HIDDEN_LABELS = ["Team dashboard", "County need map", "Data freshness", "Upload data", "Cases", "Aggregate totals", "Providers", "Matches", "Pipeline", "Strategy drafts", "Packets", "Methodology", "Users & roles", "Org settings", "Data sources & ingest runs", "Need-score weights", "Audit log", "Nightly audits", "Board packets"] as const;
 
-export const PAGE_TITLE: Record<string, string> = { "/staff": "Staff Page", "/admin": "Admin Page", "/board": "Board Page" };
+export const PAGE_TITLE: Record<string, string> = { "/staff": "Staff Page", "/admin": "Admin Page", "/board": "Board Page" }; export const CRUMB: Record<string, string> = { "/staff": "Home", "/admin": "Admin · Overview", "/board": "Board home" };
 
 export function navForRole(role: string): { groups: NavGroup[]; footer: string | null } {
   if (role === "board_viewer") return { groups: [{ label: "Board", items: [BOARD] }], footer: BOARD_FOOTER };
-  if (role === "staff") return { groups: [{ label: "Staff", items: [STAFF] }], footer: null };
-  if (role === "admin") return { groups: [{ label: "Staff", items: [STAFF] }, { label: "Admin", items: [ADMIN] }], footer: null };
+  if (role === "staff") return { groups: [{ label: "Workspace", items: [STAFF] }], footer: null };
+  if (role === "admin") return { groups: [{ label: "Workspace", items: [STAFF] }, { label: "Admin", items: [ADMIN] }], footer: null };
   return { groups: [], footer: null };
 }
 

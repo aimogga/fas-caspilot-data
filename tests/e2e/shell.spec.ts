@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test"; import { HIDDEN_LABELS } from "../../lib/shell/nav";
 
 const ART = "/opt/cursor/artifacts";
 async function signIn(page: Page, email: string) {
@@ -12,20 +12,20 @@ const axe = (page: Page) => new AxeBuilder({ page }).analyze().then((r) => r.vio
 
 test("role nav, mobile sheet, and shell screenshots", async ({ page }) => {
   const cases = [
-    ["admin@example.test", "/admin", ["Staff home", "Admin home"], "Admin", false],
-    ["staff@example.test", "/staff", ["Staff home"], "Staff", false],
-    ["board@example.test", "/board", ["Board dashboard"], "Board viewer", true],
+    ["admin@example.test", "/admin", ["Home", "Overview"], "Admin", false, "Admin · Overview"],
+    ["staff@example.test", "/staff", ["Home"], "Staff", false, "Home"],
+    ["board@example.test", "/board", ["Board dashboard"], "Board viewer", true, "Board home"],
   ] as const;
-  for (const [email, path, labels, role, footer] of cases) {
+  for (const [email, path, labels, role, footer, crumb] of cases) {
     await signIn(page, email);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(path);
     await expect(page.locator("[data-slot=sidebar] nav a")).toHaveText([...labels]);
-    for (const name of ["Packets", "Sources", "Ingest runs", "Users", "Audit log"]) await expect(page.getByRole("link", { name })).toHaveCount(0);
+    for (const name of HIDDEN_LABELS) await expect(page.getByRole("link", { name, exact: true })).toHaveCount(0); await expect(page.locator("[data-slot=crumbs]")).toHaveText(crumb); await expect(page.locator("[data-slot=user-role]")).toHaveText(role);
     await expect(page.locator("main")).not.toContainText("Role:");
     await expect(page.locator("body")).not.toContainText(/case\s*pilot/i);
     if (footer) await expect(page.locator("[data-slot=board-footer]")).toHaveText("Read-only access · aggregates only");
-    else await expect(page.locator("[data-slot=board-footer]")).toHaveCount(0);
+    else await expect(page.locator("[data-slot=sidebar] [data-slot=preview-footer]")).toHaveText("Synthetic data · preview");
     expect(await page.locator("[data-slot=sidebar] a[aria-current=page]").evaluate((el) => getComputedStyle(el).borderLeftWidth)).toBe("2px");
     await page.screenshot({ path: `${ART}/shell-${path.slice(1)}-1440.png`, fullPage: true });
     await page.locator("[data-slot=sidebar] nav a").last().focus();
@@ -60,7 +60,7 @@ test("role nav, mobile sheet, and shell screenshots", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await menu.click();
   expect(await page.locator("#nav-sheet").evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
-  await page.locator("#nav-sheet").getByRole("link", { name: "Admin home" }).click();
+  await page.locator("#nav-sheet").getByRole("link", { name: "Overview" }).click();
   await expect(page).toHaveURL(/\/admin/);
   await expect(menu).toBeFocused();
   for (const width of [800, 1024]) {

@@ -7,7 +7,7 @@ import { House, LayoutDashboard, Menu, Shield, type LucideIcon } from "lucide-re
 import { Page } from "@/components/layout";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ORGANIZATION_NAME, PRODUCT_NAME } from "@/lib/branding";
-import { navForRole, PAGE_TITLE, type NavGroup } from "@/lib/shell/nav";
+import { CRUMB, navForRole, PREVIEW_FOOTER, type NavGroup } from "@/lib/shell/nav";
 
 const ICONS: Record<string, LucideIcon> = { "/staff": House, "/admin": Shield, "/board": LayoutDashboard };
 
@@ -50,7 +50,7 @@ export function ShellFrame({ role, roleLabel, name, showSynthetic, children }: {
       <aside data-slot="sidebar">
         <div data-slot="brand-block"><Wordmark /><p data-slot="org" data-rail="hide">{ORGANIZATION_NAME}</p></div>
         <nav aria-label="Primary"><NavLinks groups={groups} pathname={pathname} /></nav>
-        {footer ? <p data-slot="board-footer" data-rail="hide">{footer}</p> : null}
+        {footer || showSynthetic ? <p data-slot={footer ? "board-footer" : "preview-footer"} data-rail="hide">{footer ?? PREVIEW_FOOTER}</p> : null}
       </aside>
       <div data-slot="column">
         <header data-slot="topbar">
@@ -66,17 +66,17 @@ export function ShellFrame({ role, roleLabel, name, showSynthetic, children }: {
                   <p data-slot="org">{ORGANIZATION_NAME}</p>
                 </SheetHeader>
                 <nav aria-label="Primary"><NavLinks groups={groups} pathname={pathname} onNavigate={closeSheet} /></nav>
-                {footer ? <p data-slot="board-footer">{footer}</p> : null}
+                {footer || showSynthetic ? <p data-slot={footer ? "board-footer" : "preview-footer"}>{footer ?? PREVIEW_FOOTER}</p> : null}
               </SheetContent>
             </Sheet>
             <div data-slot="topbar-brand"><Wordmark /></div>
             <details data-slot="user-menu">
-              <summary aria-label="Account menu"><span data-slot="avatar" aria-hidden>{name.slice(0, 1).toUpperCase()}</span><span data-slot="user-name">{name}</span></summary>
+              <summary aria-label="Account menu"><span data-slot="avatar" aria-hidden>{name.slice(0, 1).toUpperCase()}</span><span data-slot="user-name">{name}<small data-slot="user-role">{roleLabel}</small></span></summary>
               <div><p>{name}</p><p data-slot="role-label">{roleLabel}</p><form action="/api/auth/signout" method="post"><button type="submit">Sign out</button></form></div>
             </details>
           </div>
           <div data-slot="topbar-sub">
-            <nav data-slot="crumbs" aria-label="Breadcrumb"><ol><li aria-current="page">{PAGE_TITLE[pathname] ?? PRODUCT_NAME}</li></ol></nav>
+            <nav data-slot="crumbs" aria-label="Breadcrumb"><ol><li aria-current="page">{CRUMB[pathname] ?? PRODUCT_NAME}</li></ol></nav>
             <div data-slot="freshness-slot" hidden />
             {showSynthetic ? <span data-slot="env-badge">Synthetic data</span> : null}
           </div>

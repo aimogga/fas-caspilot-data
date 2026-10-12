@@ -200,3 +200,7 @@ Left: none.
 Did: AppShell on /staff, /admin, and /board. Role nav hides missing routes. Page gutters, 256/56 sidebar, mobile sheet.
 State: lint/typecheck/unit 183/183. e2e 13/13.
 Left: none. Decisions: none.
+
+## 2026-10-12 14:40 (UTC) — Cloud Agent — DS-02 QA FAIL B1 PR #41
+Did: nav per screen-plan §1.2 (Workspace→Home, Admin→Overview), hidden names per §1.2, preview footer, role under email, crumbs Home / Admin · Overview / Board home.
+State: lint/typecheck/unit 183/183; e2e left to CI (no local Supabase). Left: none.
