@@ -279,3 +279,10 @@ Left: #78 (breadcrumb on encoded URLs), #79 (guard-list check); next #66 cookie 
 ## 2026-10-12 21:30 (UTC) — Cloud Agent — #79 route guard coverage test
 Did: `lib/auth/route-guard-coverage.test.ts` walks `app/` for page.* and route.* (.tsx/.ts/.jsx/.js, or next.config `pageExtensions` if set; QA fix) (route groups stripped, `_private` skipped) and fails if any route is not `/`, under a guarded prefix or in `isPublicRoute`; dynamic segments outside a guarded prefix fail; `/reports` asserted to fail. Runs in `pnpm test` inside the required `ci` job.
 Left: QA.
+
+## 2026-10-12 21:50 (UTC) — Cloud Agent — issue #83 / feature F-202
+Did: `packages/ingest/sahie` fetches, parses, validates and loads into `public_indicator` with provenance; all 29 Utah counties present or `not_published`; inactive `n8n/census-sahie.json`.
+State: `pnpm lint`, `typecheck`, `test`, and `test:db` green.
+Evidence: PR opened this session, Closes #83.
+Left: QA packet.
+Decisions needed: none.

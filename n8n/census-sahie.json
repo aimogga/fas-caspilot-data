@@ -1,0 +1,34 @@
+{
+  "name": "census-sahie",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": { "rule": { "interval": [{ "field": "cronExpression", "expression": "0 15 1 9 *" }] } },
+      "id": "sahie-schedule",
+      "name": "Schedule SAHIE",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.FAS_INGEST_SAHIE_URL}}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Authorization", "value": "=Bearer {{$env.INGEST_TOKEN}}" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"year\":\"2024\"}"
+      },
+      "id": "sahie-http",
+      "name": "POST ingest sahie",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 0]
+    }
+  ],
+  "connections": {
+    "Schedule SAHIE": { "main": [[{ "node": "POST ingest sahie", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "timezone": "UTC" }
+}

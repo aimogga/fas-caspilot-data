@@ -7,6 +7,6 @@ export default defineConfig({
     },
   },
   test: {
-    include: ["lib/**/*.test.ts", "scripts/*.test.mjs"],
+    include: ["lib/**/*.test.ts", "scripts/*.test.mjs", "packages/ingest/**/*.test.ts"],
   },
 });
