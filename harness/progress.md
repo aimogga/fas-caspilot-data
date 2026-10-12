@@ -239,3 +239,7 @@ Left: issues #57 (forgot password), #58 (DS-03 follow-ups), #59 (role home after
 ## 2026-10-12 18:35 (UTC) — Cloud Agent — PR #62 DS-04a role redirect, real 403, session expired
 Did: `/` redirects each role to its home; middleware rewrites denied routes to `/403?from=…` with a real 403 status and cookies kept; expired sessions return to `/login?redirect=…&reason=expired` with an info alert; dev health UI moved to `app/(dev)/health` behind the dev gate; `roleHome` and `hadSession` with unit tests; role-redirect e2e (squash-merged at 21c693b, fixes #59).
 Left: DS-04b pages in PR #64; prefix guards in #63.
+
+## 2026-10-12 19:15 (UTC) — Cloud Agent — PR #64 DS-04b 403, 404 and error pages
+Did: shared status card, signed-out 56px wordmark bar, 403 in the shell with an "Account not set up" variant and plain-text guidance "Ask your FAS admin to change your role.", not-found/error/global-error pages (reference only, no stack or env names), dev-only /dev-error route, global body padding removed, layout parity for /403 and signed-out screens, status-pages e2e at 375/1024/1440 with axe; DS-04 spec records the a/b split and deviations (squash-merged at b69df8b).
+Left: #63, #65, #66, #67; next #60.
