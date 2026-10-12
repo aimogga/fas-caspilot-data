@@ -6,7 +6,7 @@ Last updated: 2026-10-12
 
 - **Done:** 6 of 44 features (14%): F-003, F-101, F-102, F-103, F-104 and F-105.
 - **In progress:** F-601 nightly audit (partly working).
-- **Next up:** DS-03 login, then DS-04 403, then Phase 2 starting with F-201 (a record of every data import and its results), then cleanup of open issues #12, #13, #23 and #26.
+- **Next up:** DS-04 403, then Phase 2 starting with F-201 (a record of every data import and its results), then cleanup of open issues #12, #13, #23 and #26.
 - **Blocked:** None right now.
 
 ## Design system
@@ -25,7 +25,12 @@ Last updated: 2026-10-12
 - Docs: checklist DS-02a done, F-601 refresh (PR #51, merged at 1f06fb3).
 - Open issue #52: the nightly-audit unit test writes a RED fixture report into the gitignored harness/audits/.
 - Docs follow-ups (design workflow refs, progress entries #42–#47, checklist): done (PR #48, merged at 9aae887).
-- **DS-03** login: not started.
+- **DS-03** login: done (PR #56, squash-merged at 7ee6ca0). Page split layout, mapped errors (no raw Supabase text), Show/Hide toggle, 375/1024/1440 e2e and axe.
+- DS-03 follow-up issues (open):
+  - #57: Forgot password route (the link stays hidden until it exists).
+  - #58: DS-03 follow-ups: Example chip, alert title, rate-limit copy (the Example chip and neutral rate-limit copy shipped in #56).
+  - #59: after sign-in every role lands on / instead of its home.
+  - #60: a signed-in user visiting /login sees the form.
 - **DS-04** 403: not started.
 
 ## Decisions
