@@ -196,11 +196,14 @@ Left: none.
 Did: `body:has(> [data-slot=page]) { padding-inline: 0 }` so `/ui` gutters are 16/24/32. Legacy routes unchanged. Gallery e2e asserts h1 left 16/24/32/152 at 375/800/1024/1440.
 Left: none.
 
-## 2026-10-11 22:45 (UTC) — Cloud Agent — packet TP-0013 / DS-02
-Did: AppShell on /staff, /admin, and /board. Role nav hides missing routes. Page gutters, 256/56 sidebar, mobile sheet.
-State: lint/typecheck/unit 183/183. e2e 13/13.
-Left: none. Decisions: none.
+## 2026-10-12 14:17 (UTC) — Cloud Agent — PR #42 checklist update
+Did: docs/PROGRESS_CHECKLIST.md refresh for 2026-10-12 (merged at 0bf09dd).
+Left: none.
 
-## 2026-10-12 14:40 (UTC) — Cloud Agent — DS-02 QA FAIL B1 PR #41
-Did: nav per screen-plan §1.2 (Workspace→Home, Admin→Overview), hidden names per §1.2, preview footer, role under email, crumbs Home / Admin · Overview / Board home.
-State: lint/typecheck/unit 183/183; e2e left to CI (no local Supabase). Left: none.
+## 2026-10-12 14:29 (UTC) — Cloud Agent — design sources PR #43, PR #44, PR #45, PR #46
+Did: screen plan part 1 §0–3 (PR #43, 4913fba), part 2 §4–7 (PR #44, a6a043b), mockups + HTML sources (PR #45, 976dcc1), mockup generator gen.py (PR #46, 96c712b). Unblocks DS-02 source gating.
+Left: none.
+
+## 2026-10-12 14:30 (UTC) — Cloud Agent — PR #47 Nightly Audit backup trigger
+Did: CI backup trigger that runs the Nightly Audit when the schedule is missed (merged at 04684db).
+Left: none.
