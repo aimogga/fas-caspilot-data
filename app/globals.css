@@ -333,6 +333,8 @@ body:has(> [data-slot=app-shell]) { padding-inline: 0; }
 [data-slot=login-quote] { margin: 0; font-family: var(--font-serif); font-size: 22px; font-weight: 600; line-height: 1.25; }
 [data-slot=login-sample] { display: none; }
 [data-slot=login-sample] p { margin: 0; }
+[data-slot=login-sample-head] { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+[data-slot=login-sample-chip] { flex: none; padding: 2px 8px; border-radius: 999px; background: var(--muted); color: var(--muted-foreground); font-size: 12px; line-height: 16px; }
 [data-slot=login-sample] strong { font-size: 28px; color: var(--foreground); }
 [data-slot=login-note] { margin: 0; font-size: 13px; color: var(--muted-foreground); }
 @media (min-width: 1024px) {

@@ -14,11 +14,12 @@ describe("DS-03 login error mapper", () => {
       null,
       undefined,
     ]) {
-      expect(mapLoginError(error)).toEqual({ title: GENERIC_LOGIN_ERROR, hint: GENERIC_LOGIN_HINT });
+      expect(mapLoginError(error)).toEqual({ title: GENERIC_LOGIN_ERROR, hint: "Check both and try again." });
     }
   });
 
   it("maps rate limits to the rate-limit message", () => {
+    expect(`${RATE_LIMIT_ERROR} ${RATE_LIMIT_HINT}`).toBe("Too many attempts. Wait a few minutes and try again.");
     for (const error of [{ status: 429, message: "x" }, { code: "over_request_rate_limit" }, { message: "Request rate limit reached" }]) {
       expect(mapLoginError(error)).toEqual({ title: RATE_LIMIT_ERROR, hint: RATE_LIMIT_HINT });
     }
@@ -31,6 +32,7 @@ describe("DS-03 login error mapper", () => {
       expect(ALLOWED).toContain(mapped.title);
       expect(ALLOWED).toContain(mapped.hint);
       expect(JSON.stringify(mapped)).not.toContain("RAW-SECRET");
+      expect(JSON.stringify(mapped)).not.toMatch(/5 attempts|15 minutes/);
     }
   });
 

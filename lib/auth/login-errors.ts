@@ -1,7 +1,7 @@
 export const GENERIC_LOGIN_ERROR = "Email or password is incorrect.";
-export const GENERIC_LOGIN_HINT = "Check both and try again. After 5 attempts, sign-in pauses for 15 minutes.";
-export const RATE_LIMIT_ERROR = "Too many sign-in attempts.";
-export const RATE_LIMIT_HINT = "Sign-in is paused for 15 minutes. Try again after that.";
+export const GENERIC_LOGIN_HINT = "Check both and try again.";
+export const RATE_LIMIT_ERROR = "Too many attempts.";
+export const RATE_LIMIT_HINT = "Wait a few minutes and try again.";
 export const UNAVAILABLE_ERROR = "Sign-in is temporarily unavailable.";
 
 export type LoginError = { title: string; hint: string };

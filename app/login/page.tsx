@@ -118,7 +118,10 @@ export default function LoginPage() {
           <p data-slot="login-eyebrow" id="login-panel-title">Public data to proof</p>
           <p data-slot="login-quote">Public data shows where families struggle. Your records show what happens next.</p>
           <div data-slot="login-sample" aria-hidden="true">
-            <p>Days from court order to first session</p>
+            <div data-slot="login-sample-head">
+              <p>Days from court order to first session</p>
+              <span data-slot="login-sample-chip">Example</span>
+            </div>
             <p><strong>23</strong> days median</p>
             <p>FAS records · Q3 2026 · n = 64 · synthetic</p>
           </div>

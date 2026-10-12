@@ -59,6 +59,7 @@ for (const width of WIDTHS) {
     } else {
       expect(m.panelLeft).toBeGreaterThan(m.h1Left);
       expect(m.sampleDisplay).not.toBe("none");
+      await expect(page.locator("[data-slot=login-sample-chip]")).toHaveText("Example");
     }
     expect(await axe(page)).toEqual([]);
     await page.screenshot({ path: `${ART}/login-${width}.png`, fullPage: true });
@@ -71,6 +72,8 @@ for (const width of WIDTHS) {
     const alert = page.locator("[data-slot=alert][role=alert]");
     await expect(alert).toHaveCount(1);
     await expect(alert).toContainText("Email or password is incorrect.");
+    await expect(alert).toContainText("Check both and try again.");
+    await expect(alert).not.toContainText(/5 attempts|15 minutes/);
     await expect(alert).not.toContainText(/invalid login credentials/i);
     await expect(alert).toBeFocused();
     const alertBottom = await alert.evaluate((el) => el.getBoundingClientRect().bottom);
