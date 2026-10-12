@@ -10,8 +10,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # One run per PR; a new push cancels the older PR run.
+  # Pushes to main are never cancelled.
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   secret-scan:
@@ -39,6 +41,29 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
+          fetch-depth: 0
+
+      # Docs-only PRs (every changed file is under docs/ or ends in .md) skip
+      # the Supabase, database and e2e steps. The job still reports, so the
+      # required ci check stays. Pushes to main always run everything.
+      - name: Detect docs-only change
+        id: scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          docs_only=false
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            changed="$(git diff --name-only "$BASE_SHA...$HEAD_SHA")"
+            echo "$changed"
+            other="$(printf '%s\n' "$changed" | grep -v -E '^docs/|\.md$' | grep -v '^$' || true)"
+            if [ -n "$changed" ] && [ -z "$other" ]; then
+              docs_only=true
+            fi
+          fi
+          echo "docs_only=$docs_only" >> "$GITHUB_OUTPUT"
+          echo "docs_only=$docs_only"
 
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
@@ -64,11 +89,13 @@ jobs:
         run: pnpm test
 
       - name: Setup Supabase CLI
+        if: steps.scope.outputs.docs_only != 'true'
         uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1.7.3
         with:
           version: 2.120.0
 
       - name: Start local Supabase
+        if: steps.scope.outputs.docs_only != 'true'
         run: |
           supabase start > /tmp/supabase-start.log 2>&1
           status=$?
@@ -76,12 +103,15 @@ jobs:
           exit $status
 
       - name: Database tests
+        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm test:db
 
       - name: Install Playwright Chromium
+        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Write local Next.js env
+        if: steps.scope.outputs.docs_only != 'true'
         run: |
           eval "$(supabase status -o env)"
           umask 077
@@ -91,4 +121,5 @@ jobs:
           } > .env.local
 
       - name: E2E smoke
+        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm test:e2e
