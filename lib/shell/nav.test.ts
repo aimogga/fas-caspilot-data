@@ -27,7 +27,7 @@ describe("DS-02 nav", () => {
 
 describe("shell breadcrumb", () => {
   it("shows Account not set up for a user with no role, whatever the URL", () => {
-    for (const role of ["unknown", "", "other"]) {
+    for (const role of ["unknown", "", "other", "constructor", "toString"]) {
       for (const path of ["/board", "/staff", "/admin", "/403", "/nope"]) {
         expect(crumbFor(role, path, "FAS Evidence")).toBe("Account not set up");
       }

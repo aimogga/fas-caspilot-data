@@ -38,7 +38,7 @@ export const CRUMB: Record<string, string> = { "/staff": "Home", "/admin": "Admi
 export const NO_ROLE_CRUMB = "Account not set up";
 
 export function crumbFor(role: string, pathname: string, fallback: string): string {
-  if (!(role in ROLE_LABEL)) return NO_ROLE_CRUMB;
+  if (!Object.hasOwn(ROLE_LABEL, role)) return NO_ROLE_CRUMB;
   return CRUMB[canonicalizePath(pathname) ?? pathname] ?? fallback;
 }
 

@@ -268,11 +268,6 @@ Left: the fast path matches all of `docs/`, so non-Markdown files there also ski
 Did: `.github/copilot-instructions.md`, `harness/COPILOT_ROUTING.md`, task packet George-gated list with real FAS data and escalation path, UI PR evidence gates, focus ring per DS-01b, AGENTS.md renamed to FAS Evidence, concurrency one Cursor cloud agent plus one Copilot agent (merged at 637d40f).
 Left: D-009 budget caps and the open money questions for George.
 
-## 2026-10-12 21:30 (UTC) — Copilot — PR #77 DS-04 follow-ups (#67)
-Did: no-role breadcrumb "Account not set up" via `crumbFor` in `lib/shell/nav.ts` (roles with a home unchanged); `areaName` is case-insensitive and matches sub-paths; placeholder subtitles use `PageHeader` description; e2e for no-role 403 and area-name case in `status-pages.spec.ts`; layout-parity entries for signed-in 404, error and `/`, plus subtitle-left equals h1-left.
-Also: crumb uses the canonical path (fixes #78); main merged at a0d9c7b.
-Left: UI evidence (screenshots, axe, mockup comparison) needs a run with local Supabase.
-
 ## 2026-10-12 20:14 (UTC) — Cloud Agent — PR #75 checklist #68, #72, #69
 Did: checklist and progress entries for #68, #72 and #69 with API merge times; concurrency sentence in DESIGN_WORKFLOW step 2 (PR #75 merged at 4a27989).
 Left: none.
@@ -343,3 +338,8 @@ Left: QA re-check.
 ## 2026-10-12 23:50 (UTC) — QA — PR #97 flip F-202 passing
 Did: F-202 set to passing in harness/feature_list.json with evidence: PR #86 QA PASS at 513d3b0 (squash-merged at 2d44deb, 2026-10-12 22:40:43 UTC) and PR #92 QA PASS at 6741f21 (squash-merged at 5f547d3, 2026-10-12 23:46:49 UTC). Live fas-dev ingest at 23:46:22 UTC loaded 58 rows (29 counties × 2 indicators, 2024); re-run at 23:46:31 UTC stayed at 58 with 0 duplicates. Checklist: 7 of 44 done. Closes #83.
 Left: follow-up to log SahieHttp ingest errors server-side (no secrets).
+
+## 2026-10-12 21:30 (UTC) — Copilot — PR #77 DS-04 follow-ups (#67)
+Did: no-role breadcrumb "Account not set up" via `crumbFor` in `lib/shell/nav.ts` (roles with a home unchanged); `areaName` is case-insensitive and matches sub-paths; placeholder subtitles use `PageHeader` description; e2e for no-role 403 and area-name case in `status-pages.spec.ts`; layout-parity entries for signed-in 404, error and `/`, plus subtitle-left equals h1-left.
+Also: crumb uses the canonical path (fixes #78).
+Left: UI evidence (screenshots, axe, mockup comparison) needs a run with local Supabase.
