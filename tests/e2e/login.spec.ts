@@ -68,7 +68,8 @@ for (const width of WIDTHS) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/login");
     await submit(page, "staff@example.test", "wrong-password");
-    const alert = page.getByRole("alert");
+    const alert = page.locator("[data-slot=alert][role=alert]");
+    await expect(alert).toHaveCount(1);
     await expect(alert).toContainText("Email or password is incorrect.");
     await expect(alert).not.toContainText(/invalid login credentials/i);
     await expect(alert).toBeFocused();
