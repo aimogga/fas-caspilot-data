@@ -51,13 +51,14 @@ it('fails closed when the response has fewer than 29 counties', () => {
   expect(() => Sahie.requireComplete(Sahie.parse(fixture))).toThrow(/partial/);
 });
 
-it('n8n workflow is inactive and pending #89', () => {
+it('n8n workflow is inactive and posts to the ingest handler', () => {
   const text = readFileSync('n8n/census-sahie.json', 'utf8');
-  const wf = JSON.parse(text) as { name: string; active: boolean; nodes: { type: string }[] };
+  const wf = JSON.parse(text) as { active: boolean; nodes: { type: string }[] };
   expect(wf.active).toBe(false);
-  expect(wf.name).toContain('#89');
   expect(wf.nodes.some((n) => n.type === 'n8n-nodes-base.scheduleTrigger')).toBe(true);
-  expect(text).not.toMatch(/2024|FAS_INGEST_SAHIE_URL/);
+  expect(wf.nodes.some((n) => n.type === 'n8n-nodes-base.httpRequest')).toBe(true);
+  expect(text).toContain('$env.FAS_INGEST_SAHIE_URL');
+  expect(text).not.toMatch(/20\d{2}/);
 });
 
 it('CensusTable rejects a non-table payload', () => {
