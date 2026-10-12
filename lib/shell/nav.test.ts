@@ -38,6 +38,7 @@ describe("shell breadcrumb", () => {
     expect(crumbFor("admin", "/admin", "FAS Evidence")).toBe("Admin · Overview");
     expect(crumbFor("staff", "/staff", "FAS Evidence")).toBe("Home");
     expect(crumbFor("board_viewer", "/board", "FAS Evidence")).toBe("Board dashboard");
+    expect(crumbFor("admin", "/%61dmin", "FAS Evidence")).toBe("Admin · Overview");
     expect(crumbFor("board_viewer", "/403", "FAS Evidence")).toBe("FAS Evidence");
   });
 });

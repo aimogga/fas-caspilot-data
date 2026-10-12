@@ -270,4 +270,13 @@ Left: D-009 budget caps and the open money questions for George.
 
 ## 2026-10-12 21:30 (UTC) — Copilot — PR #77 DS-04 follow-ups (#67)
 Did: no-role breadcrumb "Account not set up" via `crumbFor` in `lib/shell/nav.ts` (roles with a home unchanged); `areaName` is case-insensitive and matches sub-paths; placeholder subtitles use `PageHeader` description; e2e for no-role 403 and area-name case in `status-pages.spec.ts`; layout-parity entries for signed-in 404, error and `/`, plus subtitle-left equals h1-left.
-Left: UI evidence (screenshots, axe, mockup comparison) needs a run with local Supabase; rebase on main (#76).
+Also: crumb uses the canonical path (fixes #78); main merged at a0d9c7b.
+Left: UI evidence (screenshots, axe, mockup comparison) needs a run with local Supabase.
+
+## 2026-10-12 20:14 (UTC) — Cloud Agent — PR #75 checklist #68, #72, #69
+Did: checklist and progress entries for #68, #72 and #69 with API merge times; concurrency sentence in DESIGN_WORKFLOW step 2 (PR #75 merged at 4a27989).
+Left: none.
+
+## 2026-10-12 21:13 (UTC) — Cloud Agent — PR #76 prefix route guards
+Did: `/admin`, `/staff` and `/board` guarded by prefix on a canonical path (decoded, lowercased, slashes collapsed, dot segments resolved); unknown paths reach 404; backslash and `//` tricks return 400; no-role users get a real 403 outside `/403`, `/login` and sign-out; unit and e2e route-guard tests (PR #76 merged at 3125135, closes #63).
+Left: #78 (breadcrumb on encoded URLs), #79 (guard-list check); next #66 cookie flags.

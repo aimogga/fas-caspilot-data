@@ -3,11 +3,112 @@ const ALL: UserRole[] = ['admin', 'staff', 'board_viewer'];
 const RULES: Record<string, UserRole[]> = {
   '/login': ALL, '/': ALL, '/staff': ['admin', 'staff'], '/admin': ['admin'], '/board': ALL,
 };
+const GUARDED_PREFIXES = ['/admin', '/staff', '/board'] as const;
+export type GuardedPrefix = (typeof GUARDED_PREFIXES)[number];
+const DECODE_PASSES = 8;
+const NOROLE_ALLOWED = ['/403', '/login', '/api/auth/signout'] as const;
+
+function decodeFully(path: string): string | null {
+  let current = path;
+  for (let pass = 0; pass < DECODE_PASSES; pass++) {
+    let next: string;
+    try {
+      next = decodeURIComponent(current);
+    } catch {
+      return null;
+    }
+    if (next === current) {
+      return current;
+    }
+    current = next;
+  }
+  return null;
+}
+
+function resolvePathSegments(path: string): string {
+  const parts = path.split('/');
+  const out: string[] = [];
+  for (const part of parts) {
+    if (part === '' || part === '.') {
+      continue;
+    }
+    if (part === '..') {
+      if (out.length > 0) {
+        out.pop();
+      }
+      continue;
+    }
+    out.push(part);
+  }
+  if (out.length === 0) {
+    return '/';
+  }
+  return `/${out.join('/')}`;
+}
+
+/** Decode fully, lowercase, collapse slashes, resolve `.`/`..`. Null fails closed. */
+export function canonicalizePath(path: string): string | null {
+  const decoded = decodeFully(path);
+  if (decoded === null) {
+    return null;
+  }
+  if (/[\u0000-\u001F\u007F]/.test(decoded)) {
+    return null;
+  }
+  if (decoded.includes('\\')) {
+    return null;
+  }
+  const resolved = resolvePathSegments(decoded.toLowerCase());
+  if (resolved.includes('\\') || resolved.startsWith('//')) {
+    return null;
+  }
+  return resolved;
+}
+
+/** Role-home prefix on a path segment (#63). Callers pass a canonical path. */
+export function matchGuardedPrefix(path: string): GuardedPrefix | null {
+  for (const prefix of GUARDED_PREFIXES) {
+    if (path === prefix) {
+      return prefix;
+    }
+    if (path.startsWith(`${prefix}/`)) {
+      return prefix;
+    }
+  }
+  return null;
+}
+
+export function isNoroleAllowed(path: string): boolean {
+  const canonical = canonicalizePath(path);
+  if (canonical === null) {
+    return false;
+  }
+  for (const allowed of NOROLE_ALLOWED) {
+    if (canonical === allowed) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function isRouteAllowed(path: string, role: UserRole | null): boolean {
-  return !!role && (RULES[path]?.includes(role) ?? false);
+  if (!role) {
+    return false;
+  }
+  const canonical = canonicalizePath(path);
+  if (canonical === null) {
+    return false;
+  }
+  const key = matchGuardedPrefix(canonical) ?? canonical;
+  return RULES[key]?.includes(role) ?? false;
 }
 export function getAllowedRoles(path: string): UserRole[] {
-  return RULES[path] ?? [];
+  const canonical = canonicalizePath(path);
+  if (canonical === null) {
+    return [];
+  }
+  const key = matchGuardedPrefix(canonical) ?? canonical;
+  return RULES[key] ?? [];
 }
 const HOME: Record<UserRole, string> = { admin: '/admin', staff: '/staff', board_viewer: '/board' };
 export function roleHome(role: UserRole | null): string | null {

@@ -1,3 +1,5 @@
+import { canonicalizePath } from "@/lib/auth/role-guards";
+
 export type NavItem = { label: string; href: string };
 export type NavGroup = { label: string; items: NavItem[] };
 
@@ -37,7 +39,7 @@ export const NO_ROLE_CRUMB = "Account not set up";
 
 export function crumbFor(role: string, pathname: string, fallback: string): string {
   if (!(role in ROLE_LABEL)) return NO_ROLE_CRUMB;
-  return CRUMB[pathname] ?? fallback;
+  return CRUMB[canonicalizePath(pathname) ?? pathname] ?? fallback;
 }
 
 export function navForRole(role: string): { groups: NavGroup[]; footer: string | null } {
