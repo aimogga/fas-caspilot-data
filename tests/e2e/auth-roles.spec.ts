@@ -34,11 +34,11 @@ test.describe('auth-roles', () => {
       await signIn(page, email);
       for (const route of allowed) {
         await page.goto(route);
-        await expect(page.locator('h1')).not.toContainText('403');
+        await expect(page.locator('[data-slot=status-card]')).toHaveCount(0);
       }
       for (const route of denied) {
         await page.goto(route);
-        await expect(page.locator('h1')).toContainText('403');
+        await expect(page.locator('[data-slot=status-eyebrow]')).toContainText('403');
       }
       await page.goto('/');
       await page.locator('[data-slot=user-menu] summary').click();
