@@ -1,0 +1,44 @@
+name: Nightly Audit Backup Trigger
+
+# Backup for the Nightly Audit schedule (cron '23 9 * * *' UTC), which GitHub
+# sometimes delays or skips. At a different time, dispatch Nightly Audit only
+# when no successful run exists in the last 26h. Does not change audit logic.
+
+on:
+  schedule:
+    - cron: '7 14 * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: nightly-audit-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dispatch Nightly Audit if no success in last 26h
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          since=$(date -u -d '26 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+          recent=$(gh run list --workflow nightly-audit.yml --branch main \
+            --limit 50 --json conclusion,createdAt,event \
+            --jq "[.[] | select(.conclusion == \"success\" and .event != \"pull_request\" and .createdAt >= \"$since\")] | length")
+          active=$(gh run list --workflow nightly-audit.yml --branch main \
+            --limit 20 --json status,event \
+            --jq '[.[] | select(.event != "pull_request" and (.status == "queued" or .status == "in_progress"))] | length')
+          echo "successful runs since $since: $recent; active: $active"
+          if [ "$recent" -gt 0 ] || [ "$active" -gt 0 ]; then
+            echo "Nightly Audit is fresh or running; nothing to do."
+            exit 0
+          fi
+          gh workflow run nightly-audit.yml --ref main
+          echo "::notice::Dispatched Nightly Audit (no successful run in the last 26h)."
