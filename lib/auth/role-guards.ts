@@ -5,8 +5,60 @@ const RULES: Record<string, UserRole[]> = {
 };
 const GUARDED_PREFIXES = ['/admin', '/staff', '/board'] as const;
 export type GuardedPrefix = (typeof GUARDED_PREFIXES)[number];
+const DECODE_PASSES = 8;
+const NOROLE_ALLOWED = ['/403', '/login', '/api/auth/signout'] as const;
 
-/** Role-home prefix on a path segment (#63). Case-sensitive, like RULES. */
+function decodeFully(path: string): string | null {
+  let current = path;
+  for (let pass = 0; pass < DECODE_PASSES; pass++) {
+    let next: string;
+    try {
+      next = decodeURIComponent(current);
+    } catch {
+      return null;
+    }
+    if (next === current) {
+      return current;
+    }
+    current = next;
+  }
+  return null;
+}
+
+function resolvePathSegments(path: string): string {
+  const parts = path.split('/');
+  const out: string[] = [];
+  for (const part of parts) {
+    if (part === '' || part === '.') {
+      continue;
+    }
+    if (part === '..') {
+      if (out.length > 0) {
+        out.pop();
+      }
+      continue;
+    }
+    out.push(part);
+  }
+  if (out.length === 0) {
+    return '/';
+  }
+  return `/${out.join('/')}`;
+}
+
+/** Decode fully, lowercase, collapse slashes, resolve `.`/`..`. Null fails closed. */
+export function canonicalizePath(path: string): string | null {
+  const decoded = decodeFully(path);
+  if (decoded === null) {
+    return null;
+  }
+  if (/[\u0000-\u001F\u007F]/.test(decoded)) {
+    return null;
+  }
+  return resolvePathSegments(decoded.toLowerCase());
+}
+
+/** Role-home prefix on a path segment (#63). Callers pass a canonical path. */
 export function matchGuardedPrefix(path: string): GuardedPrefix | null {
   for (const prefix of GUARDED_PREFIXES) {
     if (path === prefix) {
@@ -19,15 +71,36 @@ export function matchGuardedPrefix(path: string): GuardedPrefix | null {
   return null;
 }
 
+export function isNoroleAllowed(path: string): boolean {
+  const canonical = canonicalizePath(path);
+  if (canonical === null) {
+    return false;
+  }
+  for (const allowed of NOROLE_ALLOWED) {
+    if (canonical === allowed) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function isRouteAllowed(path: string, role: UserRole | null): boolean {
   if (!role) {
     return false;
   }
-  const key = matchGuardedPrefix(path) ?? path;
+  const canonical = canonicalizePath(path);
+  if (canonical === null) {
+    return false;
+  }
+  const key = matchGuardedPrefix(canonical) ?? canonical;
   return RULES[key]?.includes(role) ?? false;
 }
 export function getAllowedRoles(path: string): UserRole[] {
-  const key = matchGuardedPrefix(path) ?? path;
+  const canonical = canonicalizePath(path);
+  if (canonical === null) {
+    return [];
+  }
+  const key = matchGuardedPrefix(canonical) ?? canonical;
   return RULES[key] ?? [];
 }
 const HOME: Record<UserRole, string> = { admin: '/admin', staff: '/staff', board_viewer: '/board' };

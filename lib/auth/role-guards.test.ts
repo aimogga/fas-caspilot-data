@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isRouteAllowed, getAllowedRoles, isPublicRoute, safeRedirect, roleHome, hadSession, signedInLoginTarget, matchGuardedPrefix, type UserRole } from './role-guards';
+import { isRouteAllowed, getAllowedRoles, isPublicRoute, safeRedirect, roleHome, hadSession, signedInLoginTarget, matchGuardedPrefix, canonicalizePath, isNoroleAllowed, type UserRole } from './role-guards';
 
 describe('role-guards', () => {
   const routes = ['/', '/staff', '/admin', '/board', '/login'];
@@ -150,6 +150,55 @@ describe('role-guards', () => {
     it('keeps matching when only later segments differ in case', () => {
       expect(matchGuardedPrefix('/staff/Reports')).toBe('/staff');
       expect(matchGuardedPrefix('/admin/Users')).toBe('/admin');
+    });
+  });
+  describe('canonicalizePath (#63)', () => {
+    it.each([
+      ['/%61dmin', '/admin'],
+      ['/%73taff', '/staff'],
+      ['/%2561dmin', '/admin'],
+      ['/admin%2Fusers', '/admin/users'],
+      ['/Admin', '/admin'],
+      ['//admin', '/admin'],
+      ['///staff', '/staff'],
+      ['/./admin', '/admin'],
+      ['/x/../admin', '/admin'],
+      ['/admin/', '/admin'],
+    ] as const)('%j → %j', (input, expected) => {
+      expect(canonicalizePath(input)).toBe(expected);
+    });
+    it('fails closed on malformed encoding', () => {
+      expect(canonicalizePath('/%')).toBeNull();
+      expect(canonicalizePath('/%zz')).toBeNull();
+      expect(isRouteAllowed('/%zz', 'admin')).toBe(false);
+    });
+    it('guards encoded prefixes with the role map', () => {
+      expect(isRouteAllowed('/%61dmin', 'admin')).toBe(true);
+      expect(isRouteAllowed('/%61dmin', 'staff')).toBe(false);
+      expect(isRouteAllowed('/%73taff', 'staff')).toBe(true);
+      expect(isRouteAllowed('/%73taff', 'board_viewer')).toBe(false);
+      expect(isRouteAllowed('/%2561dmin', 'staff')).toBe(false);
+      expect(isRouteAllowed('/%2561dmin', 'admin')).toBe(true);
+      expect(isRouteAllowed('/admin%2Fusers', 'admin')).toBe(true);
+      expect(isRouteAllowed('/admin%2Fusers', 'staff')).toBe(false);
+      expect(matchGuardedPrefix(canonicalizePath('/%61dmin') ?? '')).toBe('/admin');
+    });
+  });
+  describe('isNoroleAllowed', () => {
+    it('allows only 403, login, and logout', () => {
+      expect(isNoroleAllowed('/403')).toBe(true);
+      expect(isNoroleAllowed('/login')).toBe(true);
+      expect(isNoroleAllowed('/api/auth/signout')).toBe(true);
+    });
+    it('denies guarded prefixes, public extras, and unknown paths', () => {
+      expect(isNoroleAllowed('/admin')).toBe(false);
+      expect(isNoroleAllowed('/staff')).toBe(false);
+      expect(isNoroleAllowed('/board')).toBe(false);
+      expect(isNoroleAllowed('/')).toBe(false);
+      expect(isNoroleAllowed('/ui')).toBe(false);
+      expect(isNoroleAllowed('/api/health')).toBe(false);
+      expect(isNoroleAllowed('/administrator')).toBe(false);
+      expect(isNoroleAllowed('/%zz')).toBe(false);
     });
   });
 });

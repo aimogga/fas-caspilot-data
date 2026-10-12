@@ -30,6 +30,37 @@ test('the wrong role on a guarded prefix gets 403', async ({ page }) => {
   await expect(page).toHaveURL(/\/admin\/users$/);
 });
 
+test('staff on /admin gets 403', async ({ page }) => {
+  await signIn(page, 'staff@example.test');
+  const response = await page.goto('/admin');
+  expect(response?.status()).toBe(403);
+  await expect(page).toHaveURL(/\/admin$/);
+});
+
+test('norole on each guarded prefix gets 403', async ({ page }) => {
+  await signIn(page, 'norole@example.test');
+  for (const path of ['/admin', '/staff', '/board']) {
+    const response = await page.goto(path);
+    expect(response?.status()).toBe(403);
+    await expect(page).toHaveURL(new RegExp(`${path}$`));
+  }
+});
+
+test('a non-admin on an encoded admin path gets 403', async ({ page }) => {
+  await signIn(page, 'staff@example.test');
+  const encoded = await page.request.get('/%61dmin', { maxRedirects: 0 });
+  expect(encoded.status()).toBe(403);
+  const nav = await page.goto('/%61dmin');
+  expect(nav?.status()).toBe(403);
+});
+
+test('norole is default-denied on an unknown path', async ({ page }) => {
+  await signIn(page, 'norole@example.test');
+  const response = await page.goto('/administrator');
+  expect(response?.status()).toBe(403);
+  await expect(page).toHaveURL(/\/administrator$/);
+});
+
 test('a signed-out user on a guarded prefix goes to login', async ({ page }) => {
   const staffProbe = await page.request.get('/staff', { maxRedirects: 0 });
   expect(staffProbe.status()).toBe(307);
