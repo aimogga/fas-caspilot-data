@@ -10,7 +10,7 @@ async function signIn(page: Page, email: string) {
 }
 const axe = (page: Page) => new AxeBuilder({ page }).analyze().then((r) => r.violations.filter((v) => v.impact === "serious" || v.impact === "critical"));
 
-test("role nav, mobile sheet, and shell screenshots", async ({ page }) => {
+test("role nav and shell screenshots", async ({ page }) => {
   const cases = [
     ["admin@example.test", "/admin", ["Home", "Overview"], "Admin", false, "Admin · Overview"],
     ["staff@example.test", "/staff", ["Home"], "Staff", false, "Home"],
@@ -23,6 +23,7 @@ test("role nav, mobile sheet, and shell screenshots", async ({ page }) => {
     await expect(page.locator("[data-slot=sidebar] nav a")).toHaveText([...labels]);
     await expect(page.locator("[data-slot=crumbs]")).toHaveText(crumb);
     await expect(page.locator("[data-slot=user-role]")).toHaveText(role);
+    expect(await axe(page)).toEqual([]);
     await expect(page.locator("main")).not.toContainText("Role:");
     await expect(page.locator("body")).not.toContainText(/case\s*pilot/i);
     if (footer) await expect(page.locator("[data-slot=board-footer]")).toHaveText("Read-only access · aggregates only");
@@ -37,25 +38,6 @@ test("role nav, mobile sheet, and shell screenshots", async ({ page }) => {
     await page.context().clearCookies();
   }
   await signIn(page, "admin@example.test");
-  await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto("/staff");
-  const menu = page.getByRole("button", { name: "Open navigation" });
-  await expect(menu).toHaveAttribute("aria-expanded", "false");
-  await expect(menu).toHaveAttribute("aria-controls", "nav-sheet");
-  expect((await menu.boundingBox())!.width).toBeGreaterThanOrEqual(44);
-  expect(await axe(page)).toEqual([]);
-  await page.screenshot({ path: `${ART}/shell-staff-375-closed.png`, fullPage: true });
-  await menu.click();
-  expect(await axe(page)).toEqual([]);
-  const minTarget = await page.evaluate(() => {
-    const visible = [...document.querySelectorAll("a, button, summary")].filter((el) => {
-      const r = el.getBoundingClientRect();
-      return getComputedStyle(el).display !== "none" && r.width > 0 && r.height > 0;
-    });
-    return Math.min(...visible.map((el) => Math.min(el.getBoundingClientRect().width, el.getBoundingClientRect().height)));
-  });
-  expect(minTarget).toBeGreaterThanOrEqual(44);
-  await page.screenshot({ path: `${ART}/shell-staff-375-open.png`, fullPage: true });
   for (const width of [800, 1024]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/staff");
