@@ -29,6 +29,7 @@
     "app/**/*.tsx",
     "lib/**/*.ts",
     "lib/**/*.tsx",
+    "packages/ingest/**/*.ts",
     "tests/db/**/*.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
