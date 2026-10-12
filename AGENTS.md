@@ -78,3 +78,11 @@ Commit working code only. If you must stop mid-feature, leave the code compiling
 - `fas-dev` (ref `zlizvzpatfyhdydfmxef`) is the only FAS Supabase project. It holds synthetic data only and is used by Vercel previews.
 - The other project in the account, `dhlvtisumrvhnqbeidlt`, is NOT FAS and NOT production. Do not use it.
 - There is no FAS production database yet.
+
+## GitHub Copilot cloud agent
+- Copilot reads this file and `.github/copilot-instructions.md`.
+- Its environment is `.github/workflows/copilot-setup-steps.yml` (an Actions runner, not the Cursor machine).
+- There is no local Supabase there by default; run the smoke check and leave `test:db`/`test:e2e` to CI.
+- Only issues marked `Route: Copilot` go to Copilot; see `harness/COPILOT_ROUTING.md`.
+- Copilot never touches workflows, rulesets, auth/middleware, migrations/RLS, n8n or real data.
+- Same gates as Cursor: D-012 cap, QA PASS and DESIGN APPROVED at the same head, CI and secret scan green.

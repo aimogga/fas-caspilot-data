@@ -8,6 +8,7 @@ feature_id: F-000                  # from harness/feature_list.json (exactly one
 title: ""
 from: chief-of-staff | engineer-supervisor | deep-research | qa | nightly-audit
 to: engineer-bot | qa | deep-research | engineer-supervisor | george
+route: Cursor                      # Copilot | Cursor (harness/COPILOT_ROUTING.md)
 phase: 0
 goal: ""                           # one sentence, outcome not activity
 context_files:                     # read these before starting, in this order
@@ -36,6 +37,44 @@ escalate_if:
   - tests fail after 2 honest attempts
   - a decision is needed that is not in docs/ or harness/DECISIONS.md
   - any privacy rule would be bent
+```
+
+## Copilot issue body (route: Copilot)
+
+Copilot can't read packet threads, so the issue must carry everything.
+Inline the spec, the AC and the line cap; don't just link them.
+
+```markdown
+Route: Copilot
+Packet: TP-0000 · Feature: F-000
+
+## Goal
+One sentence.
+
+## Spec
+- docs/design/specs/<ID>.md#<section>
+- (quote the relevant spec lines here)
+
+## Acceptance criteria (copied, never weakened)
+1. ...
+2. ...
+
+## Tests required
+- unit: ...
+- e2e: ... (scoped locators; no presence-only assertions)
+
+## Files allowed
+- path/one.tsx
+- path/two.test.ts
+
+## Limits
+- Hand-written diff ≤ 400 lines, added plus deleted (D-012).
+- One statement per line; no line packing.
+- Synthetic data only; no secrets.
+- Don't touch .github/workflows, ruleset, auth/middleware, supabase/migrations, n8n.
+
+## Out of scope
+- ...
 ```
 
 ## Return report (what the receiver sends back)
