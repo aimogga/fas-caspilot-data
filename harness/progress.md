@@ -207,3 +207,11 @@ Left: none.
 ## 2026-10-12 14:30 (UTC) — Cloud Agent — PR #47 Nightly Audit backup trigger
 Did: CI backup trigger that runs the Nightly Audit when the schedule is missed (merged at 04684db).
 Left: none.
+
+## 2026-10-12 14:45 (UTC) — Cloud Agent — PR #48 docs follow-ups
+Did: DESIGN_WORKFLOW names both screen-plan files; progress entries for PR #42–#47; checklist sources 2–4 and #47 (merged at 9aae887).
+Left: none.
+
+## 2026-10-12 16:07 (UTC) — Cloud Agent — PR #41 DS-02a signed-in app shell
+Did: route move to app/(app), role nav per screen-plan §1.2, desktop sidebar/rail, top bar with wordmark below 768px (squash-merged at 4176aae). Split per QA: mobile sheet is PR #50 (DS-02b, in review); deferred e2e and hidden nav items are issue #49.
+Left: PR #50, issue #49.
