@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test"; import { HIDDEN_LABELS } from "../../lib/shell/nav";
+import { expect, test, type Page } from "@playwright/test";
+import { HIDDEN_LABELS } from "../../lib/shell/nav";
 
 const ART = "/opt/cursor/artifacts";
 async function signIn(page: Page, email: string) {
@@ -14,14 +15,16 @@ test("role nav, mobile sheet, and shell screenshots", async ({ page }) => {
   const cases = [
     ["admin@example.test", "/admin", ["Home", "Overview"], "Admin", false, "Admin · Overview"],
     ["staff@example.test", "/staff", ["Home"], "Staff", false, "Home"],
-    ["board@example.test", "/board", ["Board dashboard"], "Board viewer", true, "Board home"],
+    ["board@example.test", "/board", ["Board dashboard"], "Board · read-only", true, "Board home"],
   ] as const;
   for (const [email, path, labels, role, footer, crumb] of cases) {
     await signIn(page, email);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(path);
     await expect(page.locator("[data-slot=sidebar] nav a")).toHaveText([...labels]);
-    for (const name of HIDDEN_LABELS) await expect(page.getByRole("link", { name, exact: true })).toHaveCount(0); await expect(page.locator("[data-slot=crumbs]")).toHaveText(crumb); await expect(page.locator("[data-slot=user-role]")).toHaveText(role);
+    for (const name of HIDDEN_LABELS) await expect(page.getByRole("link", { name, exact: true })).toHaveCount(0);
+    await expect(page.locator("[data-slot=crumbs]")).toHaveText(crumb);
+    await expect(page.locator("[data-slot=user-role]")).toHaveText(role);
     await expect(page.locator("main")).not.toContainText("Role:");
     await expect(page.locator("body")).not.toContainText(/case\s*pilot/i);
     if (footer) await expect(page.locator("[data-slot=board-footer]")).toHaveText("Read-only access · aggregates only");
