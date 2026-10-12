@@ -15,6 +15,7 @@ Cursor is on the $20 plan: one cloud agent at a time, $0 on-demand.
 
 ### Stays on Cursor
 - Complex or multi-file packets.
+- New screens, layout or shell changes, and anything touching data display or trust rules (design ruling, 2026-10-12).
 - Auth and sessions (#60, #63, #66), `middleware.ts`.
 - Database: migrations, RLS, `pnpm test:db`.
 - n8n.
