@@ -5,8 +5,8 @@ Last updated: 2026-10-12
 ## Summary
 
 - **Done:** 6 of 44 features (14%): F-003, F-101, F-102, F-103, F-104 and F-105.
-- **In progress:** F-601 nightly audit (partly working). DS-02 signed-in app shell (PR #41, in QA/design review at 37364cf).
-- **Next up:** Finish design foundation (DS-02 role shell → DS-03 login → DS-04 403, design sources 2–4 are merged), then Phase 2 starting with F-201 (a record of every data import and its results), then cleanup of open issues #12, #13, #23 and #26.
+- **In progress:** F-601 nightly audit (partly working). DS-02b mobile top bar and nav sheet (PR #50, in review at 4b4a3c3).
+- **Next up:** Finish design foundation (DS-02b mobile sheet → DS-03 login → DS-04 403, design sources 2–4 are merged), then Phase 2 starting with F-201 (a record of every data import and its results), then cleanup of open issues #12, #13, #23 and #26.
 - **Blocked:** None right now.
 
 ## Design system
@@ -19,7 +19,9 @@ Last updated: 2026-10-12
 - **DS-01b** shadcn base components: done (PR #36, merged at 5a38f52).
 - **DS-01c** layout and trust primitives: done (PR #37, merged at 4b59f96).
 - DS-02/03/04 spec amendments (adopt DS-01c Page container): done (PR #40, merged at 488bbe6).
-- **DS-02** signed-in app shell: in review (PR #41, QA/design review at 37364cf).
+- **DS-02a** signed-in app shell (route move, role nav, desktop sidebar/rail, top bar): done (PR #41, squash-merged at 4176aae).
+- **DS-02b** mobile top bar and nav sheet: in review (PR #50, at 4b4a3c3). Deferred e2e (focus trap, scroll lock, reduced motion) and hidden nav items: issue #49.
+- Docs follow-ups (design workflow refs, progress entries #42–#47, checklist): done (PR #48, merged at 9aae887).
 - **DS-03** login: not started.
 - **DS-04** 403: not started.
 
@@ -87,7 +89,7 @@ Last updated: 2026-10-12
 
 ## Phase 6: Safety checks and launch
 
-- [ ] **In progress** F-601 Nightly audit script: Nightly audit runs and fails on serious problems, but it's partial: it doesn't yet check data freshness, data sanity, grants or cost, it doesn't file its report as a PR or issue, it hasn't been run against a preview, and the new schedule hasn't fired yet. Backup trigger for a missed schedule: done (PR #47, merged at 04684db).
+- [ ] **In progress** F-601 Nightly audit script: Nightly audit runs and fails on serious problems, but it's partial (feature_list status: failing, no evidence). Data freshness, data sanity, grants and cost checks are stubbed as SKIPPED; there's no `pnpm audit:nightly` script; it doesn't file its report as a PR or issue; it hasn't been run against a preview. The schedule has fired once (Oct 11, 15:47 UTC, about 6 hours after its 09:23 cron) and missed Oct 12, which was covered by a manual run. Backup trigger for a missed schedule: done (PR #47, merged at 04684db), and it hasn't fired on schedule yet.
 - [ ] **Not started** F-602 Security review: a full check that data access rules, passwords and software are all safe.
 - [ ] **Not started** F-603 Legal review gate: a written legal opinion on health privacy rules and court records, with required agreements signed.
 - [ ] **Not started** F-604 Real-data onboarding runbook and migration: a step-by-step plan for loading FAS's real data, practiced first on fake data.
