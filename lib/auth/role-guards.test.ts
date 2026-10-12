@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isRouteAllowed, getAllowedRoles, isPublicRoute, safeRedirect, type UserRole } from './role-guards';
+import { isRouteAllowed, getAllowedRoles, isPublicRoute, safeRedirect, roleHome, hadSession, type UserRole } from './role-guards';
 
 describe('role-guards', () => {
   const routes = ['/', '/staff', '/admin', '/board', '/login'];
@@ -28,7 +28,27 @@ describe('role-guards', () => {
     expect(isPublicRoute('/api/auth/signout')).toBe(true);
     expect(isPublicRoute('/api/health')).toBe(true);
     expect(isPublicRoute('/ui')).toBe(true);
+    expect(isPublicRoute('/health')).toBe(true);
     expect(isPublicRoute('/')).toBe(false);
+  });
+  it('does not treat lookalike paths as public (#13)', () => {
+    expect(isPublicRoute('/api/healthz')).toBe(false);
+    expect(isPublicRoute('/api/health/')).toBe(false);
+    expect(isPublicRoute('/healthz')).toBe(false);
+    expect(isPublicRoute('/403/x')).toBe(false);
+  });
+  it('maps each role to its home', () => {
+    expect(roleHome('admin')).toBe('/admin');
+    expect(roleHome('staff')).toBe('/staff');
+    expect(roleHome('board_viewer')).toBe('/board');
+    expect(roleHome(null)).toBeNull();
+    expect(roleHome('owner' as UserRole)).toBeNull();
+  });
+  it('detects a prior Supabase session cookie', () => {
+    expect(hadSession(['sb-127-auth-token'])).toBe(true);
+    expect(hadSession(['sb-abc-auth-token.0', 'other'])).toBe(true);
+    expect(hadSession(['other', 'sb-abc-code-verifier'])).toBe(false);
+    expect(hadSession([])).toBe(false);
   });
   const origin = 'http://localhost:3000';
   it.each([

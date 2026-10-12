@@ -9,8 +9,15 @@ export function isRouteAllowed(path: string, role: UserRole | null): boolean {
 export function getAllowedRoles(path: string): UserRole[] {
   return RULES[path] ?? [];
 }
+const HOME: Record<UserRole, string> = { admin: '/admin', staff: '/staff', board_viewer: '/board' };
+export function roleHome(role: UserRole | null): string | null {
+  return role ? HOME[role] ?? null : null;
+}
 export function isPublicRoute(path: string): boolean {
-  return path === '/login' || path === '/403' || path === '/api/auth/signout' || path === '/api/health' || path === '/ui';
+  return path === '/login' || path === '/403' || path === '/api/auth/signout' || path === '/api/health' || path === '/ui' || path === '/health';
+}
+export function hadSession(cookieNames: string[]): boolean {
+  return cookieNames.some((name) => name.startsWith('sb-') && name.includes('-auth-token'));
 }
 
 const UNSAFE = /[\\\x00-\x1F\x7F]/;

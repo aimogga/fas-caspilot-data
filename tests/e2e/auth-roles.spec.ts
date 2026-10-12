@@ -41,7 +41,8 @@ test.describe('auth-roles', () => {
         await expect(page.locator('h1')).toContainText('403');
       }
       await page.goto('/');
-      await page.click('button[type="submit"]');
+      await page.locator('[data-slot=user-menu] summary').click();
+      await page.getByRole('button', { name: 'Sign out' }).click();
       await expect(page).toHaveURL(/\/login/);
     });
   }

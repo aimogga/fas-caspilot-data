@@ -29,7 +29,9 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const alertRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const rawRedirect = useSearchParams().get('redirect');
+  const params = useSearchParams();
+  const rawRedirect = params.get('redirect');
+  const expired = params.get('reason') === 'expired';
   const client = createClient();
   useEffect(() => {
     if (error) alertRef.current?.focus();
@@ -65,6 +67,12 @@ function LoginForm() {
         </Alert>
       ) : (
         <form onSubmit={handleLogin} data-slot="login-form">
+          {expired && !error ? (
+            <Alert variant="info" data-reason="expired">
+              <AlertTitle>Your session has ended.</AlertTitle>
+              <AlertDescription>Sign in again to continue.</AlertDescription>
+            </Alert>
+          ) : null}
           {error ? (
             <Alert variant="destructive" ref={alertRef} tabIndex={-1}>
               <AlertTitle>{error.title}</AlertTitle>
