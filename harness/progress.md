@@ -299,3 +299,7 @@ Left: none.
 ## 2026-10-12 22:05 (UTC) — Cloud Agent — #65 error page shell layout
 Did: signed-in `app/error.tsx` uses `ErrorFrame` → `ShellFrame` so the content area matches the role shell (80/696 at 800; sidebar from 1024; 1200 max). Signed-out stays on `SignedOutFrame`. Brought PR #77's signed-in 404/error/`/` layout-parity assertion.
 Left: CI + secret-scan, then ready.
+
+## 2026-10-12 22:40 (UTC) — Cloud Agent — #65 error frame review fixes
+Did: `loadErrorViewer` returns email; `ErrorFrame` passes `user.email ?? "Signed in"` like `AppShell`. Session reject or 4s timeout falls back to `SignedOutFrame` (`lib/status/error-frame.test.ts`). Did not touch the signed-out bar or `/403` copy (#91).
+Left: CI + secret-scan.
