@@ -38,7 +38,7 @@ test("login at 375 uses mobile tokens and stacked fields", async ({ page }) => {
       tap: getComputedStyle(document.documentElement).getPropertyValue("--tap-min").trim(),
       font: getComputedStyle(document.documentElement).getPropertyValue("--input-font").trim(),
       gutter: getComputedStyle(document.documentElement).getPropertyValue("--page-gutter-mobile").trim(),
-      pad: parseFloat(getComputedStyle(document.body).paddingLeft),
+      pad: parseFloat(getComputedStyle(document.querySelector("[data-slot=page]") ?? document.body).paddingLeft),
       inputPx: input ? parseFloat(getComputedStyle(input).fontSize) : 0,
       inputH: box(input).height,
       btnH: box(button).height,
@@ -61,10 +61,10 @@ test("login at 375 uses mobile tokens and stacked fields", async ({ page }) => {
   expect(m.inputBorderColor).not.toBe(m.bodyBg);
 });
 
-test("native Sign In and Sign Out are 44px at 1280", async ({ page }) => {
+test("Sign in and Sign Out are 44px at 1280", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/login");
-  expect(await page.getByRole("button", { name: "Sign In" }).evaluate((el) => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+  expect(await page.getByRole("button", { name: "Sign in" }).evaluate((el) => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
   await page.fill("#email", "staff@example.test");
   await page.fill("#password", "testpass123");
   await Promise.all([page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 10000 }), page.click("button[type=submit]")]);

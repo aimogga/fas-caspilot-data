@@ -62,7 +62,7 @@ describe("DS-01c", () => {
     expect(css).toContain("[data-slot=page-header] [data-slot=actions] > * { width: 100%");
     expect(css).toMatch(/@media \(min-width: 768px\)[\s\S]*\[data-slot=actions\][\s\S]*width: auto/);
     expect(read("components/layout/index.tsx") + read("components/trust/index.tsx")).not.toMatch(/style=\{\{/);
-    for (const rel of ["app/login/page.tsx", "app/403/page.tsx", "components/PageLayout.tsx"]) expect(read(rel)).not.toContain("components/layout");
+    for (const rel of ["app/403/page.tsx", "components/PageLayout.tsx"]) expect(read(rel)).not.toContain("components/layout");
     const gallery = read("app/(dev)/ui/page.tsx");
     for (const name of ["PageHeader", "EmptyState", "ErrorState", "SourceFooter", "SuppressedCell", "FreshnessChip", "NotPublished", "DraftBanner", "ResponsiveTable", "FormField"]) expect(gallery).toContain(name);
   });

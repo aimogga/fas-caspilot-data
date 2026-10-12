@@ -11,7 +11,7 @@ import { CRUMB, navForRole, PREVIEW_FOOTER, type NavGroup } from "@/lib/shell/na
 
 const ICONS: Record<string, LucideIcon> = { "/staff": House, "/admin": Shield, "/board": LayoutDashboard };
 
-function Wordmark() {
+export function Wordmark() {
   return (
     <div data-slot="wordmark">
       <span className="sr-only">{PRODUCT_NAME}</span>

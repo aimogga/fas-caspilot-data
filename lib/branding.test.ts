@@ -19,7 +19,7 @@ describe("product branding", () => {
 
   it("sets the document title and login heading to FAS Evidence", () => {
     expect(read("app/layout.tsx")).toMatch(/title:\s*PRODUCT_NAME/);
-    expect(read("app/login/page.tsx")).toMatch(/<h1>\{PRODUCT_NAME\}<\/h1>/);
+    expect(read("app/login/page.tsx")).toMatch(/<h1>Sign in to \{PRODUCT_NAME\}<\/h1>/);
   });
 
   it("keeps CasePilot and FAS Grants out of rendered UI source", () => {
