@@ -366,6 +366,26 @@ Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already
 Did: Added `docs/design/specs/DS-07.md` (Team dashboard / F-401), copied unchanged from design handoff. Docs only; no code or real data. Split from DS-05/06/07 batch (510 lines > 400).
 Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already matched the concurrency wording; no edit.
 
+## 2026-10-12 23:46 (UTC) — Cloud Agent — PR #95 health probe from env URL
+Did: `/api/health` probes `${NEXT_PUBLIC_SUPABASE_URL}/auth/v1/health` with the publishable `apikey`; falls back to local `127.0.0.1:54321` only when the URL is unset. Closes #12.
+State: lint/typecheck/unit 286/286 green; local `/api/health` ok vs GoTrue.
+Evidence: https://github.com/aimogga/fas-caspilot-data/pull/95
+Left: CI + secret-scan, then QA.
+Decisions: none.
+
+## 2026-10-13 00:21 (UTC) — Cloud Agent — PR #95 QA FAIL health status
+Did: `SupabaseHealthProbe.responds` now returns `response.ok` (2xx only). Injected-fetch tests: reject → false, timeout → false, 503 → false, 200 → true.
+State: lint/typecheck/unit 301/301 green.
+Evidence: https://github.com/aimogga/fas-caspilot-data/pull/95
+Left: CI + secret-scan, then QA re-check.
+Decisions: none.
+
+## 2026-10-13 03:30 (UTC) — Cloud Agent — PR #95 timeout-test mutation gap
+Did: merged origin/main (progress.md conflict kept both sides). Timeout test mock now resolves 200 when no abort signal is passed, so removing `AbortSignal.timeout` fails it; a non-aborting signal makes it time out.
+State: lint/typecheck/unit green.
+Left: CI + secret-scan, preview, QA re-check.
+Decisions: none.
+
 ## 2026-10-13 02:43 (UTC) — Cloud Agent — PR #109 / feature F-204
 Did: Census ACS 5-year ingest (packages/ingest/acs5, lib/ingest/acs-http.ts reusing SahieHttp helpers, POST /api/ingest/acs with Bearer INGEST_TOKEN and secret-free error log, public route entry, inactive n8n/census-acs.json with $env.FAS_INGEST_ACS_URL, migration 20261013024000_f204_census_acs_source.sql UUID f2040000-0000-4000-8000-00000000c204 commercial_ok=false per D-015). Variables: B01003_001E (total_population), B11001_001E (total_households), B21001_002E (veteran_population). Mirrors F-203 SAIPE pattern. Fixture tests all 29 counties with checksum guard. Year auto-computed: Nov+ uses current-1, else current-2.
 State: lint/typecheck/unit 323/323 green.
