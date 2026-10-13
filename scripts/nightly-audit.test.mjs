@@ -21,7 +21,7 @@ import {
   supabaseRest,
   evalFreshness,
   evalSanity,
-  checkData, evalGrants, evalRls, checkGrantsAndRls, checkMainCi,
+  checkData, evalGrants, evalRls, checkGrantsAndRls, checkMainCi, checkDeploys,
 } from './nightly-audit.mjs';
 const GHSA_IG = {id: 'GHSA-vfj7-8cjw-p6xm', package: 'braces', reason: 'CVE-2026-93687; dev-only lint toolchain transitive dep, no patched release', reviewer: 'QA bot', expires: '2026-11-08', severity: 'high'};
 const STALE_IG = {...GHSA_IG, id: 'GHSA-aaaa-bbbb-cccc', package: 'nope'};
@@ -411,7 +411,7 @@ describe('F-601 QA mutation kills (synthetic)', () => {
   const run = async (o) => {
     let overall;
     await main({secretScan: ok, build: ok, deps: ok, harness: ok, data: async () => ({freshness: ok(), sanity: ok()}),
-      mainCi: async () => ok(), grantsRls: async () => ({grants: ok(), rls: ok()}), log: () => {},
+      mainCi: async () => ok(), deploys: async () => ok(), grantsRls: async () => ({grants: ok(), rls: ok()}), log: () => {},
       emit: (res) => { overall = res.overall; return {path: 'x', exitCode: 0}; }, ...o});
     return overall;
   };
@@ -438,4 +438,57 @@ describe('F-601 QA mutation kills (synthetic)', () => {
     const r = await checkMainCi({GITHUB_TOKEN: 'placeholder', GITHUB_REPOSITORY: 'o/r'}, async () => Response.json({workflow_runs: [{conclusion: 'success', head_sha: 'abcdef1'}]}, {status: 403}));
     expect(r).toMatchObject({status: 'YELLOW', findings: ['main CI: could not query (HTTP 403)']});
   });
+});
+
+describe('deploy health (synthetic)', () => {
+  const env = {VERCEL_TOKEN: 'placeholder', VERCEL_PROJECT_ID: 'prj_syn', VERCEL_TEAM_ID: 'team_syn'};
+  const states = (prod, prev) => async (url) => {
+    const t = new URL(String(url)).searchParams.get('target');
+    return Response.json({deployments: [{uid: `dpl_${t}`, readyState: t === 'production' ? prod : prev}]});
+  };
+  const ok = () => ({status: 'GREEN', findings: [], details: [], ignored: [], stale: []});
+
+  it('GREEN when production and preview are READY; queries both targets with team id', async () => {
+    const urls = [];
+    const r = await checkDeploys(env, async (u, i) => { urls.push(String(u)); return states('READY', 'READY')(u, i); });
+    expect(r).toMatchObject({status: 'GREEN', details: ['production deploy READY (dpl_production)', 'preview deploy READY (dpl_preview)']});
+    expect(urls.every(u => u.includes('teamId=team_syn') && u.includes('projectId=prj_syn'))).toBe(true);
+  });
+
+  it('RED when either latest deploy is ERROR', async () => {
+    expect((await checkDeploys(env, states('ERROR', 'READY'))).findings).toEqual(['production deploy ERROR (dpl_production)']);
+    expect((await checkDeploys(env, states('READY', 'ERROR'))).status).toBe('RED');
+  });
+
+  it('YELLOW on HTTP error or no deployment; SKIPPED without token', async () => {
+    expect(await checkDeploys(env, async () => new Response('', {status: 403}))).toMatchObject({status: 'YELLOW', findings: ['deploy health: could not query (HTTP 403)']});
+    expect((await checkDeploys(env, async () => Response.json({deployments: []}))).status).toBe('YELLOW');
+    expect((await checkDeploys({}, states('READY', 'READY'))).status).toBe('SKIPPED');
+  });
+
+  it('deploy ERROR drives overall', async () => {
+    let overall;
+    await main({secretScan: ok, build: ok, deps: ok, harness: ok, data: async () => ({freshness: ok(), sanity: ok()}),
+      mainCi: async () => ok(), grantsRls: async () => ({grants: ok(), rls: ok()}), log: () => {},
+      deploys: async () => ({status: 'RED', findings: ['syn'], details: []}),
+      emit: (res) => { overall = res.overall; return {path: 'x', exitCode: 0}; }});
+    expect(overall).toBe('RED');
+  });
+});
+
+it('deploy health asks Vercel only for READY/ERROR so canceled deploys never come back', async () => {
+  const urls = [];
+  const env = {VERCEL_TOKEN: 'placeholder', VERCEL_PROJECT_ID: 'prj_syn'};
+  await checkDeploys(env, async (u) => { urls.push(new URL(String(u))); return Response.json({deployments: [{uid: 'dpl_r', readyState: 'READY'}]}); });
+  expect(urls.map(u => u.searchParams.get('state'))).toEqual(['READY,ERROR', 'READY,ERROR']);
+});
+
+it('deploy health: empty production list is "none found" (not a query failure) while preview is READY', async () => {
+  const env = {VERCEL_TOKEN: 'placeholder', VERCEL_PROJECT_ID: 'prj_syn'};
+  const r = await checkDeploys(env, async (u) => Response.json({deployments: new URL(String(u)).searchParams.get('target') === 'production' ? [] : [{uid: 'dpl_p', readyState: 'READY'}]}));
+  const all = [...r.findings, ...r.details].join('\n');
+  expect(r.status).toBe('YELLOW');
+  expect(all).toContain('production deploy: none found');
+  expect(all).toContain('preview deploy READY');
+  expect(all).not.toContain('could not query');
 });
