@@ -18,10 +18,10 @@ for (const [email, eyebrow] of [["staff@example.test", "WORKSPACE"], ["admin@exa
       await expect(page.getByRole("heading", { level: 1 })).toHaveText("County need map");
       await expect(page.locator("[data-slot=page-header] p").first()).toHaveText(eyebrow);
       await expect(page.locator("tbody tr")).toHaveCount(29);
-      await expect(page.getByText("Need score not computed yet")).toBeVisible();
       await expect(page.getByRole("region", { name: "County need table" })).toBeVisible();
-      await expect(page.locator("tbody")).toContainText("Not available yet");
-      await expect(page.locator("[data-slot=source-footer]")).toContainText(/^Public sources: Census SAHIE 2023 · as of /);
+      const ranked = (await page.getByText("Need score not computed yet").count()) === 0;
+      await expect(page.locator("tbody tr").first()).toContainText(ranked ? /\b1 of \d+/ : /Not available yet/);
+      await expect(page.locator("[data-slot=source-footer]")).toContainText(/^Public sources: .+ · Need score version .+ · Placeholder bins$/);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
       const violations = (await new AxeBuilder({ page }).analyze()).violations.filter((v) => v.impact === "serious" || v.impact === "critical");
       expect(violations).toEqual([]);
