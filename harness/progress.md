@@ -343,3 +343,7 @@ Left: follow-up to log SahieHttp ingest errors server-side (no secrets).
 Did: no-role breadcrumb "Account not set up" via `crumbFor` in `lib/shell/nav.ts` (roles with a home unchanged); `areaName` is case-insensitive and matches sub-paths; placeholder subtitles use `PageHeader` description; e2e for no-role 403 and area-name case in `status-pages.spec.ts`; layout-parity entries for signed-in 404, error and `/`, plus subtitle-left equals h1-left.
 Also: crumb uses the canonical path (fixes #78).
 Left: UI evidence (screenshots, axe, mockup comparison) needs a run with local Supabase.
+
+## 2026-10-13 01:24 (UTC) — Grok Bot — F-000 plugin inventory (claim)
+Did: Claimed F-000. Landed the reviewed inventory at harness/PLUGIN_INVENTORY.md: Grok, Cursor (local + Cloud) and n8n rows, each Use/Maybe/Avoid with a reason, plus an "FAS data → 3rd party?" column. Cloud Agents/Automations rows aligned with the current repo verdicts.
+Left: QA check; George's sign-off (human_gate george-before-merge).
