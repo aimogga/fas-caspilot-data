@@ -34,6 +34,10 @@ describe('role-guards', () => {
     expect(isRouteAllowed('/admin/users', 'staff')).toBe(false);
     expect(isRouteAllowed('/board/packets', 'board_viewer')).toBe(true);
     expect(isRouteAllowed('/administrator', 'admin')).toBe(false);
+    expect(isRouteAllowed('/need-map', 'board_viewer')).toBe(true);
+    expect(isRouteAllowed('/need-map', 'staff')).toBe(true);
+    expect(isRouteAllowed('/need-map', null)).toBe(false);
+    expect(matchGuardedPrefix('/need-map')).toBe('/need-map');
   });
   it('allowlists public routes only', () => {
     expect(isPublicRoute('/login')).toBe(true);

@@ -451,4 +451,9 @@ Decisions: none.
 ## 2026-10-13 06:10 (UTC) — Grok Bot (QA) — PR #126 (qa/flip-f204): flip F-204
 Did: flipped F-204 to passing in harness/feature_list.json with evidence (QA PASS on PR #110 at 98ff670, merged a54e1de; part 1 PR #109 merged abc93bb). All three acceptance criteria and both tests proven.
 Left: none.
+
+## 2026-10-13 03:55 (UTC) — Cloud Agent — PR #113 / feature F-211 (DS-06a, PR 1 of 3)
+Did: claim F-211. `/need-map` (all roles) table: 29 counties by rank, score, bin, latest-vintage indicators, status; `Not available yet` / `Not published`; source footer; empty and error states.
+Fixes (UX + QA on 08350b0): scroll region with sticky County, right-aligned numbers, display names and units, per-column source + vintage + as-of, placeholder bins, ErrorState body.
+Left: seed + seeded e2e in stacked #119 (D-012); nav and crumb (#77's nav.ts), layout-parity, DS-06b map, DS-06c tiles.
 Decisions: none.
