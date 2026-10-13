@@ -393,3 +393,7 @@ Left: QA review of docs PR.
 ## 2026-10-13 01:24 (UTC) — Grok Bot — F-000 plugin inventory (claim)
 Did: Claimed F-000. Landed the reviewed inventory at harness/PLUGIN_INVENTORY.md: Grok, Cursor (local + Cloud) and n8n rows, each Use/Maybe/Avoid with a reason, plus an "FAS data → 3rd party?" column. Cloud Agents/Automations rows aligned with the current repo verdicts.
 Left: QA check; George's sign-off (human_gate george-before-merge).
+
+## 2026-10-13 04:15 (UTC) — Grok Bot — F-000 plugin inventory (QA fixes)
+Did: inventory now describes the D-009 setup ($60 Cursor plan, $0 on-demand, no parallel cap, Nightly Audit on a GitHub Actions cron); removed upgrade lines; Cloud Agents Use / Automations Avoid; recounted Use 13 · Maybe 22 · Avoid 44; proposed entries renamed P-1 to P-5; D-001/D-002/D-006/D-007 shown as decided.
+Left: QA re-check.

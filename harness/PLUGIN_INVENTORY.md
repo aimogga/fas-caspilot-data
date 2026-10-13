@@ -1,6 +1,6 @@
 # Plugin, MCP and Integration Inventory
 
-> Phase 0, F-000. Filled in by the Chief of Staff on 2026-10-08 (MT), from the reviewed box draft (Rev 2). **Status update 2026-10-12:** the Cursor Cloud Agents and Automations rows now match the repo's current verdicts (George's plan has Cloud Agents; Automations aren't on it, so the Nightly Audit runs as a GitHub Actions cron). Sections lower down that say "pending upgrade" record the 2026-10-08 review.
+> Phase 0, F-000. Filled in by the Chief of Staff on 2026-10-08 (MT), from the reviewed box draft (Rev 2). **Status update 2026-10-12:** rows describe the current setup decided in D-009: Cursor $60 plan with $0 on-demand (work pauses when usage runs out and resumes after the reset), Cloud Agents in use with no cap on parallel agents, Cursor Automations not used, and the Nightly Audit on a GitHub Actions cron (under $2 per run).
 > Originally seeded from the integrations on George's Claude account. This draft re-checks what is **actually** connected on the Grok side (live tool catalog and light read-only calls on 2026-10-08), what the repo declares for Cursor, and what the docs assume about n8n. Nothing here was created or changed in any service.
 
 **Rules that apply to every row (from the kickoff + `docs/PRIVACY_AND_COMPLIANCE.md`):** synthetic data only until the Phase 6 gate · least privilege · no FAS data goes to a third party without a DECISIONS.md entry · anything not marked **Use** needs a DECISIONS.md entry before a packet may list it in `plugins_allowed`.
@@ -13,16 +13,16 @@
 ---
 
 ## Core build tools
-*Template rows kept. "Cursor (local + Cloud Agents)" is split into two rows so the Cloud Agents status (pending George's plan upgrade) is visible.*
+*Template rows kept. "Cursor (local + Cloud Agents)" is split into two rows so the Cloud Agents and Automations verdicts are visible separately.*
 
 | Tool | Where | Verdict | Use it for | Guardrails | FAS data → 3rd party? | Verified? |
 |---|---|---|---|---|---|---|
 | Cursor (local IDE agent) | Build | **Use** | Local coding; reviewing Cloud Agent PRs | Dev/preview credentials only; `.cursor/rules/*` always on | Only if misused (code and synthetic data go to Cursor's model providers) | ❓ plan, IDE config and MCPs not visible to Grok |
-| Cursor Cloud Agents | Build | **Use** | One cloud agent per packet (F-003, PLAN working limits) | George will upgrade the Cursor plan to include Cloud Agents (2026-10-08). Flip to **Use** once the upgrade is live **and** D-009 caps are set: on-demand usage must be enabled with a hard spend limit before the first run (cursor.com/docs/account/billing/spend-limits). Max 2 in parallel; dev/preview secrets only | Only if misused (code + synthetic data go to the selected model's provider) | ❓ upgrade not yet confirmed |
-| Cursor Automations | Build | Avoid | Not on George's plan; Nightly Audit runs as a GitHub Actions cron instead | Comes with the Cursor plan upgrade (Automations are on Pro and above, not Start). Each run is a Cloud Agent billed at API rates using the model's **maximum** context window (cursor.com/docs/cloud-agent/automations). Flip to **Use** once the upgrade is live and the D-009 per-run and monthly caps are set | Only if misused | ❓ upgrade not yet confirmed |
+| Cursor Cloud Agents | Build | **Use** | One cloud agent per packet (F-003, PLAN working limits) | Cursor $60 plan with $0 on-demand (D-009): when usage runs out, work pauses and resumes after the reset. No cap on parallel agents. Dev/preview secrets only | Only if misused (code + synthetic data go to the selected model's provider) | ⚠️ in use per D-009 |
+| Cursor Automations | Build | Avoid | Not used. The Nightly Audit runs on a GitHub Actions cron instead (D-009) | Each Automation run is a Cloud Agent using the model's **maximum** context window (cursor.com/docs/cloud-agent/automations); with $0 on-demand there's no budget for it | Only if misused | n/a |
 | Cursor Bugbot / PR review (if enabled) | Build | Maybe | Second-opinion review on PRs | Doesn't replace QA | Only if misused | ❓ |
 | GitHub (`aimogga/fas-caspilot-data`, private) | Build | **Use** | Repo, Issues (packets), PRs, Actions CI | Branch protection on main (F-104). Repo is under the personal `aimogga` account; D-001 recommends a CasePilot org | No (repo must never hold real data) | ✅ read via cursor-github |
-| GitHub Actions | Build | **Use** | CI (F-104). Also a possible Nightly Audit fallback (D-002 option C) | Secret scanning on; no production secrets | No | ❓ no workflows exist yet |
+| GitHub Actions | Build | **Use** | CI (F-104). Nightly Audit cron, under $2 per run (D-009) | Secret scanning on; no production secrets | No | ❓ no workflows exist yet |
 | Supabase MCP | Cursor | **Use** (dev/preview only) | Schema inspection, migrations on dev, advisors | Never connected to production project | No while on dev/synthetic. **Yes** if pointed at production | ❓ Cursor side. A Grok-side Supabase connector also exists (see Grok table) |
 | Vercel MCP | Cursor | **Use** (read-mostly) | Deployment status, logs, preview URLs | Promotions to production need George | No (preview/synthetic) | ❓ Cursor side |
 | Shadcn UI MCP | Cursor | **Use** | UI components and blocks | — | No | ⚠️ in the Cursor marketplace (cursor.com/marketplace/shadcn); install not confirmed |
@@ -54,11 +54,11 @@
 | Bot | Tools it should use (proposed allowlist) | Repo access needed | Notes |
 |---|---|---|---|
 | Chief of Staff | cursor-github (read), web search/fetch, box shell + file generation, routines, Google Drive (harness docs only) | Read; write to harness/ via PR | Verified tool set below. Can technically reach far more than it needs (see Gaps) |
-| Engineer Supervisor | cursor-github (Issues/packets, PR review, merge), Vercel (`user-Vercel-xai`, read-mostly), Supabase (dev/preview only, after D-001/D-007), Vercel + Supabase skills, engineering-workflow skills | Write (packets, PR review, merge) | Owns F-003, which waits on George's Cursor plan upgrade and the D-009 caps |
+| Engineer Supervisor | cursor-github (Issues/packets, PR review, merge), Vercel (`user-Vercel-xai`, read-mostly), Supabase (dev/preview only, per D-001/D-007), Vercel + Supabase skills, engineering-workflow skills | Write (packets, PR review, merge) | Owns F-003; Cursor usage per D-009 |
 | Engineer Bot | None directly. Works through Cursor | Via Cursor only | Cursor config unverified |
 | Deep Research | Web search/fetch, box shell (sample API calls to public endpoints), box browser for public pages only | Write to docs/research/ via PR | Needs web access ✅. Never put FAS data in search queries |
 | QA Bot | cursor-github (read, CI status), Playwright (preview only), box shell (poppler, python-docx to inspect exports) | Read + CI + preview access | Only bot that edits feature statuses |
-| Nightly Audit | cursor-github (read), Supabase advisors (read, dev only), Vercel (read) | Read; PRs for doc drift only | Runs as a Cursor Automation once the plan upgrade is live; needs the D-009 per-run cap |
+| Nightly Audit | cursor-github (read), Supabase advisors (read, dev only), Vercel (read) | Read; PRs for doc drift only | Runs on a GitHub Actions cron, under $2 per run (D-009) |
 
 ### Grok connector inventory (live catalog, 2026-10-08)
 *Sources: GetDynamicTools catalog and namespace statuses. Account identity is confirmed only where a read-only identity call was made. `GetMcpServerStatus` and `SearchPlugins` weren't available to this subagent, so namespace status comes from the catalog's `namespaceStatus` field.*
@@ -71,7 +71,7 @@
 | user-Vercel-xai | ready | Team "aimogga's projects" ✅ list_teams | Maybe | Matches the planned stack. Read-mostly for deployment status/logs once the project exists. D-001 recommends a CasePilot-owned team instead | No (preview/synthetic) |
 | user-Vercel | ready | **Unknown**: list_teams returns 0 teams; `/v2/user` returns 404 "User not found" | Avoid | Can't tell which account it is. Don't use until identified or removed | Only if misused |
 | user-Vercel--aimogga | ready | **Unknown**: same results as above, despite the "aimogga" label | Avoid | Same as above. Three Vercel connectors is two too many | Only if misused |
-| user-Supabase | ready | Not checked (no calls made) ❓ | Maybe | Planned stack. Very powerful: execute_sql, apply_migration, create_project, merge_branch, pause_project. Dev/preview only, after D-001/D-007 confirm the org/project | No on dev. **Yes** if pointed at production |
+| user-Supabase | ready | Not checked (no calls made) ❓ | Maybe | Planned stack. Very powerful: execute_sql, apply_migration, create_project, merge_branch, pause_project. Dev/preview only, per D-001/D-007, once confirmed the org/project | No on dev. **Yes** if pointed at production |
 | user-Google-drive | ready | Not checked ❓ | Maybe | Harness docs and finished packets for humans. Not the source of truth | Only if misused; **Yes** for real packets after Phase 6 |
 | user-Google-sheets | ready | Not checked ❓ | Maybe | Handy for George reviewing plans and trackers. Never FAS records | Only if misused |
 | user-Google-calendar | ready | Not checked ❓ | Avoid (v1) | Not needed in v1 | Only if misused |
@@ -153,7 +153,7 @@
 | `.cursor/mcp.json` | **Not in the repo.** D-007 says George's local `mcp.json` points at the ModernLine n8n MCP |
 
 **Unverified. Needs George or the Engineer Supervisor to confirm:**
-- **Cursor Cloud Agents + Automations: pending upgrade.** George said on 2026-10-08 he will upgrade the Cursor plan to include them. F-003 can start once the upgrade is live, on-demand usage is enabled with a hard spend limit, and the D-009 caps are approved. Confirm which account the plan is billed to (personal vs. a CasePilot Teams account; see D-001 and D-009).
+- **Cursor Cloud Agents:** in use on the $60 plan with $0 on-demand (D-009); work pauses when usage runs out and resumes after the reset. Automations are not used. Confirm which account the plan is billed to (D-001).
 - Cursor plan tier, Bugbot availability, Secrets tab, and which MCPs are installed locally (Supabase, Vercel, shadcn, Context7, Playwright, n8n). None of this is visible to Grok.
 - Whether Docker runs on the Cursor machine(s) for `supabase start`.
 
@@ -167,12 +167,12 @@
 | Workflow JSON exported to `n8n/`; new workflows created inactive; live workflows not edited without George | 20-data-ingestion.mdc, D-002, D-007 |
 | Cursor's n8n MCP currently points at **ModernLine's** n8n, not CasePilot's | D-007 |
 
-**Data-residency note:** if n8n really is self-hosted on CasePilot's GCP, execution data stays in CasePilot's project. Confirm the GCP region, the execution-data retention setting (n8n saves execution payloads by default), and where credentials are stored. If it's n8n Cloud instead, n8n GmbH becomes a processor (a third party) and needs a decision. Either way: workflows should pass run IDs and aggregates only, failure alerts must never include row payloads, and the digest email passes through Google (Gmail). **Verdict: Maybe until D-002/D-007 are decided and the instance is confirmed. FAS data → 3rd party: Only if misused (self-hosted) / Yes (n8n Cloud).**
+**Data-residency note:** if n8n really is self-hosted on CasePilot's GCP, execution data stays in CasePilot's project. Confirm the GCP region, the execution-data retention setting (n8n saves execution payloads by default), and where credentials are stored. If it's n8n Cloud instead, n8n GmbH becomes a processor (a third party) and needs a decision. Either way: workflows should pass run IDs and aggregates only, failure alerts must never include row payloads, and the digest email passes through Google (Gmail). **Verdict: Maybe until the instance is confirmed (D-002 and D-007 are decided). FAS data → 3rd party: Only if misused (self-hosted) / Yes (n8n Cloud).**
 
 ---
 
 ## Gaps that need George to confirm
-1. **Cursor plan upgrade (pending):** George will add Cloud Agents + Automations. Still to confirm: the upgrade is live, which account/plan pays (Pro Plus vs. Teams), and the D-009 caps. F-003 and the Nightly Audit wait on this.
+1. **Cursor plan (D-009, decided):** $60 plan, $0 on-demand, no cap on parallel agents; Automations not used; Nightly Audit on a GitHub Actions cron. Still to confirm: which account pays (D-001).
 2. **n8n:** confirm the instance (`n8n.casepilot.io`), hosting (self-hosted GCP vs. cloud), region, retention, and repoint the MCP away from ModernLine (D-002, D-007).
 3. **Supabase:** the Grok connector is installed and ready, but which org/projects it can reach wasn't checked. Confirm the org (D-001 recommends CasePilot-owned), that a dev/preview project exists, and that no agent-visible token can reach production.
 4. **Vercel:** three connectors. Only `user-Vercel-xai` resolves (team "aimogga's projects"). `user-Vercel` and `user-Vercel--aimogga` return no teams and 404 on user lookup. Pick one; disconnect or fix the others (D-001).
@@ -180,21 +180,22 @@
 6. **Task-packet template: resolved.** `grok/task_packet_template.md` was added in commit bc9a07d (2026-10-08). It defines `context_files`, `plugins_allowed` ("only items marked Use in harness/PLUGIN_INVENTORY.md"), `data_allowed`, `environments_allowed` and `human_gate`. Consequence: until the Maybe rows here are decided, packets can only list the Use rows in `plugins_allowed`.
 
 ## Conflicts between the docs and the kickoff rules
-1. **Cloud Agents assumed everywhere; plan upgrade pending:** template, AGENTS.md, ARCHITECTURE, PLAN, F-003, NIGHTLY_AUDIT and D-009 all assume Cloud Agents. Resolved in principle by George's upgrade; it stays open until the upgrade is live. Also: the docs say Automations run in "Max Mode". Cursor's current docs say Max Mode exists only on legacy request-based plans and that Automations always use the model's maximum context window (cursor.com/docs/account/pricing, cursor.com/docs/cloud-agent/automations, read 2026-10-08). The cost effect is similar, but the wording should be updated.
-2. **Template pre-marks Use while the decisions are still open:** n8n MCP (D-002, D-007 open), Supabase/Vercel MCP (D-001, D-006 open), Cursor Automations (D-009 open). Under the kickoff rule these should wait for the decision, so this draft downgrades n8n MCP and Automations to Maybe.
+1. **Cloud Agents assumed everywhere:** template, AGENTS.md, ARCHITECTURE, PLAN, F-003, NIGHTLY_AUDIT and D-009 all assume Cloud Agents; that matches the D-009 setup. Docs that say the Nightly Audit runs as a Cursor Automation in "Max Mode" should be updated: it runs on a GitHub Actions cron (D-009).
+2. **Template pre-marked Use before decisions:** D-001, D-002, D-006, D-007 and D-009 are now decided (see harness/DECISIONS.md). n8n MCP stays Maybe until the instance is confirmed and the MCP is repointed (Gap 2); Cursor Automations are Avoid (not used, D-009).
 3. **Ownership:** D-001 recommends CasePilot-owned GitHub org/Vercel team/Supabase org. The repo is on personal `aimogga`, and the only working Vercel connector is "aimogga's projects". (Also: the repo name is spelled `fas-caspilot-data`, missing an "e". Intended?)
 4. **Template header** says it was seeded from the Claude account. Several seeded rows (PDF Tools, Canva, Claude in Chrome, Stripe, Vibe Prospecting, OpusClip) don't exist on the Grok side, and the Grok side has ~30 connectors the template never mentions.
 5. **Google Drive for packets (template: Maybe)** would put FAS-Shareable data in Google after Phase 6. The kickoff requires a decision before any FAS data goes to a third party, so D-006's BAA/plan review should cover Google Workspace too, not just Supabase/Vercel/LLM.
 6. **The Grok bots themselves are an LLM third party.** PRIVACY's BAA list names "any LLM provider that would see the data". The synthetic-only rule covers Phases 0–5, but D-003 and D-006 should explicitly cover the build agents (Grok, Cursor's model providers), not just the in-app LLM.
 
 ## Proposed DECISIONS.md entries (drafts, not written to the repo)
-- **D-011 Grok-side connector allowlist per bot** (table above) and disconnecting unused or wrong-account connectors (GitHub-xai, Buffer-xai, the two unidentified Vercel connectors).
-- ~~D-012 Cursor Cloud Agents not on plan~~ **Resolved: upgrade** (George, 2026-10-08). Caps are handled in D-009.
-- **D-013 Error monitoring (Sentry): yes/no;** PII scrubbing and BAA review if yes.
-- **D-014 Where finished packets live** (Supabase Storage only vs. also Google Drive) after Phase 6.
-- ~~D-015 Task packet format~~ **Resolved:** `grok/task_packet_template.md` exists (commit bc9a07d).
+*Numbered P-1 to P-5 so they don't collide with the D-011 to D-016 entries now on main.*
+- **P-1 Grok-side connector allowlist per bot** (table above) and disconnecting unused or wrong-account connectors (GitHub-xai, Buffer-xai, the two unidentified Vercel connectors).
+- **P-2 Cursor Cloud Agents plan:** covered by D-009 (decided 2026-10-12); no separate entry needed.
+- **P-3 Error monitoring (Sentry): yes/no;** PII scrubbing and BAA review if yes.
+- **P-4 Where finished packets live** (Supabase Storage only vs. also Google Drive) after Phase 6.
+- **P-5 Task packet format:** `grok/task_packet_template.md` exists (commit bc9a07d); no separate entry needed.
 
 ## Counts (this draft)
-79 rated rows: **Use 12 · Maybe 24 · Avoid 43**. Of the 12 Use rows, 7 are verified live (the GitHub repo, cursor-github, web search/fetch, the box shell, file generation, and the Vercel and Supabase skill packs). The Cursor-side Use rows (Cursor local, Supabase MCP, Vercel MCP, shadcn, GitHub Actions) are unverified. The Maybe count includes the two Cursor rows pending the plan upgrade (Cloud Agents, Automations); they move to Use once the upgrade is live and D-009 is set (→ Use 14 · Maybe 22).
+79 rated rows (recounted 2026-10-12): **Use 13 · Maybe 22 · Avoid 44**. Of the 13 Use rows, 7 are verified live (the GitHub repo, cursor-github, web search/fetch, the box shell, file generation, and the Vercel and Supabase skill packs). The Cursor-side Use rows (Cursor local, Cloud Agents, Supabase MCP, Vercel MCP, shadcn, GitHub Actions) are unverified from the Grok side. Cursor Cloud Agents is Use and Cursor Automations is Avoid, per D-009.
 
 *Sources: repo files read via cursor-github on 2026-10-08, including grok/ (commit bc9a07d) for rev 2 (AGENTS.md, docs/*.md, harness/*.md, harness/feature_list.json, .cursor/*); Grok tool catalog (GetDynamicTools) on 2026-10-08; read-only identity calls: cursor-github get_me, user-GitHub-xai get_me, Vercel list_teams ×3 and get_auth_user ×2; box plugin cache listing; web search for Cursor marketplace (Context7, shadcn, n8n).*
