@@ -113,6 +113,31 @@ describe('acs-http.ts', () => {
     log.mockRestore();
   });
 
+  it('redacts key= values not in env from log, alert payload, and recorded error run', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const env = { INGEST_TOKEN: 'tok-secret', CENSUS_API_KEY: 'cen-key-1', INGEST_ALERT_WEBHOOK_URL: 'http://127.0.0.1/hook' };
+    const recordFailure = vi.fn(async () => 'run-err');
+    const sent: IngestAlertPayload[] = [];
+    const res = await AcsHttp.handle(new Request('http://x', { method: 'POST', headers: { authorization: 'Bearer tok-secret' } }), {
+      env,
+      client: {} as SupabaseClient,
+      httpFetch: async () => { throw new Error('GET https://api.census.gov/x?get=a&key=abc123&for=county failed'); },
+      run: (o) => AcsHttp.run({ ...o, recordFailure, load: vi.fn() }),
+      alertFetch: async (_url, init) => {
+        sent.push(JSON.parse(String(init?.body)) as IngestAlertPayload);
+        return new Response(null, { status: 200 });
+      },
+    });
+    expect(res.status).toBe(500);
+    expect(sent).toHaveLength(1);
+    expect(recordFailure).toHaveBeenCalledTimes(1);
+    for (const s of [JSON.stringify(log.mock.calls), JSON.stringify(sent), JSON.stringify(recordFailure.mock.calls)]) {
+      expect(s).toContain('key=[redacted]');
+      expect(s).not.toContain('abc123');
+    }
+    log.mockRestore();
+  });
+
   it('handle: 401 no auth, 200 success, 400 bad JSON, 500 ingest error', async () => {
     expect((await AcsHttp.handle(new Request('http://x', { method: 'POST' }), { env: { INGEST_TOKEN: 's' } })).status).toBe(401);
     const run = vi.fn().mockResolvedValue({ ingestRunId: 'run-1', rowsLoaded: 87 });
