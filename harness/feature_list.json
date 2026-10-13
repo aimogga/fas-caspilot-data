@@ -212,8 +212,7 @@
       ],
       "human_gate": "none",
       "status": "failing",
-      "evidence": [],
-      "status_note": "n8n email/Slack is the primary alert path; GitHub issue is the fallback. #122 resolved 2026-10-13 (Bot Fight Mode off). n8n email/Slack delivery not yet configured: no email or Slack credential exists in n8n. Status stays failing until QA verifies."
+      "evidence": []
     },
     {
       "id": "F-202",
