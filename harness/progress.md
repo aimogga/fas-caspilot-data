@@ -462,3 +462,7 @@ Decisions: none.
 Did: local/CI-only synthetic seed: approved `v2-synthetic`, newer unapproved `v3-draft`, 26 scored counties with a tie (Cache = Davis), 3 not published (Daggett, Piute, Wayne).
 State: e2e asserts rank order, the tie, bins, Not published last and the footer version. Nothing written to hosted fas-dev by this PR.
 Left: QA at head.
+
+## 2026-10-13 10:20 (UTC) — Grok Bot — nightly: share census ingest helpers
+Did: Extended `packages/ingest/census-table.ts` with shared checksum, Utah FIPS set, `CENSUS_NOT_PUBLISHED`, `num` (ACS keeps `-` via extraNulls), `fetchJson`, and `requireCountyCoverage`. ACS/SAHIE/SAIPE call those; deleted dead ACS mixed-vintages check in `requireComplete` (parse always sets `period: ''`) and its hand-built test case. FIPS left source-local (SAIPE drop non-Utah vs SAHIE/ACS 49xxxx). Did not touch `lib/ingest/*-http.ts`, ingest-alert, #106, or `feature_list.json`.
+Left: QA on PR; later naming cleanup for acs5 folder (#106 conflict).

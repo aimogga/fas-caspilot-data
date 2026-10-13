@@ -52,12 +52,10 @@ it.each([
   expect(() => Acs5.requireComplete(parsed, '2023')).toThrow(/rejected/);
 });
 
-it('fails closed: partial response, mixed vintages, or incomplete county', () => {
+it('fails closed: partial response or incomplete county', () => {
   const partial = [HDR, ut('49035', '100000', '30000', '5000')];
   expect(() => Acs5.requireComplete(Acs5.parse(partial), '2023')).toThrow(/partial/);
   const p = Acs5.parse(fixture);
-  const mixed = { rows: [...p.rows.slice(0, 29).map((r) => ({ ...r, period: '2023' })), ...p.rows.slice(29).map((r) => ({ ...r, period: '2022' }))], rejects: [] };
-  expect(() => Acs5.requireComplete(mixed, '2023')).toThrow(/mixed vintages/);
   const missingVar = { rows: p.rows.filter((r) => !(r.geo_fips === '49035' && r.indicator_code === 'veteran_population')), rejects: [] };
   expect(() => Acs5.requireComplete(missingVar, '2023')).toThrow(/partial/);
 });
