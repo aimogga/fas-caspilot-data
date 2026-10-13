@@ -524,3 +524,9 @@ Did: George approved (2026-10-13 10:15 AM MT, via Chief of staff) pointing produ
 State: /api/health ok:true (app ok, supabase ok); /login 200; QA verified staff/admin/board@example.test sign in on production (fas-dev).
 Left: QA.
 Decisions: D-023.
+
+## 2026-10-13 17:05 (UTC) — Grok Bot — PR #136: George 10-13 approvals; F-201 interim alert AC
+Did: Recorded George's 11:03 AM MT 2026-10-13 approvals verbatim (via Chief of staff) as D-024 (GitHub-issue alert interim exception), D-025 (weights stored as fractions, shown as points), D-026 (weights v1 50/50 then v2 30/20/30/10/10), D-027 (George applies Cloudflare fix). Updated F-201 acceptance criteria (interim alert, removal when #122 closes, nightly audit YELLOW) and added status_note.
+State: F-201 status stays failing; human_gate unchanged.
+Left: QA; #122 Cloudflare fix by George.
+Decisions: D-024, D-025, D-026, D-027.
