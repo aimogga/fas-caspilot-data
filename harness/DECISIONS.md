@@ -1,5 +1,7 @@
 # Decisions Log
 
+Full memos (options, recommendation, cost, risk) for D-001 to D-010: [DECISION_MEMOS.md](DECISION_MEMOS.md).
+
 Format per decision: context → options → recommendation → cost/risk → **George's decision + date**. The Chief of Staff writes memos; George decides.
 
 ## Open

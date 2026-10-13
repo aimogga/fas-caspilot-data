@@ -343,3 +343,7 @@ Left: follow-up to log SahieHttp ingest errors server-side (no secrets).
 Did: no-role breadcrumb "Account not set up" via `crumbFor` in `lib/shell/nav.ts` (roles with a home unchanged); `areaName` is case-insensitive and matches sub-paths; placeholder subtitles use `PageHeader` description; e2e for no-role 403 and area-name case in `status-pages.spec.ts`; layout-parity entries for signed-in 404, error and `/`, plus subtitle-left equals h1-left.
 Also: crumb uses the canonical path (fixes #78).
 Left: UI evidence (screenshots, axe, mockup comparison) needs a run with local Supabase.
+
+## 2026-10-13 01:24 (UTC) — Grok Bot — F-001 decision memos (claim)
+Did: Claimed F-001. Added harness/DECISION_MEMOS.md (options, recommendation, cost and risk for D-001 to D-010) and linked it from harness/DECISIONS.md.
+Left: D-005 and D-009 still have no decision/date in DECISIONS.md; George must decide before F-001 can pass. QA check; George's sign-off.
