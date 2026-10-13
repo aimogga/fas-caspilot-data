@@ -51,6 +51,15 @@ describe('NeedScoreRecompute.run', () => {
     expect(calls.find((c) => c.op === 'delete')?.filters).toEqual([['eq', 'version', 'v1'], ['not', 'geo_fips', 'in', '(49001,49003)']]);
   });
 
+  it('ignores an unapproved v2 draft that is newer than the approved v1', async () => {
+    const v2 = { poverty_rate: 0.3, child_poverty_rate: 0.2, uninsured_rate: 0.3, single_parent_pct: 0.1, no_vehicle_pct: 0.1 };
+    const configs = [cfg('v1-poverty-uninsured', { poverty_rate: 0.5, uninsured_rate: 0.5 }, '2026-10-13', 'u'), cfg('v2-draft-five-input', v2, '2026-10-14', null)];
+    const { client, calls } = fake({ ...tables, need_score_config: configs });
+    expect(await NeedScoreRecompute.run(client)).toEqual({ version: 'v1-poverty-uninsured', scored: 2 });
+    expect(calls.find((c) => c.table === 'public_indicator')?.filters).toEqual([['in', 'indicator_code', ['poverty_rate', 'uninsured_rate']]]);
+    expect((calls.find((c) => c.op === 'upsert')?.rows as { version: string }[]).map((r) => r.version)).toEqual(['v1-poverty-uninsured', 'v1-poverty-uninsured']);
+  });
+
   it('writes nothing when no version is approved', async () => {
     const { client, calls } = fake({ need_score_config: [cfg('draft', { poverty_rate: 1 }, '2026-10-14', null)] });
     expect(await NeedScoreRecompute.run(client)).toEqual({ version: null, scored: 0 });

@@ -28,6 +28,18 @@ describe('golden: expected ranking', () => {
     const [a, b] = Object.values(golden.versions);
     expect(a.ranking).not.toEqual(b.ranking);
   });
+
+  it('v2-draft-five-input (D-026) validates, ranks differently from v1, and needs all five inputs', () => {
+    const v2 = golden.versions['v2-draft-five-input'];
+    expect(Object.keys(v2.weights)).toEqual(['poverty_rate', 'child_poverty_rate', 'uninsured_rate', 'single_parent_pct', 'no_vehicle_pct']);
+    expect(() => NeedScore.validate(v2.weights)).not.toThrow();
+    expect(Math.abs(NeedScore.sum(v2.weights) - 1)).toBeLessThan(1e-6);
+    expect(v2.ranking).not.toEqual(golden.versions['v1-poverty-uninsured'].ranking);
+    for (const code of Object.keys(v2.weights)) {
+      const missing = golden.indicators.filter((r) => !(r.indicator_code === code && r.geo_fips === '49003'));
+      expect(NeedScore.compute(v2.weights, missing, golden.fips).map((s) => s.geo_fips)).toEqual(['49001', '49005', '49007']);
+    }
+  });
 });
 
 describe('NeedScore.compute', () => {
