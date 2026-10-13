@@ -537,3 +537,9 @@ Did: Recorded George's 11:03 AM MT 2026-10-13 approvals verbatim (via Chief of s
 State: F-201 status stays failing; human_gate unchanged; status_note removed from feature_list (context kept here).
 Left: QA.
 Decisions: D-024, D-025, D-026, D-027.
+
+## 2026-10-13 18:30 (UTC) — Cloud Agent (P2 subagent, lead-reviewed) — PR #147 / DS-06a2 FAS service counties (F-211)
+Did: table `fas_service_county` (RLS enabled + forced, SELECT for the 3 roles, F-102 DO-block), synthetic 5-fips seed (additions only), ARCH list + rls fixture + ARCHITECTURE.md; `lib/need-map/fas-counties.ts` (+test); `NeedMapQuery` loads the list, `CountyRow.fas`, `?fas=1` filter with statewide rank kept, U+2212 minus; `FAS county` badge + aria-label suffix; `Show FAS counties only` switch (hand-written shadcn switch, counted) toggling `?fas=1`; empty state `No FAS counties set`; map.spec + layout-parity additions (`/need-map` staff+board, `/need-map?fas=1` board at 375/800/1024/1440).
+State: `pnpm gate` on dc89514: lint/typecheck/unit (401) /secret scan/D-012 (+237/-27 = 264)/300-char all pass; `pnpm build` green; mutation `−`→`-` killed. test:db and e2e run in CI only (no local runtime).
+Left: QA PASS + DESIGN APPROVED at head; real FAS service-county list from George (seed is synthetic). Next: P3a DS-06b map after #147 merges.
+Decisions: none new (D-017, D-022, D-029 applied).
