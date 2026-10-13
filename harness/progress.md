@@ -537,3 +537,9 @@ Did: Recorded George's 11:03 AM MT 2026-10-13 approvals verbatim (via Chief of s
 State: F-201 status stays failing; human_gate unchanged; status_note removed from feature_list (context kept here).
 Left: QA.
 Decisions: D-024, D-025, D-026, D-027.
+
+## 2026-10-13 17:55 (UTC) — Grok Bot — PR #142: F-201 nightly audit ingest-alert check
+Did: `checkIngestAlerts` in `scripts/nightly-audit.mjs` goes YELLOW when an unauthenticated synthetic probe of the n8n ingest-failure-alert webhook returns non-401/403 or a Cloudflare challenge (cf-mitigated header or CF challenge page; plain n8n 403 is healthy), or when open/last-24h `ingest-alert` issues lack `Delivered-by: n8n`. Added body markers `Delivered-by: n8n` (workflow JSON) and `Delivered-by: app-fallback` (IngestAlert fallback); both paths post as the same GitHub user, so the body line is the discriminator. Workflow sets INGEST_ALERT_WEBHOOK_URL.
+State: AC (c) probes 17:47:17Z / 17:47:18Z (11:47 MDT) no header and wrong header both HTTP 403 "Authorization data is wrong!", no cf-mitigated. Unit tests synthetic only.
+Left: QA; sync live n8n workflow body template with the marker (otherwise n8n issues read as unmatched).
+Decisions: none.
