@@ -390,3 +390,7 @@ Did: claim F-601. `pnpm audit:nightly` script; data freshness (active sources wi
 State: lint/typecheck/unit green; synthetic fixtures only.
 Left: QA; nightly-audit.yml reads fas-dev SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY repo secrets (D-016); grants, suppression/RLS/views, deploy health and cost stay SKIPPED until their keys or schema exist.
 Decisions: none.
+
+## 2026-10-13 03:52 (UTC) — Cloud Agent — PR #115 docs reporting rule
+Did: Created `harness/preferences.md` with standing Reporting rule (George, 2026-10-12): FAS bots report to Chief of staff on merges, completed features, blockers, and anything needing George; short note with what landed / PR / tests; never George directly; new packets inherit.
+Left: QA review of docs PR.
