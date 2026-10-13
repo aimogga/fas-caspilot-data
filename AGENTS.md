@@ -10,10 +10,10 @@ You are working in the repo for FAS Evidence, a free tool built for **Family Adv
 
 ## Stack
 Next.js (App Router, TypeScript) on Vercel · Supabase (Postgres, Auth, RLS, Storage, Edge Functions) · n8n (n8n.casepilot.io) for schedules and alerts · Playwright for e2e · Vitest for unit tests.
-*(Phase 1 confirms exact versions and updates this section. The Cloud Agent shell currently pins Next.js 16.4.0, React 19.3.0, and Supabase CLI 2.120.0.)*
+*(Pinned: Next.js 16.4.0 and React 19.3.0 in `package.json`; Supabase CLI 2.120.0 in the Cloud Agent shell.)*
 
 ## Commands
-> Phase 1 finalizes these. Until then they are the target names.
+> The `pnpm` scripts below are defined in `package.json`.
 ```
 pnpm install            # install
 pnpm dev                # run app on :3000
@@ -28,20 +28,22 @@ supabase db reset       # rebuild local DB from migrations + seed
 ```
 **Smoke check before you start and before you finish:** `pnpm install && pnpm lint && pnpm typecheck && pnpm test`.
 
-## Repo layout (target)
+## Repo layout
 ```
-app/                 Next.js routes (team/, board/, admin/, api/)
+app/(app)/           signed-in routes: admin/, board/, dashboard/, need-map/, staff/
+app/api/             route handlers: auth/, health/, ingest/
+app/login/, app/403/ sign-in and error pages
 components/          UI (shadcn/ui based)
-lib/metrics/         metric definitions + suppression helpers
-lib/grants/          matching, eligibility, explanations, strategy builder
-packages/ingest/     one module per public data source (pure, testable)
+lib/                 app logic: auth/, dashboard/, db/, ingest/, need-map/, shell/, status/, supabase/, synthetic/
+packages/ingest/     one module per public data source (pure, testable): sahie/, saipe/, acs5/
 supabase/migrations/ schema changes (never edit an applied migration)
-supabase/functions/  edge functions (ingest runners, exports)
 n8n/                 exported n8n workflow JSON (schedules + alerts)
-tests/               fixtures/, golden/, e2e/
+scripts/             nightly audit, staleness check, test:db runner
+tests/               db/, e2e/, fixtures/, golden/
 docs/                specs (read-only for engineers unless your packet says otherwise)
 harness/             plan, feature list, progress, decisions, audits
 ```
+Not in the repo yet: `lib/metrics/` (metrics and suppression helpers, F-304/F-306), `lib/grants/` (Phase 5), `supabase/functions/`.
 
 ## Golden rules
 1. **One feature per session**, matching your packet's `feature_id`. Small diffs.
@@ -69,7 +71,7 @@ Commit working code only. If you must stop mid-feature, leave the code compiling
 - Node comes from the image via nvm (`v22.22.2`); `install` symlinks `node` and `pnpm` (10.33.3) into `/usr/local/bin` so login shells find them.
 - Docker: Ubuntu `docker.io` 29. The default overlay snapshotter fails in this VM (`mount ... overlay ... invalid argument`). `.cursor/start.sh` uses `fuse-overlayfs`, turns off the containerd snapshotter, and switches iptables to legacy. systemd is not usable here (`policy-rc.d` denies service starts), so the script launches `dockerd` in tmux session `dockerd`.
 - Ports: Next.js `3000`. Supabase API `54321`, Postgres `54322`, Studio `54323`, Mailpit `54324`. First `supabase start` pulls images and can take several minutes; later boots reuse the images.
-- App check: `curl -fsS http://127.0.0.1:3000/api/health` reports the app and whether the local Supabase API answers. This shell is not auth, schema, or product screens (those are Phase 1).
+- App check: `curl -fsS http://127.0.0.1:3000/api/health` reports the app and whether the local Supabase API answers.
 - Secrets come from Cursor's Secrets tab as environment variables. If one is missing, stop and report; don't hardcode. No secrets are required to boot this shell.
 - Cloud agents may reach preview/dev services only. Never production.
 - Long-running dev server: `start` already runs it in tmux session `web` (`/tmp/web.log`). Do not start a second `pnpm dev`.

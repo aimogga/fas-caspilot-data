@@ -2,7 +2,7 @@
 
 Status: proposed, 2026-10-12.
 Goal: send small, well-specified work to the GitHub Copilot cloud agent (aimogga, Copilot Pro) so Cursor credits go to complex packets.
-Current state, pending George (D-009 open): Cursor is on the $20 plan with $0 on-demand.
+Current state (D-009, decided 2026-10-12): Cursor is on the $60 plan with $0 on-demand.
 
 ## Routing rule
 ### To Copilot
@@ -25,8 +25,8 @@ Current state, pending George (D-009 open): Cursor is on the $20 plan with $0 on
 - Anything that needs judgment or a decision not in `docs/` or `harness/DECISIONS.md`.
 
 ### Concurrency
-- George decided: at most one Cursor cloud agent plus one Copilot agent may run at once.
-- The D-009 budget caps are still open.
+- George decided (7:55 PM MT relay, D-009): no cap on parallel agents; when usage runs out, work pauses and resumes after the reset. This replaces the earlier one-Cursor-plus-one-Copilot limit.
+- D-009 cost caps are decided; D-009 sets no Copilot caps.
 - Never on the same packet or the same files.
 
 ## Same gates for both
@@ -61,14 +61,14 @@ Current state, pending George (D-009 open): Cursor is on the $20 plan with $0 on
 - Each Copilot PR gets its own board row; once its workflow runs are approved it moves Working, then Watching 1/3, 2/3, 3/3, then Ready for review.
 - It is marked Done only when merged.
 
-## Budget thresholds (Pending George, D-009 open)
-Nothing below is settled: caps, model choice and thresholds are proposals until George decides D-009.
+## Copilot budget thresholds (pending George)
+Nothing below is settled: D-009 is decided but sets no Copilot caps, so these caps, model choice and thresholds stay proposals until George decides them.
 - Current understanding, pending George (open question 1): billing is in GitHub AI Credits (1 credit = $0.01); Pro includes 1,500/month (1,000 base + 500 flex).
 - Monthly caps: ≤ 8 Copilot agent sessions, ≤ 10 Copilot code reviews.
 - Model: Auto (10% discount) or a mid-price model; avoid the top tier.
 - At 75% of credits: pause Copilot code reviews.
 - At 90%: no new Copilot agent sessions until the 1st (UTC).
-- Overage is $0 today; that stays the current state, pending George (D-009 open).
+- Overage is $0 today; that stays the current state, pending George.
 - Actions minutes: GitHub Pro includes 3,000/month across all aimogga private repos.
 - The October pace was ~3,000/month before Copilot.
 - Agent sessions and reviews use Actions minutes too.
@@ -80,8 +80,8 @@ Nothing below is settled: caps, model choice and thresholds are proposals until 
 1. Confirm Copilot billing type (AI credits vs legacy annual premium requests).
 2. Set $0 stopping budgets for AI credits and for Actions? A $0 Actions budget would also stop `ci` once minutes run out.
 3. Actions-minute headroom: accept the risk, trim other repos' usage, or allow a small paid Actions budget?
-4. Concurrency: decided by George (one Cursor cloud agent plus one Copilot agent at once).
-5. Fill D-009 cost caps with the Copilot caps above.
+4. Concurrency: decided by George (no cap on parallel agents, 7:55 PM MT relay).
+5. Add the Copilot caps above to D-009 (decided without them).
 
 ## Sources
 - https://docs.github.com/en/copilot/concepts/billing/usage-based-billing-for-individuals
