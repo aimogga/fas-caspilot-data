@@ -403,3 +403,39 @@ describe('grants, RLS and main CI checks (synthetic)', () => {
     expect((await checkMainCi({}, run('success'))).status).toBe('SKIPPED');
   });
 });
+
+describe('F-601 QA mutation kills (synthetic)', () => {
+  const now = new Date('2099-06-15T09:00:00Z');
+  const daysAgo = (d) => new Date(now - d * 86400000).toISOString();
+  const ok = () => ({status: 'GREEN', findings: [], details: [], ignored: [], stale: []});
+  const run = async (o) => {
+    let overall;
+    await main({secretScan: ok, build: ok, deps: ok, harness: ok, data: async () => ({freshness: ok(), sanity: ok()}),
+      mainCi: async () => ok(), grantsRls: async () => ({grants: ok(), rls: ok()}), log: () => {},
+      emit: (res) => { overall = res.overall; return {path: 'x', exitCode: 0}; }, ...o});
+    return overall;
+  };
+
+  it('grants key last used 30 days ago (but within the query window) is RED', () => {
+    const g = {id: 'g1', name: 'grants-gov', last_success_at: daysAgo(30)};
+    expect(evalGrants([g], [{source_id: 'g1', status: 'success', started_at: daysAgo(26)}], [], now)).toMatchObject({status: 'RED'});
+  });
+
+  it('past pursuing deadlines are excluded from the 14-day list', () => {
+    const p = [{status: 'pursuing', opportunity: {title: 'Syn Past', close_date: '2099-06-10'}}];
+    expect(evalGrants([], [], p, now).details).toContain('No pursuing deadlines in 14d');
+  });
+
+  it('RLS violation, failed main CI and RED grants each drive overall', async () => {
+    const red = {status: 'RED', findings: ['syn'], details: []};
+    expect(await run({grantsRls: async () => ({grants: ok(), rls: red})})).toBe('RED');
+    expect(await run({mainCi: async () => red})).toBe('RED');
+    expect(await run({grantsRls: async () => ({grants: red, rls: ok()})})).toBe('RED');
+    expect(await run({})).toBe('GREEN');
+  });
+
+  it('main CI HTTP error is YELLOW "could not query"', async () => {
+    const r = await checkMainCi({GITHUB_TOKEN: 'placeholder', GITHUB_REPOSITORY: 'o/r'}, async () => Response.json({workflow_runs: [{conclusion: 'success', head_sha: 'abcdef1'}]}, {status: 403}));
+    expect(r).toMatchObject({status: 'YELLOW', findings: ['main CI: could not query (HTTP 403)']});
+  });
+});

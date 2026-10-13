@@ -4,7 +4,7 @@ Last updated: 2026-10-13
 
 ## Summary
 
-- **Done:** 9 of 44 features (20%): F-003, F-101, F-102, F-103, F-104, F-105, F-202, F-203 and F-204.
+- **Done:** 11 of 44 features (25%): F-000, F-001, F-003, F-101, F-102, F-103, F-104, F-105, F-202, F-203 and F-204.
 - **In progress:** F-601 nightly audit (partly working).
 - **Next up:** F-201 source registry and ingest logging.
 - **Blocked:** None right now. #77 Copilot pilot should unblock once main is merged into it (error-page layout fix landed in PR #90).
@@ -61,8 +61,8 @@ Last updated: 2026-10-13
 
 ## Phase 0: Getting ready
 
-- [ ] **Not started** F-000 Plugin and tool inventory completed: a list of every tool we could use, marked use / maybe / avoid, with any that would send FAS data outside flagged.
-- [ ] **Not started** F-001 Open decisions D-001 to D-010 decided: each open question has options and a recommendation, and George's choice is written down.
+- [x] **Done** F-000 Plugin and tool inventory completed: a list of every tool we could use, marked use / maybe / avoid, with any that would send FAS data outside flagged. QA PASS and George approved 2026-10-12 11:20 PM MT; squash-merged PR #98 as feaa7d2.
+- [x] **Done** F-001 Open decisions D-001 to D-010 decided: each open question has options and a recommendation, and George's choice is written down. QA PASS and George approved 2026-10-12 11:20 PM MT; squash-merged PR #99 as 9aad6c0.
 - [ ] **Not started** F-002 Phase 2 and 5 data sources verified: each public data source is checked to work, be current and be allowed for our use.
 - [x] **Done** F-003 Cursor Cloud environment ready: the building robots can set up and run the app on a fresh computer, with passwords stored safely.
 
