@@ -343,3 +343,7 @@ Left: follow-up to log SahieHttp ingest errors server-side (no secrets).
 Did: no-role breadcrumb "Account not set up" via `crumbFor` in `lib/shell/nav.ts` (roles with a home unchanged); `areaName` is case-insensitive and matches sub-paths; placeholder subtitles use `PageHeader` description; e2e for no-role 403 and area-name case in `status-pages.spec.ts`; layout-parity entries for signed-in 404, error and `/`, plus subtitle-left equals h1-left.
 Also: crumb uses the canonical path (fixes #78).
 Left: UI evidence (screenshots, axe, mockup comparison) needs a run with local Supabase.
+
+## 2026-10-13 01:24 (UTC) — Grok Bot — F-002 source cards (claim)
+Did: Claimed F-002. Added docs/research/ cards for sahie, saipe, acs5, hrsa_hpsa_mh, cdc_places, ut_courts, va_vetpop, hrsa_ahrf and grants_gov, each with sample call, vintage, license and commercial-reuse answer (checked 2026-10-08).
+Left: No cards yet for usaspending, propublica_990, irs_990pf_grants, sam_entity, ut_transparency (Phase 5 Use/Verify first rows); Deep Research must add them before F-002 can pass. QA re-runs 3 sample calls (Census calls need a key).
