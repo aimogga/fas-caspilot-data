@@ -537,3 +537,9 @@ Did: Recorded George's 11:03 AM MT 2026-10-13 approvals verbatim (via Chief of s
 State: F-201 status stays failing; human_gate unchanged; status_note removed from feature_list (context kept here).
 Left: QA.
 Decisions: D-024, D-025, D-026, D-027.
+
+## 2026-10-13 18:32 (UTC) — Cloud Agent (P1a subagent, lead-reviewed) — PR #148 / F-210 ingest variables for v2
+Did: SAIPE `child_poverty_count`/`child_poverty_rate` (`SAEPOV0_17_*`, `SAEPOVRT0_17_*`), `bad()` rate check on every percent code, completeness 4×29, `Saipe.CODES`; ACS raw `single_parent_households` (B11003_010E + B11003_016E) and `no_vehicle_households` (B08201_002E) plus derived `single_parent_pct`/`no_vehicle_pct` (÷ B11001_001E × 100, 1 dp, not_published when missing or 0), completeness 7×29, `Acs5.CODES`; fixtures, HDR arrays and pinned checksums recomputed by running the code; DATA_SOURCES.md "Census indicator codes" table.
+State: `pnpm gate` on 3af63ae: lint/typecheck/unit (399)/secret scan/D-012 (+162/-88 = 250)/300-char all pass; 3 mutants killed. test:db runs in CI only.
+Left: QA PASS at head. **Unresolved:** the Census variable-id pre-check could not run here (egress proxy denies api.census.gov, 403 on CONNECT); ids cross-checked on mirrors; the exact curl/jq for QA is in the PR body; a wrong id fails closed at ingest. Next: P1b (v2 config row + golden + labels) after #141 and DS-06b merge.
+Decisions: none new (D-026 applied).
