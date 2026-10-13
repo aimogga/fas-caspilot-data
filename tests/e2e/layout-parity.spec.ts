@@ -107,3 +107,20 @@ test("signed-in 404, signed-in error and the / redirect use the shell Page layou
     }
   }
 });
+
+test("placeholder subtitle left edge equals the h1 left edge", async ({ page }) => {
+  await signInAs(page, "admin@example.test");
+  for (const width of [375, 1024, 1440] as const) {
+    for (const path of ["/staff", "/admin", "/board"] as const) {
+      await page.setViewportSize({ width, height: 812 });
+      await page.goto(path);
+      await expect(page.locator("h1")).toBeVisible();
+      const edges = await page.evaluate(() => {
+        const h1 = document.querySelector("[data-slot=page-header] h1");
+        const sub = document.querySelector("[data-slot=page-header] > p:not([class])");
+        return { h1: h1?.getBoundingClientRect().left ?? -1, sub: sub?.getBoundingClientRect().left ?? -2 };
+      });
+      expect(Math.abs(edges.sub - edges.h1), `${path} @ ${width}`).toBeLessThanOrEqual(1);
+    }
+  }
+});
