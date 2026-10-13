@@ -35,6 +35,24 @@ describe('acs-http.ts', () => {
       expect(String(urls[0])).toContain('/2025/');
       expect(String(urls[1])).toContain('/2024/');
     });
+
+    it('loads rows tagged with the fallback vintage when primary year fails', async () => {
+      const load = vi.fn().mockResolvedValue({ ingestRunId: 'run-1', rowsLoaded: 87, sourceId: 'src-1' });
+      let calls = 0;
+      const httpFetch = vi.fn(async () => {
+        calls++;
+        if (calls === 1) throw new Error('404');
+        return new Response(JSON.stringify(fixture));
+      });
+      await AcsHttp.run({ year: '2025', env: { CENSUS_API_KEY: 'key' }, httpFetch: httpFetch as typeof fetch, client: createClient('http://x', 'key'), load });
+      expect(load).toHaveBeenCalledTimes(1);
+      const rows = load.mock.calls[0][3] as { vintage: string; period: string }[];
+      expect(rows.length).toBeGreaterThan(0);
+      for (const r of rows) {
+        expect(r.vintage).toBe('2024');
+        expect(r.period).toBe('2024');
+      }
+    });
   });
 
   it('run fetches, parses, and loads', async () => {
