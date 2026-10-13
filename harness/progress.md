@@ -361,3 +361,7 @@ Left: none for F-203.
 ## 2026-10-13 01:32 (UTC) — Cloud Agent — PR #103 docs DS-06 (F-211)
 Did: Added `docs/design/specs/DS-06.md` (County need map explorer / F-211), copied unchanged from design handoff. Docs only; no code or real data. Split from DS-05/06/07 batch (510 lines > 400).
 Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already matched the concurrency wording; no edit.
+
+## 2026-10-13 01:32 (UTC) — Cloud Agent — PR #104 docs DS-07 (F-401)
+Did: Added `docs/design/specs/DS-07.md` (Team dashboard / F-401), copied unchanged from design handoff. Docs only; no code or real data. Split from DS-05/06/07 batch (510 lines > 400).
+Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already matched the concurrency wording; no edit.
