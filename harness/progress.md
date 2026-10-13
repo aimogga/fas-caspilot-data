@@ -366,6 +366,25 @@ Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already
 Did: Added `docs/design/specs/DS-07.md` (Team dashboard / F-401), copied unchanged from design handoff. Docs only; no code or real data. Split from DS-05/06/07 batch (510 lines > 400).
 Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already matched the concurrency wording; no edit.
 
+## 2026-10-12 23:46 (UTC) — Cloud Agent — PR #95 health probe from env URL
+Did: `/api/health` probes `${NEXT_PUBLIC_SUPABASE_URL}/auth/v1/health` with the publishable `apikey`; falls back to local `127.0.0.1:54321` only when the URL is unset. Closes #12.
+State: lint/typecheck/unit 286/286 green; local `/api/health` ok vs GoTrue.
+Evidence: https://github.com/aimogga/fas-caspilot-data/pull/95
+Left: CI + secret-scan, then QA.
+Decisions: none.
+
+## 2026-10-13 00:21 (UTC) — Cloud Agent — PR #95 QA FAIL health status
+Did: `SupabaseHealthProbe.responds` now returns `response.ok` (2xx only). Injected-fetch tests: reject → false, timeout → false, 503 → false, 200 → true.
+State: lint/typecheck/unit 301/301 green.
+Evidence: https://github.com/aimogga/fas-caspilot-data/pull/95
+Left: CI + secret-scan, then QA re-check.
+Decisions: none.
+
+## 2026-10-13 03:30 (UTC) — Cloud Agent — PR #95 timeout-test mutation gap
+Did: merged origin/main (progress.md conflict kept both sides). Timeout test mock now resolves 200 when no abort signal is passed, so removing `AbortSignal.timeout` fails it; a non-aborting signal makes it time out.
+State: lint/typecheck/unit green.
+Left: CI + secret-scan, preview, QA re-check.
+
 ## 2026-10-13 03:20 (UTC) — Engineer Bot — PR #112 / feature F-601 nightly audit data checks
 Did: claim F-601. `pnpm audit:nightly` script; data freshness (active sources within cadence, failures last 24h, RED on 2 nights in a row) and data sanity (29 counties, ±20% rows vs previous vintage, null spike) via Supabase REST, SKIPPED without SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY; report "Data freshness" line filled.
 State: lint/typecheck/unit green; synthetic fixtures only.
