@@ -357,3 +357,10 @@ Decisions: none.
 ## 2026-10-13 02:35 (UTC) — QA — PR #108 flip F-203 passing
 Did: F-203 set to passing in harness/feature_list.json with evidence: PR #105 QA PASS at af26c70 (squash-merged at 6f65d72, 2026-10-13 02:31:48 UTC). Live fas-dev ingest at 02:31:07 UTC loaded 58 rows (29 counties × 2 indicators, 2024); re-run at 02:31:13 UTC stayed at 58 with 0 duplicates. Added "PR #102" to the DS-05 entry heading. Features passing: 8 of 44.
 Left: none for F-203.
+
+## 2026-10-13 02:43 (UTC) — Cloud Agent — PR TBD / feature F-204
+Did: Census ACS 5-year ingest (packages/ingest/acs5, lib/ingest/acs-http.ts reusing SahieHttp helpers, POST /api/ingest/acs with Bearer INGEST_TOKEN and secret-free error log, public route entry, inactive n8n/census-acs.json with $env.FAS_INGEST_ACS_URL, migration 20261013024000_f204_census_acs_source.sql UUID f2040000-0000-4000-8000-00000000c204 commercial_ok=false per D-015). Variables: B01003_001E (total_population), B11001_001E (total_households), B21001_002E (veteran_population). Mirrors F-203 SAIPE pattern. Fixture tests all 29 counties with checksum guard. Year auto-computed: Oct+ uses current-1, else current-2.
+State: lint/typecheck/unit 239/239 green (excluding nightly-audit secret scan, runs in CI).
+Evidence: PR TBD.
+Left: open PR, CI green, QA.
+Decisions: none.
