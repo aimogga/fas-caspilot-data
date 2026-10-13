@@ -87,8 +87,12 @@ export class IngestAlert {
           labels: ['ingest-alert'],
         }),
       });
+      if (!res.ok) {
+        console.warn(`ingest alert: GitHub issue fallback failed with HTTP ${res.status}`);
+      }
       return res.ok;
     } catch {
+      console.warn('ingest alert: GitHub issue fallback request failed');
       return false;
     }
   }
