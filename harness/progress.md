@@ -410,6 +410,10 @@ Decisions: none new (recorded in specs).
 Did: follow-up migration 20261013050000 sets commercial_ok=false for census-sahie (D-015); merged migration 20261012223000 untouched; tests/db/sahie-load.test.ts asserts the flag. Merged main (latest: f6d85bd). PR body says Refs #107. Not applied to any database.
 Left: QA re-check; apply to fas-dev after merge, then close #107.
 
+## 2026-10-13 01:24 (UTC) — Grok Bot — PR #100: F-002 source cards
+Did: 14 source cards in docs/research/ (sam_entity and ut_transparency are TODO stubs). Each card has 'Permitted for FAS grant use' and required notices; full sample calls (Census/SAM API calls in double quotes so keys expand); SAHIE bulk vs API names labelled; cross-refs name files. ut_courts data verified with a browser User-Agent (default curl UA gets 406, an access limit on the box); AOC confirmation requested 2026-10-12 8:39 AM MT, not for grant packets until confirmed. Merged main (latest: 258edb6).
+Left: TODO stubs; ut_courts from another network; QA re-check.
+
 ## 2026-10-13 01:24 (UTC) — Grok Bot — PR #99: F-001 decision memos
 Did: added harness/DECISION_MEMOS.md (options, recommendation, cost, risk for D-001 to D-010). Every memo now matches main's DECISIONS.md: D-001 to D-004, D-007, D-008 and D-010 decided 2026-10-08; D-005, D-006 and D-009 decided 2026-10-12; old cost numbers labelled superseded proposals; cron labelled an implementation note; resale wording removed (D-015). Merged main (latest: 258edb6) and took main's DECISIONS.md.
 Left: QA re-check; George sign-off.
