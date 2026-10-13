@@ -46,6 +46,10 @@ jobs:
       - name: Run nightly audit
         id: audit
         shell: bash
+        env:
+          # fas-dev only (D-016); never prod.
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           DATE=$(date -u +%Y-%m-%d)
           echo "audit_date=$DATE" >> $GITHUB_OUTPUT
