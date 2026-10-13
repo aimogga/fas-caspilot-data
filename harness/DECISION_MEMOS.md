@@ -229,7 +229,7 @@ Decided 2026-10-12 (see above); nothing further needed.
 | D-007 | **Decided 2026-10-08.** Per recommendation: use the CasePilot n8n instance, for dev workflows only; Supabase MCP dev/preview only; no MCP gets production credentials | $0 |
 | D-008 | **Decided 2026-10-08.** `org_id` + RLS deny-by-default from F-102 | $0 |
 | D-009 | **Decided 2026-10-12:** Cursor $60 plan, $0 on-demand, no parallel cap, Supabase Pro ≤ $60, current paid Vercel plan, audit < $2/run, LLM $25 from the grants phase (Phase 5); cron is an implementation note | Superseded proposal: ~$320 / ~$495 |
-| D-010 | **Decided 2026-10-08.** Manual entry + CSV of FAS's own tracked list; check each tool's terms; nothing imported goes to the LLM until cleared | $0 |
+| D-010 | **Decided 2026-10-08.** Manual entry + CSV of FAS's own tracked list; check each tool's terms | $0 |
 
 **Top 3 blockers for Phase 1:**
 1. **D-001 ownership:** decided 2026-10-08 (A). F-003, F-104 and F-105 are already set up on the current repo and accounts, so the move to CasePilot-owned accounts needs a plan before Phase 6 to redo those bindings.
