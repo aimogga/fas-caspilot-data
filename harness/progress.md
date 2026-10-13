@@ -417,3 +417,11 @@ Left: TODO stubs; ut_courts from another network; QA re-check.
 ## 2026-10-13 01:24 (UTC) — Grok Bot — PR #98: F-000 plugin inventory
 Did: landed harness/PLUGIN_INVENTORY.md (Grok, Cursor local + Cloud, n8n; Use/Maybe/Avoid with reasons and an FAS-data column). Aligned with D-009 (cron labelled an implementation choice); added user-Supabase--casepilot and user-Refero rows; live read-only n8n inventory (2 workflows); GitHub Actions row lists real workflows; D-001/002/005/006/007/009 shown decided; proposals renamed P-1 to P-5; recounted by script (83 rows: Use 14 · Maybe 24 · Avoid 45). Merged main (latest: 258edb6).
 Left: QA re-check; George sign-off.
+
+## 2026-10-13 01:24 (UTC) — Grok Bot — PR #99: F-001 decision memos
+Did: added harness/DECISION_MEMOS.md (options, recommendation, cost, risk for D-001 to D-010). Every memo now matches main's DECISIONS.md: D-001 to D-004, D-007, D-008 and D-010 decided 2026-10-08; D-005, D-006 and D-009 decided 2026-10-12; old cost numbers labelled superseded proposals; cron labelled an implementation note; resale wording removed (D-015). Merged main (latest: 258edb6) and took main's DECISIONS.md.
+Left: QA re-check; George sign-off.
+
+## 2026-10-13 05:22 (UTC) — Grok Bot — PR #125: preview-report standing rule
+Did: Added standing Reporting rule in harness/preferences.md from George (2026-10-12, 11:21 PM MT, via Chief of staff): whenever something user-visible merges and is ready to look at, report to George Chief of staff with a direct preview link (git-main or PR preview), the page path to open, and which test login to use.
+Left: none for this docs change.
