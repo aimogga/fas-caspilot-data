@@ -426,6 +426,32 @@ Left: QA re-check; George sign-off.
 Did: Added standing Reporting rule in harness/preferences.md from George (2026-10-12, 11:21 PM MT, via Chief of staff): whenever something user-visible merges and is ready to look at, report to George Chief of staff with a direct preview link (git-main or PR preview), the page path to open, and which test login to use.
 Left: none for this docs change.
 
+## 2026-10-13 03:30 (UTC) — Engineer Bot — PR #111 / feature F-201
+Did: claim F-201. Reused source_registry/ingest_run; pre-load failures now write an error ingest_run.
+`IngestAlert` posts a redacted payload (with the failed ingest_run id) to INGEST_ALERT_WEBHOOK_URL
+on a failed POST /api/ingest/sahie, and never throws. Inactive n8n/ingest-failure-alert.json.
+Tests: idempotency, simulated failure alert, lowercase "bearer" rejected, pinned SAHIE checksum.
+State: lint/typecheck/unit green; synthetic data only.
+Left: QA; live fas-dev evidence needs fas-dev Supabase credentials and INGEST_ALERT_WEBHOOK_URL (not in repo secrets).
+Decisions: none.
+
+## 2026-10-13 03:45 (UTC) — Cloud Agent — PR #114 claim F-401 (DS-07a PR 1)
+Did: claim F-401. `/dashboard` route guarded to admin and staff (board 403 via middleware). Page header plus M1, M2, M3, M5, M4 table, M6 and O1 cards, each showing `Not available yet` with no value or footer. M4 is an accessible table (caption, `th scope`, numbers right-aligned, fixed layout for 375). Synthetic only: no data wired.
+State: lint/typecheck/unit green; each guard mutation-checked.
+Left: nav unhide and crumb (lib/shell/nav.ts, held for #77), filters, freshness and pipeline widgets, e2e and layout-parity, then DS-07b/c.
+Decisions: none.
+
+## 2026-10-13 05:46 (UTC) — Cloud Agent — PR #110 / feature F-204 tests
+Did: merged origin/main (01a6a56) after #109 squash; added acs-http test that a failed primary ACS year plus loaded fallback tags every row with the fallback vintage and period (mutation-checked: deleting `year = fallback;` in AcsHttp.run fails it). Earlier #110 commits: acs-http tests, docs/DATA_SOURCES.md, tests/db/acs-load.test.ts.
+State: unit tests green on Node 22.
+Evidence: PR #110.
+Left: CI + secret-scan, preview, QA.
+Decisions: none.
+
+## 2026-10-13 06:10 (UTC) — Grok Bot (QA) — PR #126 (qa/flip-f204): flip F-204
+Did: flipped F-204 to passing in harness/feature_list.json with evidence (QA PASS on PR #110 at 98ff670, merged a54e1de; part 1 PR #109 merged abc93bb). All three acceptance criteria and both tests proven.
+Left: none.
+
 ## 2026-10-13 03:55 (UTC) — Cloud Agent — PR #113 / feature F-211 (DS-06a, PR 1 of 3)
 Did: claim F-211. `/need-map` (all roles) table: 29 counties by rank, score, bin, latest-vintage indicators, status; `Not available yet` / `Not published`; source footer; empty and error states.
 Fixes (UX + QA on 08350b0): scroll region with sticky County, right-aligned numbers, display names and units, per-column source + vintage + as-of, placeholder bins, ErrorState body.

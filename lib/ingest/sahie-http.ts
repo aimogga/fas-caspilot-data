@@ -1,5 +1,6 @@
 import { timingSafeEqual } from 'node:crypto';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { IngestAlert } from '../../packages/ingest/ingest-alert';
 import { PublicIndicatorIngest, type IndicatorRow } from '../../packages/ingest/public-indicator';
 import { Sahie } from '../../packages/ingest/sahie';
 
@@ -17,6 +18,7 @@ export type SahieRunOpts = {
   httpFetch?: typeof fetch;
   client?: SupabaseClient;
   load?: SahieLoad;
+  recordFailure?: typeof PublicIndicatorIngest.recordFailure;
 };
 
 /** n8n entry: fetch → parse → fill (requireComplete) → load. Token auth is fail-closed. */
@@ -79,10 +81,18 @@ export class SahieHttp {
   static async run(opts: SahieRunOpts) {
     const env = opts.env ?? process.env;
     const year = SahieHttp.year(opts.now ?? new Date(), opts.year);
-    const json = await Sahie.fetch(year, env, opts.httpFetch);
-    const rows = Sahie.requireComplete(Sahie.parse(json));
-    const load = opts.load ?? PublicIndicatorIngest.load.bind(PublicIndicatorIngest);
     const client = opts.client ?? SahieHttp.db(env);
+    let rows: IndicatorRow[];
+    try {
+      rows = Sahie.requireComplete(Sahie.parse(await Sahie.fetch(year, env, opts.httpFetch)));
+    } catch (e) {
+      const record = opts.recordFailure ?? PublicIndicatorIngest.recordFailure.bind(PublicIndicatorIngest);
+      const message = IngestAlert.payload(Sahie.SOURCE_NAME, e, env).error;
+      const ingestRunId = await record(client, Sahie.SOURCE_NAME, message).catch(() => null);
+      if (e instanceof Error && ingestRunId) Object.assign(e, { ingestRunId });
+      throw e;
+    }
+    const load = opts.load ?? PublicIndicatorIngest.load.bind(PublicIndicatorIngest);
     return load(client, Sahie.SOURCE_NAME, Sahie.checksum(rows), rows);
   }
 
@@ -94,6 +104,7 @@ export class SahieHttp {
       run?: typeof SahieHttp.run;
       client?: SupabaseClient;
       httpFetch?: typeof fetch;
+      alertFetch?: typeof fetch;
     } = {},
   ): Promise<Response> {
     const env = deps.env ?? process.env;
@@ -121,7 +132,8 @@ export class SahieHttp {
         ingestRunId: result.ingestRunId,
         rowsLoaded: result.rowsLoaded,
       });
-    } catch {
+    } catch (e) {
+      await IngestAlert.notify(IngestAlert.payload(Sahie.SOURCE_NAME, e, env), env, deps.alertFetch);
       return Response.json({ error: 'ingest failed' }, { status: 500 });
     }
   }

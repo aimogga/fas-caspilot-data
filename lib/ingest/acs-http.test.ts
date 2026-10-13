@@ -19,6 +19,40 @@ describe('acs-http.ts', () => {
     it('delegates to SahieHttp.year when requested', () => {
       expect(AcsHttp.year(new Date('2026-10-13'), '2023')).toBe('2023');
     });
+
+    it('falls back one year when primary year fails', async () => {
+      const load = vi.fn().mockResolvedValue({ ingestRunId: 'run-1', rowsLoaded: 87, sourceId: 'src-1' });
+      let calls = 0;
+      const urls: URL[] = [];
+      const mock = vi.fn(async (url: URL) => {
+        urls.push(url);
+        calls++;
+        if (calls === 1) throw new Error('404');
+        return new Response(JSON.stringify(fixture));
+      });
+      await AcsHttp.run({ year: '2025', env: { CENSUS_API_KEY: 'key' }, httpFetch: mock as typeof fetch, client: createClient('http://x', 'key'), load });
+      expect(mock).toHaveBeenCalledTimes(2);
+      expect(String(urls[0])).toContain('/2025/');
+      expect(String(urls[1])).toContain('/2024/');
+    });
+
+    it('loads rows tagged with the fallback vintage when primary year fails', async () => {
+      const load = vi.fn().mockResolvedValue({ ingestRunId: 'run-1', rowsLoaded: 87, sourceId: 'src-1' });
+      let calls = 0;
+      const httpFetch = vi.fn(async () => {
+        calls++;
+        if (calls === 1) throw new Error('404');
+        return new Response(JSON.stringify(fixture));
+      });
+      await AcsHttp.run({ year: '2025', env: { CENSUS_API_KEY: 'key' }, httpFetch: httpFetch as typeof fetch, client: createClient('http://x', 'key'), load });
+      expect(load).toHaveBeenCalledTimes(1);
+      const rows = load.mock.calls[0][3] as { vintage: string; period: string }[];
+      expect(rows.length).toBeGreaterThan(0);
+      for (const r of rows) {
+        expect(r.vintage).toBe('2024');
+        expect(r.period).toBe('2024');
+      }
+    });
   });
 
   it('run fetches, parses, and loads', async () => {
@@ -37,11 +71,14 @@ describe('acs-http.ts', () => {
     ]));
   });
 
-  it('run does not call load on incomplete payload', async () => {
+  it('run does not call load on incomplete or rejected payload', async () => {
     const load = vi.fn();
     const partial = [['NAME', 'B01003_001E', 'B11001_001E', 'B21001_002E', 'state', 'county'], ['n49035', '100000', '30000', '5000', '49', '035']];
     await expect(AcsHttp.run({ year: '2023', env: { CENSUS_API_KEY: 'key' }, httpFetch: async () => new Response(JSON.stringify(partial)), client: createClient('http://x', 'key'), load })).rejects.toThrow(/partial/);
     expect(load).not.toHaveBeenCalled();
+    const rejected = [['NAME', 'B01003_001E', 'B11001_001E', 'B21001_002E', 'state', 'county'], ['n49035', 'invalid', '30000', '5000', '49', '035']];
+    await expect(AcsHttp.run({ year: '2023', env: { CENSUS_API_KEY: 'key' }, httpFetch: async () => new Response(JSON.stringify(rejected)), client: createClient('http://x', 'key'), load })).rejects.toThrow(/rejected/);
+    expect(load).toHaveBeenCalledTimes(0);
   });
 
   it('logFailure redacts secrets', () => {
