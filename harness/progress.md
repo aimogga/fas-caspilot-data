@@ -390,6 +390,14 @@ Decisions: none.
 Did: Created `harness/preferences.md` with standing Reporting rule (George, 2026-10-12): FAS bots report to Chief of staff on merges, completed features, blockers, and anything needing George; short note with what landed / PR / tests; never George directly; new packets inherit.
 Left: QA review of docs PR.
 
-## 2026-10-13 04:45 (UTC) — Grok Bot — #107 census-sahie commercial_ok=false
+## 2026-10-13 04:10 (UTC) — Grok Bot — PR #117: DECISIONS.md, George decisions of 2026-10-12
+Did: recorded D-005, D-006 and D-009 as decided, plus design decisions D-017 to D-022 (29 counties, dashboard defaults, manual foundation grants, county outlines, stale rule, placeholder bins). Unblocks QA on #116.
+Left: QA check. Need-score weights still open.
+
+## 2026-10-13 04:45 (UTC) — Grok Bot — PR #118 (#107) census-sahie commercial_ok=false
 Did: follow-up migration 20261013050000 sets commercial_ok=false for census-sahie (D-015); merged migration 20261012223000 untouched; DB test asserts the flag. Not applied to any database.
 Left: QA check; apply to fas-dev after merge.
+
+## 2026-10-13 05:00 (UTC) — Grok Bot — PR #118 QA fixes
+Did: merged main (b4af304); PR body now says Refs #107 (fas-dev apply still pending, so #107 stays open).
+Left: QA re-check; apply to fas-dev after merge.
