@@ -1,6 +1,4 @@
-import { createHash } from 'node:crypto';
-import { COUNTIES } from '../../../lib/synthetic/generate';
-import { CensusTable } from '../census-table';
+import { CensusTable, CENSUS_NOT_PUBLISHED, UTAH_COUNTY_FIPS } from '../census-table';
 import type { IndicatorRow } from '../public-indicator';
 
 const CODES = ['total_population', 'total_households', 'veteran_population'] as const;
@@ -14,13 +12,12 @@ const VARIABLES = {
   total_households: 'B11001_001E',
   veteran_population: 'B21001_002E',
 } as const;
-const UTAH = new Set(COUNTIES.map((c) => c.fips));
 
 export type Acs5Parse = { rows: IndicatorRow[]; rejects: string[] };
 
 export class Acs5 {
   static readonly SOURCE_NAME = 'census-acs';
-  static readonly NOT_PUBLISHED = 'not_published';
+  static readonly NOT_PUBLISHED = CENSUS_NOT_PUBLISHED;
 
   static requestUrl(year: string, key: string): URL {
     const vars = Object.values(VARIABLES).join(',');
@@ -33,17 +30,12 @@ export class Acs5 {
     env: Record<string, string | undefined> = process.env,
     httpFetch: typeof fetch = fetch,
   ): Promise<unknown> {
-    const key = env.CENSUS_API_KEY;
-    if (!key) throw new Error('CENSUS_API_KEY is not set');
-    const res = await httpFetch(Acs5.requestUrl(year, key));
-    if (!res.ok) throw new Error(`ACS fetch failed: ${res.status}`);
-    return res.json();
+    return CensusTable.fetchJson((key) => Acs5.requestUrl(year, key), 'ACS', env, httpFetch);
   }
 
+  /** ACS treats "-" as null in addition to empty/N/A. */
   static num(raw: string | undefined): number | null | undefined {
-    if (raw == null || raw === '' || raw === 'N/A' || raw === '-') return null;
-    const n = Number(raw);
-    return Number.isFinite(n) ? n : undefined;
+    return CensusTable.num(raw, ['-']);
   }
 
   static fips(row: Record<string, string>): string | null {
@@ -71,7 +63,7 @@ export class Acs5 {
         rejects.push('missing FIPS');
         continue;
       }
-      if (!UTAH.has(geo_fips)) continue;
+      if (!UTAH_COUNTY_FIPS.has(geo_fips)) continue;
       for (const code of CODES) {
         const value = Acs5.num(row[VARIABLES[code]]);
         const err = Acs5.bad(code, value, geo_fips);
@@ -94,21 +86,11 @@ export class Acs5 {
   }
 
   static requireComplete(parsed: Acs5Parse, year: string): IndicatorRow[] {
-    if (parsed.rejects.length > 0) throw new Error(`ACS rejected ${parsed.rejects.length} rows`);
-    const n = new Map<string, number>();
-    for (const r of parsed.rows) n.set(r.geo_fips, (n.get(r.geo_fips) ?? 0) + 1);
-    if ([...n.values()].some((c) => c !== 3) || n.size !== COUNTIES.length) {
-      throw new Error(`ACS partial response: ${n.size} counties`);
-    }
-    if (new Set(parsed.rows.map((r) => r.period).filter(Boolean)).size > 1) {
-      throw new Error('ACS mixed vintages');
-    }
+    CensusTable.requireCountyCoverage(parsed.rows, parsed.rejects, CODES.length, 'ACS');
     return parsed.rows.map((r) => ({ ...r, period: year, vintage: year }));
   }
 
   static checksum(rows: IndicatorRow[]): string {
-    const key = (r: IndicatorRow) => `${r.geo_fips}:${r.indicator_code}`;
-    const sorted = [...rows].sort((a, b) => key(a).localeCompare(key(b)));
-    return createHash('sha256').update(JSON.stringify(sorted)).digest('hex');
+    return CensusTable.checksum(rows);
   }
 }

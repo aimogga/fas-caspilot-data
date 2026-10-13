@@ -34,7 +34,6 @@ describe("product branding", () => {
       "app/(app)/layout.tsx",
       "components/shell/AppShell.tsx",
       "components/shell/ShellFrame.tsx",
-      "components/PageLayout.tsx",
     ];
     for (const rel of files) {
       expect(read(rel), rel).not.toMatch(FORBIDDEN_NAME);

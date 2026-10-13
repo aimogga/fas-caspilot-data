@@ -435,6 +435,56 @@ State: lint/typecheck/unit green; synthetic data only.
 Left: QA; live fas-dev evidence needs fas-dev Supabase credentials and INGEST_ALERT_WEBHOOK_URL (not in repo secrets).
 Decisions: none.
 
+## 2026-10-13 03:45 (UTC) — Cloud Agent — PR #114 claim F-401 (DS-07a PR 1)
+Did: claim F-401. `/dashboard` route guarded to admin and staff (board 403 via middleware). Page header plus M1, M2, M3, M5, M4 table, M6 and O1 cards, each showing `Not available yet` with no value or footer. M4 is an accessible table (caption, `th scope`, numbers right-aligned, fixed layout for 375). Synthetic only: no data wired.
+State: lint/typecheck/unit green; each guard mutation-checked.
+Left: nav unhide and crumb (lib/shell/nav.ts, held for #77), filters, freshness and pipeline widgets, e2e and layout-parity, then DS-07b/c.
+Decisions: none.
+
+## 2026-10-13 05:46 (UTC) — Cloud Agent — PR #110 / feature F-204 tests
+Did: merged origin/main (01a6a56) after #109 squash; added acs-http test that a failed primary ACS year plus loaded fallback tags every row with the fallback vintage and period (mutation-checked: deleting `year = fallback;` in AcsHttp.run fails it). Earlier #110 commits: acs-http tests, docs/DATA_SOURCES.md, tests/db/acs-load.test.ts.
+State: unit tests green on Node 22.
+Evidence: PR #110.
+Left: CI + secret-scan, preview, QA.
+Decisions: none.
+
+## 2026-10-13 06:10 (UTC) — Grok Bot (QA) — PR #126 (qa/flip-f204): flip F-204
+Did: flipped F-204 to passing in harness/feature_list.json with evidence (QA PASS on PR #110 at 98ff670, merged a54e1de; part 1 PR #109 merged abc93bb). All three acceptance criteria and both tests proven.
+Left: none.
+
+## 2026-10-13 03:55 (UTC) — Cloud Agent — PR #113 / feature F-211 (DS-06a, PR 1 of 3)
+Did: claim F-211. `/need-map` (all roles) table: 29 counties by rank, score, bin, latest-vintage indicators, status; `Not available yet` / `Not published`; source footer; empty and error states.
+Fixes (UX + QA on 08350b0): scroll region with sticky County, right-aligned numbers, display names and units, per-column source + vintage + as-of, placeholder bins, ErrorState body.
+Left: seed + seeded e2e in stacked #119 (D-012); nav and crumb (#77's nav.ts), layout-parity, DS-06b map, DS-06c tiles.
+Decisions: none.
+
+## 2026-10-13 04:40 (UTC) — Cloud Agent — PR #119 / feature F-211 (DS-06a part 2, after #113)
+Did: local/CI-only synthetic seed: approved `v2-synthetic`, newer unapproved `v3-draft`, 26 scored counties with a tie (Cache = Davis), 3 not published (Daggett, Piute, Wayne).
+State: e2e asserts rank order, the tie, bins, Not published last and the footer version. Nothing written to hosted fas-dev by this PR.
+Left: QA at head.
+
+## 2026-10-13 10:17 (UTC) — Grok Bot (nightly cleanup) — PR #128: docs/harness drift sync
+Did: docs-only sync to main. PROGRESS_CHECKLIST marks F-203/F-204 Done (passing in feature_list.json; 9 of 44). PLAN, COPILOT_ROUTING, NIGHTLY_AUDIT and grok/roles/nightly_audit.md now match D-009 ($60 plan, $0 on-demand, no parallel-agent cap, Actions cron, no Automations). NIGHTLY_AUDIT cron matches nightly-audit.yml (`23 9 * * *` UTC). AGENTS.md layout lists real app/(app) routes and notes lib/metrics, lib/grants and supabase/functions are not in the repo yet. 10-privacy.mdc no longer cites the missing lib/metrics/suppression.ts (lands with F-306).
+State: no code, workflow, package.json or feature status changes.
+Left: QA.
+Decisions: none.
+
+## 2026-10-13 10:14 (UTC) — Grok Bot — nightly: kill orphan PageLayout (PR #127)
+Did: Deleted unused `components/PageLayout.tsx` (zero importers; only path strings in tests). Dropped PageLayout paths from `lib/branding.test.ts` and `lib/ds-01c.test.ts`. Removed unused `export type { ErrorViewer }` re-export from `components/status/error-viewer.ts` (ErrorFrame imports the type from lib).
+State: no local checkout; CI must run smoke (`pnpm lint && pnpm typecheck && pnpm test`).
+Evidence: PR nightly/kill-pagelayout.
+Left: QA review.
+Decisions: none.
+
+## 2026-10-13 10:20 (UTC) — Grok Bot — nightly: share census ingest helpers (PR #129)
+Did: Extended `packages/ingest/census-table.ts` with shared checksum, Utah FIPS set, `CENSUS_NOT_PUBLISHED`, `num` (ACS keeps `-` via extraNulls), `fetchJson`, and `requireCountyCoverage`. ACS/SAHIE/SAIPE call those; deleted dead ACS mixed-vintages check in `requireComplete` (parse always sets `period: ''`) and its hand-built test case. FIPS left source-local (SAIPE drop non-Utah vs SAHIE/ACS 49xxxx). Did not touch `lib/ingest/*-http.ts`, ingest-alert, #106, or `feature_list.json`.
+Left: QA on PR; later naming cleanup for acs5 folder (#106 conflict).
+
+## 2026-10-13 10:20 (UTC) — Grok Bot (nightly audit) — nightly cleanup: ingest HTTP parity (PR #130)
+Did: ACS and SAIPE ingest failures now record an error `ingest_run` (`recordFailure`) and fire `IngestAlert.notify`, same as SAHIE. One shared skeleton in `SahieHttp` (`ingest` + `respond`) used by all three routes; deleted the duplicate `logFailure` redactors (logs now redact via `IngestAlert`); dropped unused `AcsRunOpts`, `SaipeRunOpts`, `SahieLoad`. ACS year fallback unchanged.
+State: scoped vitest (lib/ingest + packages/ingest, 64 tests) green on Node 22, scoped tsc and eslint clean in a scratch tree built from API-fetched files. Full CI must still run.
+Left: CI + QA.
+
 ## 2026-10-13 05:20 (UTC) — Grok Bot — PR #123 / feature F-201 follow-up
 Did: GitHub-issue fallback in IngestAlert when the n8n webhook throws, returns non-2xx, or is Cloudflare-challenged; warns with the HTTP status on failure. Env INGEST_ALERT_GITHUB_TOKEN/REPO in .env.example.
 State: lint/typecheck/unit green (Node 22); live preview test opened #124 for run 12d2feb7 (closed).
