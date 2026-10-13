@@ -223,3 +223,36 @@ describe('IngestAlert GitHub fallback', () => {
     expect(calls).toHaveLength(1);
   });
 });
+
+describe('IngestAlert webhook secret header', () => {
+  const p: IngestAlertPayload = { source: 'saipe', status: 'error', error: 'boom', ingestRunId: 'run-1', at: '2026-01-01T00:00:00.000Z' };
+  const capture = () => {
+    const calls: RequestInit[] = [];
+    const f = (async (_url: string, init: RequestInit) => {
+      calls.push(init);
+      return new Response('{}', { status: 200 });
+    }) as unknown as typeof fetch;
+    return { calls, f };
+  };
+
+  it('sends X-FAS-Alert-Secret when INGEST_ALERT_SECRET is set', async () => {
+    const { calls, f } = capture();
+    const env = { INGEST_ALERT_WEBHOOK_URL: 'http://127.0.0.1/hook', INGEST_ALERT_SECRET: 'synthetic-secret-123' };
+    expect(await IngestAlert.notify(p, env, f)).toBe(true);
+    const headers = new Headers(calls[0].headers);
+    expect(headers.get('X-FAS-Alert-Secret')).toBe('synthetic-secret-123');
+    expect(headers.get('content-type')).toBe('application/json');
+  });
+
+  it('omits the header gracefully when INGEST_ALERT_SECRET is unset', async () => {
+    const { calls, f } = capture();
+    expect(await IngestAlert.notify(p, { INGEST_ALERT_WEBHOOK_URL: 'http://127.0.0.1/hook' }, f)).toBe(true);
+    expect(new Headers(calls[0].headers).has('X-FAS-Alert-Secret')).toBe(false);
+  });
+
+  it('n8n alert webhook requires header auth', () => {
+    const wf = JSON.parse(readFileSync('n8n/ingest-failure-alert.json', 'utf8')) as { nodes: { type: string; parameters: Record<string, unknown> }[] };
+    const hook = wf.nodes.find((n) => n.type === 'n8n-nodes-base.webhook');
+    expect(hook?.parameters.authentication).toBe('headerAuth');
+  });
+});

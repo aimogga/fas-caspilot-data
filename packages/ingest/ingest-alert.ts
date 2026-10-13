@@ -37,6 +37,15 @@ export class IngestAlert {
     return { source, status: 'error', error: IngestAlert.redact(raw, env), ingestRunId, at: now.toISOString() };
   }
 
+  /** Shared secret checked by the n8n Webhook node's Header Auth; omitted when unset. */
+  static webhookHeaders(env: Record<string, string | undefined>): Record<string, string> {
+    const headers: Record<string, string> = { 'content-type': 'application/json' };
+    if (env.INGEST_ALERT_SECRET) {
+      headers['x-fas-alert-secret'] = env.INGEST_ALERT_SECRET;
+    }
+    return headers;
+  }
+
   static async notify(
     payload: IngestAlertPayload,
     env: Record<string, string | undefined> = process.env,
@@ -49,7 +58,7 @@ export class IngestAlert {
     try {
       const res = await httpFetch(url, {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: IngestAlert.webhookHeaders(env),
         body: JSON.stringify(payload),
       });
       if (res.ok && res.headers.get('cf-mitigated') !== 'challenge') {
