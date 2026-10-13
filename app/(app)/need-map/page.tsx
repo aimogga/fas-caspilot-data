@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { EmptyState, ErrorState, PageHeader, Stack } from "@/components/layout";
 import { FasFilter } from "@/components/need-map/FasFilter";
+import { NeedMap } from "@/components/need-map/NeedMap";
 import { NeedTable } from "@/components/need-map/NeedTable";
 import { NeedMapQuery, type NeedTableData } from "@/lib/need-map/query";
 import { createClient } from "@/lib/supabase/server";
@@ -28,7 +29,11 @@ export default async function NeedMapPage({ searchParams }: { searchParams: Prom
         <EmptyState title="No FAS counties set">The FAS county list hasn&apos;t been configured yet.</EmptyState>
       ) : (
         <>
-          {data.version === null ? <EmptyState title="Need score not computed yet">Rank and score appear once an admin approves a need-score version. County indicators are still in the table.</EmptyState> : null}
+          {data.version === null ? (
+            <EmptyState title="Need score not computed yet">Rank and score appear once an admin approves a need-score version. County indicators are still in the table.</EmptyState>
+          ) : (
+            <div data-slot="need-map-card" className="rounded-lg border border-border bg-card p-4 text-card-foreground"><NeedMap data={data} fas={fas} /></div>
+          )}
           <NeedTable data={data} />
           <p data-slot="source-footer" className="text-xs font-medium tracking-wide text-muted-foreground">{data.footer}</p>
         </>
