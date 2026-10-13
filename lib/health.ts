@@ -64,14 +64,18 @@ export class SupabaseHealthProbe {
     return { apikey: key };
   }
 
-  static async responds(env?: HealthEnv): Promise<boolean> {
+  static async responds(
+    env?: HealthEnv,
+    fetchFn: typeof fetch = globalThis.fetch,
+    timeoutMs = 2000,
+  ): Promise<boolean> {
     const source = env ?? SupabaseHealthProbe.envFromProcess();
     try {
-      const response = await fetch(SupabaseHealthProbe.probeUrl(source), {
+      const response = await fetchFn(SupabaseHealthProbe.probeUrl(source), {
         headers: SupabaseHealthProbe.headers(source),
-        signal: AbortSignal.timeout(2000),
+        signal: AbortSignal.timeout(timeoutMs),
       });
-      return response.status > 0;
+      return response.ok;
     } catch {
       return false;
     }

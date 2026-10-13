@@ -84,3 +84,48 @@ describe("health route probe wiring", () => {
     expect(source).toContain("SupabaseHealthProbe");
   });
 });
+
+describe("SupabaseHealthProbe.responds", () => {
+  const env = { NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co" };
+
+  it("returns false when fetch rejects", async () => {
+    const rejected: typeof fetch = async () => {
+      throw new Error("network down");
+    };
+    const ok = await SupabaseHealthProbe.responds(env, rejected);
+    expect(ok).toBe(false);
+  });
+
+  it("returns false when fetch times out", async () => {
+    const hanging: typeof fetch = async (_input, init) => {
+      return await new Promise<Response>((_resolve, reject) => {
+        const signal = init?.signal;
+        if (signal === undefined || signal === null) {
+          reject(new Error("missing abort signal"));
+          return;
+        }
+        signal.addEventListener("abort", () => {
+          reject(signal.reason ?? new Error("aborted"));
+        });
+      });
+    };
+    const ok = await SupabaseHealthProbe.responds(env, hanging, 20);
+    expect(ok).toBe(false);
+  });
+
+  it("returns false when fetch returns 503", async () => {
+    const fail: typeof fetch = async () => {
+      return new Response("down", { status: 503 });
+    };
+    const ok = await SupabaseHealthProbe.responds(env, fail);
+    expect(ok).toBe(false);
+  });
+
+  it("returns true when fetch returns 200", async () => {
+    const okFetch: typeof fetch = async () => {
+      return new Response("{}", { status: 200 });
+    };
+    const ok = await SupabaseHealthProbe.responds(env, okFetch);
+    expect(ok).toBe(true);
+  });
+});
