@@ -394,14 +394,6 @@ Left: QA review of docs PR.
 Did: recorded D-005, D-006 and D-009 as decided, plus design decisions D-017 to D-022 (29 counties, dashboard defaults, manual foundation grants, county outlines, stale rule, placeholder bins). Unblocks QA on #116.
 Left: QA check. Need-score weights still open.
 
-## 2026-10-13 01:24 (UTC) — Grok Bot — PR #99 F-001 decision memos (claim)
-Did: Claimed F-001. Added harness/DECISION_MEMOS.md (options, recommendation, cost and risk for D-001 to D-010) and linked it from harness/DECISIONS.md.
-Left: D-005 and D-009 still have no decision/date in DECISIONS.md; George must decide before F-001 can pass. QA check; George's sign-off.
-
-## 2026-10-13 04:25 (UTC) — Grok Bot — PR #99 F-001 decision memos (QA fixes)
-Did: removed the "resolved: upgrade" header and the enable-on-demand action item; dropped "or sell" (D-001) and the future paid-product line (D-010); D-001 memo matches main (A); D-005, D-006 and D-009 marked decided 2026-10-12; old cost numbers labelled superseded proposals.
-Left: QA re-check.
-
-## 2026-10-13 05:05 (UTC) — Grok Bot — PR #99 QA fixes (2)
-Did: merged main (b4af304) and took main's DECISIONS.md; D-001 summary no longer says "before F-003"; blocker #1 updated; D-005 shown as decided; cron moved out of George's D-009 words (implementation note).
+## 2026-10-13 01:24 (UTC) — Grok Bot — PR #99: F-001 decision memos
+Did: added harness/DECISION_MEMOS.md (options, recommendation, cost, risk for D-001 to D-010). Every memo now matches main's DECISIONS.md: D-001 to D-004, D-007, D-008 and D-010 decided 2026-10-08; D-005, D-006 and D-009 decided 2026-10-12; old cost numbers labelled superseded proposals; cron labelled an implementation note; resale wording removed (D-015). Merged main (b4af304) and took main's DECISIONS.md.
 Left: QA re-check; George sign-off.

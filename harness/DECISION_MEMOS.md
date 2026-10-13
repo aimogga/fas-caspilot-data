@@ -10,7 +10,7 @@
 > **DECIDED by George, 2026-10-08: A**, per recommendation (CasePilot-owned GitHub org, Vercel team and Supabase org under casepilot.io identities). Matches `harness/DECISIONS.md` D-001. Selling the data or a paid product is ruled out by D-015.
 **Question:** Under whose accounts do the code, hosting and database live?
 **Options:** (A) CasePilot-owned GitHub org, Vercel team and Supabase org under casepilot.io identities. (B) Keep George's personal accounts (`aimogga` repo, Vercel team "aimogga's projects") through Phase 5, then transfer before Phase 6. (C) ModernLine accounts.
-**Recommendation: A, done before F-003.** Create a free GitHub org for CasePilot and transfer `fas-caspilot-data` into it (GitHub keeps issues and PRs and redirects old URLs). Fix the "caspilot" typo at the same time if it's unintended. Then create the Vercel team and Supabase org under casepilot.io. Cursor's Cloud setup, the Vercel Git link and the Supabase GitHub integration all bind to the repo path, so moving after F-003 or F-105 means redoing them. **Rule out C:** it mixes another client's tooling and credentials into this project (D-007 notes Cursor's MCP already points at ModernLine's n8n).
+**Recommendation: A** (original timing "before F-003" is superseded: F-003 is already set up on the current repo, so the move is planned before Phase 6). Create a free GitHub org for CasePilot and move `fas-caspilot-data` into it (GitHub keeps issues and PRs and redirects old URLs). Fix the "caspilot" typo at the same time if it's unintended. Then create the Vercel team and Supabase org under casepilot.io. Cursor's Cloud setup, the Vercel Git link and the Supabase GitHub integration all bind to the repo path, so moving after F-003 or F-105 means redoing them. **Rule out C:** it mixes another client's tooling and credentials into this project (D-007 notes Cursor's MCP already points at ModernLine's n8n).
 **Cost:** GitHub Free org $0 (unlimited private repos, 2,000 Actions min/mo; Team is $4/user/mo) ([docs.github.com plans](https://docs.github.com/en/get-started/learning-about-github/githubs-plans), [github.com/pricing](https://github.com/pricing)). Vercel and Supabase cost the same under either owner (see D-006). Transfer effort is ~1–2 hours (ESTIMATE).
 **Risk:** If the code stays personal it's harder to transfer or audit, and a personal-account compromise exposes the product. The transfer itself is low risk if done before the integrations exist.
 **Needed from George:**
@@ -20,6 +20,8 @@
 4. Which of the three Vercel connectors to keep. Only `user-Vercel-xai` resolves, to "aimogga's projects".
 
 ## D-002 Scheduler for data pulls and alerts
+
+> **DECIDED by George, 2026-10-08:** **A**, per recommendation, including the inactive-by-default and no-edits-to-live-workflows rules (DECISIONS.md D-002).
 **Question:** What triggers the ingest code and sends alerts and the digest?
 **Options:** (A) n8n at n8n.casepilot.io triggers the repo's ingest functions and sends alerts and the digest. (B) Supabase Cron (pg_cron) + Edge Functions only. (C) GitHub Actions cron.
 **Recommendation: A, conditional.** The acceptance criteria for F-201 to F-208 and F-505 already say "n8n", and changing them needs your approval. Ingest logic stays in `packages/ingest/` either way. **Conditions to confirm before Phase 2:**
@@ -36,6 +38,8 @@
 3. Who receives failure alerts (email or Slack).
 
 ## D-003 In-app LLM provider for strategy drafts
+
+> **DECIDED by George, 2026-10-08:** per recommendation: 5-opportunity bake-off scored by QA on citation accuracy; keep the `lib/llm/` adapter (DECISIONS.md D-003).
 **Question:** Which model API powers F-508 (cited strategy drafts) behind `lib/llm/`?
 **Options:** (A) xAI Grok API. (B) Anthropic. (C) OpenAI. In every case it sits behind the adapter.
 **Recommendation:** Keep the bake-off, but set the rules now:
@@ -55,6 +59,8 @@
 3. Confirm the **build agents** (Grok, Cursor's model providers) are in scope for the same review.
 
 ## D-004 PDF and Word export method
+
+> **DECIDED by George, 2026-10-08:** **A**, per recommendation (DECISIONS.md D-004).
 **Question:** How do we produce the F-403/F-404 packets?
 **Options:** (A) Print-optimised HTML route → PDF with headless Chromium, plus a DOCX library. (B) A React PDF library (a separate layout to maintain). (C) A paid document API.
 **Recommendation: A.** There's one design source for screen and print, Playwright already renders the page for QA snapshots, and no third party sees packet data. **Do not choose C.** It sends FAS-Shareable packets to an outside processor and would need a decision and BAA review of its own.
@@ -113,6 +119,8 @@ C is premature with synthetic data only.
 3. Start the legal opinion **now** in parallel; its answer decides whether Phase 6 costs about $70/mo or about $1,400+/mo.
 
 ## D-007 Cursor and MCP configuration
+
+> **DECIDED by George, 2026-10-08:** per recommendation (DECISIONS.md D-007).
 **Question:** Which MCP servers can local agents, Cloud Agents and Automations use, and with what credentials?
 **Options:**
 - (A) The doc's recommendation as written, with the n8n MCP repointed to CasePilot.
@@ -136,6 +144,8 @@ C is premature with synthetic data only.
 3. Allow the Engineer Supervisor to commit `.cursor/mcp.json`.
 
 ## D-008 Multi-organization design
+
+> **DECIDED by George, 2026-10-08:** per recommendation (DECISIONS.md D-008).
 **Question:** Do we build tenant isolation in from day one?
 **Options:** (A) `org_id` on every FAS table plus RLS by org and role from F-102, with no billing or self-serve signup. (B) Single-tenant now, retrofit later. (C) A separate Supabase project per organization.
 **Recommendation: A.** F-102's acceptance criteria already require "policies per role and org_id". A retrofit later means rewriting every query and policy. C gives the strongest isolation but adds a project per organization; keep it as an option for a future customer that asks for physical isolation.
@@ -187,6 +197,8 @@ Phases 1–5 have 35 features. At about 3 runs each (build, fix, QA), that's ~30
 Decided 2026-10-12 (see above); nothing further needed.
 
 ## D-010 Foundation opportunity inputs
+
+> **DECIDED by George, 2026-10-08:** per recommendation: manual + CSV in v1; check each tool's export terms before automating (DECISIONS.md D-010).
 **Question:** How do foundation opportunities get in, and do the research tools' terms allow it?
 **Options:** (A) Manual entry only. (B) Manual entry plus CSV import of FAS's own exports. (C) API or bulk integration with a research tool (for example a Candid API licence).
 **Recommendation: B, limited to FAS's own tracked list** (the opportunities FAS saved, plus its own notes), with a terms check per tool first.
@@ -209,19 +221,19 @@ Decided 2026-10-12 (see above); nothing further needed.
 | ID | Recommendation (one line) | Monthly cost |
 |---|---|---|
 | D-001 | **Decided 2026-10-08: A.** Create a CasePilot GitHub org and casepilot.io Vercel and Supabase accounts; plan the transfer before Phase 6. `casepilot-fas-proof` is an open question | $0 extra (GitHub Free org) |
-| D-002 | n8n (self-hosted) as scheduler and messenger once its hosting, region, retention and dev credentials are confirmed; Supabase Cron as fallback | ~$0 marginal (unverified); n8n Cloud would be €24–60 |
-| D-003 | Phase 5 bake-off limited to providers with both BAA and ZDR; default candidate xAI grok-4.7 on the US endpoint | < $25 (ESTIMATE) |
-| D-004 | HTML → headless Chromium PDF + DOCX library; no paid document API | ~$0 (inside Vercel cap) |
+| D-002 | **Decided 2026-10-08.** n8n (self-hosted) as scheduler and messenger once its hosting, region, retention and dev credentials are confirmed; Supabase Cron as fallback | ~$0 marginal (unverified); n8n Cloud would be €24–60 |
+| D-003 | **Decided 2026-10-08.** Phase 5 bake-off limited to providers with both BAA and ZDR; default candidate xAI grok-4.7 on the US endpoint | < $25 (ESTIMATE) |
+| D-004 | **Decided 2026-10-08.** HTML → headless Chromium PDF + DOCX library; no paid document API | ~$0 (inside Vercel cap) |
 | D-005 | **Decided 2026-10-12:** PHQ-9 + GAD-7 now via a pluggable instrument registry (OQ-45/Y-OQ later); total scores only | $0 (if providers already license OQ) to quote-based (published $250/FTE/yr) |
 | D-006 | **Decided 2026-10-12:** George's current paid Vercel plan + Supabase Pro; start the legal opinion now | Supabase ≤ $60 (D-009); superseded proposal ~$55–70; ~$1,400+ if PHI is hosted in Phase 6 (ESTIMATE) |
-| D-007 | Least-privilege MCP matrix; project `.cursor/mcp.json`; Supabase MCP `read_only` + `project_ref`; n8n MCP off for now | $0 |
-| D-008 | `org_id` + RLS deny-by-default from F-102 | $0 |
+| D-007 | **Decided 2026-10-08.** Least-privilege MCP matrix; project `.cursor/mcp.json`; Supabase MCP `read_only` + `project_ref`; n8n MCP off for now | $0 |
+| D-008 | **Decided 2026-10-08.** `org_id` + RLS deny-by-default from F-102 | $0 |
 | D-009 | **Decided 2026-10-12:** Cursor $60 plan, $0 on-demand, no parallel cap, Supabase Pro ≤ $60, current paid Vercel plan, audit < $2/run, LLM $25 from the grants phase (Phase 5); cron is an implementation note | Superseded proposal: ~$320 / ~$495 |
-| D-010 | Manual entry + CSV of FAS's own tracked list; check each tool's terms; nothing imported goes to the LLM until cleared | $0 |
+| D-010 | **Decided 2026-10-08.** Manual entry + CSV of FAS's own tracked list; check each tool's terms; nothing imported goes to the LLM until cleared | $0 |
 
 **Top 3 blockers for Phase 1:**
 1. **D-001 ownership:** decided 2026-10-08 (A). F-003, F-104 and F-105 are already set up on the current repo and accounts, so the move to CasePilot-owned accounts needs a plan before Phase 6 to redo those bindings.
 2. **D-009 caps:** decided 2026-10-12 ($60 Cursor plan, $0 on-demand). F-003 needs a Cloud Agent run log.
 3. **D-006 plan tier:** decided 2026-10-12 (paid Vercel + Supabase Pro). F-105 still needs a non-production Supabase project.
 
-Also quick and blocking: **D-008** (F-102 builds `org_id` into the schema) and **D-007** (scoped dev credentials for agents). D-005 is decided (2026-10-12). D-002, D-003, D-004 and D-010 can wait until their phases, but start the D-006 legal opinion now.
+All ten are now decided: D-001 to D-004, D-007, D-008 and D-010 on 2026-10-08; D-005, D-006 and D-009 on 2026-10-12. Still open in practice: the D-006 legal opinion, which should start now and decides the Phase 6 upgrade.
