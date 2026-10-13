@@ -37,47 +37,31 @@ export class Acs5 {
     httpFetch: typeof fetch = fetch,
   ): Promise<unknown> {
     const key = env.CENSUS_API_KEY;
-    if (!key) {
-      throw new Error('CENSUS_API_KEY is not set');
-    }
+    if (!key) throw new Error('CENSUS_API_KEY is not set');
     const res = await httpFetch(Acs5.requestUrl(year, key));
-    if (!res.ok) {
-      throw new Error(`ACS fetch failed: ${res.status}`);
-    }
+    if (!res.ok) throw new Error(`ACS fetch failed: ${res.status}`);
     return res.json();
   }
 
   /** null = Census annotation (negative sentinel such as -666666666); undefined = not numeric. */
   static num(raw: string | undefined): number | null | undefined {
-    if (raw == null || raw === '' || raw === 'null') {
-      return null;
-    }
+    if (raw == null || raw === '' || raw === 'null') return null;
     const n = Number(raw);
-    if (!Number.isFinite(n)) {
-      return undefined;
-    }
+    if (!Number.isFinite(n)) return undefined;
     return n <= -100000000 ? null : n;
   }
 
   static fips(row: Record<string, string>): string | null {
     const state = row.state ?? '';
     const county = row.county ?? '';
-    if (!/^\d{2}$/.test(state) || !/^\d{3}$/.test(county)) {
-      return null;
-    }
+    if (!/^\d{2}$/.test(state) || !/^\d{3}$/.test(county)) return null;
     return `${state}${county}`;
   }
 
   static bad(code: Code, value: number | null | undefined, moe: number | null | undefined, fips: string): string | null {
-    if (value === undefined) {
-      return `${fips} ${code} not numeric`;
-    }
-    if (moe === undefined) {
-      return `${fips} ${code} moe not numeric`;
-    }
-    if (value != null && value < 0) {
-      return `${fips} ${code} < 0`;
-    }
+    if (value === undefined) return `${fips} ${code} not numeric`;
+    if (moe === undefined) return `${fips} ${code} moe not numeric`;
+    if (value != null && value < 0) return `${fips} ${code} < 0`;
     return moe != null && moe < 0 ? `${fips} ${code} moe < 0` : null;
   }
 
@@ -122,16 +106,12 @@ export class Acs5 {
   }
 
   static requireComplete(parsed: Acs5Parse): IndicatorRow[] {
-    if (parsed.rejects.length > 0) {
-      throw new Error(`ACS rejected ${parsed.rejects.length} rows`);
-    }
+    if (parsed.rejects.length > 0) throw new Error(`ACS rejected ${parsed.rejects.length} rows`);
     const n = new Map<string, number>();
     for (const r of parsed.rows) {
       n.set(r.geo_fips, (n.get(r.geo_fips) ?? 0) + 1);
     }
-    if ([...n.values()].some((c) => c !== CODES.length) || n.size !== COUNTIES.length) {
-      throw new Error(`ACS partial response: ${n.size} counties`);
-    }
+    if ([...n.values()].some((c) => c !== CODES.length) || n.size !== COUNTIES.length) throw new Error(`ACS partial response: ${n.size} counties`);
     return parsed.rows;
   }
 
