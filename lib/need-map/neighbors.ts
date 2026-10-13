@@ -1,3 +1,6 @@
+import geo from '../../public/geo/utah-counties.json';
+
+const CENTROIDS = (geo as { counties: Record<string, { centroid: number[] }> }).counties;
 /** Utah county adjacency by FIPS (shared land or lake borders inside Utah; out-of-state neighbors omitted). */
 export const NEIGHBORS: Record<string, string[]> = {
   '49001': ['49017', '49021', '49027', '49031', '49041'],
@@ -35,5 +38,19 @@ export class NeedNeighbors {
   /** Neighboring county FIPS codes; empty for an unknown FIPS. */
   static of(fips: string): string[] {
     return NEIGHBORS[fips] ?? [];
+  }
+
+  /** Neighbour whose centroid lies nearest `angle` (degrees; 0 = right, 90 = down in SVG space), within ±90°; null if none. */
+  static toward(fips: string, angle: number): string | null {
+    const from = CENTROIDS[fips]?.centroid;
+    if (!from) return null;
+    let best: { fips: string; diff: number } | null = null;
+    for (const n of NeedNeighbors.of(fips)) {
+      const [x, y] = CENTROIDS[n].centroid;
+      const a = (Math.atan2(y - from[1], x - from[0]) * 180) / Math.PI;
+      const diff = Math.abs(((((a - angle) % 360) + 540) % 360) - 180);
+      if (diff <= 90 && (!best || diff < best.diff)) best = { fips: n, diff };
+    }
+    return best?.fips ?? null;
   }
 }
