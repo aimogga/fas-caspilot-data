@@ -244,8 +244,11 @@
         "integration: load into local DB"
       ],
       "human_gate": "none",
-      "status": "failing",
-      "evidence": []
+      "status": "passing",
+      "evidence": [
+        "https://github.com/aimogga/fas-caspilot-data/pull/105#issuecomment-6136914016 (QA PASS at af26c70: packages/ingest/saipe fetch, parse, requireComplete (rejects, 29 counties, single vintage; mutation-checked), pinned checksum, token-gated POST /api/ingest/saipe, inactive n8n/census-saipe.json with $env only, census-saipe source migration with commercial_ok=false; squash-merged at 6f65d72)",
+        "Live end-to-end ingest on fas-dev (zlizvzpatfyhdydfmxef), recorded by QA 2026-10-13: POST at 02:31:07 UTC returned 200 with 58 rows; public_indicator poverty_count and poverty_rate for 2024, all 29 Utah counties, source census-saipe, ingest_run ok with checksum b5ef4722; re-run at 02:31:13 UTC stayed at 58 rows with 0 duplicates"
+      ]
     },
     {
       "id": "F-204",
