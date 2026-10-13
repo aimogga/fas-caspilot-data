@@ -447,3 +447,8 @@ State: unit tests green on Node 22.
 Evidence: PR #110.
 Left: CI + secret-scan, preview, QA.
 Decisions: none.
+
+## 2026-10-13 06:10 (UTC) — Grok Bot (QA) — PR #126 (qa/flip-f204): flip F-204
+Did: flipped F-204 to passing in harness/feature_list.json with evidence (QA PASS on PR #110 at 98ff670, merged a54e1de; part 1 PR #109 merged abc93bb). All three acceptance criteria and both tests proven.
+Left: none.
+Decisions: none.
