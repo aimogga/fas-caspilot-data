@@ -490,6 +490,12 @@ Decisions: none.
 Did: George approved F-000 (PR #98, merged as feaa7d2) and F-001 (PR #99, merged as 9aad6c0) on 2026-10-12 at 11:20 PM MT, relayed by Chief of staff. Flipped both to passing in harness/feature_list.json (AC met; human_gate none; evidence links). Marked both Done in docs/PROGRESS_CHECKLIST.md (11 of 44). No open issues or george-before-merge labels remained on those PRs.
 Left: QA.
 
+## 2026-10-13 05:20 (UTC) — Grok Bot — PR #123 / feature F-201 follow-up
+Did: GitHub-issue fallback in IngestAlert when the n8n webhook throws, returns non-2xx, or is Cloudflare-challenged; warns with the HTTP status on failure. Env INGEST_ALERT_GITHUB_TOKEN/REPO in .env.example.
+State: lint/typecheck/unit green (Node 22); live preview test opened #124 for run 12d2feb7 (closed).
+Left: QA re-review; retarget to main after #111 merges. #122 (Cloudflare rule) is still the root-cause fix.
+Decisions: none.
+
 ## 2026-10-13 03:20 (UTC) — Engineer Bot — PR #112 / feature F-601 nightly audit data checks
 Did: claim F-601. `pnpm audit:nightly` script.
 Data freshness: active sources within cadence, failures in last 24h, RED on 2 nights in a row.
