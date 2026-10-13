@@ -506,6 +506,10 @@ Left: QA; nightly-audit.yml reads fas-dev SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY
 Decisions: none.
 Update: grants (key-usage via grants source ingest_run, 14d pursuing deadlines), RLS+view guard via rpc/rls_guard_violations, main CI via GITHUB_TOKEN now real; suppression/no-cell<11 (no views yet), deploy health (VERCEL_TOKEN), cost (Cursor/LLM usage keys) still SKIPPED.
 
+## 2026-10-13 15:27 (UTC) — Cloud Agent — PR #132 docs DS-08 (F-210)
+Did: Added `docs/design/specs/DS-08.md` (Need score methodology / F-210), copied unchanged from design handoff. Docs only; no code or real data.
+Left: Engineer starts DS-08a from merged or linked spec; fix drift in-budget (nav.ts HIDDEN_LABELS, CRUMB /need-map + /methodology, ErrorState Try again).
+
 ## 2026-10-13 15:45 (UTC) — Grok Bot — PR #133 / feature F-601 deploy health (check 5)
 Did: `checkDeploys` in `scripts/nightly-audit.mjs`: latest production and preview Vercel deployments must be READY (ERROR → RED, other/none → YELLOW, HTTP error → YELLOW "could not query", no token → SKIPPED); folds into buildHealth/overall. `nightly-audit.yml` passes `secrets.VERCEL_TOKEN/VERCEL_PROJECT_ID/VERCEL_TEAM_ID`.
 State: lint/typecheck/tests green on Node 22; 8 mutations killed; synthetic fixtures only.
