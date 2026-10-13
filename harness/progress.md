@@ -425,3 +425,12 @@ Left: QA re-check; George sign-off.
 ## 2026-10-13 05:22 (UTC) — Grok Bot — PR #125: preview-report standing rule
 Did: Added standing Reporting rule in harness/preferences.md from George (2026-10-12, 11:21 PM MT, via Chief of staff): whenever something user-visible merges and is ready to look at, report to George Chief of staff with a direct preview link (git-main or PR preview), the page path to open, and which test login to use.
 Left: none for this docs change.
+
+## 2026-10-13 03:30 (UTC) — Engineer Bot — PR #111 / feature F-201
+Did: claim F-201. Reused source_registry/ingest_run; pre-load failures now write an error ingest_run.
+`IngestAlert` posts a redacted payload (with the failed ingest_run id) to INGEST_ALERT_WEBHOOK_URL
+on a failed POST /api/ingest/sahie, and never throws. Inactive n8n/ingest-failure-alert.json.
+Tests: idempotency, simulated failure alert, lowercase "bearer" rejected, pinned SAHIE checksum.
+State: lint/typecheck/unit green; synthetic data only.
+Left: QA; live fas-dev evidence needs fas-dev Supabase credentials and INGEST_ALERT_WEBHOOK_URL (not in repo secrets).
+Decisions: none.

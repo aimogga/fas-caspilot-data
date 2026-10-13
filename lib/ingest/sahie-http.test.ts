@@ -54,6 +54,11 @@ describe('SahieHttp auth fails closed', () => {
     expect(SahieHttp.tokenOk(req('secret'), { INGEST_TOKEN: '' })).toBe(false);
     expect(SahieHttp.tokenOk(req('other'), env)).toBe(false);
     expect(SahieHttp.tokenOk(req('secret'), env)).toBe(true);
+    const lower = new Request('http://127.0.0.1/api/ingest/sahie', {
+      method: 'POST',
+      headers: { authorization: 'bearer secret' },
+    });
+    expect(SahieHttp.tokenOk(lower, env)).toBe(false);
     const denied = await SahieHttp.handle(req('other'), { env });
     expect(denied.status).toBe(401);
   });
@@ -66,6 +71,11 @@ describe('SahieHttp year is not hardcoded', () => {
     expect(SahieHttp.year(new Date('2026-09-01T00:00:00Z'), '2022')).toBe('2022');
     expect(() => SahieHttp.year(new Date('2026-09-01T00:00:00Z'), '22')).toThrow(/YYYY/);
   });
+});
+
+it('pins the SAHIE checksum for a fixed synthetic table', () => {
+  const rows = Sahie.requireComplete(Sahie.parse(table('2023')));
+  expect(Sahie.checksum(rows)).toBe('8da167378b32966aba48451f3f4bc45405fe8ae46373ae8864e0ff4833656f22');
 });
 
 describe('SahieHttp.run reuses Sahie fetch, parse, fill, and load', () => {
