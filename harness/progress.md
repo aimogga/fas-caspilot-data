@@ -537,3 +537,9 @@ Did: Recorded George's 11:03 AM MT 2026-10-13 approvals verbatim (via Chief of s
 State: F-201 status stays failing; human_gate unchanged; status_note removed from feature_list (context kept here).
 Left: QA.
 Decisions: D-024, D-025, D-026, D-027.
+
+## 2026-10-13 19:19 (UTC) — Cloud Agent (P4 subagent, lead-reviewed) — PR #149 / DS-08a methodology page (F-210 part 2)
+Did: route `/methodology` for all roles (role-guards RULES + GUARDED_PREFIXES, nav item + crumb unhidden, BookOpen icon); `lib/methodology/query.ts` + `labels.ts` (+tests): newest approved config, inputs only for weight keys, weights + percent + Total + mismatch sentence, vintages/as-of, Not-published count, draft notice for staff/admin without a hard-coded draft name; page with every DS-08 state, TOC, formula, six limits, footer, Synthetic badge; `tests/e2e/methodology.spec.ts` + layout-parity entries.
+State: `pnpm gate` on 01b6ed3: all rows pass, +374/-15 = 389; build lists /methodology; 2 mutants killed. e2e/parity run in CI only.
+Left: QA PASS + DESIGN APPROVED at head. Follow-up after #147 merges: the one-line `/need-map` header link to `/methodology` (DS-08 scope, deferred to avoid a conflict with #147). ErrorState label stays "Retry" (shared component); flagged for design.
+Decisions: none new (D-022, D-026 applied; D-029 branch-per-packet).

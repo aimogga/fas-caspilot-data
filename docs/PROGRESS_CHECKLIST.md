@@ -85,7 +85,7 @@ Last updated: 2026-10-13
 - [ ] **Not started** F-207 Ingest: Utah Courts filings by county (workbook): brings in court case filing counts for each county.
 - [ ] **Not started** F-208 Ingest: VA VetPop2023 county: brings in the number of veterans living in each county.
 - [ ] **Not started** F-209 Data freshness panel: a screen showing how up to date each data source is, with stale ones clearly labeled.
-- [ ] **Not started** F-210 County need score v1 with methodology page: one score per county showing where need is greatest, with a page explaining how it's calculated.
+- [ ] **In progress** F-210 County need score v1 with methodology page: one score per county showing where need is greatest, with a page explaining how it's calculated. Engine + route + v1 config: PR #141 (open). v2 inputs: PR #148 (open). Methodology page: PR #149 (open). All await QA.
 - [ ] **Not started** F-211 Utah county map explorer: a map of Utah colored by need; click a county to see its numbers and where they came from.
 
 ## Phase 3: FAS's own data and results
