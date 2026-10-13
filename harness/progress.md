@@ -413,3 +413,7 @@ Left: QA re-check; apply to fas-dev after merge, then close #107.
 ## 2026-10-13 01:24 (UTC) — Grok Bot — PR #100: F-002 source cards
 Did: 14 source cards in docs/research/ (sam_entity and ut_transparency are TODO stubs). Each card has 'Permitted for FAS grant use' and required notices; full sample calls (Census/SAM API calls in double quotes so keys expand); SAHIE bulk vs API names labelled; cross-refs name files. ut_courts data verified with a browser User-Agent (default curl UA gets 406, an access limit on the box); AOC confirmation requested 2026-10-12 8:39 AM MT, not for grant packets until confirmed. Merged main (latest: 258edb6).
 Left: TODO stubs; ut_courts from another network; QA re-check.
+
+## 2026-10-13 05:22 (UTC) — Grok Bot — PR #125: preview-report standing rule
+Did: Added standing Reporting rule in harness/preferences.md from George (2026-10-12, 11:21 PM MT, via Chief of staff): whenever something user-visible merges and is ready to look at, report to George Chief of staff with a direct preview link (git-main or PR preview), the page path to open, and which test login to use.
+Left: none for this docs change.
