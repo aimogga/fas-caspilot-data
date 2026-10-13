@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { COUNTIES } from '../synthetic/generate';
+import type { IngestAlertPayload } from '../../packages/ingest/ingest-alert';
 import type { IndicatorRow } from '../../packages/ingest/public-indicator';
 import { Saipe } from '../../packages/ingest/saipe';
 import { SaipeHttp } from './saipe-http';
@@ -80,7 +81,7 @@ describe('SaipeHttp', () => {
     const log = vi.spyOn(console, 'error').mockImplementation(() => {});
     const env = { INGEST_TOKEN: 'tok-secret', CENSUS_API_KEY: 'cen-key-1', SUPABASE_SERVICE_ROLE_KEY: 'dummy_secret_here' };
     const run = vi.fn(async () => {
-      throw new Error('boom cen-key-1 dummy_secret_here tok-secret https://x?key=abc123');
+      throw new Error('boom cen-key-1 dummy_secret_here tok-secret https://x?key=cen-key-1');
     });
     const res = await SaipeHttp.handle(req('tok-secret'), { env, run });
     expect(res.status).toBe(500);
@@ -90,7 +91,29 @@ describe('SaipeHttp', () => {
     expect(logged).toContain('census-saipe');
     expect(logged).toContain('"stage":"run"');
     expect(logged).toContain('boom');
-    for (const s of ['tok-secret', 'cen-key-1', 'dummy_secret_here', 'abc123']) expect(logged).not.toContain(s);
+    for (const s of ['tok-secret', 'cen-key-1', 'dummy_secret_here']) expect(logged).not.toContain(s);
+  });
+
+  it('fetch failure records an error run and alerts with its id', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const env = { INGEST_TOKEN: 's', CENSUS_API_KEY: 'cen-key-1', INGEST_ALERT_WEBHOOK_URL: 'http://127.0.0.1/hook' };
+    const recordFailure = vi.fn(async () => 'run-err');
+    const spy = spyLoad();
+    const sent: IngestAlertPayload[] = [];
+    const res = await SaipeHttp.handle(req('s'), {
+      env,
+      client,
+      httpFetch: ok({ nope: 1 }),
+      run: (o) => SaipeHttp.run({ ...o, recordFailure, load: spy.load }),
+      alertFetch: async (_url, init) => {
+        sent.push(JSON.parse(String(init?.body)) as IngestAlertPayload);
+        return new Response(null, { status: 200 });
+      },
+    });
+    expect(res.status).toBe(500);
+    expect(spy.calls).toHaveLength(0);
+    expect(recordFailure).toHaveBeenCalledWith(client, Saipe.SOURCE_NAME, expect.any(String));
+    expect(sent).toEqual([expect.objectContaining({ source: Saipe.SOURCE_NAME, status: 'error', ingestRunId: 'run-err' })]);
   });
 });
 

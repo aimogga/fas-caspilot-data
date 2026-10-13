@@ -1,6 +1,4 @@
-import { createHash } from 'node:crypto';
-import { COUNTIES } from '../../../lib/synthetic/generate';
-import { CensusTable } from '../census-table';
+import { CensusTable, CENSUS_NOT_PUBLISHED, UTAH_COUNTY_FIPS } from '../census-table';
 import { Sahie } from '../sahie';
 import type { IndicatorRow } from '../public-indicator';
 
@@ -10,14 +8,13 @@ const FIELDS = {
   poverty_count: ['SAEPOVALL_PT', 'SAEPOVALL_MOE'],
   poverty_rate: ['SAEPOVRTALL_PT', 'SAEPOVRTALL_MOE'],
 } as const;
-const UTAH = new Set(COUNTIES.map((c) => c.fips));
 
 export type SaipeParse = { rows: IndicatorRow[]; rejects: string[] };
 
 export class Saipe {
   static readonly SOURCE_NAME = 'census-saipe';
   static readonly ENDPOINT = 'https://api.census.gov/data/timeseries/poverty/saipe';
-  static readonly NOT_PUBLISHED = 'not_published';
+  static readonly NOT_PUBLISHED = CENSUS_NOT_PUBLISHED;
 
   static requestUrl(year: string, key: string): URL {
     const q = `get=NAME,GEOID,SAEPOVALL_PT,SAEPOVALL_MOE,SAEPOVRTALL_PT,SAEPOVRTALL_MOE,YEAR&for=county:*&in=state:49&time=${year}&key=${encodeURIComponent(key)}`;
@@ -25,11 +22,7 @@ export class Saipe {
   }
 
   static async fetch(year: string, env: Record<string, string | undefined> = process.env, httpFetch = fetch): Promise<unknown> {
-    const key = env.CENSUS_API_KEY;
-    if (!key) throw new Error('CENSUS_API_KEY is not set');
-    const res = await httpFetch(Saipe.requestUrl(year, key));
-    if (!res.ok) throw new Error(`SAIPE fetch failed: ${res.status}`);
-    return res.json();
+    return CensusTable.fetchJson((key) => Saipe.requestUrl(year, key), 'SAIPE', env, httpFetch);
   }
 
   static fips(row: Record<string, string>): string | null {
@@ -62,7 +55,7 @@ export class Saipe {
         rejects.push(`${geo_fips} missing year`);
         continue;
       }
-      if (!UTAH.has(geo_fips)) continue;
+      if (!UTAH_COUNTY_FIPS.has(geo_fips)) continue;
       for (const code of CODES) {
         const value = Sahie.num(row[FIELDS[code][0]]);
         const moe = Sahie.num(row[FIELDS[code][1]]);
@@ -79,19 +72,12 @@ export class Saipe {
   }
 
   static requireComplete(parsed: SaipeParse): IndicatorRow[] {
-    if (parsed.rejects.length > 0) throw new Error(`SAIPE rejected ${parsed.rejects.length} rows`);
-    const n = new Map<string, number>();
-    for (const r of parsed.rows) n.set(r.geo_fips, (n.get(r.geo_fips) ?? 0) + 1);
-    if ([...n.values()].some((c) => c !== CODES.length) || n.size !== COUNTIES.length) {
-      throw new Error(`SAIPE partial response: ${n.size} counties`);
-    }
+    CensusTable.requireCountyCoverage(parsed.rows, parsed.rejects, CODES.length, 'SAIPE');
     if (new Set(parsed.rows.map((r) => r.vintage)).size !== 1) throw new Error('SAIPE mixed vintages');
     return parsed.rows;
   }
 
   static checksum(rows: IndicatorRow[]): string {
-    const key = (r: IndicatorRow) => `${r.geo_fips}:${r.indicator_code}`;
-    const sorted = [...rows].sort((a, b) => key(a).localeCompare(key(b)));
-    return createHash('sha256').update(JSON.stringify(sorted)).digest('hex');
+    return CensusTable.checksum(rows);
   }
 }

@@ -50,13 +50,14 @@ export function EmptyState({ icon, title, children, action, headingLevel = "h2" 
   return <div data-slot="empty-state">{icon}<Heading className="text-xl font-semibold">{title}</Heading>{children ? <p>{children}</p> : null}{action}</div>;
 }
 
-export function ErrorState({ message, referenceId, onRetry, href }: { message: string; referenceId: string; onRetry?: () => void; href?: string }) {
+export function ErrorState({ message, referenceId, onRetry, href, children }: { message: string; referenceId: string; onRetry?: () => void; href?: string; children?: ReactNode }) {
   const retry = href ? <a href={href} className={buttonVariants({ variant: "outline" })}>Retry</a> : onRetry ? <Button type="button" variant="outline" onClick={onRetry}>Retry</Button> : null;
   return (
     <Alert variant="destructive" data-slot="error-state">
       <CircleAlert />
       <AlertTitle>{message}</AlertTitle>
       <AlertDescription>
+        {children ? <p>{children}</p> : null}
         <p className="font-mono text-xs">Reference {referenceId}</p>
         {retry}
       </AlertDescription>

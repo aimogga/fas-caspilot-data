@@ -1,14 +1,8 @@
 import { timingSafeEqual } from 'node:crypto';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { IngestAlert } from '../../packages/ingest/ingest-alert';
 import { PublicIndicatorIngest, type IndicatorRow } from '../../packages/ingest/public-indicator';
 import { Sahie } from '../../packages/ingest/sahie';
-
-export type SahieLoad = (
-  client: SupabaseClient,
-  sourceName: string,
-  checksum: string,
-  rows: IndicatorRow[],
-) => Promise<{ ingestRunId: string; rowsLoaded: number; sourceId: string }>;
 
 export type SahieRunOpts = {
   year?: string;
@@ -16,7 +10,15 @@ export type SahieRunOpts = {
   env?: Record<string, string | undefined>;
   httpFetch?: typeof fetch;
   client?: SupabaseClient;
-  load?: SahieLoad;
+  load?: typeof PublicIndicatorIngest.load;
+  recordFailure?: typeof PublicIndicatorIngest.recordFailure;
+};
+
+type IngestSource = { SOURCE_NAME: string; checksum(rows: IndicatorRow[]): string };
+
+export type IngestHttpDeps = Pick<SahieRunOpts, 'env' | 'now' | 'client' | 'httpFetch'> & {
+  run?: (opts: SahieRunOpts) => Promise<{ ingestRunId: string; rowsLoaded: number }>;
+  alertFetch?: typeof fetch;
 };
 
 /** n8n entry: fetch → parse → fill (requireComplete) → load. Token auth is fail-closed. */
@@ -76,25 +78,46 @@ export class SahieHttp {
     return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
   }
 
-  static async run(opts: SahieRunOpts) {
+  /** Shared by every source: a fetch/parse/completeness failure is recorded as an error run before rethrowing. */
+  static async ingest(
+    source: IngestSource,
+    opts: SahieRunOpts,
+    fetchRows: (env: Record<string, string | undefined>) => Promise<IndicatorRow[]>,
+  ) {
     const env = opts.env ?? process.env;
-    const year = SahieHttp.year(opts.now ?? new Date(), opts.year);
-    const json = await Sahie.fetch(year, env, opts.httpFetch);
-    const rows = Sahie.requireComplete(Sahie.parse(json));
-    const load = opts.load ?? PublicIndicatorIngest.load.bind(PublicIndicatorIngest);
     const client = opts.client ?? SahieHttp.db(env);
-    return load(client, Sahie.SOURCE_NAME, Sahie.checksum(rows), rows);
+    let rows: IndicatorRow[];
+    try {
+      rows = await fetchRows(env);
+    } catch (e) {
+      const record = opts.recordFailure ?? PublicIndicatorIngest.recordFailure.bind(PublicIndicatorIngest);
+      const message = SahieHttp.payload(source.SOURCE_NAME, e, env).error;
+      const ingestRunId = await record(client, source.SOURCE_NAME, message).catch(() => null);
+      if (e instanceof Error && ingestRunId) Object.assign(e, { ingestRunId });
+      throw e;
+    }
+    const load = opts.load ?? PublicIndicatorIngest.load.bind(PublicIndicatorIngest);
+    return load(client, source.SOURCE_NAME, source.checksum(rows), rows);
   }
 
-  static async handle(
+  static async run(opts: SahieRunOpts) {
+    const year = SahieHttp.year(opts.now ?? new Date(), opts.year);
+    return SahieHttp.ingest(Sahie, opts, async (env) =>
+      Sahie.requireComplete(Sahie.parse(await Sahie.fetch(year, env, opts.httpFetch))));
+  }
+
+  /** IngestAlert payload plus the `key=` query-param redaction backstop (defense in depth). */
+  static payload(source: string, e: unknown, env: Record<string, string | undefined>) {
+    const p = IngestAlert.payload(source, e, env);
+    return { ...p, error: p.error.replace(/key=[^&\s]+/g, 'key=[redacted]') };
+  }
+
+  /** Shared route skeleton: auth → body → run; on failure log redacted, alert, then 500. */
+  static async respond(
     request: Request,
-    deps: {
-      env?: Record<string, string | undefined>;
-      now?: Date;
-      run?: typeof SahieHttp.run;
-      client?: SupabaseClient;
-      httpFetch?: typeof fetch;
-    } = {},
+    source: string,
+    run: NonNullable<IngestHttpDeps['run']>,
+    deps: IngestHttpDeps = {},
   ): Promise<Response> {
     const env = deps.env ?? process.env;
     if (!SahieHttp.tokenOk(request, env)) {
@@ -104,25 +127,22 @@ export class SahieHttp {
     try {
       const text = await request.text();
       year = text.length === 0 ? undefined : SahieHttp.readYear(JSON.parse(text) as unknown);
-    } catch {
+    } catch (e) {
+      console.error('[ingest] failed', { source, stage: 'request', message: SahieHttp.payload(source, e, env).error });
       return Response.json({ error: 'bad request' }, { status: 400 });
     }
     try {
-      const run = deps.run ?? SahieHttp.run.bind(SahieHttp);
-      const result = await run({
-        year,
-        now: deps.now,
-        env,
-        httpFetch: deps.httpFetch,
-        client: deps.client,
-      });
-      return Response.json({
-        ok: true,
-        ingestRunId: result.ingestRunId,
-        rowsLoaded: result.rowsLoaded,
-      });
-    } catch {
+      const result = await (deps.run ?? run)({ year, now: deps.now, env, httpFetch: deps.httpFetch, client: deps.client });
+      return Response.json({ ok: true, ingestRunId: result.ingestRunId, rowsLoaded: result.rowsLoaded });
+    } catch (e) {
+      const payload = SahieHttp.payload(source, e, env);
+      console.error('[ingest] failed', { source, stage: 'run', message: payload.error });
+      await IngestAlert.notify(payload, env, deps.alertFetch);
       return Response.json({ error: 'ingest failed' }, { status: 500 });
     }
+  }
+
+  static handle(request: Request, deps: IngestHttpDeps = {}): Promise<Response> {
+    return SahieHttp.respond(request, Sahie.SOURCE_NAME, SahieHttp.run.bind(SahieHttp), deps);
   }
 }

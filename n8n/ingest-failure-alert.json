@@ -1,0 +1,77 @@
+{
+  "name": "ingest-failure-alert",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ingest-failure-alert",
+        "responseMode": "onReceived"
+      },
+      "id": "alert-webhook",
+      "name": "Ingest failure webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "resource": "issue",
+        "operation": "create",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "aimogga"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "fas-caspilot-data"
+        },
+        "title": "=Ingest failed: {{$json.body.source}}",
+        "body": "=Source: {{$json.body.source}}\nAt: {{$json.body.at}}\nIngest run: {{$json.body.ingestRunId}}\nError: {{$json.body.error}}",
+        "labels": [
+          {
+            "label": "ingest-alert"
+          }
+        ],
+        "assignees": []
+      },
+      "id": "alert-github",
+      "name": "Open GitHub issue",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "gn2OlMUtslG8jTGi",
+          "name": "GitHub account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Ingest failure webhook": {
+      "main": [
+        [
+          {
+            "node": "Open GitHub issue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "UTC"
+  }
+}

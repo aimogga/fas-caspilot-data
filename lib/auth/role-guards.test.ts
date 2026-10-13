@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { isRouteAllowed, getAllowedRoles, isPublicRoute, safeRedirect, roleHome, hadSession, signedInLoginTarget, matchGuardedPrefix, canonicalizePath, isNoroleAllowed, type UserRole } from './role-guards';
 
 describe('role-guards', () => {
-  const routes = ['/', '/staff', '/admin', '/board', '/login'];
+  const routes = ['/', '/staff', '/admin', '/board', '/login', '/dashboard', '/dashboard/m1'];
   const roles: (UserRole | null)[] = ['admin', 'staff', 'board_viewer', null];
   const expectations: Record<string, boolean[]> = {
     '/': [true, true, true, false],
@@ -10,6 +10,8 @@ describe('role-guards', () => {
     '/admin': [true, false, false, false],
     '/board': [true, true, true, false],
     '/login': [true, true, true, false],
+    '/dashboard': [true, true, false, false],
+    '/dashboard/m1': [true, true, false, false],
   };
   it.each(roles)('validates route access for %s', (role) => {
     routes.forEach((route) => {
@@ -32,6 +34,10 @@ describe('role-guards', () => {
     expect(isRouteAllowed('/admin/users', 'staff')).toBe(false);
     expect(isRouteAllowed('/board/packets', 'board_viewer')).toBe(true);
     expect(isRouteAllowed('/administrator', 'admin')).toBe(false);
+    expect(isRouteAllowed('/need-map', 'board_viewer')).toBe(true);
+    expect(isRouteAllowed('/need-map', 'staff')).toBe(true);
+    expect(isRouteAllowed('/need-map', null)).toBe(false);
+    expect(matchGuardedPrefix('/need-map')).toBe('/need-map');
   });
   it('allowlists public routes only', () => {
     expect(isPublicRoute('/login')).toBe(true);
@@ -41,6 +47,7 @@ describe('role-guards', () => {
     expect(isPublicRoute('/api/health')).toBe(true);
     expect(isPublicRoute('/api/ingest/sahie')).toBe(true);
     expect(isPublicRoute('/api/ingest/saipe')).toBe(true);
+    expect(isPublicRoute('/api/ingest/acs')).toBe(true);
     expect(isPublicRoute('/ui')).toBe(true);
     expect(isPublicRoute('/health')).toBe(true);
     expect(isPublicRoute('/dev-error')).toBe(true);
@@ -53,6 +60,7 @@ describe('role-guards', () => {
     expect(isPublicRoute('/api/health/')).toBe(false);
     expect(isPublicRoute('/api/ingest/sahie/')).toBe(false);
     expect(isPublicRoute('/api/ingest/saipe/')).toBe(false);
+    expect(isPublicRoute('/api/ingest/acs/')).toBe(false);
     expect(isPublicRoute('/api/ingest')).toBe(false);
     expect(isPublicRoute('/healthz')).toBe(false);
     expect(isPublicRoute('/403/x')).toBe(false);

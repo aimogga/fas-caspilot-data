@@ -394,6 +394,98 @@ Left: QA review of docs PR.
 Did: recorded D-005, D-006 and D-009 as decided, plus design decisions D-017 to D-022 (29 counties, dashboard defaults, manual foundation grants, county outlines, stale rule, placeholder bins). Unblocks QA on #116.
 Left: QA check. Need-score weights still open.
 
+## 2026-10-13 02:43 (UTC) — Cloud Agent — PR #109 / feature F-204
+Did: Census ACS 5-year ingest (packages/ingest/acs5, lib/ingest/acs-http.ts reusing SahieHttp helpers, POST /api/ingest/acs with Bearer INGEST_TOKEN and secret-free error log, public route entry, inactive n8n/census-acs.json with $env.FAS_INGEST_ACS_URL, migration 20261013024000_f204_census_acs_source.sql UUID f2040000-0000-4000-8000-00000000c204 commercial_ok=false per D-015). Variables: B01003_001E (total_population), B11001_001E (total_households), B21001_002E (veteran_population). Mirrors F-203 SAIPE pattern. Fixture tests all 29 counties with checksum guard. Year auto-computed: Nov+ uses current-1, else current-2.
+State: lint/typecheck/unit 323/323 green.
+Evidence: PR #109.
+Left: QA mutation tests, test:db.
+Decisions: none.
+
+## 2026-10-13 04:06 (UTC) — UX/UI Design Bot — PR #116 George decisions 2026-10-12
+Did: PR #116 applies George's 2026-10-12 decisions to DS-05 (stale rule approved), DS-06 (all 29 counties with FAS counties outlined + `FAS county` text, `Show FAS counties only` filter off by default via `?fas=1`, Census outlines approved, bins labelled `Placeholder bins`) and DS-07 (dashboard defaults approved; `Manual entry` tag for hand-entered foundation grants). Extra scope ruled in by Chief. Follow-up to merged #102/#103/#104. QA fixes: placeholder label on legend title, long bullets split, this entry.
+Left: QA re-review; secret-scan run at new sha; #113 (DS-06a) and #114 (DS-07a) need updates to match; O1 outcomes card waits on F-305 (D-005 decided); real FAS data gated.
+Decisions: none new (recorded in specs).
+
+## 2026-10-13 04:45 (UTC) — Grok Bot — PR #118: census-sahie commercial_ok=false (Refs #107)
+Did: follow-up migration 20261013050000 sets commercial_ok=false for census-sahie (D-015); merged migration 20261012223000 untouched; tests/db/sahie-load.test.ts asserts the flag. Merged main (latest: f6d85bd). PR body says Refs #107. Not applied to any database.
+Left: QA re-check; apply to fas-dev after merge, then close #107.
+
+## 2026-10-13 01:24 (UTC) — Grok Bot — PR #100: F-002 source cards
+Did: 14 source cards in docs/research/ (sam_entity and ut_transparency are TODO stubs). Each card has 'Permitted for FAS grant use' and required notices; full sample calls (Census/SAM API calls in double quotes so keys expand); SAHIE bulk vs API names labelled; cross-refs name files. ut_courts data verified with a browser User-Agent (default curl UA gets 406, an access limit on the box); AOC confirmation requested 2026-10-12 8:39 AM MT, not for grant packets until confirmed. Merged main (latest: 258edb6).
+Left: TODO stubs; ut_courts from another network; QA re-check.
+
+## 2026-10-13 01:24 (UTC) — Grok Bot — PR #98: F-000 plugin inventory
+Did: landed harness/PLUGIN_INVENTORY.md (Grok, Cursor local + Cloud, n8n; Use/Maybe/Avoid with reasons and an FAS-data column). Aligned with D-009 (cron labelled an implementation choice); added user-Supabase--casepilot and user-Refero rows; live read-only n8n inventory (2 workflows); GitHub Actions row lists real workflows; D-001/002/005/006/007/009 shown decided; proposals renamed P-1 to P-5; recounted by script (83 rows: Use 14 · Maybe 24 · Avoid 45). Merged main (latest: 258edb6).
+Left: QA re-check; George sign-off.
+
+## 2026-10-13 01:24 (UTC) — Grok Bot — PR #99: F-001 decision memos
+Did: added harness/DECISION_MEMOS.md (options, recommendation, cost, risk for D-001 to D-010). Every memo now matches main's DECISIONS.md: D-001 to D-004, D-007, D-008 and D-010 decided 2026-10-08; D-005, D-006 and D-009 decided 2026-10-12; old cost numbers labelled superseded proposals; cron labelled an implementation note; resale wording removed (D-015). Merged main (latest: 258edb6) and took main's DECISIONS.md.
+Left: QA re-check; George sign-off.
+
+## 2026-10-13 05:22 (UTC) — Grok Bot — PR #125: preview-report standing rule
+Did: Added standing Reporting rule in harness/preferences.md from George (2026-10-12, 11:21 PM MT, via Chief of staff): whenever something user-visible merges and is ready to look at, report to George Chief of staff with a direct preview link (git-main or PR preview), the page path to open, and which test login to use.
+Left: none for this docs change.
+
+## 2026-10-13 03:30 (UTC) — Engineer Bot — PR #111 / feature F-201
+Did: claim F-201. Reused source_registry/ingest_run; pre-load failures now write an error ingest_run.
+`IngestAlert` posts a redacted payload (with the failed ingest_run id) to INGEST_ALERT_WEBHOOK_URL
+on a failed POST /api/ingest/sahie, and never throws. Inactive n8n/ingest-failure-alert.json.
+Tests: idempotency, simulated failure alert, lowercase "bearer" rejected, pinned SAHIE checksum.
+State: lint/typecheck/unit green; synthetic data only.
+Left: QA; live fas-dev evidence needs fas-dev Supabase credentials and INGEST_ALERT_WEBHOOK_URL (not in repo secrets).
+Decisions: none.
+
+## 2026-10-13 03:45 (UTC) — Cloud Agent — PR #114 claim F-401 (DS-07a PR 1)
+Did: claim F-401. `/dashboard` route guarded to admin and staff (board 403 via middleware). Page header plus M1, M2, M3, M5, M4 table, M6 and O1 cards, each showing `Not available yet` with no value or footer. M4 is an accessible table (caption, `th scope`, numbers right-aligned, fixed layout for 375). Synthetic only: no data wired.
+State: lint/typecheck/unit green; each guard mutation-checked.
+Left: nav unhide and crumb (lib/shell/nav.ts, held for #77), filters, freshness and pipeline widgets, e2e and layout-parity, then DS-07b/c.
+Decisions: none.
+
+## 2026-10-13 05:46 (UTC) — Cloud Agent — PR #110 / feature F-204 tests
+Did: merged origin/main (01a6a56) after #109 squash; added acs-http test that a failed primary ACS year plus loaded fallback tags every row with the fallback vintage and period (mutation-checked: deleting `year = fallback;` in AcsHttp.run fails it). Earlier #110 commits: acs-http tests, docs/DATA_SOURCES.md, tests/db/acs-load.test.ts.
+State: unit tests green on Node 22.
+Evidence: PR #110.
+Left: CI + secret-scan, preview, QA.
+Decisions: none.
+
+## 2026-10-13 06:10 (UTC) — Grok Bot (QA) — PR #126 (qa/flip-f204): flip F-204
+Did: flipped F-204 to passing in harness/feature_list.json with evidence (QA PASS on PR #110 at 98ff670, merged a54e1de; part 1 PR #109 merged abc93bb). All three acceptance criteria and both tests proven.
+Left: none.
+
+## 2026-10-13 03:55 (UTC) — Cloud Agent — PR #113 / feature F-211 (DS-06a, PR 1 of 3)
+Did: claim F-211. `/need-map` (all roles) table: 29 counties by rank, score, bin, latest-vintage indicators, status; `Not available yet` / `Not published`; source footer; empty and error states.
+Fixes (UX + QA on 08350b0): scroll region with sticky County, right-aligned numbers, display names and units, per-column source + vintage + as-of, placeholder bins, ErrorState body.
+Left: seed + seeded e2e in stacked #119 (D-012); nav and crumb (#77's nav.ts), layout-parity, DS-06b map, DS-06c tiles.
+Decisions: none.
+
+## 2026-10-13 04:40 (UTC) — Cloud Agent — PR #119 / feature F-211 (DS-06a part 2, after #113)
+Did: local/CI-only synthetic seed: approved `v2-synthetic`, newer unapproved `v3-draft`, 26 scored counties with a tie (Cache = Davis), 3 not published (Daggett, Piute, Wayne).
+State: e2e asserts rank order, the tie, bins, Not published last and the footer version. Nothing written to hosted fas-dev by this PR.
+Left: QA at head.
+
+## 2026-10-13 10:17 (UTC) — Grok Bot (nightly cleanup) — PR #128: docs/harness drift sync
+Did: docs-only sync to main. PROGRESS_CHECKLIST marks F-203/F-204 Done (passing in feature_list.json; 9 of 44). PLAN, COPILOT_ROUTING, NIGHTLY_AUDIT and grok/roles/nightly_audit.md now match D-009 ($60 plan, $0 on-demand, no parallel-agent cap, Actions cron, no Automations). NIGHTLY_AUDIT cron matches nightly-audit.yml (`23 9 * * *` UTC). AGENTS.md layout lists real app/(app) routes and notes lib/metrics, lib/grants and supabase/functions are not in the repo yet. 10-privacy.mdc no longer cites the missing lib/metrics/suppression.ts (lands with F-306).
+State: no code, workflow, package.json or feature status changes.
+Left: QA.
+Decisions: none.
+
+## 2026-10-13 10:14 (UTC) — Grok Bot — nightly: kill orphan PageLayout (PR #127)
+Did: Deleted unused `components/PageLayout.tsx` (zero importers; only path strings in tests). Dropped PageLayout paths from `lib/branding.test.ts` and `lib/ds-01c.test.ts`. Removed unused `export type { ErrorViewer }` re-export from `components/status/error-viewer.ts` (ErrorFrame imports the type from lib).
+State: no local checkout; CI must run smoke (`pnpm lint && pnpm typecheck && pnpm test`).
+Evidence: PR nightly/kill-pagelayout.
+Left: QA review.
+Decisions: none.
+
+## 2026-10-13 10:20 (UTC) — Grok Bot — nightly: share census ingest helpers (PR #129)
+Did: Extended `packages/ingest/census-table.ts` with shared checksum, Utah FIPS set, `CENSUS_NOT_PUBLISHED`, `num` (ACS keeps `-` via extraNulls), `fetchJson`, and `requireCountyCoverage`. ACS/SAHIE/SAIPE call those; deleted dead ACS mixed-vintages check in `requireComplete` (parse always sets `period: ''`) and its hand-built test case. FIPS left source-local (SAIPE drop non-Utah vs SAHIE/ACS 49xxxx). Did not touch `lib/ingest/*-http.ts`, ingest-alert, #106, or `feature_list.json`.
+Left: QA on PR; later naming cleanup for acs5 folder (#106 conflict).
+
+## 2026-10-13 10:20 (UTC) — Grok Bot (nightly audit) — nightly cleanup: ingest HTTP parity (PR #130)
+Did: ACS and SAIPE ingest failures now record an error `ingest_run` (`recordFailure`) and fire `IngestAlert.notify`, same as SAHIE. One shared skeleton in `SahieHttp` (`ingest` + `respond`) used by all three routes; deleted the duplicate `logFailure` redactors (logs now redact via `IngestAlert`); dropped unused `AcsRunOpts`, `SaipeRunOpts`, `SahieLoad`. ACS year fallback unchanged.
+State: scoped vitest (lib/ingest + packages/ingest, 64 tests) green on Node 22, scoped tsc and eslint clean in a scratch tree built from API-fetched files. Full CI must still run.
+Left: CI + QA.
+Decisions: none.
+
 ## 2026-10-13 03:20 (UTC) — Engineer Bot — PR #112 / feature F-601 nightly audit data checks
 Did: claim F-601. `pnpm audit:nightly` script.
 Data freshness: active sources within cadence, failures in last 24h, RED on 2 nights in a row.

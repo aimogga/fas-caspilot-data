@@ -1,9 +1,9 @@
 export type UserRole = 'admin' | 'staff' | 'board_viewer';
 const ALL: UserRole[] = ['admin', 'staff', 'board_viewer'];
 const RULES: Record<string, UserRole[]> = {
-  '/login': ALL, '/': ALL, '/staff': ['admin', 'staff'], '/admin': ['admin'], '/board': ALL,
+  '/login': ALL, '/': ALL, '/staff': ['admin', 'staff'], '/admin': ['admin'], '/board': ALL, '/dashboard': ['admin', 'staff'], '/need-map': ALL,
 };
-const GUARDED_PREFIXES = ['/admin', '/staff', '/board'] as const;
+const GUARDED_PREFIXES = ['/admin', '/staff', '/board', '/dashboard', '/need-map'] as const;
 export type GuardedPrefix = (typeof GUARDED_PREFIXES)[number];
 const DECODE_PASSES = 8;
 const NOROLE_ALLOWED = ['/403', '/login', '/api/auth/signout'] as const;
@@ -115,7 +115,7 @@ export function roleHome(role: UserRole | null): string | null {
   return role ? HOME[role] ?? null : null;
 }
 export function isPublicRoute(path: string): boolean {
-  return path === '/login' || path === '/403' || path === '/api/auth/signout' || path === '/api/auth/login' || path === '/api/health' || path === '/api/ingest/sahie' || path === '/api/ingest/saipe' || path === '/ui' || path === '/health' || path === '/dev-error';
+  return path === '/login' || path === '/403' || path === '/api/auth/signout' || path === '/api/auth/login' || path === '/api/health' || path === '/api/ingest/sahie' || path === '/api/ingest/saipe' || path === '/api/ingest/acs' || path === '/ui' || path === '/health' || path === '/dev-error';
 }
 export function hadSession(cookieNames: string[]): boolean {
   return cookieNames.some((name) => name.startsWith('sb-') && name.includes('-auth-token'));
