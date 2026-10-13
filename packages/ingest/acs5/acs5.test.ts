@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { COUNTIES } from '../../../lib/synthetic/generate';
 import { CensusTable } from '../census-table';
 import { Acs5 } from './index';
 
@@ -49,15 +50,24 @@ it.each([
 ])('rejects %s', (_label, row) => {
   const parsed = Acs5.parse(table([row]));
   expect(parsed.rejects.length).toBeGreaterThan(0);
-  expect(() => Acs5.requireComplete(parsed, '2023')).toThrow(/rejected|partial/);
+  expect(() => Acs5.requireComplete(parsed, '2023')).toThrow(/rejected/);
 });
 
-it('fails closed: partial response or mixed vintages', () => {
+it('fails closed: partial response, mixed vintages, or incomplete county', () => {
   const partial = [HDR, ut('49035', '100000', '30000', '5000')];
   expect(() => Acs5.requireComplete(Acs5.parse(partial), '2023')).toThrow(/partial/);
   const p = Acs5.parse(fixture);
   const mixed = { rows: [...p.rows.slice(0, 29).map((r) => ({ ...r, period: '2023' })), ...p.rows.slice(29).map((r) => ({ ...r, period: '2022' }))], rejects: [] };
   expect(() => Acs5.requireComplete(mixed, '2023')).toThrow(/mixed vintages/);
+  const missingVar = { rows: p.rows.filter((r) => !(r.geo_fips === '49035' && r.indicator_code === 'veteran_population')), rejects: [] };
+  expect(() => Acs5.requireComplete(missingVar, '2023')).toThrow(/partial/);
+});
+
+it('N/A values become not_published', () => {
+  const withNA = [HDR, ut('49035', 'N/A', '10000', '5000')];
+  const parsed = Acs5.parse(withNA);
+  expect(parsed.rows.find((r) => r.indicator_code === 'total_population')?.unit).toBe('not_published');
+  expect(parsed.rows.find((r) => r.indicator_code === 'total_households')?.unit).toBe('count');
 });
 
 it('n8n workflow inactive; CensusTable validates shape', () => {

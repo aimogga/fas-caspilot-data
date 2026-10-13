@@ -359,8 +359,8 @@ Did: F-203 set to passing in harness/feature_list.json with evidence: PR #105 QA
 Left: none for F-203.
 
 ## 2026-10-13 02:43 (UTC) — Cloud Agent — PR #109 / feature F-204
-Did: Census ACS 5-year ingest (packages/ingest/acs5, lib/ingest/acs-http.ts reusing SahieHttp helpers, POST /api/ingest/acs with Bearer INGEST_TOKEN and secret-free error log, public route entry, inactive n8n/census-acs.json with $env.FAS_INGEST_ACS_URL, migration 20261013024000_f204_census_acs_source.sql UUID f2040000-0000-4000-8000-00000000c204 commercial_ok=false per D-015). Variables: B01003_001E (total_population), B11001_001E (total_households), B21001_002E (veteran_population). Mirrors F-203 SAIPE pattern. Fixture tests all 29 counties with checksum guard. Year auto-computed: Oct+ uses current-1, else current-2.
-State: lint/typecheck/unit 239/239 green (excluding nightly-audit secret scan, runs in CI).
-Evidence: PR TBD.
-Left: open PR, CI green, QA.
+Did: Census ACS 5-year ingest (packages/ingest/acs5, lib/ingest/acs-http.ts reusing SahieHttp helpers, POST /api/ingest/acs with Bearer INGEST_TOKEN and secret-free error log, public route entry, inactive n8n/census-acs.json with $env.FAS_INGEST_ACS_URL, migration 20261013024000_f204_census_acs_source.sql UUID f2040000-0000-4000-8000-00000000c204 commercial_ok=false per D-015). Variables: B01003_001E (total_population), B11001_001E (total_households), B21001_002E (veteran_population). Mirrors F-203 SAIPE pattern. Fixture tests all 29 counties with checksum guard. Year auto-computed: Nov+ uses current-1, else current-2.
+State: lint/typecheck/unit 323/323 green.
+Evidence: PR #109.
+Left: QA mutation tests, test:db.
 Decisions: none.
