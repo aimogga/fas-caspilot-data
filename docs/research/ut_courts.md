@@ -31,3 +31,4 @@ SAMPLE CALL: curl -sO 'https://www.utcourts.gov/content/dam/stats/Yearly%20Filin
    - 105 blank Filing Count cells (e.g., FY2020 Adjudication of Marriage), not a documented suppression code. **VERIFIED-direct**
    - Court types: District, Justice, Juvenile, Appellate.
 6. **Changed vs doc:** none in substance. The doc's "*verify* bulk reuse terms" remains **open**: no terms exist, so the reuse risk for FAS grant use stands.
+7. **Re-check 2026-10-12 ~10:55 PM MT: still INCONCLUSIVE.** The workbook URL returned **HTTP 406** to the box (also with a browser User-Agent), the same as QA's check. Needs a check from another network, or written confirmation from the AOC.

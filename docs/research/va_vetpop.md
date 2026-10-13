@@ -5,7 +5,7 @@
 ```
 SOURCE: VetPop2023 County Data, 9L — U.S. Department of Veterans Affairs (now Office of Actuarial Services)
 ENDPOINT / FILE: https://www.data.va.gov/resource/jrjd-qghv.json   VERIFIED-direct 2026-10-08
-AUTH: none (Socrata app token optional)   RATE LIMITS: Socrata rules (see Card 5)
+AUTH: none (Socrata app token optional)   RATE LIMITS: Socrata rules (see cdc_places.md)
 LATEST VINTAGE: VetPop2023 (base 9/30/2023; projections to FY2053)   CADENCE: every 2–3 years (VERIFIED-grok)
 GEOGRAPHY: county
 LICENSE / TERMS: CC0 1.0 (metadata "License: https://creativecommons.org/publicdomain/zero/1.0/")   PERMITTED FOR FAS GRANT USE: yes
@@ -22,7 +22,7 @@ SAMPLE CALL: https://www.data.va.gov/resource/jrjd-qghv.json?$select=fips,county
    - The VA page (https://www.va.gov/vetdata/veteran_population.asp, **VERIFIED-direct**) carries a transition notice: *"VA has transferred ownership of the Veteran Population Projection Model (VetPop) from the National Center for Veterans Analysis and Statistics (NCVAS) to the Office of Actuarial Services (OAS)."* Contact: oas_actuaries@va.gov.
    - Next VetPop release: unknown. **ESTIMATE** (Grok): 2026–2027.
 3. **License:** metadata custom field `License: https://creativecommons.org/publicdomain/zero/1.0/`. **VERIFIED-direct.** The Socrata top-level `license` field is null, so the UI may show "unspecified" (INFERENCE; Grok notes the same). CC0 text: waiver applies "for any purpose whatsoever, including without limitation commercial" (**VERIFIED-grok**, creativecommons.org). **Permitted for FAS grant use: yes.** CC0 doesn't waive trademarks, so don't use VA marks.
-4. **Key / limits:** none required. **VERIFIED-direct.** Socrata throttling rules apply (Card 5).
+4. **Key / limits:** none required. **VERIFIED-direct.** Socrata throttling rules apply (cdc_places.md).
 5. **Utah coverage:**
    - **29/29 VERIFIED-direct.** At date 2023-09-30 there are 29 distinct fips with Utah total veterans **129,787**. The smallest FY2026 projections are Daggett 45, Piute 105, Rich 114.
    - ⚠ **If you sum without filtering on `date`, the Utah total comes out as 3,371,140,** because all projection years get summed. **VERIFIED-direct.** Ingest must filter to a single date.

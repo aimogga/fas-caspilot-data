@@ -390,10 +390,18 @@ Decisions: none.
 Did: Created `harness/preferences.md` with standing Reporting rule (George, 2026-10-12): FAS bots report to Chief of staff on merges, completed features, blockers, and anything needing George; short note with what landed / PR / tests; never George directly; new packets inherit.
 Left: QA review of docs PR.
 
-## 2026-10-13 01:24 (UTC) — Grok Bot — F-002 source cards (claim)
+## 2026-10-13 04:10 (UTC) — Grok Bot — PR #117: DECISIONS.md, George decisions of 2026-10-12
+Did: recorded D-005, D-006 and D-009 as decided, plus design decisions D-017 to D-022 (29 counties, dashboard defaults, manual foundation grants, county outlines, stale rule, placeholder bins). Unblocks QA on #116.
+Left: QA check. Need-score weights still open.
+
+## 2026-10-13 01:24 (UTC) — Grok Bot — PR #100 F-002 source cards (claim)
 Did: Claimed F-002. Added docs/research/ cards for sahie, saipe, acs5, hrsa_hpsa_mh, cdc_places, ut_courts, va_vetpop, hrsa_ahrf and grants_gov, each with sample call, vintage, license and commercial-reuse answer (checked 2026-10-08).
 Left: No cards yet for usaspending, propublica_990, irs_990pf_grants, sam_entity, ut_transparency (Phase 5 Use/Verify first rows); Deep Research must add them before F-002 can pass. QA re-runs 3 sample calls (Census calls need a key).
 
-## 2026-10-13 04:35 (UTC) — Grok Bot — F-002 source cards (QA fixes)
+## 2026-10-13 04:35 (UTC) — Grok Bot — PR #100 F-002 source cards (QA fixes)
 Did: renamed commercial-reuse/paid-resale answers to "Permitted for FAS grant use: yes/no/unclear" (D-015); added REQUIRED NOTICES to each card (Census no-endorsement, HHS non-endorsement, CDC no logo, etc.); kept the AHRF reuse-permission flag and the ut_courts unclear flag.
 Left: QA re-check.
+
+## 2026-10-13 05:20 (UTC) — Grok Bot — PR #100 QA fixes (2)
+Did: merged main (b4af304). Added 5 cards: usaspending, propublica_990 and irs_990pf_grants have live sample calls; sam_entity and ut_transparency are marked TODO (need a key or no data endpoint found). Full sahie/saipe/acs5 sample calls (bulk + API with key); Card 1/5 refs now name files; SAHIE bulk vs API (_PT) names labelled; ut_courts still inconclusive (HTTP 406).
+Left: TODOs in the new cards; ut_courts from another network; QA re-check.
