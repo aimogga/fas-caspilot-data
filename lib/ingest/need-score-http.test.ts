@@ -28,13 +28,13 @@ describe('NeedScoreHttp', () => {
   it('logs and alerts a redacted failure, then answers 500 without the cause', async () => {
     const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const alertFetch = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
-    const env = { INGEST_TOKEN: 'tok-12345678', INGEST_ALERT_WEBHOOK_URL: 'https://n8n.example.test/hook' };
-    const run = vi.fn().mockRejectedValue(new Error('weights must sum to 1 tok-12345678'));
-    const res = await NeedScoreHttp.handle(req('tok-12345678'), { env, client, run, alertFetch });
+    const env = { INGEST_TOKEN: 'not-a-secret', INGEST_ALERT_WEBHOOK_URL: 'https://n8n.example.test/hook' };
+    const run = vi.fn().mockRejectedValue(new Error('weights must sum to 1 not-a-secret'));
+    const res = await NeedScoreHttp.handle(req('not-a-secret'), { env, client, run, alertFetch });
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({ error: 'recompute failed' });
     expect(JSON.stringify(log.mock.calls)).toContain('weights must sum to 1');
-    expect(JSON.stringify(log.mock.calls)).not.toContain('tok-12345678');
+    expect(JSON.stringify(log.mock.calls)).not.toContain('not-a-secret');
     expect(alertFetch).toHaveBeenCalledTimes(1);
     expect(String(alertFetch.mock.calls[0]?.[1]?.body)).toContain('"source":"need-score"');
   });
