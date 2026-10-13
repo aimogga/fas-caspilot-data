@@ -418,3 +418,9 @@ Tests: idempotency, simulated failure alert, lowercase "bearer" rejected, pinned
 State: lint/typecheck/unit green; synthetic data only.
 Left: QA; live fas-dev evidence needs fas-dev Supabase credentials and INGEST_ALERT_WEBHOOK_URL (not in repo secrets).
 Decisions: none.
+
+## 2026-10-13 05:20 (UTC) — Grok Bot — PR #123 / feature F-201 follow-up
+Did: GitHub-issue fallback in IngestAlert when the n8n webhook throws, returns non-2xx, or is Cloudflare-challenged; warns with the HTTP status on failure. Env INGEST_ALERT_GITHUB_TOKEN/REPO in .env.example.
+State: lint/typecheck/unit green (Node 22); live preview test opened #124 for run 12d2feb7 (closed).
+Left: QA re-review; retarget to main after #111 merges. #122 (Cloudflare rule) is still the root-cause fix.
+Decisions: none.
