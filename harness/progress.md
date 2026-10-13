@@ -390,6 +390,17 @@ Decisions: none.
 Did: Created `harness/preferences.md` with standing Reporting rule (George, 2026-10-12): FAS bots report to Chief of staff on merges, completed features, blockers, and anything needing George; short note with what landed / PR / tests; never George directly; new packets inherit.
 Left: QA review of docs PR.
 
+## 2026-10-13 04:10 (UTC) — Grok Bot — PR #117: DECISIONS.md, George decisions of 2026-10-12
+Did: recorded D-005, D-006 and D-009 as decided, plus design decisions D-017 to D-022 (29 counties, dashboard defaults, manual foundation grants, county outlines, stale rule, placeholder bins). Unblocks QA on #116.
+Left: QA check. Need-score weights still open.
+
+## 2026-10-13 02:43 (UTC) — Cloud Agent — PR #109 / feature F-204
+Did: Census ACS 5-year ingest (packages/ingest/acs5, lib/ingest/acs-http.ts reusing SahieHttp helpers, POST /api/ingest/acs with Bearer INGEST_TOKEN and secret-free error log, public route entry, inactive n8n/census-acs.json with $env.FAS_INGEST_ACS_URL, migration 20261013024000_f204_census_acs_source.sql UUID f2040000-0000-4000-8000-00000000c204 commercial_ok=false per D-015). Variables: B01003_001E (total_population), B11001_001E (total_households), B21001_002E (veteran_population). Mirrors F-203 SAIPE pattern. Fixture tests all 29 counties with checksum guard. Year auto-computed: Nov+ uses current-1, else current-2.
+State: lint/typecheck/unit 323/323 green.
+Evidence: PR #109.
+Left: QA mutation tests, test:db.
+Decisions: none.
+
 ## 2026-10-13 03:45 (UTC) — Cloud Agent — PR #114 claim F-401 (DS-07a PR 1)
 Did: claim F-401. `/dashboard` route guarded to admin and staff (board 403 via middleware). Page header plus M1, M2, M3, M5, M4 table, M6 and O1 cards, each showing `Not available yet` with no value or footer. M4 is an accessible table (caption, `th scope`, numbers right-aligned, fixed layout for 375). Synthetic only: no data wired.
 State: lint/typecheck/unit green; each guard mutation-checked.
