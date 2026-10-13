@@ -468,3 +468,10 @@ Did: docs-only sync to main. PROGRESS_CHECKLIST marks F-203/F-204 Done (passing 
 State: no code, workflow, package.json or feature status changes.
 Left: QA.
 Decisions: none.
+
+## 2026-10-13 10:14 (UTC) — Grok Bot — nightly: kill orphan PageLayout (PR #127)
+Did: Deleted unused `components/PageLayout.tsx` (zero importers; only path strings in tests). Dropped PageLayout paths from `lib/branding.test.ts` and `lib/ds-01c.test.ts`. Removed unused `export type { ErrorViewer }` re-export from `components/status/error-viewer.ts` (ErrorFrame imports the type from lib).
+State: no local checkout; CI must run smoke (`pnpm lint && pnpm typecheck && pnpm test`).
+Evidence: PR nightly/kill-pagelayout.
+Left: QA review.
+Decisions: none.
