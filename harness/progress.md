@@ -390,3 +390,7 @@ Did: claim F-201. Reused source_registry/ingest_run; pre-load failures now write
 State: lint/typecheck/unit green; synthetic data only.
 Left: QA; live fas-dev evidence needs fas-dev Supabase credentials and INGEST_ALERT_WEBHOOK_URL (not in repo secrets).
 Decisions: none.
+
+## 2026-10-13 03:52 (UTC) — Cloud Agent — PR #115 docs reporting rule
+Did: Created `harness/preferences.md` with standing Reporting rule (George, 2026-10-12): FAS bots report to Chief of staff on merges, completed features, blockers, and anything needing George; short note with what landed / PR / tests; never George directly; new packets inherit.
+Left: QA review of docs PR.
