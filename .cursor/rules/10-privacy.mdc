@@ -4,7 +4,7 @@ alwaysApply: true
 ---
 - Use synthetic data only (`pnpm seed:synthetic`). Never use or request real FAS client records. Never connect to production.
 - Shared outputs (board views, exports, anything a funder could see) are county-level only. No addresses, no exact dates (use month or quarter).
-- Suppress any count below 11 and apply complementary suppression so hidden cells can't be recovered from totals. Use helpers in lib/metrics/suppression.ts; don't reimplement.
+- Suppress any count below 11 and apply complementary suppression so hidden cells can't be recovered from totals. No shared suppression helper exists yet; it lands with F-306. Once it does, use it; don't reimplement.
 - Do not add fields for clinical notes, diagnoses, substance-use treatment, or court documents. Store only the fact and date of a court order.
 - Every new table: RLS enabled, deny by default, explicit policies per role (admin, staff, board_viewer).
 - No secrets in code, fixtures, logs or screenshots.
