@@ -344,8 +344,12 @@ Did: no-role breadcrumb "Account not set up" via `crumbFor` in `lib/shell/nav.ts
 Also: crumb uses the canonical path (fixes #78).
 Left: UI evidence (screenshots, axe, mockup comparison) needs a run with local Supabase.
 
+## 2026-10-13 01:32 (UTC) — Cloud Agent — docs DS-05 (F-209)
+Did: Added `docs/design/specs/DS-05.md` (Data freshness panel / F-209), copied unchanged from design handoff. Docs only; no code or real data. Split from DS-05/06/07 batch (510 lines > 400).
+Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already matched the concurrency wording; no edit.
+
 ## 2026-10-13 01:55 (UTC) — Cloud Agent — PR #105 / feature F-203
 Did: claim F-203. `packages/ingest/saipe` (poverty_count, poverty_rate; fail closed on rejects, <29 counties, mixed vintages), `SaipeHttp` + token-gated POST /api/ingest/saipe with secret-free server-side error log (#96 pattern), inactive n8n/census-saipe.json ($env only), census-saipe source_registry migration.
-State: lint/typecheck/unit 310/310 green; real SAIPE 2024 sanity check 58 rows, 29 counties.
+State: lint/typecheck/unit 309/309 green; real SAIPE 2024 sanity check 58 rows, 29 counties.
 Left: QA; test:db in CI.
 Decisions: none.
