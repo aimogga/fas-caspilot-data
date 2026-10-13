@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { SahieHttp } from '../../lib/ingest/sahie-http';
 import { IngestAlert, type IngestAlertPayload } from './ingest-alert';
@@ -168,17 +168,19 @@ describe('IngestAlert GitHub fallback', () => {
     const calls: Array<{ url: string; body: Record<string, unknown> }> = [];
     const f = async (url: RequestInfo | URL, init?: RequestInit) => {
       calls.push({ url: String(url), body: JSON.parse(String(init?.body)) as Record<string, unknown> });
-      return calls.length === 1 ? n8n : new Response(null, { status: 201 });
+      return calls.length === 1 ? n8n : Response.json({ number: 7 }, { status: 201 });
     };
     return { calls, f: f as typeof fetch };
   };
 
   it('opens a labeled issue when n8n returns a Cloudflare challenge', async () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
     const { calls, f } = recorder(new Response(null, { status: 403, headers: { 'cf-mitigated': 'challenge' } }));
     expect(await IngestAlert.notify(p, env, f)).toBe(true);
     expect(calls[1]?.url).toBe('https://api.github.com/repos/aimogga/fas-caspilot-data/issues');
     expect(calls[1]?.body).toMatchObject({ title: 'Ingest failed: synthetic-source', labels: ['ingest-alert'] });
     expect(calls[1]?.body.body).toContain('run-synth-1');
+    expect(info).toHaveBeenCalledWith('ingest-alert: opened issue #7 for run run-synth-1');
   });
 
   it('does not call GitHub when n8n succeeds', async () => {

@@ -89,8 +89,11 @@ export class IngestAlert {
       });
       if (!res.ok) {
         console.warn(`ingest alert: GitHub issue fallback failed with HTTP ${res.status}`);
+        return false;
       }
-      return res.ok;
+      const issue = (await res.json().catch(() => null)) as { number?: number } | null;
+      console.info(`ingest-alert: opened issue #${issue?.number} for run ${payload.ingestRunId}`);
+      return true;
     } catch {
       console.warn('ingest alert: GitHub issue fallback request failed');
       return false;
