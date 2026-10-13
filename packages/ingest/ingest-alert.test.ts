@@ -83,9 +83,9 @@ describe('PublicIndicatorIngest idempotency', () => {
 
 describe('IngestAlert', () => {
   it('redacts env values, truncates, and skips when no webhook is set', async () => {
-    const env = { SUPABASE_SERVICE_ROLE_KEY: 'synthetic-key-123' };
-    const p = IngestAlert.payload('s', new Error(`bad synthetic-key-123 ${'x'.repeat(400)}`), env);
-    expect(p.error).not.toContain('synthetic-key-123');
+    const env = { SYNTH_VALUE: 'synth-v-123' };
+    const p = IngestAlert.payload('s', new Error(`bad synth-v-123 ${'x'.repeat(400)}`), env);
+    expect(p.error).not.toContain('synth-v-123');
     expect(p.error.length).toBe(IngestAlert.MAX_ERROR);
     expect(await IngestAlert.notify(p, {}, async () => new Response())).toBe(false);
   });
@@ -103,19 +103,19 @@ describe('simulated failure triggers alert', () => {
   it('POST /api/ingest/sahie alerts n8n with a redacted payload and still returns 500', async () => {
     const sent: Array<{ url: string; body: IngestAlertPayload }> = [];
     const env = {
-      INGEST_TOKEN: 'synthetic-token',
+      INGEST_TOKEN: 'synth-tok',
       INGEST_ALERT_WEBHOOK_URL: 'http://127.0.0.1/hook',
-      CENSUS_API_KEY: 'synthetic-census',
+      CENSUS_API_KEY: 'synth-cen1',
     };
     const res = await SahieHttp.handle(
       new Request('http://127.0.0.1/api/ingest/sahie', {
         method: 'POST',
-        headers: { authorization: 'Bearer synthetic-token' },
+        headers: { authorization: 'Bearer synth-tok' },
       }),
       {
         env,
         run: async () => {
-          throw new Error('upstream 503 synthetic-census');
+          throw new Error('upstream 503 synth-cen1');
         },
         alertFetch: async (url, init) => {
           sent.push({ url: String(url), body: JSON.parse(String(init?.body)) as IngestAlertPayload });
@@ -127,7 +127,7 @@ describe('simulated failure triggers alert', () => {
     expect(sent).toHaveLength(1);
     expect(sent[0]?.url).toBe(env.INGEST_ALERT_WEBHOOK_URL);
     expect(sent[0]?.body).toMatchObject({ source: 'census-sahie', status: 'error' });
-    expect(sent[0]?.body.error).not.toContain('synthetic-census');
+    expect(sent[0]?.body.error).not.toContain('synth-cen1');
   });
 
   it('logs an error run when the fetch fails before load', async () => {
