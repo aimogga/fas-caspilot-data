@@ -389,3 +389,7 @@ Left: CI + secret-scan, preview, QA re-check.
 Did: claim F-211. `/need-map` (all roles, guarded) with the accessible table: 29 counties by rank, need score, bin, latest-vintage indicators and status; `Not available yet` where data isn't wired, `Not published` for unscored or source-flagged counties; source footer; empty and error states. `lib/need-map` rank, bins, query + units; e2e table at 375 and 1440.
 Left: nav item and crumb (lib/shell/nav.ts is #77's file), seed, layout-parity entries, map (DS-06b) and mobile tiles (DS-06c).
 Decisions: none.
+
+## 2026-10-13 03:52 (UTC) — Cloud Agent — PR #115 docs reporting rule
+Did: Created `harness/preferences.md` with standing Reporting rule (George, 2026-10-12): FAS bots report to Chief of staff on merges, completed features, blockers, and anything needing George; short note with what landed / PR / tests; never George directly; new packets inherit.
+Left: QA review of docs PR.
