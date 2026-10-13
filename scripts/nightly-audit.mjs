@@ -344,6 +344,98 @@ function checkBuild() {
   return r;
 }
 
+const CADENCE_DAYS = {daily: 2, weekly: 8, monthly: 32, quarterly: 95, annual: 370};
+const UTAH_COUNTIES = 29;
+const DAY_MS = 86400000;
+
+export function supabaseRest(env = process.env, httpFetch = fetch) {
+  const url = env.SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return null;
+  return async (path) => {
+    const rows = [];
+    for (let from = 0; ; from += 1000) {
+      const res = await httpFetch(`${url}/rest/v1/${path}`, {
+        headers: {apikey: key, authorization: `Bearer ${key}`, range: `${from}-${from + 999}`},
+      });
+      if (!res.ok) throw new Error(`${path.split('?')[0]}: HTTP ${res.status}`);
+      const page = await res.json();
+      rows.push(...page);
+      if (page.length < 1000) return rows;
+    }
+  };
+}
+
+export function evalFreshness(sources, runs, now = new Date()) {
+  const r = {status: 'GREEN', findings: [], details: []};
+  for (const s of sources.filter(x => x.status === 'active')) {
+    const days = CADENCE_DAYS[s.cadence] ?? CADENCE_DAYS.annual;
+    const last = s.last_success_at ? new Date(s.last_success_at) : null;
+    const fails = runs.filter(x => x.source_id === s.id && x.status === 'error');
+    const ago = (h) => fails.some(x => now - new Date(x.started_at) <= h * 3600000 && now - new Date(x.started_at) > (h - 24) * 3600000);
+    const stale = !last || now - last > days * DAY_MS;
+    if (ago(24) && ago(48)) {
+      r.status = 'RED';
+      r.findings.push(`${s.name}: failed 2 nights in a row`);
+    } else if (ago(24) || stale) {
+      r.status = worst(r.status, 'YELLOW');
+      r.findings.push(`${s.name}: ${ago(24) ? 'failed in the last 24h' : `no success within ${s.cadence ?? 'annual'} cadence`}`);
+    }
+    r.details.push(`${s.name}: last success ${last ? last.toISOString() : 'never'}`);
+  }
+  if (!r.details.length) r.details.push('No active sources');
+  return r;
+}
+
+export function evalSanity(rows, names = {}) {
+  const r = {status: 'GREEN', findings: [], details: []};
+  const groups = new Map();
+  for (const row of rows) {
+    const k = `${names[row.source_id] ?? row.source_id}/${row.indicator_code}`;
+    const byVintage = groups.get(k) ?? new Map();
+    const v = byVintage.get(row.vintage) ?? {fips: new Set(), n: 0, nulls: 0};
+    v.fips.add(row.geo_fips);
+    v.n++;
+    if (row.value == null) v.nulls++;
+    byVintage.set(row.vintage, v);
+    groups.set(k, byVintage);
+  }
+  const flag = (f) => { r.status = 'YELLOW'; r.findings.push(f); };
+  for (const [k, byVintage] of groups) {
+    const [latest, prev] = [...byVintage.keys()].sort().reverse();
+    const cur = byVintage.get(latest);
+    if (cur.fips.size < UTAH_COUNTIES) flag(`${k} ${latest}: ${cur.fips.size}/${UTAH_COUNTIES} counties`);
+    if (prev) {
+      const old = byVintage.get(prev);
+      if (Math.abs(cur.n - old.n) > old.n * 0.2) flag(`${k} ${latest}: ${cur.n} rows vs ${old.n} in ${prev}`);
+      if (cur.nulls / cur.n - old.nulls / old.n > 0.1) flag(`${k} ${latest}: null spike`);
+    }
+    r.details.push(`${k}: latest vintage ${latest}, ${cur.n} rows`);
+  }
+  if (!groups.size) r.details.push('No public_indicator rows');
+  return r;
+}
+
+export async function checkData(rest = supabaseRest(), now = new Date()) {
+  if (!rest) {
+    const skip = {status: 'SKIPPED', reason: 'needs SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY', findings: [], details: []};
+    return {freshness: skip, sanity: skip};
+  }
+  try {
+    const since = new Date(now - 2 * DAY_MS).toISOString();
+    const [sources, runs, rows] = await Promise.all([
+      rest('source_registry?select=id,name,cadence,status,last_success_at'),
+      rest(`ingest_run?select=source_id,status,started_at&started_at=gte.${since}`),
+      rest('public_indicator?select=source_id,indicator_code,vintage,geo_fips,value'),
+    ]);
+    const names = Object.fromEntries(sources.map(s => [s.id, s.name]));
+    return {freshness: evalFreshness(sources, runs, now), sanity: evalSanity(rows, names)};
+  } catch (e) {
+    const fail = {status: 'YELLOW', findings: [`could not query database (${e.message})`], details: []};
+    return {freshness: fail, sanity: fail};
+  }
+}
+
 export function worst(a, b) {
   const p = {RED: 3, YELLOW: 2, GREEN: 1, SKIPPED: 0};
   return p[a] > p[b] ? a : b;
@@ -378,7 +470,8 @@ export function generateReport(res) {
   md += `Critical: ${crit.length ? crit.join('; ') : 'none'}\nHigh: ${high.length ? high.join('; ') : 'none'}\nMedium: ${med.length ? med.join('; ') : 'none'}\n`;
   md += `Ignored: ${res.ignored?.length ? res.ignored.map(formatIgnored).join('; ') : 'none'}\n`;
   md += `Stale: ${res.stale?.length ? res.stale.map(formatIgnored).join('; ') : 'none'}\n`;
-  md += `Data freshness: not yet implemented (needs database)\nSpend: not yet implemented\nDoc-drift PR: none\n\n`;
+  const fr = res.checks?.dataFreshness;
+  md += `Data freshness: ${fr?.status === 'SKIPPED' || !fr ? 'skipped' : fr.details.join('; ')}\nSpend: not yet implemented\nDoc-drift PR: none\n\n`;
   
   Object.entries(res.checks || {}).forEach(([n, c]) => {
     md += `### ${n}\n**Status:** ${c.status}\n\n`;
@@ -401,9 +494,13 @@ export async function main(opts = {}) {
   const harness = opts.harness || checkHarnessIntegrity;
   const emit = opts.emit || writeAndPrintReport;
   const log = opts.log || console.log;
+  const data = opts.data || checkData;
   const res = {date, overall: 'GREEN', checks: {}, ignored: [], stale: []};
   
-  ['dataFreshness', 'dataSanity'].forEach(k => res.checks[k] = {status: 'SKIPPED', reason: 'needs database' + (k === 'dataSanity' ? ' schema' : ''), findings: [], details: []});
+  const {freshness, sanity} = await data();
+  res.checks.dataFreshness = freshness;
+  res.checks.dataSanity = sanity;
+  for (const c of [freshness, sanity]) res.overall = worst(res.overall, c.status === 'SKIPPED' ? 'GREEN' : c.status);
   res.checks.grants = {status: 'SKIPPED', reason: 'needs GRANTS_GOV_API_KEY', findings: [], details: []};
   
   const sec = secretScan();

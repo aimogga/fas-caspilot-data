@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'child_process';
-import { worst, generateReport, matchSecretLine, checkProgressLog, parseAgentsCommands, parseAudit, checkSecretScan, checkSecretScanTree, scanFileContents, secretsOnlyExit, localServiceRoleJwts, checkDocRefs, auditExitCode, writeAndPrintReport, checkDeps, main, runPnpmAudit } from './nightly-audit.mjs';
+import { worst, generateReport, matchSecretLine, checkProgressLog, parseAgentsCommands, parseAudit, checkSecretScan, checkSecretScanTree, scanFileContents, secretsOnlyExit, localServiceRoleJwts, checkDocRefs, auditExitCode, writeAndPrintReport, checkDeps, main, runPnpmAudit, supabaseRest, evalFreshness, evalSanity, checkData } from './nightly-audit.mjs';
 const GHSA_IG = {id: 'GHSA-vfj7-8cjw-p6xm', package: 'braces', reason: 'CVE-2026-93687; dev-only lint toolchain transitive dep, no patched release', reviewer: 'QA bot', expires: '2026-11-08', severity: 'high'};
 const STALE_IG = {...GHSA_IG, id: 'GHSA-aaaa-bbbb-cccc', package: 'nope'};
 const BRACES_JSON = JSON.stringify({advisories: {'1240992': {severity: 'high', module_name: 'braces', cves: ['CVE-2026-93687'], github_advisory_id: 'GHSA-vfj7-8cjw-p6xm'}}, metadata: {vulnerabilities: {critical: 0, high: 1, moderate: 0, low: 0}}});
@@ -282,5 +282,59 @@ describe('checkDocRefs', () => {
   });
   it('returns YELLOW on listing failure', () => {
     expect(checkDocRefs(() => { throw new Error('ENOENT'); }, () => '', () => true)).toEqual({status: 'YELLOW', finding: 'Doc refs: could not run (ENOENT)'});
+  });
+});
+
+describe('data checks (synthetic)', () => {
+  const now = new Date('2099-06-15T09:00:00Z');
+  const hoursAgo = (h) => new Date(now - h * 3600000).toISOString();
+  const src = (o) => ({id: 's1', name: 'synthetic-src', cadence: 'annual', status: 'active', last_success_at: hoursAgo(5), ...o});
+  const counties = (n, vintage, value = 1) => Array.from({length: n}, (_, i) => ({source_id: 's1', indicator_code: 'x', vintage, geo_fips: `49${String(i * 2 + 1).padStart(3, '0')}`, value}));
+
+  it('freshness: GREEN when recent, YELLOW on one failure or stale, RED on two nights', () => {
+    expect(evalFreshness([src()], [], now).status).toBe('GREEN');
+    expect(evalFreshness([src({last_success_at: null})], [], now).findings).toEqual(['synthetic-src: no success within annual cadence']);
+    const fail = (h) => ({source_id: 's1', status: 'error', started_at: hoursAgo(h)});
+    expect(evalFreshness([src()], [fail(3)], now)).toMatchObject({status: 'YELLOW', findings: ['synthetic-src: failed in the last 24h']});
+    expect(evalFreshness([src()], [fail(3), fail(27)], now).status).toBe('RED');
+    expect(evalFreshness([src({status: 'paused', last_success_at: null})], [], now).status).toBe('GREEN');
+  });
+
+  it('sanity: flags missing counties, ±20% row swings and null spikes', () => {
+    expect(evalSanity([...counties(29, '2098'), ...counties(29, '2099')], {s1: 'syn'}).status).toBe('GREEN');
+    expect(evalSanity(counties(28, '2099'), {s1: 'syn'}).findings).toEqual(['syn/x 2099: 28/29 counties']);
+    const swing = evalSanity([...counties(29, '2098'), ...counties(29, '2098').map(r => ({...r, indicator_code: 'x'})), ...counties(29, '2099')], {s1: 'syn'});
+    expect(swing.findings).toContain('syn/x 2099: 29 rows vs 58 in 2098');
+    expect(evalSanity([...counties(29, '2098'), ...counties(29, '2099', null)], {s1: 'syn'}).findings).toEqual(['syn/x 2099: null spike']);
+  });
+
+  it('checkData skips without env and reports query errors as YELLOW', async () => {
+    expect(supabaseRest({})).toBeNull();
+    expect((await checkData(null)).freshness.status).toBe('SKIPPED');
+    const down = supabaseRest({SUPABASE_URL: 'http://127.0.0.1:9', SUPABASE_SERVICE_ROLE_KEY: 'placeholder'}, async () => new Response('', {status: 503}));
+    expect((await checkData(down, now)).sanity.findings[0]).toMatch(/HTTP 503/);
+  });
+
+  it('checkData queries source_registry, ingest_run and public_indicator', async () => {
+    const tables = {source_registry: [src()], ingest_run: [], public_indicator: counties(29, '2099')};
+    const paths = [];
+    const rest = supabaseRest({SUPABASE_URL: 'http://127.0.0.1:9', SUPABASE_SERVICE_ROLE_KEY: 'placeholder'}, async (url) => {
+      const p = String(url).split('/rest/v1/')[1];
+      paths.push(p.split('?')[0]);
+      return Response.json(tables[p.split('?')[0]]);
+    });
+    const {freshness, sanity} = await checkData(rest, now);
+    expect(paths.sort()).toEqual(['ingest_run', 'public_indicator', 'source_registry']);
+    expect(freshness.status).toBe('GREEN');
+    expect(sanity.details).toEqual(['synthetic-src/x: latest vintage 2099, 29 rows']);
+  });
+
+  it('main folds data checks into overall and the report', async () => {
+    const ok = () => ({status: 'GREEN', findings: [], details: [], ignored: [], stale: []});
+    let report;
+    const data = async () => ({freshness: {status: 'YELLOW', findings: ['syn: stale'], details: ['syn: last success never']}, sanity: ok()});
+    await main({secretScan: ok, build: ok, deps: ok, harness: ok, data, log: () => {}, emit: (res) => { report = generateReport(res); return {path: 'x', exitCode: 0}; }});
+    expect(report).toContain('Overall: YELLOW');
+    expect(report).toContain('Data freshness: syn: last success never');
   });
 });

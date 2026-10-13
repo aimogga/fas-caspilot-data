@@ -357,3 +357,9 @@ Decisions: none.
 ## 2026-10-13 02:35 (UTC) — QA — PR #108 flip F-203 passing
 Did: F-203 set to passing in harness/feature_list.json with evidence: PR #105 QA PASS at af26c70 (squash-merged at 6f65d72, 2026-10-13 02:31:48 UTC). Live fas-dev ingest at 02:31:07 UTC loaded 58 rows (29 counties × 2 indicators, 2024); re-run at 02:31:13 UTC stayed at 58 with 0 duplicates. Added "PR #102" to the DS-05 entry heading. Features passing: 8 of 44.
 Left: none for F-203.
+
+## 2026-10-13 03:20 (UTC) — Engineer Bot — feature F-601 nightly audit data checks
+Did: claim F-601. `pnpm audit:nightly` script; data freshness (active sources within cadence, failures last 24h, RED on 2 nights in a row) and data sanity (29 counties, ±20% rows vs previous vintage, null spike) via Supabase REST, SKIPPED without SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY; report "Data freshness" line filled.
+State: lint/typecheck/unit green; synthetic fixtures only.
+Left: QA; nightly-audit.yml does not pass Supabase secrets yet (George decides); grants, suppression/RLS/views, deploy health and cost stay SKIPPED until their keys or schema exist.
+Decisions: none.
