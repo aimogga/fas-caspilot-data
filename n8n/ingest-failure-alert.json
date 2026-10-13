@@ -19,20 +19,42 @@
     },
     {
       "parameters": {
-        "fromEmail": "={{$env.FAS_ALERT_FROM}}",
-        "toEmail": "={{$env.FAS_ALERT_TO}}",
-        "subject": "=Ingest failed: {{$json.body.source}}",
-        "emailFormat": "text",
-        "text": "=Source: {{$json.body.source}}\nAt: {{$json.body.at}}\nRun: {{$json.body.ingestRunId}}\nError: {{$json.body.error}}"
+        "authentication": "accessToken",
+        "resource": "issue",
+        "operation": "create",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "aimogga"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "fas-caspilot-data"
+        },
+        "title": "=Ingest failed: {{$json.body.source}}",
+        "body": "=Source: {{$json.body.source}}\nAt: {{$json.body.at}}\nIngest run: {{$json.body.ingestRunId}}\nError: {{$json.body.error}}",
+        "labels": [
+          {
+            "label": "ingest-alert"
+          }
+        ],
+        "assignees": []
       },
-      "id": "alert-email",
-      "name": "Email team",
-      "type": "n8n-nodes-base.emailSend",
-      "typeVersion": 2.1,
+      "id": "alert-github",
+      "name": "Open GitHub issue",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
       "position": [
         240,
         0
-      ]
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "gn2OlMUtslG8jTGi",
+          "name": "GitHub account"
+        }
+      }
     }
   ],
   "connections": {
@@ -40,7 +62,7 @@
       "main": [
         [
           {
-            "node": "Email team",
+            "node": "Open GitHub issue",
             "type": "main",
             "index": 0
           }

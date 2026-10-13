@@ -151,11 +151,12 @@ describe('simulated failure triggers alert', () => {
   });
 });
 
-it('n8n alert workflow is inactive and reads recipients from env', () => {
+it('n8n alert workflow is inactive and opens an ingest-alert issue', () => {
   const text = readFileSync('n8n/ingest-failure-alert.json', 'utf8');
   const wf = JSON.parse(text) as { active: boolean; nodes: { type: string }[] };
   expect(wf.active).toBe(false);
-  expect(wf.nodes.map((n) => n.type)).toEqual(['n8n-nodes-base.webhook', 'n8n-nodes-base.emailSend']);
-  expect(text).toContain('$env.FAS_ALERT_TO');
-  expect(text).not.toMatch(/@/);
+  expect(wf.nodes.map((n) => n.type)).toEqual(['n8n-nodes-base.webhook', 'n8n-nodes-base.github']);
+  expect(text).toContain('"label": "ingest-alert"');
+  expect(text).toContain('$json.body.ingestRunId');
+  expect(text).not.toMatch(/gh[pousr]_|github_pat_/);
 });
