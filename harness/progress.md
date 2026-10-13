@@ -524,3 +524,9 @@ Did: George approved (2026-10-13 10:15 AM MT, via Chief of staff) pointing produ
 State: /api/health ok:true (app ok, supabase ok); /login 200; QA verified staff/admin/board@example.test sign in on production (fas-dev).
 Left: QA.
 Decisions: D-023.
+
+## 2026-10-13 17:06 (UTC) — Grok Bot — PR #137: n8n ingest alert shared-secret header
+Did: Generated a 32-byte secret (never printed) and stored it as repo secret INGEST_ALERT_SECRET and Vercel sensitive env INGEST_ALERT_SECRET (Preview + Production). In n8n created Header Auth credential XYit0wFy8TngKt2F (header X-FAS-Alert-Secret) and set workflow HAlHEECkaQGTQ9sX (ingest-failure-alert, active) Webhook node to headerAuth. IngestAlert.notify now sends X-FAS-Alert-Secret from INGEST_ALERT_SECRET, omitted when unset; repo workflow JSON synced.
+State: ingest-alert tests 16/16, tsc and eslint clean. Unauthenticated probe POST got HTTP 403 "Authorization data is wrong!" from n8n (no cf-mitigated challenge).
+Left: QA; merge before relying on n8n delivery (until merged, deployed code posts without the header and falls back to the GitHub issue).
+Decisions: none (implements D-024 context).
