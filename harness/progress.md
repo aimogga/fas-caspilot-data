@@ -389,3 +389,8 @@ Decisions: none.
 ## 2026-10-13 03:52 (UTC) — Cloud Agent — PR #115 docs reporting rule
 Did: Created `harness/preferences.md` with standing Reporting rule (George, 2026-10-12): FAS bots report to Chief of staff on merges, completed features, blockers, and anything needing George; short note with what landed / PR / tests; never George directly; new packets inherit.
 Left: QA review of docs PR.
+
+## 2026-10-13 04:06 (UTC) — UX/UI Design Bot — PR #116 George decisions 2026-10-12
+Did: PR #116 applies George's 2026-10-12 decisions to DS-05 (stale rule approved), DS-06 (all 29 counties with FAS counties outlined + `FAS county` text, `Show FAS counties only` filter off by default via `?fas=1`, Census outlines approved, bins labelled `Placeholder bins`) and DS-07 (dashboard defaults approved; `Manual entry` tag for hand-entered foundation grants). Extra scope ruled in by Chief. Follow-up to merged #102/#103/#104. QA fixes: placeholder label on legend title, long bullets split, this entry.
+Left: QA re-review; secret-scan run at new sha; #113 (DS-06a) and #114 (DS-07a) need updates to match; O1 waits on D-005; real FAS data gated.
+Decisions: none new (recorded in specs).
