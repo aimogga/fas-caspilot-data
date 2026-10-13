@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { COLUMNS, VaVetpop } from './index';
+import { VaVetpop } from './index';
 
 const fixture = JSON.parse(readFileSync('tests/fixtures/va_vetpop/utah-counties.json', 'utf8')) as unknown;
 const row = (county: string, veterans: unknown, extra: Record<string, unknown> = {}) =>
@@ -52,8 +52,9 @@ describe('unit: VetPop parser with hand-written Socrata fixture', () => {
     const url = VaVetpop.requestUrl('2023');
     expect(url.origin + url.pathname).toBe('https://www.data.va.gov/resource/jrjd-qghv.json');
     expect(url.searchParams.get('$limit')).toBe('5000');
-    expect(url.searchParams.get('$where')).toBe(`(${COLUMNS.state.map((k) => `${k}='UT' OR ${k}='Utah'`).join(' OR ')}) AND (fiscal_year='2023' OR year='2023' OR fy='2023')`);
-    expect(VaVetpop.requestUrl().searchParams.get('$where')).not.toContain('AND');
+    expect(url.searchParams.get('$q')).toBe('Utah 2023');
+    expect(url.searchParams.get('$where')).toBeNull();
+    expect(VaVetpop.requestUrl().searchParams.get('$q')).toBe('Utah');
     const err = await VaVetpop.fetch('2023', {}, async () => new Response('x', { status: 403 })).catch((e: Error) => e.message);
     expect(err).toBe('VetPop fetch failed: 403');
     await expect(VaVetpop.fetch(undefined, {}, async () => new Response('{}'))).rejects.toThrow('VetPop response must be a JSON array');

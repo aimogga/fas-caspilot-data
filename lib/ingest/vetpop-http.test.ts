@@ -40,12 +40,12 @@ describe('VetpopHttp', () => {
     let requested = '';
     const httpFetch: typeof fetch = async (url) => { requested = String(url); return ok(table('2023'))(url); };
     expect((await VetpopHttp.run({ env: {}, httpFetch, client, load: spy.load })).rowsLoaded).toBe(29);
-    expect(requested).not.toContain('fiscal_year');
+    expect(decodeURIComponent(requested)).toContain('$q=Utah&');
     expect(spy.calls[0].name).toBe(VaVetpop.SOURCE_NAME);
     expect(spy.calls[0].checksum).toBe(VaVetpop.checksum(spy.calls[0].rows));
     expect(spy.calls[0].rows.every((r) => r.vintage === '2023' && r.value === 1000)).toBe(true);
     await VetpopHttp.run({ year: '2023', env: {}, httpFetch, client, load: spy.load });
-    expect(decodeURIComponent(requested)).toContain("fiscal_year='2023'");
+    expect(decodeURIComponent(requested)).toContain('$q=Utah+2023');
     await expect(VetpopHttp.run({ year: '23', env: {}, httpFetch, client, load: spy.load })).rejects.toThrow(/YYYY/);
   });
 

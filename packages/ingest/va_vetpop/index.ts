@@ -29,10 +29,13 @@ export class VaVetpop {
   static readonly DATASET = 'jrjd-qghv';
   static readonly NOT_PUBLISHED = CENSUS_NOT_PUBLISHED;
 
+  /**
+   * Full-text `$q=Utah` instead of a `$where` on guessed column names: Socrata answers 400 for a `$where` that names
+   * a column the dataset lacks, so the request itself must not depend on the unverified schema. State and fiscal
+   * year are filtered client-side in parse() (`year` narrows to one fiscal year; omitted = dataset latest).
+   */
   static requestUrl(year?: string): URL {
-    const utah = COLUMNS.state.map((k) => `${k}='UT' OR ${k}='Utah'`).join(' OR ');
-    const fy = year ? ` AND (${COLUMNS.year.map((k) => `${k}='${year}'`).join(' OR ')})` : '';
-    const q = new URLSearchParams({ $select: '*', $where: `(${utah})${fy}`, $limit: '5000' });
+    const q = new URLSearchParams({ $select: '*', $q: year ? `Utah ${year}` : 'Utah', $limit: '5000' });
     return new URL(`${VaVetpop.HOST}/resource/${VaVetpop.DATASET}.json?${q}`);
   }
 
