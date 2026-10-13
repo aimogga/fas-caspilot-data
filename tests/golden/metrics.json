@@ -1,0 +1,49 @@
+{
+  "fixture": "generate(20, 20) — same rows as synthetic-20.json; day offsets below count from 2024-01-01",
+  "cases": [
+    { "name": "no filters", "filters": {}, "expect": {
+      "m1": { "n": 4, "median": 39.5, "p25": 35.75, "p75": 43.25, "stillWaitingShare": 0.5 },
+      "m2": { "n": 20, "median": 7, "p25": 7, "p75": 7 },
+      "m3": { "approved": 17, "neverStarted": 3, "share": 0.1765, "byReason": { "moved": 1, "declined": 1, "waitlist": 1 } },
+      "m4": { "rows": [
+        { "band": "a", "completed": 3, "closed": 4, "rate": 0.75 }, { "band": "b", "completed": 3, "closed": 4, "rate": 0.75 },
+        { "band": "c", "completed": 2, "closed": 3, "rate": 0.6667 }, { "band": "d", "completed": 2, "closed": 3, "rate": 0.6667 } ],
+        "total": { "band": "total", "completed": 10, "closed": 14, "rate": 0.7143 } },
+      "m5": { "completedEpisodes": 10, "dollarsCompleted": 4035, "costPerCompleted": 403.5, "programDollars": 4790, "programPerCompleted": 479 },
+      "m6": { "affiliatedDollars": 1790, "otherDollars": 3000, "affiliatedShare": 0.3737, "groups": [
+        { "group": "affiliated", "dollars": 1790, "episodes": 8, "avgRatePerUnit": 101.5385 },
+        { "group": "other", "dollars": 3000, "episodes": 9, "avgRatePerUnit": 103.3077 } ] } } },
+    { "name": "county 49035 (cases 0, 15, 16)", "filters": { "county": "49035" }, "expect": {
+      "m1": { "n": 1, "median": 47, "p25": 47, "p75": 47, "stillWaitingShare": 0.6667 },
+      "m2": { "n": 3, "median": 7, "p25": 7, "p75": 7 },
+      "m3": { "approved": 2, "neverStarted": 1, "share": 0.5, "byReason": { "waitlist": 1 } },
+      "m4": { "rows": [ { "band": "a", "completed": 0, "closed": 1, "rate": 0 }, { "band": "d", "completed": 0, "closed": 0, "rate": null } ],
+        "total": { "band": "total", "completed": 0, "closed": 1, "rate": 0 } },
+      "m5": { "completedEpisodes": 0, "dollarsCompleted": 0, "costPerCompleted": null, "programDollars": 220, "programPerCompleted": null },
+      "m6": { "affiliatedDollars": 220, "otherDollars": 0, "affiliatedShare": 1, "groups": [
+        { "group": "affiliated", "dollars": 220, "episodes": 1, "avgRatePerUnit": 110 }, { "group": "other", "dollars": 0, "episodes": 1, "avgRatePerUnit": 105 } ] } } },
+    { "name": "2024-03-01..2024-06-30 (offsets 60..181)", "filters": { "from": "2024-03-01", "to": "2024-06-30" }, "expect": {
+      "m1": { "n": 2, "median": 34.5, "p25": 33.25, "p75": 35.75, "stillWaitingShare": 0.3333 },
+      "m2": { "n": 11, "median": 7, "p25": 7, "p75": 7 },
+      "m3": { "approved": 10, "neverStarted": 2, "share": 0.2, "byReason": { "declined": 1, "waitlist": 1 } },
+      "m4": { "rows": [
+        { "band": "a", "completed": 1, "closed": 2, "rate": 0.5 }, { "band": "b", "completed": 0, "closed": 1, "rate": 0 },
+        { "band": "c", "completed": 1, "closed": 2, "rate": 0.5 }, { "band": "d", "completed": 1, "closed": 2, "rate": 0.5 } ],
+        "total": { "band": "total", "completed": 3, "closed": 7, "rate": 0.4286 } },
+      "m5": { "completedEpisodes": 3, "dollarsCompleted": 770, "costPerCompleted": 256.6667, "programDollars": 1525, "programPerCompleted": 508.3333 },
+      "m6": { "affiliatedDollars": 720, "otherDollars": 805, "affiliatedShare": 0.4721, "groups": [
+        { "group": "affiliated", "dollars": 720, "episodes": 4, "avgRatePerUnit": 106.6667 }, { "group": "other", "dollars": 805, "episodes": 3, "avgRatePerUnit": 88.6842 } ] } } }
+  ],
+  "worked": {
+    "rows": "court cases i=0,1,5,6,10,11,15,16 (i%5<2); denied i=0,7,14 (i%7==0); non-starts i=5 moved,10 declined,15 waitlist; dropped i=1,6,11,16; completed i=2,3,4,8,9,12,13,17,18,19",
+    "m1": "first_session−court_order: i1 156−124=32, i6 101−64=37, i11 85−43=42, i16 95−48=47 → sorted [32,37,42,47]; linear-interp rank p(n−1): p25 rank .75 → 32+.75·5=35.75, median 39.5, p75 rank 2.25 → 42+.25·5=43.25; waiting 4 of 8 ordered (i0 denied, i5, i10, i15)",
+    "m2": "decision−application = 7 for every application (generator: refOff+23 − refOff+16)",
+    "m3": "17 approved; starters all begin 7 days after decision (≤60); never started 3/17 = 0.1765",
+    "m4": "a: i4,8,12 completed + i16 dropped = 3/4; b: i9,13,17 + i1 dropped = 3/4; c: i2,18 + i6 dropped = 2/3; d: i3,19 + i11 dropped = 2/3; total 10/14",
+    "m5": "completed $: 270+380+500+120+625+450+475+345+120+750 = 4035 → /10 = 403.5; dropped $: 170+110+255+220 = 755; program 4790 → /10 = 479",
+    "m6": "affiliated providers are even i%12 → i2,4,6,8,10,12,16,18: $ 270+500+110+120+0+450+220+120 = 1790; other 3000; 1790/4790 = 0.3737; rate = Σunits·rate/Σunits: affiliated 5280/52 = 101.5385, other 6715/65 = 103.3077",
+    "county": "49035 = i0 (court, denied), i15 (court, waitlist, band d, u11 r105), i16 (court, dropped, band a, 4u·110, $220): M1 only i16 → 47; waiting 2/3; M6 220/220 = 1",
+    "date_m1_m3": "anchors in [60,181]: cases by court_order??referral → court i1(124), i6(64), i15(72) → M1 [32,37], waiting 1/3; applications by application_date → i1,2,3,6,8,10,11,12,14,15,16 (11; i14 denied → 10 approved; i10,i15 never started)",
+    "date_m4_m6": "episodes by last??first → i1,2,3,6,8,11,16 (i5,10,15 have no anchor → excluded): completed i2 270 + i3 380 + i8 120 = 770; dropped 170+110+255+220 = 755; affiliated i2,6,8,16 = 720 with 2560/24 units; other i1,3,11 = 805 with 1685/19"
+  }
+}
