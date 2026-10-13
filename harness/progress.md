@@ -361,3 +361,9 @@ Left: none for F-203.
 ## 2026-10-13 01:32 (UTC) — Cloud Agent — PR #103 docs DS-06 (F-211)
 Did: Added `docs/design/specs/DS-06.md` (County need map explorer / F-211), copied unchanged from design handoff. Docs only; no code or real data. Split from DS-05/06/07 batch (510 lines > 400).
 Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already matched the concurrency wording; no edit.
+
+## 2026-10-13 03:30 (UTC) — Engineer Bot — PR #111 / feature F-201
+Did: claim F-201. Reused source_registry/ingest_run; pre-load failures now write an error ingest_run; `IngestAlert` posts a redacted payload to INGEST_ALERT_WEBHOOK_URL on failed POST /api/ingest/sahie (never throws); inactive n8n/ingest-failure-alert.json (webhook → email, $env recipients); idempotency + simulated-failure tests.
+State: lint/typecheck/unit green; synthetic data only.
+Left: QA; live fas-dev evidence needs fas-dev Supabase credentials and INGEST_ALERT_WEBHOOK_URL (not in repo secrets).
+Decisions: none.
