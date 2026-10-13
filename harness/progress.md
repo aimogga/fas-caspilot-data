@@ -543,3 +543,9 @@ Did: table `fas_service_county` (RLS enabled + forced, SELECT for the 3 roles, F
 State: `pnpm gate` on dc89514: lint/typecheck/unit (401) /secret scan/D-012 (+237/-27 = 264)/300-char all pass; `pnpm build` green; mutation `−`→`-` killed. test:db and e2e run in CI only (no local runtime).
 Left: QA PASS + DESIGN APPROVED at head; real FAS service-county list from George (seed is synthetic). Next: P3a DS-06b map after #147 merges.
 Decisions: none new (D-017, D-022, D-029 applied).
+
+## 2026-10-13 19:49 (UTC) — Cloud Agent (P3a subagent, lead-reviewed) — PR #152 / DS-06b part 1: county SVG map (F-211)
+Did: `scripts/build-utah-geo.mjs` (+test) decodes Census 1:10m boundaries from `us-atlas@3.0.1` (ISC; census.gov blocked from the sandbox) into committed `public/geo/utah-counties.json` (13 KB, 29 fips, byte-reproducible; D-020). `components/need-map/NeedMap.tsx`: inline SVG, focusable labelled paths, `--chart-1` ramp 15/35/55/75/100 by bin, Not-published hatch, 2 px `--foreground` FAS outlines in a second pass, `?fas=1` greys non-FAS, rank labels at ≥1440, legend per DS-06 L71-75, aria summary. Page shows the map above the table. Bin-tie tests added (DESIGN rule 4; bins.ts already tie-safe). map.spec: map test at 4 widths × light/dark, screenshots, axe.
+State: gate vs #147's branch: lint/typecheck/unit (410)/secret/D-012 (+319/-17 = 336) pass; build green; 2 mutants killed. The gate's 300-char row flagged the generated JSON → fixed in #145 (generated files skip it).
+Left: QA PASS + DESIGN APPROVED; retarget to main after #147. Part 2 (panel, click/keyboard, column notes) on `ds-06b-panel`.
+Decisions: none new (D-017, D-020, D-022 applied).
