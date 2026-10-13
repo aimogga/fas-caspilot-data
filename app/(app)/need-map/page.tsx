@@ -24,7 +24,7 @@ export default async function NeedMapPage({ searchParams }: { searchParams: Prom
   const selected = data?.counties.find((c) => c.fips === params.county) ?? null;
   return (
     <Stack gap={6}>
-      <PageHeader eyebrow={NeedMapQuery.eyebrow(role)} title="County need map" description="Relative need across Utah's 29 counties, from public data." actions={<FasFilter />} />
+      <PageHeader eyebrow={NeedMapQuery.eyebrow(role)} title="County need map" description="Relative need across Utah's 29 counties, from public data. Select a county to see its numbers and sources." actions={<FasFilter />} />
       {data === null ? (
         <ErrorState message="Couldn't load the need map" referenceId={randomUUID()} href="/need-map">Something went wrong loading county data. Try again.</ErrorState>
       ) : !data.hasData ? (
@@ -34,7 +34,7 @@ export default async function NeedMapPage({ searchParams }: { searchParams: Prom
       ) : (
         <>
           {data.version === null ? (
-            <EmptyState title="Need score not computed yet">Rank and score appear once an admin approves a need-score version. County indicators are still in the table.</EmptyState>
+            <EmptyState title="Need score not computed yet">The map appears once an admin approves a need-score version. County indicators are still in the table.</EmptyState>
           ) : (
             <div data-slot="need-map-card" className="rounded-lg border border-border bg-card p-4 text-card-foreground"><MapSelect><NeedMap data={data} fas={fas} selected={selected} /></MapSelect></div>
           )}
