@@ -50,7 +50,19 @@ export class PublicIndicatorIngest {
       await client.from('ingest_run').update({
         status: 'error', error: message, finished_at: new Date().toISOString(),
       }).eq('id', ingestRunId);
+      if (e instanceof Error) Object.assign(e, { ingestRunId });
       throw e;
     }
+  }
+
+  /** Logs a run that failed before load (fetch, parse, completeness), so every attempt has an ingest_run row. */
+  static async recordFailure(client: SupabaseClient, sourceName: string, message: string): Promise<string | null> {
+    const src = await client.from('source_registry').select('id').eq('name', sourceName).single();
+    if (src.error || !src.data) return null;
+    const now = new Date().toISOString();
+    const run = await client.from('ingest_run').insert({
+      source_id: src.data.id as string, status: 'error', error: message, finished_at: now,
+    }).select('id').single();
+    return run.error || !run.data ? null : (run.data.id as string);
   }
 }
