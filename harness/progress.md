@@ -462,3 +462,10 @@ Decisions: none.
 Did: local/CI-only synthetic seed: approved `v2-synthetic`, newer unapproved `v3-draft`, 26 scored counties with a tie (Cache = Davis), 3 not published (Daggett, Piute, Wayne).
 State: e2e asserts rank order, the tie, bins, Not published last and the footer version. Nothing written to hosted fas-dev by this PR.
 Left: QA at head.
+
+## 2026-10-13 10:14 (UTC) — Grok Bot — nightly: kill orphan PageLayout
+Did: Deleted unused `components/PageLayout.tsx` (zero importers; only path strings in tests). Dropped PageLayout paths from `lib/branding.test.ts` and `lib/ds-01c.test.ts`. Removed unused `export type { ErrorViewer }` re-export from `components/status/error-viewer.ts` (ErrorFrame imports the type from lib).
+State: no local checkout; CI must run smoke (`pnpm lint && pnpm typecheck && pnpm test`).
+Evidence: PR nightly/kill-pagelayout.
+Left: QA review.
+Decisions: none.
