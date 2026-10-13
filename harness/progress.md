@@ -407,7 +407,7 @@ Left: QA re-review; secret-scan run at new sha; #113 (DS-06a) and #114 (DS-07a) 
 Decisions: none new (recorded in specs).
 
 ## 2026-10-13 04:45 (UTC) — Grok Bot — PR #118: census-sahie commercial_ok=false (Refs #107)
-Did: follow-up migration 20261013050000 sets commercial_ok=false for census-sahie (D-015); merged migration 20261012223000 untouched; tests/db/sahie-load.test.ts asserts the flag. Merged main (latest: 258edb6). PR body says Refs #107. Not applied to any database.
+Did: follow-up migration 20261013050000 sets commercial_ok=false for census-sahie (D-015); merged migration 20261012223000 untouched; tests/db/sahie-load.test.ts asserts the flag. Merged main (latest: f6d85bd). PR body says Refs #107. Not applied to any database.
 Left: QA re-check; apply to fas-dev after merge, then close #107.
 
 ## 2026-10-13 01:24 (UTC) — Grok Bot — PR #100: F-002 source cards
