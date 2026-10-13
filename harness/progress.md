@@ -495,3 +495,13 @@ Did: GitHub-issue fallback in IngestAlert when the n8n webhook throws, returns n
 State: lint/typecheck/unit green (Node 22); live preview test opened #124 for run 12d2feb7 (closed).
 Left: QA re-review; retarget to main after #111 merges. #122 (Cloudflare rule) is still the root-cause fix.
 Decisions: none.
+
+## 2026-10-13 03:20 (UTC) — Engineer Bot — PR #112 / feature F-601 nightly audit data checks
+Did: claim F-601. `pnpm audit:nightly` script.
+Data freshness: active sources within cadence, failures in last 24h, RED on 2 nights in a row.
+Data sanity: 29 counties, ±20% rows vs previous vintage, null spike; via Supabase REST.
+SKIPPED without SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY; report "Data freshness" line filled.
+State: lint/typecheck/unit green; synthetic fixtures only.
+Left: QA; nightly-audit.yml reads fas-dev SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY repo secrets (D-016); grants, suppression/RLS/views, deploy health and cost stay SKIPPED until their keys or schema exist.
+Decisions: none.
+Update: grants (key-usage via grants source ingest_run, 14d pursuing deadlines), RLS+view guard via rpc/rls_guard_violations, main CI via GITHUB_TOKEN now real; suppression/no-cell<11 (no views yet), deploy health (VERCEL_TOKEN), cost (Cursor/LLM usage keys) still SKIPPED.

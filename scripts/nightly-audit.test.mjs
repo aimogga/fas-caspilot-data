@@ -1,6 +1,28 @@
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'child_process';
-import { worst, generateReport, matchSecretLine, checkProgressLog, parseAgentsCommands, parseAudit, checkSecretScan, checkSecretScanTree, scanFileContents, secretsOnlyExit, localServiceRoleJwts, checkDocRefs, auditExitCode, writeAndPrintReport, checkDeps, main, runPnpmAudit } from './nightly-audit.mjs';
+import {
+  worst,
+  generateReport,
+  matchSecretLine,
+  checkProgressLog,
+  parseAgentsCommands,
+  parseAudit,
+  checkSecretScan,
+  checkSecretScanTree,
+  scanFileContents,
+  secretsOnlyExit,
+  localServiceRoleJwts,
+  checkDocRefs,
+  auditExitCode,
+  writeAndPrintReport,
+  checkDeps,
+  main,
+  runPnpmAudit,
+  supabaseRest,
+  evalFreshness,
+  evalSanity,
+  checkData, evalGrants, evalRls, checkGrantsAndRls, checkMainCi,
+} from './nightly-audit.mjs';
 const GHSA_IG = {id: 'GHSA-vfj7-8cjw-p6xm', package: 'braces', reason: 'CVE-2026-93687; dev-only lint toolchain transitive dep, no patched release', reviewer: 'QA bot', expires: '2026-11-08', severity: 'high'};
 const STALE_IG = {...GHSA_IG, id: 'GHSA-aaaa-bbbb-cccc', package: 'nope'};
 const BRACES_JSON = JSON.stringify({advisories: {'1240992': {severity: 'high', module_name: 'braces', cves: ['CVE-2026-93687'], github_advisory_id: 'GHSA-vfj7-8cjw-p6xm'}}, metadata: {vulnerabilities: {critical: 0, high: 1, moderate: 0, low: 0}}});
@@ -282,5 +304,138 @@ describe('checkDocRefs', () => {
   });
   it('returns YELLOW on listing failure', () => {
     expect(checkDocRefs(() => { throw new Error('ENOENT'); }, () => '', () => true)).toEqual({status: 'YELLOW', finding: 'Doc refs: could not run (ENOENT)'});
+  });
+});
+
+describe('data checks (synthetic)', () => {
+  const now = new Date('2099-06-15T09:00:00Z');
+  const hoursAgo = (h) => new Date(now - h * 3600000).toISOString();
+  const src = (o) => ({id: 's1', name: 'synthetic-src', cadence: 'annual', status: 'active', last_success_at: hoursAgo(5), ...o});
+  const counties = (n, vintage, value = 1) => Array.from({length: n}, (_, i) => ({source_id: 's1', indicator_code: 'x', vintage, geo_fips: `49${String(i * 2 + 1).padStart(3, '0')}`, value}));
+
+  it('freshness: GREEN when recent, YELLOW on one failure or stale, RED on two nights', () => {
+    expect(evalFreshness([src()], [], now).status).toBe('GREEN');
+    expect(evalFreshness([src({last_success_at: null})], [], now).findings).toEqual(['synthetic-src: no success within annual cadence']);
+    const fail = (h) => ({source_id: 's1', status: 'error', started_at: hoursAgo(h)});
+    expect(evalFreshness([src()], [fail(3)], now)).toMatchObject({status: 'YELLOW', findings: ['synthetic-src: failed in the last 24h']});
+    expect(evalFreshness([src()], [fail(3), fail(27)], now).status).toBe('RED');
+    expect(evalFreshness([src({status: 'paused', last_success_at: null})], [], now).status).toBe('GREEN');
+  });
+
+  it('sanity: flags missing counties, ±20% row swings and null spikes', () => {
+    expect(evalSanity([...counties(29, '2098'), ...counties(29, '2099')], {s1: 'syn'}).status).toBe('GREEN');
+    expect(evalSanity(counties(28, '2099'), {s1: 'syn'}).findings).toEqual(['syn/x 2099: 28/29 counties']);
+    const swing = evalSanity([...counties(29, '2098'), ...counties(29, '2098').map(r => ({...r, indicator_code: 'x'})), ...counties(29, '2099')], {s1: 'syn'});
+    expect(swing.findings).toContain('syn/x 2099: 29 rows vs 58 in 2098');
+    expect(evalSanity([...counties(29, '2098'), ...counties(29, '2099', null)], {s1: 'syn'}).findings).toEqual(['syn/x 2099: null spike']);
+  });
+
+  it('checkData skips without env and reports query errors as YELLOW', async () => {
+    expect(supabaseRest({})).toBeNull();
+    expect((await checkData(null)).freshness.status).toBe('SKIPPED');
+    const down = supabaseRest({SUPABASE_URL: 'http://127.0.0.1:9', SUPABASE_SERVICE_ROLE_KEY: 'placeholder'}, async () => new Response('', {status: 503}));
+    expect((await checkData(down, now)).sanity.findings[0]).toMatch(/HTTP 503/);
+  });
+
+  it('checkData queries source_registry, ingest_run and public_indicator', async () => {
+    const tables = {source_registry: [src()], ingest_run: [], public_indicator: counties(29, '2099')};
+    const paths = [];
+    const rest = supabaseRest({SUPABASE_URL: 'http://127.0.0.1:9', SUPABASE_SERVICE_ROLE_KEY: 'placeholder'}, async (url) => {
+      const p = String(url).split('/rest/v1/')[1];
+      paths.push(p.split('?')[0]);
+      return Response.json(tables[p.split('?')[0]]);
+    });
+    const {freshness, sanity} = await checkData(rest, now);
+    expect(paths.sort()).toEqual(['ingest_run', 'public_indicator', 'source_registry']);
+    expect(freshness.status).toBe('GREEN');
+    expect(sanity.details).toEqual(['synthetic-src/x: latest vintage 2099, 29 rows']);
+  });
+
+  it('main folds data checks into overall and the report', async () => {
+    const ok = () => ({status: 'GREEN', findings: [], details: [], ignored: [], stale: []});
+    let report;
+    const data = async () => ({freshness: {status: 'YELLOW', findings: ['syn: stale'], details: ['syn: last success never']}, sanity: ok()});
+    await main({secretScan: ok, build: ok, deps: ok, harness: ok, data, log: () => {}, emit: (res) => { report = generateReport(res); return {path: 'x', exitCode: 0}; }});
+    expect(report).toContain('Overall: YELLOW');
+    expect(report).toContain('Data freshness: syn: last success never');
+  });
+});
+
+describe('grants, RLS and main CI checks (synthetic)', () => {
+  const now = new Date('2099-06-15T09:00:00Z');
+  const daysAgo = (d) => new Date(now - d * 86400000).toISOString();
+  const g = {id: 'g1', name: 'grants-gov', last_success_at: null};
+  const pursuing = [{status: 'pursuing', opportunity: {title: 'Syn Grant', close_date: '2099-06-20'}}, {status: 'pursuing', opportunity: {title: 'Far', close_date: '2099-09-01'}}];
+
+  it('grants: RED when key unused 25+ days, GREEN when recent, lists 14d pursuing deadlines', () => {
+    expect(evalGrants([g], [], [], now)).toMatchObject({status: 'RED'});
+    const r = evalGrants([g], [{source_id: 'g1', status: 'success', started_at: daysAgo(3)}], pursuing, now);
+    expect(r.status).toBe('GREEN');
+    expect(r.details.join(' ')).toContain('Syn Grant 2099-06-20');
+    expect(r.details.join(' ')).not.toContain('Far');
+    expect(evalGrants([], [], [], now).status).toBe('SKIPPED');
+  });
+
+  it('rls: RED per violating relation, GREEN when none', () => {
+    expect(evalRls([{relname: 'syn_table'}])).toMatchObject({status: 'RED', findings: ['RLS/view guard: syn_table']});
+    expect(evalRls([]).status).toBe('GREEN');
+  });
+
+  it('checkGrantsAndRls calls rpc via POST and skips without env', async () => {
+    expect((await checkGrantsAndRls(null)).rls.status).toBe('SKIPPED');
+    const seen = [];
+    const rest = supabaseRest({SUPABASE_URL: 'http://127.0.0.1:9', SUPABASE_SERVICE_ROLE_KEY: 'placeholder'}, async (url, init) => {
+      const p = String(url).split('/rest/v1/')[1].split('?')[0];
+      seen.push(`${init.method ?? 'GET'} ${p}`);
+      return Response.json(p === 'rpc/rls_guard_violations' ? [{relname: 'syn'}] : []);
+    });
+    const {grants, rls} = await checkGrantsAndRls(rest, now);
+    expect(seen).toContain('POST rpc/rls_guard_violations');
+    expect(rls.status).toBe('RED');
+    expect(grants.status).toBe('SKIPPED');
+  });
+
+  it('main CI: GREEN on success, RED on failure, SKIPPED without token', async () => {
+    const env = {GITHUB_TOKEN: 'placeholder', GITHUB_REPOSITORY: 'o/r'};
+    const run = (conclusion) => async () => Response.json({workflow_runs: [{conclusion, head_sha: 'abcdef1234'}]});
+    expect((await checkMainCi(env, run('success'))).status).toBe('GREEN');
+    expect((await checkMainCi(env, run('failure'))).findings).toEqual(['main CI failure @ abcdef1']);
+    expect((await checkMainCi({}, run('success'))).status).toBe('SKIPPED');
+  });
+});
+
+describe('F-601 QA mutation kills (synthetic)', () => {
+  const now = new Date('2099-06-15T09:00:00Z');
+  const daysAgo = (d) => new Date(now - d * 86400000).toISOString();
+  const ok = () => ({status: 'GREEN', findings: [], details: [], ignored: [], stale: []});
+  const run = async (o) => {
+    let overall;
+    await main({secretScan: ok, build: ok, deps: ok, harness: ok, data: async () => ({freshness: ok(), sanity: ok()}),
+      mainCi: async () => ok(), grantsRls: async () => ({grants: ok(), rls: ok()}), log: () => {},
+      emit: (res) => { overall = res.overall; return {path: 'x', exitCode: 0}; }, ...o});
+    return overall;
+  };
+
+  it('grants key last used 30 days ago (but within the query window) is RED', () => {
+    const g = {id: 'g1', name: 'grants-gov', last_success_at: daysAgo(30)};
+    expect(evalGrants([g], [{source_id: 'g1', status: 'success', started_at: daysAgo(26)}], [], now)).toMatchObject({status: 'RED'});
+  });
+
+  it('past pursuing deadlines are excluded from the 14-day list', () => {
+    const p = [{status: 'pursuing', opportunity: {title: 'Syn Past', close_date: '2099-06-10'}}];
+    expect(evalGrants([], [], p, now).details).toContain('No pursuing deadlines in 14d');
+  });
+
+  it('RLS violation, failed main CI and RED grants each drive overall', async () => {
+    const red = {status: 'RED', findings: ['syn'], details: []};
+    expect(await run({grantsRls: async () => ({grants: ok(), rls: red})})).toBe('RED');
+    expect(await run({mainCi: async () => red})).toBe('RED');
+    expect(await run({grantsRls: async () => ({grants: red, rls: ok()})})).toBe('RED');
+    expect(await run({})).toBe('GREEN');
+  });
+
+  it('main CI HTTP error is YELLOW "could not query"', async () => {
+    const r = await checkMainCi({GITHUB_TOKEN: 'placeholder', GITHUB_REPOSITORY: 'o/r'}, async () => Response.json({workflow_runs: [{conclusion: 'success', head_sha: 'abcdef1'}]}, {status: 403}));
+    expect(r).toMatchObject({status: 'YELLOW', findings: ['main CI: could not query (HTTP 403)']});
   });
 });
