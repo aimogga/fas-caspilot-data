@@ -500,10 +500,10 @@ export async function checkDeploys(env = process.env, httpFetch = fetch) {
   const r = {status: 'GREEN', findings: [], details: []};
   try {
     for (const target of ['production', 'preview']) {
-      const q = new URLSearchParams({projectId: env.VERCEL_PROJECT_ID, target, limit: '1', ...(env.VERCEL_TEAM_ID ? {teamId: env.VERCEL_TEAM_ID} : {})});
+      const q = new URLSearchParams({projectId: env.VERCEL_PROJECT_ID, target, limit: '20', ...(env.VERCEL_TEAM_ID ? {teamId: env.VERCEL_TEAM_ID} : {})});
       const res = await httpFetch(`https://api.vercel.com/v6/deployments?${q}`, {headers: {authorization: `Bearer ${env.VERCEL_TOKEN}`}});
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const d = (await res.json()).deployments?.[0];
+      const d = (await res.json()).deployments?.find(x => (x.readyState ?? x.state) !== 'CANCELED');
       const state = d?.readyState ?? d?.state;
       if (!d) { r.status = worst(r.status, 'YELLOW'); r.findings.push(`${target} deploy: none found`); }
       else if (state === 'READY') r.details.push(`${target} deploy READY (${d.uid})`);

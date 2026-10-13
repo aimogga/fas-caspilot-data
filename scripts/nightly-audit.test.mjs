@@ -475,3 +475,9 @@ describe('deploy health (synthetic)', () => {
     expect(overall).toBe('RED');
   });
 });
+
+it('deploy health skips CANCELED deployments and uses the latest non-canceled one', async () => {
+  const env = {VERCEL_TOKEN: 'placeholder', VERCEL_PROJECT_ID: 'prj_syn'};
+  const r = await checkDeploys(env, async () => Response.json({deployments: [{uid: 'dpl_c', readyState: 'CANCELED'}, {uid: 'dpl_r', readyState: 'READY'}]}));
+  expect(r).toMatchObject({status: 'GREEN', details: ['production deploy READY (dpl_r)', 'preview deploy READY (dpl_r)']});
+});

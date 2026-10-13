@@ -515,3 +515,4 @@ Did: `checkDeploys` in `scripts/nightly-audit.mjs`: latest production and previe
 State: lint/typecheck/tests green on Node 22; 8 mutations killed; synthetic fixtures only.
 Left: suppression / no-cell-<11 (no views yet) and cost (needs Cursor/LLM usage keys) remain todo/SKIPPED.
 Decisions: none.
+Update: ignore CANCELED deployments (latest non-canceled per target, limit 20); mutation killed.
