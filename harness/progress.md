@@ -386,6 +386,6 @@ State: lint/typecheck/unit green.
 Left: CI + secret-scan, preview, QA re-check.
 Decisions: none.
 
-## 2026-10-13 03:52 (UTC) — Cloud Agent — PR docs reporting rule
+## 2026-10-13 03:52 (UTC) — Cloud Agent — PR #115 docs reporting rule
 Did: Created `harness/preferences.md` with standing Reporting rule (George, 2026-10-12): FAS bots report to Chief of staff on merges, completed features, blockers, and anything needing George; short note with what landed / PR / tests; never George directly; new packets inherit.
 Left: QA review of docs PR.
