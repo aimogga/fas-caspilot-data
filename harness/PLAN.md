@@ -13,7 +13,7 @@
 | 6 Hardening & launch | Audit script, security, legal gate, real data, board launch | F-601 – F-605 | 2–3 weeks + legal | Legal opinion filed; real data loaded; board launched | George approves each step |
 
 ## Working limits
-- 1 Cursor Cloud Agent at a time ($20 plan); no parallel cloud agents.
+- Cursor $60 plan with $0 on-demand (D-009); no cap on parallel cloud agents. When usage runs out, work pauses and resumes after the reset.
 - One feature per packet; target under ~400 changed lines.
 - Phases can overlap only where features don't depend on each other (e.g., F-501 can start during Phase 4).
 

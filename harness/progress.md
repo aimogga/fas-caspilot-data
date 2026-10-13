@@ -463,7 +463,13 @@ Did: local/CI-only synthetic seed: approved `v2-synthetic`, newer unapproved `v3
 State: e2e asserts rank order, the tie, bins, Not published last and the footer version. Nothing written to hosted fas-dev by this PR.
 Left: QA at head.
 
-## 2026-10-13 10:14 (UTC) — Grok Bot — nightly: kill orphan PageLayout
+## 2026-10-13 10:17 (UTC) — Grok Bot (nightly cleanup) — PR #128: docs/harness drift sync
+Did: docs-only sync to main. PROGRESS_CHECKLIST marks F-203/F-204 Done (passing in feature_list.json; 9 of 44). PLAN, COPILOT_ROUTING, NIGHTLY_AUDIT and grok/roles/nightly_audit.md now match D-009 ($60 plan, $0 on-demand, no parallel-agent cap, Actions cron, no Automations). NIGHTLY_AUDIT cron matches nightly-audit.yml (`23 9 * * *` UTC). AGENTS.md layout lists real app/(app) routes and notes lib/metrics, lib/grants and supabase/functions are not in the repo yet. 10-privacy.mdc no longer cites the missing lib/metrics/suppression.ts (lands with F-306).
+State: no code, workflow, package.json or feature status changes.
+Left: QA.
+Decisions: none.
+
+## 2026-10-13 10:14 (UTC) — Grok Bot — nightly: kill orphan PageLayout (PR #127)
 Did: Deleted unused `components/PageLayout.tsx` (zero importers; only path strings in tests). Dropped PageLayout paths from `lib/branding.test.ts` and `lib/ds-01c.test.ts`. Removed unused `export type { ErrorViewer }` re-export from `components/status/error-viewer.ts` (ErrorFrame imports the type from lib).
 State: no local checkout; CI must run smoke (`pnpm lint && pnpm typecheck && pnpm test`).
 Evidence: PR nightly/kill-pagelayout.

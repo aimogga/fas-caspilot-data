@@ -1,6 +1,6 @@
 # Nightly Audit
 
-**Runs as:** a GitHub Actions cron (`on: schedule`); George's $20 plan has no Cursor Automations. Suggested cron `0 9 * * *` (UTC), about 2–3 a.m. Mountain depending on daylight time. Scheduled runs may start late but never early.
+**Runs as:** a GitHub Actions cron (`on: schedule`) in `.github/workflows/nightly-audit.yml`; Cursor Automations are not used (implementation choice, see D-009 and `harness/PLUGIN_INVENTORY.md`). Cron `23 9 * * *` (UTC), about 2:23–3:23 a.m. Mountain depending on daylight time; `nightly-audit-backup.yml` (`7 14 * * *` UTC) dispatches it if no run succeeded in the last 26h. Scheduled runs may start late but never early.
 **Permissions:** read-only on code and data; may open a PR that fixes documentation drift only.
 **Cost:** stay under the per-run cap in DECISIONS.md D-009. Once F-601 ships, run `pnpm audit:nightly` and summarize its output instead of checking by hand.
 
