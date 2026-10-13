@@ -394,6 +394,18 @@ Left: QA review of docs PR.
 Did: recorded D-005, D-006 and D-009 as decided, plus design decisions D-017 to D-022 (29 counties, dashboard defaults, manual foundation grants, county outlines, stale rule, placeholder bins). Unblocks QA on #116.
 Left: QA check. Need-score weights still open.
 
+## 2026-10-13 02:43 (UTC) — Cloud Agent — PR #109 / feature F-204
+Did: Census ACS 5-year ingest (packages/ingest/acs5, lib/ingest/acs-http.ts reusing SahieHttp helpers, POST /api/ingest/acs with Bearer INGEST_TOKEN and secret-free error log, public route entry, inactive n8n/census-acs.json with $env.FAS_INGEST_ACS_URL, migration 20261013024000_f204_census_acs_source.sql UUID f2040000-0000-4000-8000-00000000c204 commercial_ok=false per D-015). Variables: B01003_001E (total_population), B11001_001E (total_households), B21001_002E (veteran_population). Mirrors F-203 SAIPE pattern. Fixture tests all 29 counties with checksum guard. Year auto-computed: Nov+ uses current-1, else current-2.
+State: lint/typecheck/unit 323/323 green.
+Evidence: PR #109.
+Left: QA mutation tests, test:db.
+Decisions: none.
+
+## 2026-10-13 04:06 (UTC) — UX/UI Design Bot — PR #116 George decisions 2026-10-12
+Did: PR #116 applies George's 2026-10-12 decisions to DS-05 (stale rule approved), DS-06 (all 29 counties with FAS counties outlined + `FAS county` text, `Show FAS counties only` filter off by default via `?fas=1`, Census outlines approved, bins labelled `Placeholder bins`) and DS-07 (dashboard defaults approved; `Manual entry` tag for hand-entered foundation grants). Extra scope ruled in by Chief. Follow-up to merged #102/#103/#104. QA fixes: placeholder label on legend title, long bullets split, this entry.
+Left: QA re-review; secret-scan run at new sha; #113 (DS-06a) and #114 (DS-07a) need updates to match; O1 outcomes card waits on F-305 (D-005 decided); real FAS data gated.
+Decisions: none new (recorded in specs).
+
 ## 2026-10-13 01:24 (UTC) — Grok Bot — PR #98: F-000 plugin inventory
-Did: landed harness/PLUGIN_INVENTORY.md (Grok, Cursor local + Cloud, n8n; Use/Maybe/Avoid with reasons and an FAS-data column). Aligned with D-009 (cron labelled an implementation choice); added user-Supabase--casepilot and user-Refero rows; live read-only n8n inventory (2 workflows); GitHub Actions row lists real workflows; D-001/002/005/006/007/009 shown decided; proposals renamed P-1 to P-5; recounted by script (83 rows: Use 14 · Maybe 24 · Avoid 45). Merged main (b4af304).
+Did: landed harness/PLUGIN_INVENTORY.md (Grok, Cursor local + Cloud, n8n; Use/Maybe/Avoid with reasons and an FAS-data column). Aligned with D-009 (cron labelled an implementation choice); added user-Supabase--casepilot and user-Refero rows; live read-only n8n inventory (2 workflows); GitHub Actions row lists real workflows; D-001/002/005/006/007/009 shown decided; proposals renamed P-1 to P-5; recounted by script (83 rows: Use 14 · Maybe 24 · Avoid 45). Merged main (latest: f6d85bd).
 Left: QA re-check; George sign-off.
