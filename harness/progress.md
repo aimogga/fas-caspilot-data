@@ -362,7 +362,7 @@ Left: none for F-203.
 Did: Added `docs/design/specs/DS-06.md` (County need map explorer / F-211), copied unchanged from design handoff. Docs only; no code or real data. Split from DS-05/06/07 batch (510 lines > 400).
 Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already matched the concurrency wording; no edit.
 
-## 2026-10-13 03:55 (UTC) — Cloud Agent — feature F-211 (DS-06a, PR 1 of 3)
+## 2026-10-13 03:55 (UTC) — Cloud Agent — PR #113 / feature F-211 (DS-06a, PR 1 of 3)
 Did: claim F-211. `/need-map` (all roles, guarded) with the accessible table: 29 counties by rank, need score, bin, latest-vintage indicators and status; `Not available yet` where data isn't wired, `Not published` for unscored or source-flagged counties; source footer; empty and error states. `lib/need-map` rank, bins, query + units; e2e table at 375 and 1440.
 Left: nav item and crumb (lib/shell/nav.ts is #77's file), seed, layout-parity entries, map (DS-06b) and mobile tiles (DS-06c).
 Decisions: none.
