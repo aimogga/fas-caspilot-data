@@ -19,6 +19,22 @@ describe('acs-http.ts', () => {
     it('delegates to SahieHttp.year when requested', () => {
       expect(AcsHttp.year(new Date('2026-10-13'), '2023')).toBe('2023');
     });
+
+    it('falls back one year when primary year fails', async () => {
+      const load = vi.fn().mockResolvedValue({ ingestRunId: 'run-1', rowsLoaded: 87, sourceId: 'src-1' });
+      let calls = 0;
+      const urls: URL[] = [];
+      const mock = vi.fn(async (url: URL) => {
+        urls.push(url);
+        calls++;
+        if (calls === 1) throw new Error('404');
+        return new Response(JSON.stringify(fixture));
+      });
+      await AcsHttp.run({ year: '2025', env: { CENSUS_API_KEY: 'key' }, httpFetch: mock as typeof fetch, client: createClient('http://x', 'key'), load });
+      expect(mock).toHaveBeenCalledTimes(2);
+      expect(String(urls[0])).toContain('/2025/');
+      expect(String(urls[1])).toContain('/2024/');
+    });
   });
 
   it('run fetches, parses, and loads', async () => {
