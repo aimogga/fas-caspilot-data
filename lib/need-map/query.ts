@@ -10,9 +10,10 @@ export type IndicatorRow = { source_id: string; indicator_code: string; geo_fips
 export type SourceRow = { id: string; name: string; last_success_at: string | null };
 export type NeedInput = { configs: ConfigRow[]; scores: ScoreRow[]; indicators: IndicatorRow[]; sources: SourceRow[]; fas: FasRow[] };
 export type BuildOptions = { fas?: boolean };
-export type CountyRow = { fips: string; name: string; fas: boolean; rank: string; score: string; bin: string; status: string; cells: Record<string, string> };
+export type CountyRow = { fips: string; name: string; fas: boolean; rank: string; score: string; bin: string; status: string; cells: Record<string, string>; value: number | null; binNo: number | null };
 export type Column = { code: string; label: string; note: string };
-export type NeedTableData = { version: string | null; hasData: boolean; columns: Column[]; rows: CountyRow[]; footer: string };
+/** `rows` honours the FAS filter; `counties` is always all 29 (the map greys non-FAS counties instead of dropping them). */
+export type NeedTableData = { version: string | null; hasData: boolean; columns: Column[]; rows: CountyRow[]; counties: CountyRow[]; footer: string };
 
 export const NOT_YET = 'Not available yet';
 export const NOT_PUBLISHED = 'Not published';
@@ -31,6 +32,17 @@ export class NeedMapQuery {
   static label(code: string): string {
     const words = code.replace(/_/g, ' ');
     return INDICATORS[code]?.label ?? words.charAt(0).toUpperCase() + words.slice(1);
+  }
+
+  /** `+x.xx` / `−x.xx` (U+2212, DESIGN general rule 6). */
+  static signed(n: number): string {
+    return `${n >= 0 ? '+' : '−'}${Math.abs(n).toFixed(2)}`;
+  }
+
+  /** Row label: `<Name> County, rank n of N, need score ±x.xx` or `<Name> County, not published`; `, FAS county` appended for service counties. */
+  static rowLabel(row: CountyRow): string {
+    const base = row.status === 'Ranked' ? `${row.name}, rank ${row.rank}, need score ${row.score}` : `${row.name}, ${row.status.toLowerCase()}`;
+    return row.fas ? `${base}, FAS county` : base;
   }
 
   static eyebrow(role: unknown): string {
@@ -96,18 +108,20 @@ export class NeedMapQuery {
     const ranks = NeedRank.rank(scored);
     const bins = NeedBins.assign(scored);
     const binMax = Math.max(0, ...bins.values());
-    const rows = COUNTIES.map((c, i) => {
+    const counties = COUNTIES.map((c, i) => {
       const score = scored[i]?.score ?? null;
       const missing = version === null ? NOT_YET : NOT_PUBLISHED;
       const cells = Object.fromEntries(codes.map((code) => [code, NeedMapQuery.cell(indicators.find((r) => r.indicator_code === code && r.geo_fips === c.fips))]));
       return { fips: c.fips, name: `${c.name} County`, fas: fas.has(c.fips), cells, status: score === null ? missing : 'Ranked',
         rank: ranks.has(c.fips) ? `${ranks.get(c.fips)} of ${ranks.size}` : missing,
-        score: score === null ? missing : `${score >= 0 ? '+' : '−'}${Math.abs(score).toFixed(2)}`,
-        bin: bins.has(c.fips) ? `${bins.get(c.fips)} of ${binMax}` : missing };
-    }).filter((r) => !opts.fas || r.fas);
-    rows.sort((a, b) => (ranks.get(a.fips) ?? Infinity) - (ranks.get(b.fips) ?? Infinity) || a.name.localeCompare(b.name));
+        score: score === null ? missing : NeedMapQuery.signed(score),
+        bin: bins.has(c.fips) ? `${bins.get(c.fips)} of ${binMax}` : missing,
+        value: score, binNo: bins.get(c.fips) ?? null };
+    });
+    counties.sort((a, b) => (ranks.get(a.fips) ?? Infinity) - (ranks.get(b.fips) ?? Infinity) || a.name.localeCompare(b.name));
+    const rows = counties.filter((r) => !opts.fas || r.fas);
     const hasData = indicators.length > 0 || ranks.size > 0;
-    return { version, hasData, columns, rows, footer: NeedMapQuery.footer(version, columns) };
+    return { version, hasData, columns, rows, counties, footer: NeedMapQuery.footer(version, columns) };
   }
 
   static async load(client: SupabaseClient, opts: BuildOptions = {}): Promise<NeedTableData> {

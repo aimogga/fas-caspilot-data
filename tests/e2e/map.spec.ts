@@ -2,6 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 const ART = "/opt/cursor/artifacts/ds-06a2";
+const ART_B = "/opt/cursor/artifacts/ds-06b";
 const FAS = ["49035", "49049", "49011", "49057", "49045"];
 
 async function signIn(page: Page, email: string) {
@@ -74,4 +75,39 @@ test("board: FAS county badges, and the switch filters to seeded FAS counties vi
     await expect(page).toHaveURL(/\/need-map$/);
     await expect(page.locator("tbody tr")).toHaveCount(29);
   }
+});
+
+const LEGEND = ["Need score (version v2-synthetic) · Placeholder bins", "Lowest −1.40 to −0.80", "Highest +1.00 to +1.40", "Not published", "FAS county (outlined)", "Placeholder bins (5 equal-count groups) until need-score weights are set.", "Relative ranking, not absolute need."];
+
+test("map: 29 county paths above the table, legend copy, FAS outlines, hatch; light and dark screenshots", async ({ page }) => {
+  await signIn(page, "board@example.test");
+  for (const colorScheme of ["light", "dark"] as const) {
+    await page.emulateMedia({ colorScheme });
+    for (const width of [375, 800, 1024, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/need-map");
+      const map = page.locator("[data-slot=need-map]");
+      await expect(map.locator("path[data-fips][tabindex='0'][role=img]")).toHaveCount(29);
+      await expect(map.locator("path[data-fas-outline]")).toHaveCount(5);
+      await expect(map.locator("path[data-bin='0']")).toHaveCount(3);
+      await expect(map.locator("path[data-fips='49009']")).toHaveAttribute("aria-label", "Daggett County, not published");
+      await expect(map.locator("path[data-fips='49011']")).toHaveAttribute("aria-label", "Davis County, rank 20 of 26, need score −0.80, FAS county");
+      for (const text of LEGEND) await expect(page.locator("[data-slot=map-legend]")).toContainText(text);
+      await expect(map.locator("text").first()).toBeVisible({ visible: width >= 1440 });
+      const svg = await map.locator("svg").boundingBox();
+      expect(svg?.height ?? 0).toBeLessThanOrEqual(640);
+      expect(svg?.width ?? 0).toBeLessThanOrEqual(width === 375 ? 343 : 696);
+      expect(svg?.y ?? 0).toBeLessThan((await page.locator("tbody").boundingBox())?.y ?? 0);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+      const violations = (await new AxeBuilder({ page }).analyze()).violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+      expect(violations).toEqual([]);
+      await page.screenshot({ path: `${ART_B}/need-map-${width}-${colorScheme}.png`, fullPage: true });
+    }
+  }
+  await page.goto("/need-map?fas=1");
+  const map = page.locator("[data-slot=need-map]");
+  await expect(map.locator("path[data-fips][tabindex='0']")).toHaveCount(29);
+  await expect(map.locator("path[data-dim='true']")).toHaveCount(24);
+  await expect(map.locator("path[data-fas-outline]")).toHaveCount(5);
+  await expect(map.locator("path[data-fips='49005']")).toHaveAttribute("aria-label", "Cache County, rank 20 of 26, need score −0.80");
 });
