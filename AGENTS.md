@@ -7,6 +7,7 @@ You are working in the repo for FAS Evidence, a free tool built for **Family Adv
 2. `harness/progress.md` — the last 3 entries.
 3. Your task packet (GitHub Issue labeled `packet`) and its `context_files`.
 4. Only the docs your packet names: `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/DATA_SOURCES.md`, `docs/GRANT_MATCHING.md`, `docs/PRIVACY_AND_COMPLIANCE.md`.
+5. For any UI work: `docs/DESIGN.md` (design brief: tokens, components, and design rules).
 
 ## Stack
 Next.js (App Router, TypeScript) on Vercel · Supabase (Postgres, Auth, RLS, Storage, Edge Functions) · n8n (n8n.casepilot.io) for schedules and alerts · Playwright for e2e · Vitest for unit tests.
