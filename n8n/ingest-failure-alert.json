@@ -1,0 +1,10 @@
+{
+  "name": "ingest-failure-alert",
+  "active": false,
+  "nodes": [
+    {"parameters":{"httpMethod":"POST","path":"ingest-failure-alert","responseMode":"onReceived"},"id":"alert-webhook","name":"Ingest failure webhook","type":"n8n-nodes-base.webhook","typeVersion":2,"position":[0,0]},
+    {"parameters":{"fromEmail":"={{$env.FAS_ALERT_FROM}}","toEmail":"={{$env.FAS_ALERT_TO}}","subject":"=Ingest failed: {{$json.body.source}}","emailFormat":"text","text":"=Source: {{$json.body.source}}\nAt: {{$json.body.at}}\nRun: {{$json.body.ingestRunId}}\nError: {{$json.body.error}}"},"id":"alert-email","name":"Email team","type":"n8n-nodes-base.emailSend","typeVersion":2.1,"position":[240,0]}
+  ],
+  "connections": {"Ingest failure webhook":{"main":[[{"node":"Email team","type":"main","index":0}]]}},
+  "settings":{"executionOrder":"v1","timezone":"UTC"}
+}
