@@ -543,3 +543,9 @@ Did: `lib/need-score/compute.ts` (score = Σ weight × z-score, weights are frac
 State: lint/typecheck clean, 412/412 unit tests, `pnpm build` ok, built app returns 401/405 on the new route; compute mutations (weights ignored, sample sd) killed. Diff 374 lines. test:db and e2e not run locally (no Supabase CLI); CI runs them.
 Left: QA; part 2 = DS-08a methodology page (/methodology, nav, guard, crumb, need-map link, e2e + parity). After QA PASS: approve `v1-poverty-uninsured` (set `approved_by`), call the route on fas-dev, add the n8n step. Before anyone outside the team sees the score (D-026): ACS margins of error, F-306 suppression, "insufficient data" instead of 0, each input's year. Note for part 2: the seed has `v3-draft` and the migration adds `v1-poverty-uninsured`, both unapproved, so the e2e draft-notice assertion must not hard-code one draft name.
 Decisions: none new. Version id `v1-poverty-uninsured` because `v1` is the F-102 RLS test fixture. With no approved version the route answers ok with scored 0 (no alert).
+
+## 2026-10-13 19:44 (UTC) — Cloud Agent (P1b subagent, lead-reviewed) — PR #151 / F-210 v2 draft config (D-026)
+Did: migration adds `need_score_config` row `v2-draft-five-input` (poverty .3, child poverty .2, uninsured .3, single-parent .1, no-vehicle .1), approved_by NULL; golden `v2-draft-five-input` entry hand-computed on the 4-county fixture (ranking differs from v1 at positions 2–3); tests: validate sums to 1, missing input → no score, recompute keeps approved v1 while the draft exists; `lib/need-score/config.test.ts` guards every migration's weights JSON (sum = 1).
+State: gate vs #141's branch: all rows pass, +82/-1 = 83; unit 417; 2 mutants killed.
+Left: QA; retarget to main after #141 merges. need-map labels for the new codes ride the second map PR. Approval of any version stays with George (D-023, D-026 prerequisites).
+Decisions: none new.
