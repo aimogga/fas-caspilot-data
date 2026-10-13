@@ -78,3 +78,10 @@ it('n8n workflow inactive; CensusTable validates shape', () => {
   expect(() => CensusTable.parse({})).toThrow(/census table/);
   expect(() => CensusTable.parse([['a'], [1, 2]])).toThrow(/width/);
 });
+
+it('ACS "-" parses to null (not_published)', () => {
+  expect(Acs5.num('-')).toBeNull();
+  const r = Acs5.parse(table([['Salt Lake County, Utah', '-', '10', '5', '49', '035']]));
+  expect(r.rejects).toEqual([]);
+  expect(r.rows.find((x) => x.indicator_code === 'total_population')).toMatchObject({ value: null, unit: 'not_published' });
+});
