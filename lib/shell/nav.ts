@@ -1,3 +1,5 @@
+import { canonicalizePath } from "@/lib/auth/role-guards";
+
 export type NavItem = { label: string; href: string };
 export type NavGroup = { label: string; items: NavItem[] };
 
@@ -32,6 +34,13 @@ export const HIDDEN_LABELS = [
 ] as const;
 
 export const CRUMB: Record<string, string> = { "/staff": "Home", "/admin": "Admin · Overview", "/board": "Board dashboard" };
+
+export const NO_ROLE_CRUMB = "Account not set up";
+
+export function crumbFor(role: string, pathname: string, fallback: string): string {
+  if (!Object.hasOwn(ROLE_LABEL, role)) return NO_ROLE_CRUMB;
+  return CRUMB[canonicalizePath(pathname) ?? pathname] ?? fallback;
+}
 
 export function navForRole(role: string): { groups: NavGroup[]; footer: string | null } {
   if (role === "board_viewer") return { groups: [{ label: "Board", items: [BOARD] }], footer: BOARD_FOOTER };

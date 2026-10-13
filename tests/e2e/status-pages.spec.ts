@@ -70,3 +70,22 @@ test("403 for board on /staff shows plain-text guidance in the shell", async ({ 
   expect(await card.innerText()).not.toMatch(LEAKS);
   await checkLayout(page, "403");
 });
+
+test("403 for a user with no role shows Account not set up with a neutral breadcrumb", async ({ page }) => {
+  await signIn(page, "norole@example.test");
+  for (const path of ["/board", "/staff", "/admin"]) {
+    const res = await page.goto(path);
+    expect(res?.status()).toBe(403);
+    const card = page.locator("[data-slot=status-card]");
+    await expect(card.locator("[data-slot=status-eyebrow]")).toHaveText("Error 403 · Account not set up");
+    await expect(page.locator("[data-slot=crumbs]")).toHaveText("Account not set up");
+  }
+});
+
+test("403 names the area for any letter case", async ({ page }) => {
+  await signIn(page, "board@example.test");
+  await page.goto("/403?from=%2FSTAFF");
+  await expect(page.locator("[data-slot=status-card] h1")).toHaveText("You don't have access to staff tools");
+  await page.goto("/403?from=%2FAdmin");
+  await expect(page.locator("[data-slot=status-card] h1")).toHaveText("You don't have access to admin tools");
+});

@@ -4,7 +4,9 @@ const AREA: Record<string, string> = { "/staff": "staff tools", "/admin": "admin
 const HOME_LABEL: Record<UserRole, string> = { admin: "Admin overview", staff: "Staff home", board_viewer: "Board dashboard" };
 
 export function areaName(path: string | null): string {
-  return (path && AREA[path]) ?? "this page";
+  if (!path) return "this page";
+  const root = "/" + path.toLowerCase().split(/[/?#]/)[1];
+  return AREA[root] ?? "this page";
 }
 
 export function homeLabel(role: UserRole | null): string {
