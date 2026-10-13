@@ -119,3 +119,16 @@ Decision: **Keep the 5 equal-count bins as a placeholder** until George sets the
 
 ### D-023 Production uses fas-dev Supabase (ops)
 Decision: **Production (fas-caspilot-data.vercel.app, Vercel production branch main) uses the synthetic fas-dev Supabase (zlizvzpatfyhdydfmxef), with no real FAS data, until a real prod project exists.** Decided by George Mogga; relayed by George Chief of staff at 10:15 AM MT. · Date: 2026-10-13
+
+### D-024 GitHub-issue alerts as interim F-201 exception (ops)
+Decision: **Until #122 (Cloudflare challenge on the n8n webhook) is resolved, a GitHub issue labeled `ingest-alert` counts as the F-201 failure alert, as a time-limited exception.** George's words: "Approve 1: GitHub-issue alerts count for F-201 as a time-limited exception" Decided by George Mogga; relayed by George Chief of staff at 11:03 AM MT. · Date: 2026-10-13
+
+### D-025 Need-score weight storage (data)
+Decision: **Need-score weights are stored as fractions and shown as points.** George's words: "Approve 2: store weights as fractions, show them as points" Decided by George Mogga; relayed by George Chief of staff at 11:03 AM MT. · Date: 2026-10-13
+
+### D-026 Need-score weights v1 → v2 (data)
+Decision: **Start at v1 = SAIPE poverty 50, SAHIE uninsured 50; then v2 = SAIPE poverty 30, SAIPE child poverty 20, SAHIE uninsured 30, ACS single-parent households 10, ACS no-vehicle households 10.** George's words: "Approve 3: start at poverty 50 and uninsured 50, then the later weights as listed" Decided by George Mogga; relayed by George Chief of staff at 11:03 AM MT. · Date: 2026-10-13
+Note: this supersedes the "weights stay open" part of D-022; the bins placeholder itself is not changed here.
+
+### D-027 Cloudflare fix done by George (ops, #122)
+Decision: **George applies the Cloudflare fix himself; the team sends him the steps.** George's words: "Approve 4: send me the Cloudflare fix steps and I'll do it" Decided by George Mogga; relayed by George Chief of staff at 11:03 AM MT. · Date: 2026-10-13

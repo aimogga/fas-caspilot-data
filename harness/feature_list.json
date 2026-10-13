@@ -37,7 +37,7 @@
       "human_gate": "george-before-merge",
       "status": "passing",
       "evidence": [
-        "https://github.com/aimogga/fas-caspilot-data/pull/99#issuecomment-6138903924 (QA PASS at 06ab84c after George approved 2026-10-12 11:20 PM MT, relayed by Chief of staff; squash-merged as 9aad6c0). DECISIONS.md Open is empty; D-001\u2013D-010 each have decision + date"
+        "https://github.com/aimogga/fas-caspilot-data/pull/99#issuecomment-6138903924 (QA PASS at 06ab84c after George approved 2026-10-12 11:20 PM MT, relayed by Chief of staff; squash-merged as 9aad6c0). DECISIONS.md Open is empty; D-001–D-010 each have decision + date"
       ]
     },
     {
@@ -200,7 +200,9 @@
       "owner": "engineer-bot",
       "acceptance": [
         "source_registry and ingest_run populated",
-        "Failed runs alert via n8n (email or Slack)",
+        "Failed ingest runs alert within 15 minutes via n8n (email or Slack), or, until #122 is resolved, via a GitHub issue labeled ingest-alert containing source, run id, error text and timestamp, which notifies George.",
+        "When #122 closes, alerts are delivered via n8n email or Slack and this interim exception is removed.",
+        "The nightly audit goes YELLOW when the n8n ingest-failure-alert webhook is challenged (e.g. HTTP 403) or when ingest-alert issues exist with no matching n8n delivery.",
         "Re-running a vintage does not duplicate rows"
       ],
       "tests": [
@@ -209,7 +211,8 @@
       ],
       "human_gate": "none",
       "status": "failing",
-      "evidence": []
+      "evidence": [],
+      "status_note": "interim: GitHub-issue alert exception per D-024 until #122 closes; status stays failing until QA verifies"
     },
     {
       "id": "F-202",
@@ -452,7 +455,7 @@
     {
       "id": "F-304",
       "phase": 3,
-      "title": "Metrics M1\u2013M6",
+      "title": "Metrics M1–M6",
       "owner": "engineer-bot",
       "acceptance": [
         "Views implement definitions in PRD section C3",
