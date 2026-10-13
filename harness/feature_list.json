@@ -265,8 +265,10 @@
         "integration: load into local DB"
       ],
       "human_gate": "none",
-      "status": "failing",
-      "evidence": []
+      "status": "passing",
+      "evidence": [
+        "https://github.com/aimogga/fas-caspilot-data/pull/110#issuecomment-6139375306 (QA PASS at 98ff670, F-204 part 2: ACS DB integration test (29 counties, provenance source_id/vintage/ingest_run_id, not_published, idempotent), fallback-vintage test, 4/4 mutations killed; squash-merged at a54e1de). Part 1: PR #109 (packages/ingest/acs5 parser with recorded fixture, inactive n8n/census-acs.json; squash-merged at abc93bb)"
+      ]
     },
     {
       "id": "F-205",
