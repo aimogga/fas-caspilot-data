@@ -222,8 +222,12 @@
         "integration: load into local DB"
       ],
       "human_gate": "none",
-      "status": "failing",
-      "evidence": []
+      "status": "passing",
+      "evidence": [
+        "https://github.com/aimogga/fas-caspilot-data/pull/86#issuecomment-6133995989 (QA PASS at 513d3b0, F-202 part 1: packages/ingest/sahie parser with recorded fixture, fail closed on partial set, census-sahie source migration; squash-merged at 2d44deb)",
+        "https://github.com/aimogga/fas-caspilot-data/pull/92#issuecomment-6134791867 (QA PASS at 6741f21, F-202 part 2: SahieHttp fetch, parse, fill, load and token-gated POST /api/ingest/sahie; inactive n8n/census-sahie.json with $env.FAS_INGEST_SAHIE_URL and no hardcoded year; squash-merged at 5f547d3)",
+        "Live end-to-end ingest on fas-dev (zlizvzpatfyhdydfmxef), recorded by QA 2026-10-12: POST at 23:46:22 UTC returned 200 with 58 rows; public_indicator uninsured_count and uninsured_rate for 2024, all 29 Utah counties, 0 nulls, source census-sahie, ingest_run ok with checksum; re-run at 23:46:31 UTC stayed at 58 rows with 0 duplicates"
+      ]
     },
     {
       "id": "F-203",

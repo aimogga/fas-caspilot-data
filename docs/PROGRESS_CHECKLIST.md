@@ -4,8 +4,8 @@ Last updated: 2026-10-12
 
 ## Summary
 
-- **Done:** 6 of 44 features (14%): F-003, F-101, F-102, F-103, F-104 and F-105.
-- **In progress:** F-202 SAHIE ingest (#86 plus #92, both with QA); F-601 nightly audit (partly working).
+- **Done:** 7 of 44 features (16%): F-003, F-101, F-102, F-103, F-104, F-105 and F-202.
+- **In progress:** F-601 nightly audit (partly working).
 - **Next up:** F-201 source registry and ingest logging.
 - **Blocked:** None right now. #77 Copilot pilot should unblock once main is merged into it (error-page layout fix landed in PR #90).
 
@@ -77,7 +77,7 @@ Last updated: 2026-10-12
 ## Phase 2: Public data and county need
 
 - [ ] **Not started** F-201 Source registry, ingest run logging and failure alerts: we keep a record of every data import and get an alert if one fails, with no duplicate data on re-runs.
-- [ ] **In progress** F-202 Ingest: Census SAHIE uninsured by county: brings in how many people lack health insurance in each Utah county. Work is #86 plus #92, both with QA.
+- [x] **Done** F-202 Ingest: Census SAHIE uninsured by county: brings in how many people lack health insurance in each Utah county. QA PASS on #86 (2d44deb) and #92 (5f547d3), plus a live run on fas-dev that loaded all 29 counties.
 - [ ] **Not started** F-203 Ingest: Census SAIPE poverty by county: brings in poverty levels for each Utah county.
 - [ ] **Not started** F-204 Ingest: ACS 5-year denominators: brings in population counts so rates can be calculated fairly.
 - [ ] **Not started** F-205 Ingest: HRSA mental health HPSA: brings in which counties have a shortage of mental health providers.
