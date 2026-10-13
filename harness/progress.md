@@ -343,3 +343,9 @@ Left: follow-up to log SahieHttp ingest errors server-side (no secrets).
 Did: no-role breadcrumb "Account not set up" via `crumbFor` in `lib/shell/nav.ts` (roles with a home unchanged); `areaName` is case-insensitive and matches sub-paths; placeholder subtitles use `PageHeader` description; e2e for no-role 403 and area-name case in `status-pages.spec.ts`; layout-parity entries for signed-in 404, error and `/`, plus subtitle-left equals h1-left.
 Also: crumb uses the canonical path (fixes #78).
 Left: UI evidence (screenshots, axe, mockup comparison) needs a run with local Supabase.
+
+## 2026-10-13 01:55 (UTC) — Cloud Agent — PR #105 / feature F-203
+Did: claim F-203. `packages/ingest/saipe` (poverty_count, poverty_rate; fail closed on rejects, <29 counties, mixed vintages), `SaipeHttp` + token-gated POST /api/ingest/saipe with secret-free server-side error log (#96 pattern), inactive n8n/census-saipe.json ($env only), census-saipe source_registry migration.
+State: lint/typecheck/unit 310/310 green; real SAIPE 2024 sanity check 58 rows, 29 counties.
+Left: QA; test:db in CI.
+Decisions: none.
