@@ -463,6 +463,12 @@ Did: local/CI-only synthetic seed: approved `v2-synthetic`, newer unapproved `v3
 State: e2e asserts rank order, the tie, bins, Not published last and the footer version. Nothing written to hosted fas-dev by this PR.
 Left: QA at head.
 
-## 2026-10-13 10:20 (UTC) — Grok Bot — nightly: share census ingest helpers
+## 2026-10-13 10:17 (UTC) — Grok Bot (nightly cleanup) — PR #128: docs/harness drift sync
+Did: docs-only sync to main. PROGRESS_CHECKLIST marks F-203/F-204 Done (passing in feature_list.json; 9 of 44). PLAN, COPILOT_ROUTING, NIGHTLY_AUDIT and grok/roles/nightly_audit.md now match D-009 ($60 plan, $0 on-demand, no parallel-agent cap, Actions cron, no Automations). NIGHTLY_AUDIT cron matches nightly-audit.yml (`23 9 * * *` UTC). AGENTS.md layout lists real app/(app) routes and notes lib/metrics, lib/grants and supabase/functions are not in the repo yet. 10-privacy.mdc no longer cites the missing lib/metrics/suppression.ts (lands with F-306).
+State: no code, workflow, package.json or feature status changes.
+Left: QA.
+Decisions: none.
+
+## 2026-10-13 10:20 (UTC) — Grok Bot — nightly: share census ingest helpers (PR #129)
 Did: Extended `packages/ingest/census-table.ts` with shared checksum, Utah FIPS set, `CENSUS_NOT_PUBLISHED`, `num` (ACS keeps `-` via extraNulls), `fetchJson`, and `requireCountyCoverage`. ACS/SAHIE/SAIPE call those; deleted dead ACS mixed-vintages check in `requireComplete` (parse always sets `period: ''`) and its hand-built test case. FIPS left source-local (SAIPE drop non-Utah vs SAHIE/ACS 49xxxx). Did not touch `lib/ingest/*-http.ts`, ingest-alert, #106, or `feature_list.json`.
 Left: QA on PR; later naming cleanup for acs5 folder (#106 conflict).

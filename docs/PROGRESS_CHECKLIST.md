@@ -1,10 +1,10 @@
 # FAS Evidence Progress Checklist
 
-Last updated: 2026-10-12
+Last updated: 2026-10-13
 
 ## Summary
 
-- **Done:** 7 of 44 features (16%): F-003, F-101, F-102, F-103, F-104, F-105 and F-202.
+- **Done:** 9 of 44 features (20%): F-003, F-101, F-102, F-103, F-104, F-105, F-202, F-203 and F-204.
 - **In progress:** F-601 nightly audit (partly working).
 - **Next up:** F-201 source registry and ingest logging.
 - **Blocked:** None right now. #77 Copilot pilot should unblock once main is merged into it (error-page layout fix landed in PR #90).
@@ -78,8 +78,8 @@ Last updated: 2026-10-12
 
 - [ ] **Not started** F-201 Source registry, ingest run logging and failure alerts: we keep a record of every data import and get an alert if one fails, with no duplicate data on re-runs.
 - [x] **Done** F-202 Ingest: Census SAHIE uninsured by county: brings in how many people lack health insurance in each Utah county. QA PASS on #86 (2d44deb) and #92 (5f547d3), plus a live run on fas-dev that loaded all 29 counties.
-- [ ] **Not started** F-203 Ingest: Census SAIPE poverty by county: brings in poverty levels for each Utah county.
-- [ ] **Not started** F-204 Ingest: ACS 5-year denominators: brings in population counts so rates can be calculated fairly.
+- [x] **Done** F-203 Ingest: Census SAIPE poverty by county: brings in poverty levels for each Utah county. QA PASS on #105 (af26c70), squash-merged at 6f65d72, plus a live run on fas-dev that loaded all 29 counties (re-run added no duplicates).
+- [x] **Done** F-204 Ingest: ACS 5-year denominators: brings in population counts so rates can be calculated fairly. Part 1 PR #109 (squash-merged at abc93bb); QA PASS on part 2 PR #110 (98ff670), squash-merged at a54e1de.
 - [ ] **Not started** F-205 Ingest: HRSA mental health HPSA: brings in which counties have a shortage of mental health providers.
 - [ ] **Not started** F-206 Ingest: CDC PLACES county mental health measures: brings in county-level mental health estimates from the CDC.
 - [ ] **Not started** F-207 Ingest: Utah Courts filings by county (workbook): brings in court case filing counts for each county.
