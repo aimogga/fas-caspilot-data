@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { isRouteAllowed, getAllowedRoles, isPublicRoute, safeRedirect, roleHome, hadSession, signedInLoginTarget, matchGuardedPrefix, canonicalizePath, isNoroleAllowed, type UserRole } from './role-guards';
 
 describe('role-guards', () => {
-  const routes = ['/', '/staff', '/admin', '/board', '/login'];
+  const routes = ['/', '/staff', '/admin', '/board', '/login', '/dashboard', '/dashboard/m1'];
   const roles: (UserRole | null)[] = ['admin', 'staff', 'board_viewer', null];
   const expectations: Record<string, boolean[]> = {
     '/': [true, true, true, false],
@@ -10,6 +10,8 @@ describe('role-guards', () => {
     '/admin': [true, false, false, false],
     '/board': [true, true, true, false],
     '/login': [true, true, true, false],
+    '/dashboard': [true, true, false, false],
+    '/dashboard/m1': [true, true, false, false],
   };
   it.each(roles)('validates route access for %s', (role) => {
     routes.forEach((route) => {

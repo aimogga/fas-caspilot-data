@@ -13,8 +13,16 @@ export class AcsHttp {
 
   static async run(opts: AcsRunOpts) {
     const env = opts.env ?? process.env;
-    const year = AcsHttp.year(opts.now ?? new Date(), opts.year);
-    const json = await Acs5.fetch(year, env, opts.httpFetch);
+    let year = AcsHttp.year(opts.now ?? new Date(), opts.year);
+    const httpFetch = opts.httpFetch ?? fetch;
+    let json: unknown;
+    try {
+      json = await Acs5.fetch(year, env, httpFetch);
+    } catch {
+      const fallback = String(Number(year) - 1);
+      json = await Acs5.fetch(fallback, env, httpFetch);
+      year = fallback;
+    }
     const rows = Acs5.requireComplete(Acs5.parse(json), year);
     const load = opts.load ?? PublicIndicatorIngest.load.bind(PublicIndicatorIngest);
     const client = opts.client ?? SahieHttp.db(env);
