@@ -344,6 +344,6 @@ Did: no-role breadcrumb "Account not set up" via `crumbFor` in `lib/shell/nav.ts
 Also: crumb uses the canonical path (fixes #78).
 Left: UI evidence (screenshots, axe, mockup comparison) needs a run with local Supabase.
 
-## 2026-10-12 19:32 (UTC) — Cloud Agent — docs DS-06 (F-211)
+## 2026-10-13 01:32 (UTC) — Cloud Agent — docs DS-06 (F-211)
 Did: Added `docs/design/specs/DS-06.md` (County need map explorer / F-211), copied unchanged from design handoff. Docs only; no code or real data. Split from DS-05/06/07 batch (510 lines > 400).
 Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already matched the concurrency wording; no edit.
