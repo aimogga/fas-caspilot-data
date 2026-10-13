@@ -179,15 +179,6 @@ No ingest-schedule workflows are on the instance yet, though `n8n/census-sahie.j
 
 **Data-residency note:** if n8n is self-hosted on CasePilot's GCP, execution data stays in CasePilot's project; if it's n8n Cloud, n8n GmbH becomes a processor and needs a decision. Workflows should pass run IDs and aggregates only, and failure alerts must never include row payloads. **Instance verdict: Maybe until hosting and retention are confirmed. FAS data → 3rd party: Only if misused (self-hosted) / Yes (n8n Cloud).**
 
----|---|
-| Instance at `n8n.casepilot.io` | AGENTS.md (Stack), ARCHITECTURE.md, D-002 |
-| "Already running on CasePilot's Google Cloud", i.e. **self-hosted on GCP**, not n8n Cloud | D-002 |
-| Jobs: trigger ingest functions on schedules, send failure alerts (email or Slack, F-201), weekly grant digest (F-505, possibly via the Gmail node) | ARCHITECTURE, PRD C6, feature_list |
-| Workflow JSON exported to `n8n/`; new workflows created inactive; live workflows not edited without George | 20-data-ingestion.mdc, D-002, D-007 |
-| Cursor's n8n MCP currently points at **ModernLine's** n8n, not CasePilot's | D-007 |
-
-**Data-residency note:** if n8n really is self-hosted on CasePilot's GCP, execution data stays in CasePilot's project. Confirm the GCP region, the execution-data retention setting (n8n saves execution payloads by default), and where credentials are stored. If it's n8n Cloud instead, n8n GmbH becomes a processor (a third party) and needs a decision. Either way: workflows should pass run IDs and aggregates only, failure alerts must never include row payloads, and the digest email passes through Google (Gmail). **Verdict: Maybe until the instance is confirmed (D-002 and D-007 are decided). FAS data → 3rd party: Only if misused (self-hosted) / Yes (n8n Cloud).**
-
 ---
 
 ## Gaps that need George to confirm

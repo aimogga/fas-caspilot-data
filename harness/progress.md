@@ -394,14 +394,6 @@ Left: QA review of docs PR.
 Did: recorded D-005, D-006 and D-009 as decided, plus design decisions D-017 to D-022 (29 counties, dashboard defaults, manual foundation grants, county outlines, stale rule, placeholder bins). Unblocks QA on #116.
 Left: QA check. Need-score weights still open.
 
-## 2026-10-13 01:24 (UTC) — Grok Bot — PR #98 F-000 plugin inventory (claim)
-Did: Claimed F-000. Landed the reviewed inventory at harness/PLUGIN_INVENTORY.md: Grok, Cursor (local + Cloud) and n8n rows, each Use/Maybe/Avoid with a reason, plus an "FAS data → 3rd party?" column. Cloud Agents/Automations rows aligned with the current repo verdicts.
-Left: QA check; George's sign-off (human_gate george-before-merge).
-
-## 2026-10-13 04:15 (UTC) — Grok Bot — PR #98 F-000 plugin inventory (QA fixes)
-Did: inventory now describes the D-009 setup ($60 Cursor plan, $0 on-demand, no parallel cap, Nightly Audit on a GitHub Actions cron); removed upgrade lines; Cloud Agents Use / Automations Avoid; recounted Use 13 · Maybe 22 · Avoid 44; proposed entries renamed P-1 to P-5; D-001/D-002/D-006/D-007 shown as decided.
-Left: QA re-check.
-
-## 2026-10-13 05:10 (UTC) — Grok Bot — PR #98 QA fixes (2)
-Did: merged main (b4af304); added user-Supabase--casepilot and user-Refero rows; live read-only n8n inventory (2 workflows); GitHub Actions row lists the real workflows; D-005 in the decided list; cron labelled an implementation choice, not D-009 wording; recounted by script (83 rows: Use 14 · Maybe 24 · Avoid 45, per-table breakdown).
+## 2026-10-13 01:24 (UTC) — Grok Bot — PR #98: F-000 plugin inventory
+Did: landed harness/PLUGIN_INVENTORY.md (Grok, Cursor local + Cloud, n8n; Use/Maybe/Avoid with reasons and an FAS-data column). Aligned with D-009 (cron labelled an implementation choice); added user-Supabase--casepilot and user-Refero rows; live read-only n8n inventory (2 workflows); GitHub Actions row lists real workflows; D-001/002/005/006/007/009 shown decided; proposals renamed P-1 to P-5; recounted by script (83 rows: Use 14 · Maybe 24 · Avoid 45). Merged main (b4af304).
 Left: QA re-check; George sign-off.
