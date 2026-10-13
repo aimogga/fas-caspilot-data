@@ -347,3 +347,8 @@ Left: UI evidence (screenshots, axe, mockup comparison) needs a run with local S
 ## 2026-10-13 01:32 (UTC) — Cloud Agent — docs DS-05 (F-209)
 Did: Added `docs/design/specs/DS-05.md` (Data freshness panel / F-209), copied unchanged from design handoff. Docs only; no code or real data. Split from DS-05/06/07 batch (510 lines > 400).
 Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already matched the concurrency wording; no edit.
+
+## 2026-10-13 02:15 (UTC) — Cloud Agent — PR #106 / feature F-204
+Did: claimed F-204. ACS 5-year ingest (`packages/ingest/acs5`, population, household size, veterans), POST /api/ingest/acs5 with SAHIE's token check and #96-style redacted error log, inactive n8n, census-acs source row.
+State: lint/typecheck/unit 308/308 green; real 2024 API returned 29 counties, 87 rows.
+Left: QA. No ACS-specific DB test (D-012).
