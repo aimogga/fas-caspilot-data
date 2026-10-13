@@ -537,3 +537,9 @@ Did: Recorded George's 11:03 AM MT 2026-10-13 approvals verbatim (via Chief of s
 State: F-201 status stays failing; human_gate unchanged; status_note removed from feature_list (context kept here).
 Left: QA.
 Decisions: D-024, D-025, D-026, D-027.
+
+## 2026-10-13 18:18 (UTC) — Cloud Agent — PR #145 / harness P0: pnpm gate + push hook
+Did: George's harness prompt (2026-10-13) set up: plan.md and checks.md (session scratchpad), one worktree + branch per packet (D-029), and the deterministic gate. `scripts/pr-gate.mjs` (`pnpm gate`): lint, typecheck, unit, secret scan over tracked + untracked files, D-012 count vs origin/main with exclusions named (`harness/generated-files.json`), 300-char line check, progress.md append-only check; one `step | requirement | verdict | evidence` row per rule. `scripts/pr-gate-hook.mjs` + `.claude/settings.json` run it before `git push` in Claude Code sessions. DECISIONS D-028..D-031.
+State: gate on this branch: all rows pass, +235/-0 (markdown excluded); 8/8 new unit tests; CLI test pinned to `--base HEAD` so it runs in CI checkouts. Hook verified by hand (JSON valid, non-push/non-JSON exit 0); the block path only fires on a failing gate.
+Left: QA. Packets running in parallel on their own branches: P2 DS-06a2 (`ds-06a2-fas-counties`), P1a F-210 ingest variables (`f210-ingest-v2-vars`); then P3a/P3b DS-06b, P1b v2 config, P4 DS-08a per plan.md. Open for George: real FAS service counties (synthetic 5 fips until then); whether v1 may be approved on fas-dev while production points at it (D-023, D-026 prerequisites).
+Decisions: D-028, D-029, D-030, D-031.
