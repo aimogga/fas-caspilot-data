@@ -358,7 +358,11 @@ Decisions: none.
 Did: F-203 set to passing in harness/feature_list.json with evidence: PR #105 QA PASS at af26c70 (squash-merged at 6f65d72, 2026-10-13 02:31:48 UTC). Live fas-dev ingest at 02:31:07 UTC loaded 58 rows (29 counties × 2 indicators, 2024); re-run at 02:31:13 UTC stayed at 58 with 0 duplicates. Added "PR #102" to the DS-05 entry heading. Features passing: 8 of 44.
 Left: none for F-203.
 
-## 2026-10-13 03:20 (UTC) — Engineer Bot — feature F-601 nightly audit data checks
+## 2026-10-13 01:32 (UTC) — Cloud Agent — PR #103 docs DS-06 (F-211)
+Did: Added `docs/design/specs/DS-06.md` (County need map explorer / F-211), copied unchanged from design handoff. Docs only; no code or real data. Split from DS-05/06/07 batch (510 lines > 400).
+Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already matched the concurrency wording; no edit.
+
+## 2026-10-13 03:20 (UTC) — Engineer Bot — PR #112 / feature F-601 nightly audit data checks
 Did: claim F-601. `pnpm audit:nightly` script; data freshness (active sources within cadence, failures last 24h, RED on 2 nights in a row) and data sanity (29 counties, ±20% rows vs previous vintage, null spike) via Supabase REST, SKIPPED without SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY; report "Data freshness" line filled.
 State: lint/typecheck/unit green; synthetic fixtures only.
 Left: QA; nightly-audit.yml does not pass Supabase secrets yet (George decides); grants, suppression/RLS/views, deploy health and cost stay SKIPPED until their keys or schema exist.
