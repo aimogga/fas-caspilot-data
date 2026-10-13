@@ -6,7 +6,8 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "ingest-failure-alert",
-        "responseMode": "onReceived"
+        "responseMode": "onReceived",
+        "authentication": "headerAuth"
       },
       "id": "alert-webhook",
       "name": "Ingest failure webhook",
@@ -15,7 +16,13 @@
       "position": [
         0,
         0
-      ]
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "XYit0wFy8TngKt2F",
+          "name": "FAS ingest alert secret"
+        }
+      }
     },
     {
       "parameters": {

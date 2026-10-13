@@ -525,6 +525,13 @@ State: /api/health ok:true (app ok, supabase ok); /login 200; QA verified staff/
 Left: QA.
 Decisions: D-023.
 
+## 2026-10-13 17:06 (UTC) — Grok Bot — PR #137: n8n ingest alert shared-secret header
+Did: Generated a 32-byte secret (never printed) and stored it as repo secret INGEST_ALERT_SECRET and Vercel sensitive env INGEST_ALERT_SECRET (Preview + Production). In n8n created Header Auth credential XYit0wFy8TngKt2F (header X-FAS-Alert-Secret) and set workflow HAlHEECkaQGTQ9sX (ingest-failure-alert, active) Webhook node to headerAuth. IngestAlert.notify now sends X-FAS-Alert-Secret from INGEST_ALERT_SECRET, omitted when unset; repo workflow JSON synced.
+State: ingest-alert tests 16/16, tsc and eslint clean. Unauthenticated probe POST got HTTP 403 "Authorization data is wrong!" from n8n (no cf-mitigated challenge).
+Left: QA; merge before relying on n8n delivery (until merged, deployed code posts without the header and falls back to the GitHub issue).
+Decisions: none (implements D-024 context).
+Update: QA fix — test secret is now the scanner-allowed placeholder 'not-a-secret' (secret-scan clean); added a no-leak test (console logs, GitHub fallback headers, issue body); 4 leak mutations killed; 17/17 tests.
+
 ## 2026-10-13 17:05 (UTC) — Grok Bot — PR #136: George 10-13 approvals; F-201 interim alert AC
 Did: Recorded George's 11:03 AM MT 2026-10-13 approvals verbatim (via Chief of staff) as D-024 (GitHub-issue alert interim exception), D-025 (weights stored as fractions, shown as points), D-026 (weights v1 50/50 then v2 30/20/30/10/10), D-027 (George applies Cloudflare fix). Updated F-201 acceptance criteria (interim alert, removal when #122 closes, nightly audit YELLOW) and added status_note.
 State: F-201 status stays failing; human_gate unchanged.
