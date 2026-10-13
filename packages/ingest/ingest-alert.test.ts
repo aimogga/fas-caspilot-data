@@ -223,3 +223,61 @@ describe('IngestAlert GitHub fallback', () => {
     expect(calls).toHaveLength(1);
   });
 });
+
+describe('IngestAlert webhook secret header', () => {
+  const SECRET = 'not-a-secret';
+  const p: IngestAlertPayload = { source: 'saipe', status: 'error', error: 'boom', ingestRunId: 'run-1', at: '2026-01-01T00:00:00.000Z' };
+  const capture = () => {
+    const calls: RequestInit[] = [];
+    const f = (async (_url: string, init: RequestInit) => {
+      calls.push(init);
+      return new Response('{}', { status: 200 });
+    }) as unknown as typeof fetch;
+    return { calls, f };
+  };
+
+  it('sends X-FAS-Alert-Secret when INGEST_ALERT_SECRET is set', async () => {
+    const { calls, f } = capture();
+    const env = { INGEST_ALERT_WEBHOOK_URL: 'http://127.0.0.1/hook', INGEST_ALERT_SECRET: SECRET };
+    expect(await IngestAlert.notify(p, env, f)).toBe(true);
+    const headers = new Headers(calls[0].headers);
+    expect(headers.get('X-FAS-Alert-Secret')).toBe(SECRET);
+    expect(headers.get('content-type')).toBe('application/json');
+  });
+
+  it('omits the header gracefully when INGEST_ALERT_SECRET is unset', async () => {
+    const { calls, f } = capture();
+    expect(await IngestAlert.notify(p, { INGEST_ALERT_WEBHOOK_URL: 'http://127.0.0.1/hook' }, f)).toBe(true);
+    expect(new Headers(calls[0].headers).has('X-FAS-Alert-Secret')).toBe(false);
+  });
+
+  it('n8n alert webhook requires header auth', () => {
+    const wf = JSON.parse(readFileSync('n8n/ingest-failure-alert.json', 'utf8')) as { nodes: { type: string; parameters: Record<string, unknown> }[] };
+    const hook = wf.nodes.find((n) => n.type === 'n8n-nodes-base.webhook');
+    expect(hook?.parameters.authentication).toBe('headerAuth');
+  });
+
+  it('never leaks the secret into logs, GitHub fallback headers or the issue body', async () => {
+    const calls: { url: string; init: RequestInit }[] = [];
+    const f = (async (url: string, init: RequestInit) => {
+      calls.push({ url, init });
+      if (url.includes('127.0.0.1')) return new Response('', { status: 403 });
+      return new Response('{"number":1}', { status: 201 });
+    }) as unknown as typeof fetch;
+    const logs = [vi.spyOn(console, 'info').mockImplementation(() => {}), vi.spyOn(console, 'warn').mockImplementation(() => {}), vi.spyOn(console, 'log').mockImplementation(() => {}), vi.spyOn(console, 'error').mockImplementation(() => {})];
+    const env = { INGEST_ALERT_WEBHOOK_URL: 'http://127.0.0.1/hook', INGEST_ALERT_SECRET: SECRET, INGEST_ALERT_GITHUB_TOKEN: 'gh-test' };
+    const leaky = IngestAlert.payload('saipe', new Error(`boom ${SECRET}`), env, 'run-1');
+    expect(await IngestAlert.notify(leaky, env, f)).toBe(true);
+    const gh = calls.find((c) => c.url.startsWith('https://api.github.com'));
+    expect(gh).toBeDefined();
+    const ghHeaders = new Headers(gh!.init.headers);
+    expect(ghHeaders.has('X-FAS-Alert-Secret')).toBe(false);
+    for (const [, v] of ghHeaders) expect(v).not.toContain(SECRET);
+    expect(String(gh!.init.body)).not.toContain(SECRET);
+    expect(await IngestAlert.notify(leaky, { INGEST_ALERT_WEBHOOK_URL: env.INGEST_ALERT_WEBHOOK_URL, INGEST_ALERT_SECRET: SECRET }, f)).toBe(false);
+    for (const spy of logs) {
+      expect(JSON.stringify(spy.mock.calls)).not.toContain(SECRET);
+      spy.mockRestore();
+    }
+  });
+});
