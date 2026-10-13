@@ -353,3 +353,7 @@ Did: claim F-203. `packages/ingest/saipe` (poverty_count, poverty_rate; fail clo
 State: lint/typecheck/unit 309/309 green; real SAIPE 2024 sanity check 58 rows, 29 counties.
 Left: QA; test:db in CI.
 Decisions: none.
+
+## 2026-10-13 02:35 (UTC) — QA — PR #108 flip F-203 passing
+Did: F-203 set to passing in harness/feature_list.json with evidence: PR #105 QA PASS at af26c70 (squash-merged at 6f65d72, 2026-10-13 02:31:48 UTC). Live fas-dev ingest at 02:31:07 UTC loaded 58 rows (29 counties × 2 indicators, 2024); re-run at 02:31:13 UTC stayed at 58 with 0 duplicates. Added "PR #102" to the DS-05 entry heading. Features passing: 8 of 44.
+Left: none for F-203.
