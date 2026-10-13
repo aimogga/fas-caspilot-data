@@ -1,8 +1,10 @@
 import { randomUUID } from "node:crypto";
-import { EmptyState, ErrorState, PageHeader, Stack } from "@/components/layout";
+import Link from "next/link";
+import { Cluster, EmptyState, ErrorState, PageHeader, Stack } from "@/components/layout";
 import { FasFilter } from "@/components/need-map/FasFilter";
 import { NeedTable } from "@/components/need-map/NeedTable";
 import { NeedMapQuery, type NeedTableData } from "@/lib/need-map/query";
+import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +21,7 @@ export default async function NeedMapPage({ searchParams }: { searchParams: Prom
   }
   return (
     <Stack gap={6}>
-      <PageHeader eyebrow={NeedMapQuery.eyebrow(role)} title="County need map" description="Relative need across Utah's 29 counties, from public data." actions={<FasFilter />} />
+      <PageHeader eyebrow={NeedMapQuery.eyebrow(role)} title="County need map" description="Relative need across Utah's 29 counties, from public data." actions={<Cluster gap={3}><Link href="/methodology" className={buttonVariants({ variant: "outline" })}>Methodology</Link><FasFilter /></Cluster>} />
       {data === null ? (
         <ErrorState message="Couldn't load the need map" referenceId={randomUUID()} href="/need-map">Something went wrong loading county data. Try again.</ErrorState>
       ) : !data.hasData ? (
