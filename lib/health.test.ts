@@ -98,10 +98,10 @@ describe("SupabaseHealthProbe.responds", () => {
 
   it("returns false when fetch times out", async () => {
     const hanging: typeof fetch = async (_input, init) => {
-      return await new Promise<Response>((_resolve, reject) => {
+      return await new Promise<Response>((resolve, reject) => {
         const signal = init?.signal;
         if (signal === undefined || signal === null) {
-          reject(new Error("missing abort signal"));
+          resolve(new Response("{}", { status: 200 }));
           return;
         }
         signal.addEventListener("abort", () => {

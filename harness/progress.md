@@ -371,3 +371,9 @@ Decisions: none.
 ## 2026-10-13 02:35 (UTC) — QA — PR #108 flip F-203 passing
 Did: F-203 set to passing in harness/feature_list.json with evidence: PR #105 QA PASS at af26c70 (squash-merged at 6f65d72, 2026-10-13 02:31:48 UTC). Live fas-dev ingest at 02:31:07 UTC loaded 58 rows (29 counties × 2 indicators, 2024); re-run at 02:31:13 UTC stayed at 58 with 0 duplicates. Added "PR #102" to the DS-05 entry heading. Features passing: 8 of 44.
 Left: none for F-203.
+
+## 2026-10-13 03:30 (UTC) — Cloud Agent — PR #95 timeout-test mutation gap
+Did: merged origin/main (progress.md conflict kept both sides). Timeout test mock now resolves 200 when no abort signal is passed, so removing `AbortSignal.timeout` fails it; a non-aborting signal makes it time out.
+State: lint/typecheck/unit green.
+Left: CI + secret-scan, preview, QA re-check.
+Decisions: none.
