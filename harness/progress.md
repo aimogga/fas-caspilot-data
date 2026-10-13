@@ -537,3 +537,9 @@ Did: Recorded George's 11:03 AM MT 2026-10-13 approvals verbatim (via Chief of s
 State: F-201 status stays failing; human_gate unchanged; status_note removed from feature_list (context kept here).
 Left: QA.
 Decisions: D-024, D-025, D-026, D-027.
+
+## 2026-10-14 00:22 (UTC) — Cloud Agent (P13 subagent, lead-reviewed) — F-206 CDC PLACES county mental health ingest
+Did: `packages/ingest/socrata.ts` (shared Socrata URL + fetch helper, optional app token never echoed); `packages/ingest/cdc_places` (`cdc-places`, dataset `swc5-untb`): `mental_distress_rate` (MHLTH) and `depression_rate` (DEPRESSION), age-adjusted prevalence only, moe = half the CI width, non-Utah/other rows skipped, bad Utah rows rejected, `fill` adds explicit `not_published` rows so 29 × 2 always holds, `requireComplete` fails closed on partial responses; `lib/ingest/places-http.ts` + `POST /api/ingest/places` (bearer token, alert on failure; default year = last year, `?year=` accepted); migration registers `cdc-places` (CDC, public domain, annual); `n8n/cdc-places.json` (inactive, January); fixture 58 rows incl. a missing measure and a null value; `tests/db/places-load.test.ts` (CI).
+State: gate vs main: secret/D-012 (+397/−1 = 398)/300-char pass; lint/typecheck/unit (409, +17) pass; 3 mutants killed (coverage check, moe formula, value-type filter). **data.cdc.gov is blocked from the sandbox (CONNECT 403): column names and the age-adjusted label are from the documented PLACES schema, unverified live; a mismatch fails closed with an error run + alert.** QA curl + jq checks are in the PR body.
+Left: QA PASS at head (incl. the live curl); n8n workflow import stays inactive until QA PASS (D-014); need-score config keys for the new codes are a later F-210 config change.
+Decisions: none new.
