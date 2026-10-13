@@ -347,3 +347,10 @@ Left: UI evidence (screenshots, axe, mockup comparison) needs a run with local S
 ## 2026-10-13 01:32 (UTC) — Cloud Agent — docs DS-05 (F-209)
 Did: Added `docs/design/specs/DS-05.md` (Data freshness panel / F-209), copied unchanged from design handoff. Docs only; no code or real data. Split from DS-05/06/07 batch (510 lines > 400).
 Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already matched the concurrency wording; no edit.
+
+## 2026-10-13 02:10 (UTC) — Cloud Agent — feature F-204
+Did: Census ACS 5-year ingest (packages/ingest/acs5, lib/ingest/acs-http.ts, POST /api/ingest/acs with Bearer INGEST_TOKEN, public route entry, inactive n8n/census-acs.json with $env.FAS_INGEST_ACS_URL, migration 20261013020000_f204_census_acs_source.sql with fixed UUID aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa). Variables: B01003_001E (total_population), B11001_001E (total_households), B21001_002E (veteran_population). Mirrored SAHIE pattern from PRs #86 and #92. Fixture tests all 29 counties. Year auto-computed: Oct+ uses current-1, else current-2.
+State: hand-written only; smoke check pending.
+Evidence: PR pending.
+Left: smoke check (lint/typecheck/unit), commit, push, PR.
+Decisions: none.
