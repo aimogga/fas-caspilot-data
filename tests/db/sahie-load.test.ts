@@ -35,6 +35,12 @@ describe('integration: SAHIE load into local DB', () => {
     if (runIds.length) await client.from('ingest_run').delete().in('id', runIds);
   });
 
+  it('registers census-sahie with commercial_ok=false (D-015, #107)', async () => {
+    const { data, error } = await client.from('source_registry').select('commercial_ok').eq('name', Sahie.SOURCE_NAME).single();
+    expect(error).toBeNull();
+    expect(data?.commercial_ok).toBe(false);
+  });
+
   it('loads all 29 counties with provenance and does not duplicate on re-run', async () => {
     const first = await PublicIndicatorIngest.load(client, Sahie.SOURCE_NAME, Sahie.checksum(rows), rows);
     const second = await PublicIndicatorIngest.load(client, Sahie.SOURCE_NAME, Sahie.checksum(rows), rows);
