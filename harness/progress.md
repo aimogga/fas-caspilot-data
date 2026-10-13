@@ -537,3 +537,9 @@ Did: Recorded George's 11:03 AM MT 2026-10-13 approvals verbatim (via Chief of s
 State: F-201 status stays failing; human_gate unchanged; status_note removed from feature_list (context kept here).
 Left: QA.
 Decisions: D-024, D-025, D-026, D-027.
+
+## 2026-10-13 22:52 (UTC) — Cloud Agent (P8 subagent, lead-reviewed) — F-305 O1 outcome change (pure compute)
+Did: `lib/metrics/instruments.ts` registry (PHQ-9 0–27 and GAD-7 0–21 active; OQ-45 0–180 and Y-OQ 0–240 inactive; all lower-is-better; `directionNote`, `isImprovement`, unknown code throws) per D-005. `lib/metrics/outcomes.ts` `Outcomes.compute(rows, { measures, includeInactive, filters })`: change = follow-up − baseline, null scores skipped, unknown codes counted in `excludedUnknown`, inclusive follow-up-date filter, mean and share improved to 4 dp, registry order; `Outcomes.suppressed` hides mean/share when n < 11. Golden `tests/golden/outcomes.json` on generate(20, 20), hand-classified, means match `synthetic-20.json`.
+State: gate vs main: secret/D-012 (+198/−0)/300-char pass; lint/typecheck/unit (410, +15) pass; 3 mutants killed (direction flip, rounding, inactive filter).
+Left: QA PASS at head. SQL views and the dashboard O1 card (DS-07c) are separate packets; complementary suppression of counts lives in the F-306 module (P7 branch).
+Decisions: none new (D-005 applied).
