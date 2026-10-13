@@ -486,6 +486,6 @@ State: scoped vitest (lib/ingest + packages/ingest, 64 tests) green on Node 22, 
 Left: CI + QA.
 Decisions: none.
 
-## 2026-10-13 13:48 (UTC) — Grok Bot — PR #N: F-000/F-001 sign-off cleanup
+## 2026-10-13 13:48 (UTC) — Grok Bot — PR #131: F-000/F-001 sign-off cleanup
 Did: Cleared leftover George sign-off blockers after George approved F-000 (PR #98, feaa7d2) and F-001 (PR #99, 9aad6c0) on 2026-10-12 at 11:20 PM MT (relayed by Chief of staff). Flipped F-000 and F-001 to passing in harness/feature_list.json (AC met; human_gate none; evidence links). Marked both Done in docs/PROGRESS_CHECKLIST.md (11 of 44). Updated the PR #98/#99 progress Left lines. No open issues or george-before-merge labels remained on those PRs.
 Left: QA.
