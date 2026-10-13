@@ -362,6 +362,29 @@ Left: none for F-203.
 Did: Added `docs/design/specs/DS-06.md` (County need map explorer / F-211), copied unchanged from design handoff. Docs only; no code or real data. Split from DS-05/06/07 batch (510 lines > 400).
 Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already matched the concurrency wording; no edit.
 
+## 2026-10-13 01:32 (UTC) — Cloud Agent — PR #104 docs DS-07 (F-401)
+Did: Added `docs/design/specs/DS-07.md` (Team dashboard / F-401), copied unchanged from design handoff. Docs only; no code or real data. Split from DS-05/06/07 batch (510 lines > 400).
+Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already matched the concurrency wording; no edit.
+
+## 2026-10-12 23:46 (UTC) — Cloud Agent — PR #95 health probe from env URL
+Did: `/api/health` probes `${NEXT_PUBLIC_SUPABASE_URL}/auth/v1/health` with the publishable `apikey`; falls back to local `127.0.0.1:54321` only when the URL is unset. Closes #12.
+State: lint/typecheck/unit 286/286 green; local `/api/health` ok vs GoTrue.
+Evidence: https://github.com/aimogga/fas-caspilot-data/pull/95
+Left: CI + secret-scan, then QA.
+Decisions: none.
+
+## 2026-10-13 00:21 (UTC) — Cloud Agent — PR #95 QA FAIL health status
+Did: `SupabaseHealthProbe.responds` now returns `response.ok` (2xx only). Injected-fetch tests: reject → false, timeout → false, 503 → false, 200 → true.
+State: lint/typecheck/unit 301/301 green.
+Evidence: https://github.com/aimogga/fas-caspilot-data/pull/95
+Left: CI + secret-scan, then QA re-check.
+Decisions: none.
+
+## 2026-10-13 03:30 (UTC) — Cloud Agent — PR #95 timeout-test mutation gap
+Did: merged origin/main (progress.md conflict kept both sides). Timeout test mock now resolves 200 when no abort signal is passed, so removing `AbortSignal.timeout` fails it; a non-aborting signal makes it time out.
+State: lint/typecheck/unit green.
+Left: CI + secret-scan, preview, QA re-check.
+
 ## 2026-10-13 03:55 (UTC) — Cloud Agent — PR #113 / feature F-211 (DS-06a, PR 1 of 3)
 Did: claim F-211. `/need-map` (all roles, guarded) with the accessible table: 29 counties by rank, need score, bin, latest-vintage indicators and status; `Not available yet` where data isn't wired, `Not published` for unscored or source-flagged counties; source footer; empty and error states. `lib/need-map` rank, bins, query + units; e2e table at 375 and 1440.
 Left: nav item and crumb (lib/shell/nav.ts is #77's file), seed, layout-parity entries, map (DS-06b) and mobile tiles (DS-06c).
