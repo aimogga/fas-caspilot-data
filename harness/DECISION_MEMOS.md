@@ -221,12 +221,12 @@ Decided 2026-10-12 (see above); nothing further needed.
 | ID | Recommendation (one line) | Monthly cost |
 |---|---|---|
 | D-001 | **Decided 2026-10-08: A.** Create a CasePilot GitHub org and casepilot.io Vercel and Supabase accounts; plan the transfer before Phase 6. `casepilot-fas-proof` is an open question | $0 extra (GitHub Free org) |
-| D-002 | **Decided 2026-10-08.** n8n (self-hosted) as scheduler and messenger once its hosting, region, retention and dev credentials are confirmed; Supabase Cron as fallback | ~$0 marginal (unverified); n8n Cloud would be €24–60 |
-| D-003 | **Decided 2026-10-08.** Phase 5 bake-off limited to providers with both BAA and ZDR; default candidate xAI grok-4.7 on the US endpoint | < $25 (ESTIMATE) |
+| D-002 | **Decided 2026-10-08: A.** n8n at n8n.casepilot.io triggers the ingest functions and sends alerts/digests; new workflows inactive, live ones not edited without George | ~$0 marginal (unverified) |
+| D-003 | **Decided 2026-10-08.** 5-opportunity LLM bake-off scored by QA on citation accuracy; the v1 provider is picked from the result; keep the `lib/llm/` adapter | < $25 (ESTIMATE) |
 | D-004 | **Decided 2026-10-08.** HTML → headless Chromium PDF + DOCX library; no paid document API | ~$0 (inside Vercel cap) |
 | D-005 | **Decided 2026-10-12:** PHQ-9 + GAD-7 now via a pluggable instrument registry (OQ-45/Y-OQ later); total scores only | $0 (if providers already license OQ) to quote-based (published $250/FTE/yr) |
 | D-006 | **Decided 2026-10-12:** George's current paid Vercel plan + Supabase Pro; start the legal opinion now | Supabase ≤ $60 (D-009); superseded proposal ~$55–70; ~$1,400+ if PHI is hosted in Phase 6 (ESTIMATE) |
-| D-007 | **Decided 2026-10-08.** Least-privilege MCP matrix; project `.cursor/mcp.json`; Supabase MCP `read_only` + `project_ref`; n8n MCP off for now | $0 |
+| D-007 | **Decided 2026-10-08.** Per recommendation: use the CasePilot n8n instance, for dev workflows only; Supabase MCP dev/preview only; no MCP gets production credentials | $0 |
 | D-008 | **Decided 2026-10-08.** `org_id` + RLS deny-by-default from F-102 | $0 |
 | D-009 | **Decided 2026-10-12:** Cursor $60 plan, $0 on-demand, no parallel cap, Supabase Pro ≤ $60, current paid Vercel plan, audit < $2/run, LLM $25 from the grants phase (Phase 5); cron is an implementation note | Superseded proposal: ~$320 / ~$495 |
 | D-010 | **Decided 2026-10-08.** Manual entry + CSV of FAS's own tracked list; check each tool's terms; nothing imported goes to the LLM until cleared | $0 |
