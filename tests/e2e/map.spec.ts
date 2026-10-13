@@ -11,7 +11,7 @@ async function signIn(page: Page, email: string) {
 for (const [email, eyebrow] of [["staff@example.test", "WORKSPACE"], ["admin@example.test", "WORKSPACE"], ["board@example.test", "BOARD"]] as const) {
   test(`need-map table for ${email}`, async ({ page }) => {
     await signIn(page, email);
-    for (const width of [375, 1440]) {
+    for (const width of [375, 800, 1024, 1280, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       const res = await page.goto("/need-map");
       expect(res?.status()).toBe(200);
@@ -19,9 +19,10 @@ for (const [email, eyebrow] of [["staff@example.test", "WORKSPACE"], ["admin@exa
       await expect(page.locator("[data-slot=page-header] p").first()).toHaveText(eyebrow);
       await expect(page.locator("tbody tr")).toHaveCount(29);
       await expect(page.getByText("Need score not computed yet")).toBeVisible();
+      await expect(page.getByRole("region", { name: "County need table" })).toBeVisible();
       await expect(page.locator("tbody")).toContainText("Not available yet");
-      await expect(page.locator("[data-slot=source-footer]")).toContainText("Public sources:");
-      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      await expect(page.locator("[data-slot=source-footer]")).toContainText(/^Public sources: Census SAHIE 2023 · as of /);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
       const violations = (await new AxeBuilder({ page }).analyze()).violations.filter((v) => v.impact === "serious" || v.impact === "critical");
       expect(violations).toEqual([]);
     }

@@ -19,15 +19,12 @@ export default async function NeedMapPage() {
     <Stack gap={6}>
       <PageHeader eyebrow={NeedMapQuery.eyebrow(role)} title="County need map" description="Relative need across Utah's 29 counties, from public data." />
       {data === null ? (
-        <Stack gap={2}>
-          <ErrorState message="Couldn't load the need map" referenceId={randomUUID()} href="/need-map" />
-          <p>Something went wrong loading county data. Try again.</p>
-        </Stack>
+        <ErrorState message="Couldn't load the need map" referenceId={randomUUID()} href="/need-map">Something went wrong loading county data. Try again.</ErrorState>
       ) : !data.hasData ? (
         <EmptyState title="No public data loaded yet">County numbers appear after the first public data source finishes loading.</EmptyState>
       ) : (
         <>
-          {data.version === null ? <EmptyState title="Need score not computed yet">Rank and score appear once a need-score version is approved. County indicators are still in the table.</EmptyState> : null}
+          {data.version === null ? <EmptyState title="Need score not computed yet">Rank and score appear once an admin approves a need-score version. County indicators are still in the table.</EmptyState> : null}
           <NeedTable data={data} />
           <p data-slot="source-footer" className="text-xs font-medium tracking-wide text-muted-foreground">{data.footer}</p>
         </>

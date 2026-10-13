@@ -1,4 +1,8 @@
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import { ErrorState } from '@/components/layout';
+import { NeedTable } from '@/components/need-map/NeedTable';
 import { NeedBins } from './bins';
 import { NOT_PUBLISHED, NOT_YET, NeedMapQuery, type IndicatorRow, type NeedInput } from './query';
 import { NeedRank } from './rank';
@@ -45,14 +49,20 @@ describe('NeedMapQuery.build', () => {
     expect(cell('49035')).toBe('9.2% ± 0.5');
     expect(cell('49001')).toBe(NOT_PUBLISHED);
     expect(cell('49049')).toBe(NOT_YET);
-    expect(NeedMapQuery.cell(ind('1', 95000, '2024', 'count'))).toBe('95,000 people ± 0.5');
-    expect(NeedMapQuery.cell({ ...ind('1', 95000, '2024', 'count'), moe: null })).toBe('95,000 people');
+    const count = (code: string): IndicatorRow => ({ ...ind('1', 2518, '2024', 'count'), indicator_code: code, moe: null });
+    expect(NeedMapQuery.cell({ ...count('uninsured_count'), moe: 0.5 })).toBe('2,518 people ± 0.5');
+    expect(NeedMapQuery.cell(count('total_households'))).toBe('2,518 households');
+    expect(NeedMapQuery.cell(count('veteran_population'))).toBe('2,518 veterans');
+    expect(NeedMapQuery.cell(count('new_code'))).toBe('2,518');
+    expect([NeedMapQuery.label('total_households'), NeedMapQuery.label('total_population'), NeedMapQuery.label('new_code')]).toEqual(['Households', 'Population', 'New code']);
     expect(NeedMapQuery.cell(ind('1', 5, '2024', 'not_published'))).toBe(NOT_PUBLISHED);
     expect(NeedMapQuery.cell({ ...ind('1', 0.1, '2024', 'rate'), moe: null })).toBe('0.1');
   });
 
   it('footer cites only used sources and their latest success month', () => {
-    expect(data.footer).toBe('Public sources: census-sahie · Need score version v2 · as of Oct 2026');
+    expect(data.columns).toEqual([{ code: 'uninsured_rate', label: 'Uninsured rate', note: 'Census SAHIE 2024 · as of Oct 2026' }]);
+    expect(data.footer).toBe('Public sources: Census SAHIE 2024 · as of Oct 2026 · Need score version v2 · Placeholder bins');
+    expect(NeedMapQuery.note({ ...ind('1', 1), source_id: 'nope' }, [])).toBe(`Unknown source 2024 · as of ${NOT_YET}`);
   });
 
   it('says Not available yet everywhere when no version is approved', () => {
@@ -60,13 +70,13 @@ describe('NeedMapQuery.build', () => {
     expect(none.version).toBeNull();
     expect(none.hasData).toBe(true);
     expect(none.rows.every((r) => r.rank === NOT_YET && r.score === NOT_YET && r.bin === NOT_YET && r.status === NOT_YET)).toBe(true);
-    expect(none.footer).toBe('Public sources: census-sahie · Need score version Not available yet · as of Oct 2026');
+    expect(none.footer).toBe('Public sources: Census SAHIE 2024 · as of Oct 2026 · Need score version Not available yet · Placeholder bins');
   });
 
   it('reports no data when nothing is loaded', () => {
     const empty = NeedMapQuery.build(input({ scores: [], indicators: [] }));
     expect(empty.hasData).toBe(false);
-    expect(empty.footer).toBe(`Public sources: ${NOT_YET} · Need score version v2 · as of ${NOT_YET}`);
+    expect(empty.footer).toBe(`Public sources: ${NOT_YET} · Need score version v2 · Placeholder bins`);
   });
 
   it('eyebrow is BOARD only for board viewers', () => {
@@ -76,12 +86,30 @@ describe('NeedMapQuery.build', () => {
 });
 
 describe('NeedMapQuery.load', () => {
-  const fake = (error: { message: string } | null) => ({
-    from: () => ({ select: async () => ({ data: [], error }) }),
-  }) as never;
+  const fake = (error: { message: string } | null) => ({ from: () => ({ select: async () => ({ data: [], error }) }) }) as never;
 
   it('throws on any query error and builds otherwise', async () => {
     await expect(NeedMapQuery.load(fake({ message: 'denied' }))).rejects.toThrow('denied');
     expect((await NeedMapQuery.load(fake(null))).hasData).toBe(false);
+  });
+});
+
+describe('NeedTable markup', () => {
+  const html = renderToStaticMarkup(createElement(NeedTable, { data: NeedMapQuery.build(input()) }));
+  it('wraps the table in a focusable labelled scroll region with a sticky County column', () => {
+    expect(html).toMatch(/^<div role="region" tabindex="0" aria-label="County need table"[^>]*overflow-x-auto/);
+    expect(html).toMatch(/<th scope="col" class="[^"]*md:sticky md:left-0[^"]*">County<\/th>/);
+    expect(html).toMatch(/<th scope="row" class="[^"]*md:sticky md:left-0[^"]*">Salt Lake County<\/th>/);
+  });
+
+  it('right-aligns number headers and cells, and notes the source and date per column', () => {
+    expect(html).toMatch(/<th scope="col" aria-sort="ascending" class="[^"]*tabular-nums md:text-right!">Rank<\/th>/);
+    expect(html).toMatch(/<td class="[^"]*tabular-nums md:text-right!"><span[^>]*>Rank: <\/span>1 of 2<\/td>/);
+    expect(html).toContain('Uninsured rate<span class="block text-xs font-normal text-muted-foreground">Census SAHIE 2024 · as of Oct 2026</span>');
+  });
+
+  it('ErrorState renders its body inside the alert', () => {
+    const err = renderToStaticMarkup(createElement(ErrorState, { message: 'm', referenceId: 'r' }, 'Body text'));
+    expect(err).toMatch(/data-slot="error-state"[^]*<p>Body text<\/p>/);
   });
 });
