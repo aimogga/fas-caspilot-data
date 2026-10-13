@@ -36,7 +36,7 @@ Questions: Supabase and Vercel plan levels, region, backups, and whether BAAs ar
 Recommendation: free/low tiers for Phases 0–5 (synthetic data); upgrade before Phase 6 based on the legal opinion.
 Decision (2026-10-08): per recommendation: free/low tiers for Phases 0–5 (synthetic data); upgrade before Phase 6 based on the legal opinion. Decided by George in chat. · Date: 2026-10-08
 Update (2026-10-12): the **plan levels only** are superseded: **Supabase Pro (up to $60/mo) and George's current paid Vercel plan**. Decided by George Mogga; relayed by George Chief of staff at 10:01 PM MT. · Date: 2026-10-12
-Still in force from 2026-10-08: region, backups, the BAA question, and the upgrade before Phase 6 based on the legal opinion.
+Still in force from 2026-10-08: the upgrade before Phase 6 based on the legal opinion.
 
 ### D-007 Cursor and MCP configuration
 Questions: which MCP servers local vs. cloud agents may use; credentials scope.
@@ -81,7 +81,7 @@ Decision: The team (Engineer Supervisor, QA bot, Engineer Bot, UX/UI Design Bot)
 Options: OQ-45 (adults) + Y-OQ (youth), which Utah's public mental health scorecards use (licensing cost to confirm); or PHQ-9 + GAD-7, which are free but have no Utah comparison.
 Decision: **PHQ-9 and GAD-7 now.**
 - Built as a pluggable instrument registry, so OQ-45 and Y-OQ can be added later without schema rework.
-- "Store total scores only." (George's words in his 10:01 PM MT decision, relayed verbatim by Chief of staff.)
+- Store total scores only (per Chief of staff's 10:02 PM MT 2026-10-12 relay of George's 10:01 PM decision).
 - The need-score weights stay open and are not decided here.
 
 Decided by George Mogga; relayed by George Chief of staff at 10:01 PM MT. · Date: 2026-10-12
