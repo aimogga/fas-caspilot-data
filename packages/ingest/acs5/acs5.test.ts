@@ -1,6 +1,5 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { COUNTIES } from '../../../lib/synthetic/generate';
 import { CensusTable } from '../census-table';
 import { Acs5 } from './index';
 
