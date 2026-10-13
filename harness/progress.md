@@ -394,3 +394,7 @@ Did: claim F-211. `/need-map` (all roles, guarded) with the accessible table: 29
 Fixes (UX + QA on 08350b0): table in a focusable scroll region with sticky County, numbers right-aligned, display names and units, per-column source + vintage + as-of, placeholder bins label, ErrorState body, admin copy.
 Left: synthetic seed + seeded e2e moved to stacked part 2 (D-012); nav item and crumb (lib/shell/nav.ts is #77's file), layout-parity entries, map (DS-06b) and mobile tiles (DS-06c).
 Decisions: none.
+
+## 2026-10-13 04:40 (UTC) — Cloud Agent — feature F-211 (DS-06a part 2, stacked on PR #113)
+Did: synthetic seed for local/CI only: approved `v2-synthetic` plus newer unapproved `v3-draft`, 26 scored counties with a tie (Cache = Davis), 3 not published (Daggett, Piute, Wayne). e2e asserts rank order, the tie, bins, Not published last and the version in the footer. Nothing written to hosted fas-dev.
+Left: QA; retarget to main after #113 merges.
