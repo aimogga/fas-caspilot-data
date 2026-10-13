@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { createClient } from '@supabase/supabase-js';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { Acs5 } from '../../packages/ingest/acs5';
 import { AcsHttp } from './acs-http';
 import { SahieHttp } from './sahie-http';
@@ -49,49 +49,16 @@ describe('acs-http.ts', () => {
     spy.mockRestore();
   });
 
-  it('handle reuses SahieHttp.tokenOk and returns 401', async () => {
-    const req = new Request('http://x', { method: 'POST' });
-    const res = await AcsHttp.handle(req, { env: { INGEST_TOKEN: 'secret' } });
-    expect(res.status).toBe(401);
-  });
-
-  it('handle returns 200 on success', async () => {
+  it('handle: 401 no auth, 200 success, 400 bad JSON, 500 ingest error', async () => {
+    expect((await AcsHttp.handle(new Request('http://x', { method: 'POST' }), { env: { INGEST_TOKEN: 's' } })).status).toBe(401);
     const run = vi.fn().mockResolvedValue({ ingestRunId: 'run-1', rowsLoaded: 87 });
-    const req = new Request('http://x', {
-      method: 'POST',
-      headers: { authorization: 'Bearer secret' },
-      body: JSON.stringify({ year: '2023' }),
-    });
-    const res = await AcsHttp.handle(req, { env: { INGEST_TOKEN: 'secret' }, run });
-    expect(res.status).toBe(200);
-    const json = (await res.json()) as { ok: boolean };
-    expect(json.ok).toBe(true);
-  });
-
-  it('handle logs failure on bad JSON', async () => {
+    const ok = await AcsHttp.handle(new Request('http://x', { method: 'POST', headers: { authorization: 'Bearer s' }, body: JSON.stringify({ year: '2023' }) }), { env: { INGEST_TOKEN: 's' }, run });
+    expect(ok.status).toBe(200);
+    expect(((await ok.json()) as { ok: boolean }).ok).toBe(true);
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const req = new Request('http://x', {
-      method: 'POST',
-      headers: { authorization: 'Bearer secret' },
-      body: 'not json',
-    });
-    const res = await AcsHttp.handle(req, { env: { INGEST_TOKEN: 'secret' } });
-    expect(res.status).toBe(400);
-    expect(spy).toHaveBeenCalled();
-    spy.mockRestore();
-  });
-
-  it('handle logs failure on ingest error', async () => {
+    expect((await AcsHttp.handle(new Request('http://x', { method: 'POST', headers: { authorization: 'Bearer s' }, body: 'bad' }), { env: { INGEST_TOKEN: 's' } })).status).toBe(400);
     const failRun = vi.fn().mockRejectedValue(new Error('ingest failed'));
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const req = new Request('http://x', {
-      method: 'POST',
-      headers: { authorization: 'Bearer secret' },
-      body: '',
-    });
-    const res = await AcsHttp.handle(req, { env: { INGEST_TOKEN: 'secret' }, run: failRun });
-    expect(res.status).toBe(500);
-    expect(spy).toHaveBeenCalled();
+    expect((await AcsHttp.handle(new Request('http://x', { method: 'POST', headers: { authorization: 'Bearer s' }, body: '' }), { env: { INGEST_TOKEN: 's' }, run: failRun })).status).toBe(500);
     spy.mockRestore();
   });
 

@@ -100,6 +100,9 @@ export class Acs5 {
     if ([...n.values()].some((c) => c !== 3) || n.size !== COUNTIES.length) {
       throw new Error(`ACS partial response: ${n.size} counties`);
     }
+    if (new Set(parsed.rows.map((r) => r.period).filter(Boolean)).size > 1) {
+      throw new Error('ACS mixed vintages');
+    }
     return parsed.rows.map((r) => ({ ...r, period: year, vintage: year }));
   }
 
