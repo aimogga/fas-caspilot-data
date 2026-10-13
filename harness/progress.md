@@ -537,3 +537,9 @@ Did: Recorded George's 11:03 AM MT 2026-10-13 approvals verbatim (via Chief of s
 State: F-201 status stays failing; human_gate unchanged; status_note removed from feature_list (context kept here).
 Left: QA.
 Decisions: D-024, D-025, D-026, D-027.
+
+## 2026-10-13 22:58 (UTC) — Cloud Agent (P7 subagent, lead-reviewed) — F-304 part 1: M1–M6 pure compute + F-306 suppression
+Did: `lib/metrics/types.ts` (row types, `MetricFilters` county/referral/from–to with documented anchor dates), `compute.ts` `Metrics.all` = M1 (court order → first session: n, median, p25, p75, still-waiting share), M2 (application → decision), M3 (approved never started within 60 days, by reason), M4 (completion by income band + total), M5 (cost per completed episode + program ÷ completed), M6 (affiliated vs other dollars with avg rate per unit) per PRD C3; linear-interpolation percentiles; 4-dp rounding. `suppress.ts` (F-306): `suppressCount`, `suppressRate`, `suppressTable` with complementary suppression when exactly one row is hidden and the total is shown; total < 11 hides itself. Golden `tests/golden/metrics.json` on generate(20, 20) hand-computed: no filters, `county=49035`, date range 2024-03-01..2024-06-30.
+State: gate vs main: secret/D-012 (+332/−0)/300-char pass; lint/typecheck/unit (408, +13) pass; 3 mutants killed (M3 window, p25/p75 swap, complementary rule).
+Left: QA PASS at head; part 2 = SQL views + `suppress()` SQL + db test "shared views never return cells < 11"; part 3 = DS-07b cards. O1 is PR #154.
+Decisions: none new. Interpretations listed in the PR body for QA (approved = `decision === 'approved'`; anchor dates; program dollars = Σ dollars_paid).
