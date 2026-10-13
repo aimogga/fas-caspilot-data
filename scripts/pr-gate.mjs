@@ -38,10 +38,10 @@ export function countDiff(numstat, generated = []) {
 }
 
 /** QA rejects code lines over 300 chars (#141 lost a round to one). Markdown is exempt. */
-export function longLines(files, max = MAX_LINE_LENGTH) {
+export function longLines(files, max = MAX_LINE_LENGTH, generated = []) {
   const hits = [];
   for (const [path, text] of Object.entries(files)) {
-    if (path.endsWith('.md')) continue;
+    if (path.endsWith('.md') || generated.includes(path)) continue;
     String(text).split('\n').forEach((l, i) => {
       if (l.length > max) hits.push(`${path}:${i + 1} (${l.length})`);
     });
@@ -102,7 +102,7 @@ export function run({ base = 'origin/main', skipTests = false, exec = execSync, 
   });
   step('300-char lines', `no changed code line over ${MAX_LINE_LENGTH} chars`, () => {
     const files = changedFiles(exec, base);
-    const hits = longLines(files);
+    const hits = longLines(files, MAX_LINE_LENGTH, loadGenerated(read));
     if (hits.length) throw new Error(hits.join(', '));
     return { verdict: 'pass', evidence: `${Object.keys(files).length} changed file(s) checked` };
   });

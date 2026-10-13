@@ -23,6 +23,7 @@ describe('longLines', () => {
   it('reports code lines over 300 chars with file and line, and ignores markdown', () => {
     const long = 'x'.repeat(301);
     expect(longLines({ 'lib/a.ts': `ok\n${long}`, 'docs/b.md': long, 'lib/c.ts': 'y'.repeat(300) })).toEqual(['lib/a.ts:2 (301)']);
+    expect(longLines({ 'public/geo/x.json': long }, 300, ['public/geo/x.json'])).toEqual([]);
   });
 });
 
