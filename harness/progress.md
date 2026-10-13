@@ -389,3 +389,7 @@ Decisions: none.
 ## 2026-10-13 03:52 (UTC) — Cloud Agent — PR #115 docs reporting rule
 Did: Created `harness/preferences.md` with standing Reporting rule (George, 2026-10-12): FAS bots report to Chief of staff on merges, completed features, blockers, and anything needing George; short note with what landed / PR / tests; never George directly; new packets inherit.
 Left: QA review of docs PR.
+
+## 2026-10-13 04:45 (UTC) — Grok Bot — #107 census-sahie commercial_ok=false
+Did: follow-up migration 20261013050000 sets commercial_ok=false for census-sahie (D-015); merged migration 20261012223000 untouched; DB test asserts the flag. Not applied to any database.
+Left: QA check; apply to fas-dev after merge.
