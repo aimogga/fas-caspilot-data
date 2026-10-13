@@ -145,7 +145,7 @@ C is premature with synthetic data only.
 
 ## D-009 Cost caps
 
-> **DECIDED by George, 2026-10-12 (locked):** Cursor $60 plan with $0 on-demand; when usage runs out, work pauses and resumes after the reset. No cap on parallel agents. Supabase Pro, up to $60/mo. George's current paid Vercel plan. Nightly Audit under $2 per run, on a GitHub Actions cron. $25/mo for the in-app LLM, starting in Phase 5. This supersedes George's 2026-10-08 note ($20 plan, 1 Cloud Agent at a time).
+> **DECIDED by George, 2026-10-12 (locked):** Cursor $60 plan with $0 on-demand. Supabase Pro, up to $60/mo. George's current paid Vercel plan. Nightly Audit under $2 per run. $25/mo for the in-app LLM, starting in the grants phase (Phase 5). From George's 7:55 PM MT relay: no cap on parallel agents; when usage runs out, work pauses and resumes after the reset. Implementation note (not George's words): the Nightly Audit runs on a GitHub Actions cron. This supersedes George's 2026-10-08 note ($20 plan, 1 Cloud Agent at a time).
 > Everything below, including the "Proposed caps" table and totals, is a **superseded proposal** kept for the record.
 **Question:** What are the monthly limits, and how are they enforced?
 **How billing works (read 2026-10-08):**
@@ -208,7 +208,7 @@ Decided 2026-10-12 (see above); nothing further needed.
 
 | ID | Recommendation (one line) | Monthly cost |
 |---|---|---|
-| D-001 | **Decided 2026-10-08: A.** Create a CasePilot GitHub org and casepilot.io Vercel and Supabase accounts; transfer the repo **before F-003**. `casepilot-fas-proof` is an open question | $0 extra (GitHub Free org) |
+| D-001 | **Decided 2026-10-08: A.** Create a CasePilot GitHub org and casepilot.io Vercel and Supabase accounts; plan the transfer before Phase 6. `casepilot-fas-proof` is an open question | $0 extra (GitHub Free org) |
 | D-002 | n8n (self-hosted) as scheduler and messenger once its hosting, region, retention and dev credentials are confirmed; Supabase Cron as fallback | ~$0 marginal (unverified); n8n Cloud would be €24–60 |
 | D-003 | Phase 5 bake-off limited to providers with both BAA and ZDR; default candidate xAI grok-4.7 on the US endpoint | < $25 (ESTIMATE) |
 | D-004 | HTML → headless Chromium PDF + DOCX library; no paid document API | ~$0 (inside Vercel cap) |
@@ -216,12 +216,12 @@ Decided 2026-10-12 (see above); nothing further needed.
 | D-006 | **Decided 2026-10-12:** George's current paid Vercel plan + Supabase Pro; start the legal opinion now | Supabase ≤ $60 (D-009); superseded proposal ~$55–70; ~$1,400+ if PHI is hosted in Phase 6 (ESTIMATE) |
 | D-007 | Least-privilege MCP matrix; project `.cursor/mcp.json`; Supabase MCP `read_only` + `project_ref`; n8n MCP off for now | $0 |
 | D-008 | `org_id` + RLS deny-by-default from F-102 | $0 |
-| D-009 | **Decided 2026-10-12:** Cursor $60 plan, $0 on-demand, no parallel cap, Supabase Pro ≤ $60, current paid Vercel plan, audit < $2/run on GitHub Actions cron, LLM $25 from Phase 5 | Superseded proposal: ~$320 / ~$495 |
+| D-009 | **Decided 2026-10-12:** Cursor $60 plan, $0 on-demand, no parallel cap, Supabase Pro ≤ $60, current paid Vercel plan, audit < $2/run, LLM $25 from the grants phase (Phase 5); cron is an implementation note | Superseded proposal: ~$320 / ~$495 |
 | D-010 | Manual entry + CSV of FAS's own tracked list; check each tool's terms; nothing imported goes to the LLM until cleared | $0 |
 
 **Top 3 blockers for Phase 1:**
-1. **D-001 ownership:** F-003 (Cloud environment), F-104 (branch protection) and F-105 (Vercel/Supabase previews) all bind to the repo and account. Decide before setting them up, not after.
+1. **D-001 ownership:** decided 2026-10-08 (A). F-003, F-104 and F-105 are already set up on the current repo and accounts, so the move to CasePilot-owned accounts needs a plan before Phase 6 to redo those bindings.
 2. **D-009 caps:** decided 2026-10-12 ($60 Cursor plan, $0 on-demand). F-003 needs a Cloud Agent run log.
 3. **D-006 plan tier:** decided 2026-10-12 (paid Vercel + Supabase Pro). F-105 still needs a non-production Supabase project.
 
-Also quick and blocking: **D-008** (F-102 builds `org_id` into the schema) and **D-007** (scoped dev credentials for agents). D-002, D-003, D-004, D-005 and D-010 can wait until their phases, but start the D-006 legal opinion now.
+Also quick and blocking: **D-008** (F-102 builds `org_id` into the schema) and **D-007** (scoped dev credentials for agents). D-005 is decided (2026-10-12). D-002, D-003, D-004 and D-010 can wait until their phases, but start the D-006 legal opinion now.
