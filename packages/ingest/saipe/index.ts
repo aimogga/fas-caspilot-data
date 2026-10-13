@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { COUNTIES } from '../../../lib/synthetic/generate';
 import { CensusTable } from '../census-table';
+import { Sahie } from '../sahie';
 import type { IndicatorRow } from '../public-indicator';
 
 const CODES = ['poverty_count', 'poverty_rate'] as const;
@@ -13,7 +14,6 @@ const UTAH = new Set(COUNTIES.map((c) => c.fips));
 
 export type SaipeParse = { rows: IndicatorRow[]; rejects: string[] };
 
-/** Census SAIPE all-ages poverty count and rate by Utah county. */
 export class Saipe {
   static readonly SOURCE_NAME = 'census-saipe';
   static readonly ENDPOINT = 'https://api.census.gov/data/timeseries/poverty/saipe';
@@ -24,22 +24,12 @@ export class Saipe {
     return new URL(`${Saipe.ENDPOINT}?${q}`);
   }
 
-  static async fetch(
-    year: string,
-    env: Record<string, string | undefined> = process.env,
-    httpFetch: typeof fetch = fetch,
-  ): Promise<unknown> {
+  static async fetch(year: string, env: Record<string, string | undefined> = process.env, httpFetch = fetch): Promise<unknown> {
     const key = env.CENSUS_API_KEY;
     if (!key) throw new Error('CENSUS_API_KEY is not set');
     const res = await httpFetch(Saipe.requestUrl(year, key));
     if (!res.ok) throw new Error(`SAIPE fetch failed: ${res.status}`);
     return res.json();
-  }
-
-  static num(raw: string | undefined): number | null | undefined {
-    if (raw == null || raw === '' || raw === 'N/A') return null;
-    const n = Number(raw);
-    return Number.isFinite(n) ? n : undefined;
   }
 
   static fips(row: Record<string, string>): string | null {
@@ -50,12 +40,7 @@ export class Saipe {
     return county.length > 0 && /^\d{5}$/.test(fips) ? fips : null;
   }
 
-  static bad(
-    code: (typeof CODES)[number],
-    value: number | null | undefined,
-    moe: number | null | undefined,
-    fips: string,
-  ): string | null {
+  static bad(code: (typeof CODES)[number], value: number | null | undefined, moe: number | null | undefined, fips: string): string | null {
     if (value === undefined) return `${fips} ${code} not numeric`;
     if (moe === undefined) return `${fips} ${code} moe not numeric`;
     if (value != null && value < 0) return `${fips} ${code} < 0`;
@@ -79,22 +64,15 @@ export class Saipe {
       }
       if (!UTAH.has(geo_fips)) continue;
       for (const code of CODES) {
-        const value = Saipe.num(row[FIELDS[code][0]]);
-        const moe = Saipe.num(row[FIELDS[code][1]]);
+        const value = Sahie.num(row[FIELDS[code][0]]);
+        const moe = Sahie.num(row[FIELDS[code][1]]);
         const err = Saipe.bad(code, value, moe, geo_fips);
         if (err) {
           rejects.push(err);
           continue;
         }
-        rows.push({
-          indicator_code: code,
-          geo_fips,
-          period: vintage,
-          value: value ?? null,
-          moe: moe ?? null,
-          unit: value == null ? Saipe.NOT_PUBLISHED : UNITS[code],
-          vintage,
-        });
+        const unit = value == null ? Saipe.NOT_PUBLISHED : UNITS[code];
+        rows.push({ indicator_code: code, geo_fips, period: vintage, value: value ?? null, moe: moe ?? null, unit, vintage });
       }
     }
     return { rows, rejects };

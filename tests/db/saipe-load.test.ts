@@ -6,9 +6,8 @@ import { PublicIndicatorIngest } from '../../packages/ingest/public-indicator';
 import { Saipe } from '../../packages/ingest/saipe';
 
 function need(name: string): string {
-  const v = process.env[name];
-  if (!v) throw new Error(`Missing ${name}. Run pnpm test:db`);
-  return v;
+  if (!process.env[name]) throw new Error(`Missing ${name}. Run pnpm test:db`);
+  return process.env[name] as string;
 }
 
 const API = need('SUPABASE_URL');

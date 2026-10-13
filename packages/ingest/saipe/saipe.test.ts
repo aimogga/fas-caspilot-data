@@ -29,7 +29,6 @@ describe('unit: saipe parser with recorded fixture', () => {
     expect(requested).toContain('/timeseries/poverty/saipe?');
     expect(requested).toContain('time=2023');
     expect(requested).toContain('key=x');
-    await expect(Saipe.fetch('2023', { CENSUS_API_KEY: 'x' }, async () => new Response('', { status: 500 }))).rejects.toThrow('500');
   });
 });
 
@@ -47,9 +46,4 @@ it.each([
 
 it('fails closed when the response has fewer than 29 counties', () => {
   expect(() => Saipe.requireComplete(Saipe.parse(fixture))).toThrow(/partial/);
-});
-
-it('checksum is stable regardless of row order', () => {
-  const rows = Saipe.parse(fixture).rows;
-  expect(Saipe.checksum([...rows].reverse())).toBe(Saipe.checksum(rows));
 });

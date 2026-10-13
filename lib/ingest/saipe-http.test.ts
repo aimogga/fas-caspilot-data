@@ -74,9 +74,9 @@ describe('SaipeHttp', () => {
 
   it('logs the caught error server-side without secrets (#96)', async () => {
     const log = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const env = { INGEST_TOKEN: 'tok-secret', CENSUS_API_KEY: 'census-secret', SUPABASE_SERVICE_ROLE_KEY: 'svc-secret' };
+    const env = { INGEST_TOKEN: 'tok-secret', CENSUS_API_KEY: 'cen-key-1', SUPABASE_SERVICE_ROLE_KEY: 'dummy_secret_here' };
     const run = vi.fn(async () => {
-      throw new Error('boom census-secret svc-secret tok-secret https://x?key=abc123');
+      throw new Error('boom cen-key-1 dummy_secret_here tok-secret https://x?key=abc123');
     });
     const res = await SaipeHttp.handle(req('tok-secret'), { env, run });
     expect(res.status).toBe(500);
@@ -86,7 +86,7 @@ describe('SaipeHttp', () => {
     expect(logged).toContain('census-saipe');
     expect(logged).toContain('"stage":"run"');
     expect(logged).toContain('boom');
-    for (const s of ['tok-secret', 'census-secret', 'svc-secret', 'abc123']) expect(logged).not.toContain(s);
+    for (const s of ['tok-secret', 'cen-key-1', 'dummy_secret_here', 'abc123']) expect(logged).not.toContain(s);
   });
 });
 
