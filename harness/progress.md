@@ -389,6 +389,10 @@ Left: CI + secret-scan, preview, QA re-check.
 Did: Created `harness/preferences.md` with standing Reporting rule (George, 2026-10-12): FAS bots report to Chief of staff on merges, completed features, blockers, and anything needing George; short note with what landed / PR / tests; never George directly; new packets inherit.
 Left: QA review of docs PR.
 
+## 2026-10-13 04:10 (UTC) — Grok Bot — PR #117: DECISIONS.md, George decisions of 2026-10-12
+Did: recorded D-005, D-006 and D-009 as decided, plus design decisions D-017 to D-022 (29 counties, dashboard defaults, manual foundation grants, county outlines, stale rule, placeholder bins). Unblocks QA on #116.
+Left: QA check. Need-score weights still open.
+
 ## 2026-10-13 03:55 (UTC) — Cloud Agent — PR #113 / feature F-211 (DS-06a, PR 1 of 3)
 Did: claim F-211. `/need-map` (all roles, guarded) with the accessible table: 29 counties by rank, need score, bin, latest-vintage indicators and status; `Not available yet` where data isn't wired, `Not published` for unscored or source-flagged counties; source footer; empty and error states. `lib/need-map` rank, bins, query + units; e2e table at 375 and 1440.
 Fixes (UX + QA on 08350b0): table in a focusable scroll region with sticky County, numbers right-aligned, display names and units, per-column source + vintage + as-of, placeholder bins label, ErrorState body, admin copy.
