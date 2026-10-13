@@ -530,3 +530,4 @@ Did: Generated a 32-byte secret (never printed) and stored it as repo secret ING
 State: ingest-alert tests 16/16, tsc and eslint clean. Unauthenticated probe POST got HTTP 403 "Authorization data is wrong!" from n8n (no cf-mitigated challenge).
 Left: QA; merge before relying on n8n delivery (until merged, deployed code posts without the header and falls back to the GitHub issue).
 Decisions: none (implements D-024 context).
+Update: QA fix — test secret is now the scanner-allowed placeholder 'not-a-secret' (secret-scan clean); added a no-leak test (console logs, GitHub fallback headers, issue body); 4 leak mutations killed; 17/17 tests.
