@@ -2,9 +2,15 @@ import { SahieHttp } from '../lib/ingest/sahie-http';
 
 async function main() {
   const env = { ...process.env, INGEST_TOKEN: 'evidence-tok' };
+  const realFetch = fetch;
+  const alertFetch: typeof fetch = async (url, init) => {
+    const r = await realFetch(url, init);
+    console.log('alert POST status', r.status);
+    return r;
+  };
   const res = await SahieHttp.handle(
     new Request('http://x/api/ingest/sahie', { method: 'POST', headers: { authorization: 'Bearer evidence-tok' }, body: '{"year":"2024"}' }),
-    { env, httpFetch: async () => new Response('not-json') },
+    { env, alertFetch, httpFetch: async () => new Response('not-json') },
   );
   console.log('forced failure: route status', res.status);
   const db = SahieHttp.db(env);

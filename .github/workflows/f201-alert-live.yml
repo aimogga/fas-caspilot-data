@@ -26,4 +26,6 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
           INGEST_ALERT_WEBHOOK_URL: ${{ secrets.INGEST_ALERT_WEBHOOK_URL }}
-        run: npx -y tsx scripts/f201-alert-live.ts
+        run: |
+          curl -s -m 20 -o /dev/null -w "webhook reachability: %{http_code}\n" -X OPTIONS "$INGEST_ALERT_WEBHOOK_URL" || echo "webhook reachability: unreachable"
+          npx -y tsx scripts/f201-alert-live.ts
