@@ -211,3 +211,11 @@ it('n8n posts to FAS_INGEST_SAHIE_URL with no hardcoded year', () => {
   expect(text).not.toMatch(/20\d{2}/);
   expect(text).not.toContain('CENSUS_API_KEY');
 });
+
+describe('SahieHttp.payload', () => {
+  it('redacts key= query params even when the key is not in env', () => {
+    const p = SahieHttp.payload('acs5', new Error('GET https://api.census.gov/x?get=a&key=abc123&for=county failed'), {});
+    expect(p.error).toContain('key=[redacted]');
+    expect(p.error).not.toContain('abc123');
+  });
+});

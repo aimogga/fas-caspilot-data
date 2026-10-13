@@ -479,3 +479,9 @@ Decisions: none.
 ## 2026-10-13 10:20 (UTC) — Grok Bot — nightly: share census ingest helpers (PR #129)
 Did: Extended `packages/ingest/census-table.ts` with shared checksum, Utah FIPS set, `CENSUS_NOT_PUBLISHED`, `num` (ACS keeps `-` via extraNulls), `fetchJson`, and `requireCountyCoverage`. ACS/SAHIE/SAIPE call those; deleted dead ACS mixed-vintages check in `requireComplete` (parse always sets `period: ''`) and its hand-built test case. FIPS left source-local (SAIPE drop non-Utah vs SAHIE/ACS 49xxxx). Did not touch `lib/ingest/*-http.ts`, ingest-alert, #106, or `feature_list.json`.
 Left: QA on PR; later naming cleanup for acs5 folder (#106 conflict).
+
+## 2026-10-13 10:20 (UTC) — Grok Bot (nightly audit) — nightly cleanup: ingest HTTP parity (PR #130)
+Did: ACS and SAIPE ingest failures now record an error `ingest_run` (`recordFailure`) and fire `IngestAlert.notify`, same as SAHIE. One shared skeleton in `SahieHttp` (`ingest` + `respond`) used by all three routes; deleted the duplicate `logFailure` redactors (logs now redact via `IngestAlert`); dropped unused `AcsRunOpts`, `SaipeRunOpts`, `SahieLoad`. ACS year fallback unchanged.
+State: scoped vitest (lib/ingest + packages/ingest, 64 tests) green on Node 22, scoped tsc and eslint clean in a scratch tree built from API-fetched files. Full CI must still run.
+Left: CI + QA.
+Decisions: none.

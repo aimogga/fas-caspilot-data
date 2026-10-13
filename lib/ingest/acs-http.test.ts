@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { describe, expect, it, vi } from 'vitest';
 import { Acs5 } from '../../packages/ingest/acs5';
+import type { IngestAlertPayload } from '../../packages/ingest/ingest-alert';
 import { AcsHttp } from './acs-http';
 import { SahieHttp } from './sahie-http';
 
@@ -73,24 +74,68 @@ describe('acs-http.ts', () => {
 
   it('run does not call load on incomplete or rejected payload', async () => {
     const load = vi.fn();
+    const recordFailure = vi.fn(async () => null);
     const partial = [['NAME', 'B01003_001E', 'B11001_001E', 'B21001_002E', 'state', 'county'], ['n49035', '100000', '30000', '5000', '49', '035']];
-    await expect(AcsHttp.run({ year: '2023', env: { CENSUS_API_KEY: 'key' }, httpFetch: async () => new Response(JSON.stringify(partial)), client: createClient('http://x', 'key'), load })).rejects.toThrow(/partial/);
+    await expect(AcsHttp.run({ year: '2023', env: { CENSUS_API_KEY: 'key' }, httpFetch: async () => new Response(JSON.stringify(partial)), client: createClient('http://x', 'key'), load, recordFailure })).rejects.toThrow(/partial/);
     expect(load).not.toHaveBeenCalled();
     const rejected = [['NAME', 'B01003_001E', 'B11001_001E', 'B21001_002E', 'state', 'county'], ['n49035', 'invalid', '30000', '5000', '49', '035']];
-    await expect(AcsHttp.run({ year: '2023', env: { CENSUS_API_KEY: 'key' }, httpFetch: async () => new Response(JSON.stringify(rejected)), client: createClient('http://x', 'key'), load })).rejects.toThrow(/rejected/);
+    await expect(AcsHttp.run({ year: '2023', env: { CENSUS_API_KEY: 'key' }, httpFetch: async () => new Response(JSON.stringify(rejected)), client: createClient('http://x', 'key'), load, recordFailure })).rejects.toThrow(/rejected/);
     expect(load).toHaveBeenCalledTimes(0);
+    expect(recordFailure).toHaveBeenCalledTimes(2);
   });
 
-  it('logFailure redacts secrets', () => {
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const e = new Error('failed with key=secret123 and CENSUS_API_KEY=abc');
-    AcsHttp.logFailure('test', e, { CENSUS_API_KEY: 'abc', INGEST_TOKEN: 'xyz' });
-    expect(spy).toHaveBeenCalledWith('[ingest:acs]', expect.objectContaining({
-      message: expect.stringContaining('[redacted]'),
-    }));
-    expect(spy.mock.calls[0][1].message).not.toContain('abc');
-    expect(spy.mock.calls[0][1].message).not.toContain('secret123');
-    spy.mockRestore();
+  it('fetch failure records an error run, alerts with its id, and logs without secrets', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const env = { INGEST_TOKEN: 'tok-secret', CENSUS_API_KEY: 'cen-key-1', INGEST_ALERT_WEBHOOK_URL: 'http://127.0.0.1/hook' };
+    const recordFailure = vi.fn(async () => 'run-err');
+    const load = vi.fn();
+    const sent: IngestAlertPayload[] = [];
+    const res = await AcsHttp.handle(new Request('http://x', { method: 'POST', headers: { authorization: 'Bearer tok-secret' } }), {
+      env,
+      client: {} as SupabaseClient,
+      httpFetch: async () => { throw new Error('upstream 503 key=cen-key-1'); },
+      run: (o) => AcsHttp.run({ ...o, recordFailure, load }),
+      alertFetch: async (_url, init) => {
+        sent.push(JSON.parse(String(init?.body)) as IngestAlertPayload);
+        return new Response(null, { status: 200 });
+      },
+    });
+    expect(res.status).toBe(500);
+    expect(load).not.toHaveBeenCalled();
+    expect(recordFailure).toHaveBeenCalledWith(expect.anything(), Acs5.SOURCE_NAME, expect.stringContaining('upstream 503'));
+    expect(sent).toEqual([expect.objectContaining({ source: Acs5.SOURCE_NAME, status: 'error', ingestRunId: 'run-err' })]);
+    const logged = JSON.stringify(log.mock.calls);
+    expect(logged).toContain(Acs5.SOURCE_NAME);
+    for (const s of [JSON.stringify(sent), logged, JSON.stringify(recordFailure.mock.calls)]) {
+      expect(s).not.toContain('cen-key-1');
+      expect(s).not.toContain('tok-secret');
+    }
+    log.mockRestore();
+  });
+
+  it('redacts key= values not in env from log, alert payload, and recorded error run', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const env = { INGEST_TOKEN: 'tok-secret', CENSUS_API_KEY: 'cen-key-1', INGEST_ALERT_WEBHOOK_URL: 'http://127.0.0.1/hook' };
+    const recordFailure = vi.fn(async () => 'run-err');
+    const sent: IngestAlertPayload[] = [];
+    const res = await AcsHttp.handle(new Request('http://x', { method: 'POST', headers: { authorization: 'Bearer tok-secret' } }), {
+      env,
+      client: {} as SupabaseClient,
+      httpFetch: async () => { throw new Error('GET https://api.census.gov/x?get=a&key=abc123&for=county failed'); },
+      run: (o) => AcsHttp.run({ ...o, recordFailure, load: vi.fn() }),
+      alertFetch: async (_url, init) => {
+        sent.push(JSON.parse(String(init?.body)) as IngestAlertPayload);
+        return new Response(null, { status: 200 });
+      },
+    });
+    expect(res.status).toBe(500);
+    expect(sent).toHaveLength(1);
+    expect(recordFailure).toHaveBeenCalledTimes(1);
+    for (const s of [JSON.stringify(log.mock.calls), JSON.stringify(sent), JSON.stringify(recordFailure.mock.calls)]) {
+      expect(s).toContain('key=[redacted]');
+      expect(s).not.toContain('abc123');
+    }
+    log.mockRestore();
   });
 
   it('handle: 401 no auth, 200 success, 400 bad JSON, 500 ingest error', async () => {
