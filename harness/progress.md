@@ -401,5 +401,6 @@ Left: seed + seeded e2e in stacked #119 (D-012); nav and crumb (#77's nav.ts), l
 Decisions: none.
 
 ## 2026-10-13 04:40 (UTC) — Cloud Agent — feature F-211 (DS-06a part 2, stacked on PR #113)
-Did: synthetic seed for local/CI only: approved `v2-synthetic` plus newer unapproved `v3-draft`, 26 scored counties with a tie (Cache = Davis), 3 not published (Daggett, Piute, Wayne). e2e asserts rank order, the tie, bins, Not published last and the version in the footer. Nothing written to hosted fas-dev.
+Did: local/CI-only synthetic seed: approved `v2-synthetic`, newer unapproved `v3-draft`, 26 scored counties with a tie (Cache = Davis), 3 not published (Daggett, Piute, Wayne).
+State: e2e asserts rank order, the tie, bins, Not published last and the footer version. Nothing written to hosted fas-dev by this PR.
 Left: QA; retarget to main after #113 merges.
