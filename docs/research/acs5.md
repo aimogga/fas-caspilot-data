@@ -14,7 +14,7 @@ REQUIRED NOTICES: "This product uses the Census Bureau Data API but is not endor
 FIELDS WE USE: B01003_001E (pop), B21001_002E (veterans), B25010_001E (avg HH size)
 KNOWN LIMITS: MOEs (inflated by 2020 pandemic year); Title 13; county 1-yr not available <65k
 SAMPLE CALL: curl -s 'https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b01003.dat' | grep '0500000US49'
-             curl -s 'https://api.census.gov/data/2024/acs/acs5?get=NAME,B01003_001E,B21001_002E,B25010_001E&for=county:*&in=state:49&key=$CENSUS_API_KEY'
+             curl -s "https://api.census.gov/data/2024/acs/acs5?get=NAME,B01003_001E,B21001_002E,B25010_001E&for=county:*&in=state:49&key=$CENSUS_API_KEY"
 ```
 1. **Endpoint (VERIFIED-direct):**
    - **API, no key:** `GET https://api.census.gov/data/2024/acs/acs5?get=NAME,B01003_001E,B21001_002E,B25010_001E&for=county:*&in=state:49` returned **302 → missing_key.html**. Even the minimal `.../2023/acs/acs5?get=NAME&for=state:49` was blocked.

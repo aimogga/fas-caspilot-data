@@ -14,7 +14,7 @@ REQUIRED NOTICES: "This product uses the Census Bureau Data API but is not endor
 FIELDS WE USE: bulk CSV names NIPR, NUI, PCTUI (+ nipr_moe etc.) by agecat / iprcat; API names add a _PT suffix (NIPR_PT, NUI_PT, PCTUI_PT; MOEs as _MOE). NIPR = people in the group, NUI = uninsured count, PCTUI = % uninsured. The API call below also pulls NIC_PT (insured count), which has no row in our field list
 KNOWN LIMITS: model-based; 90% MOEs; under-65 only; no county race/ethnicity
 SAMPLE CALL: curl -sLO 'https://www2.census.gov/programs-surveys/sahie/datasets/time-series/estimates-acs/sahie-2024-csv.zip'
-             curl -s 'https://api.census.gov/data/timeseries/healthins/sahie?get=NAME,NIC_PT,NUI_PT,PCTUI_PT&for=county:*&in=state:49&time=2024&AGECAT=0&IPRCAT=0&SEXCAT=0&RACECAT=0&key=$CENSUS_API_KEY'
+             curl -s "https://api.census.gov/data/timeseries/healthins/sahie?get=NAME,NIC_PT,NUI_PT,PCTUI_PT&for=county:*&in=state:49&time=2024&AGECAT=0&IPRCAT=0&SEXCAT=0&RACECAT=0&key=$CENSUS_API_KEY"
 ```
 1. **Endpoint (VERIFIED-direct):**
    - **API, no key:** `GET https://api.census.gov/data/timeseries/healthins/sahie?get=NAME,IPRCAT,AGECAT,NIC_PT,NUI_PT,PCTUI_PT&for=county:*&in=state:49&time=2024&AGECAT=0&IPRCAT=0&SEXCAT=0&RACECAT=0` returned **HTTP 302**, header `X-DataWebAPI-KeyError: 1`, `Location: https://api.census.gov/data/missing_key.html`. The final page is a 200 `text/html` "Missing Key" page, not data.

@@ -12,6 +12,6 @@ LICENSE / TERMS: TODO   PERMITTED FOR FAS GRANT USE: unclear (TODO)
 REQUIRED NOTICES: TODO
 FIELDS WE USE: FAS's UEI, registration status, expiration date
 KNOWN LIMITS: needs a key; not tested
-SAMPLE CALL: TODO: curl -s 'https://api.sam.gov/entity-information/v3/entities?api_key=$SAM_API_KEY&ueiSAM=<FAS UEI>' (untested)
+SAMPLE CALL: TODO: curl -s "https://api.sam.gov/entity-information/v3/entities?api_key=$SAM_API_KEY&ueiSAM=<FAS UEI>" (untested)
 ```
 **TODO:** needs a SAM.gov API key and FAS's UEI to verify. Not feasible from public sources alone tonight.

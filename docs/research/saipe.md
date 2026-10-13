@@ -14,7 +14,7 @@ REQUIRED NOTICES: "This product uses the Census Bureau Data API but is not endor
 FIELDS WE USE: SAEPOVALL_PT, SAEPOVRTALL_PT, SAEPOV0_17_PT, SAEMHI_PT
 KNOWN LIMITS: model-based (Empirical Bayes shrinkage toward the model in small counties)
 SAMPLE CALL: curl -s 'https://www2.census.gov/programs-surveys/saipe/datasets/2024/2024-state-and-county/est24-ut.txt'
-             curl -s 'https://api.census.gov/data/timeseries/poverty/saipe?get=NAME,SAEPOVALL_PT,SAEPOVRTALL_PT,SAEPOV0_17_PT,SAEMHI_PT&for=county:*&in=state:49&time=2024&key=$CENSUS_API_KEY'
+             curl -s "https://api.census.gov/data/timeseries/poverty/saipe?get=NAME,SAEPOVALL_PT,SAEPOVRTALL_PT,SAEPOV0_17_PT,SAEMHI_PT&for=county:*&in=state:49&time=2024&key=$CENSUS_API_KEY"
 ```
 1. **Endpoint (VERIFIED-direct):**
    - **API, no key:** `GET https://api.census.gov/data/timeseries/poverty/saipe?get=NAME,SAEPOVALL_PT,SAEPOVRTALL_PT,SAEPOV0_17_PT,SAEMHI_PT&for=county:*&in=state:49&time=2024` returned **302 → missing_key.html** (`X-DataWebAPI-KeyError: 1`).
