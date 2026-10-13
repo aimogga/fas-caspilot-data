@@ -116,3 +116,6 @@ Decision: **Data counts as stale once it is one update cycle overdue.** George's
 
 ### D-022 Need-map bins placeholder (design, DS-06)
 Decision: **Keep the 5 equal-count bins as a placeholder** until George sets the need-score weights. The need-score weights stay open and are not decided here. In-scope ruling by George Chief of staff (not a George decision). · Date: 2026-10-12
+
+### D-023 Production uses fas-dev Supabase (ops)
+Decision: **Production (fas-caspilot-data.vercel.app, Vercel production branch main) uses the synthetic fas-dev Supabase (zlizvzpatfyhdydfmxef), with no real FAS data, until a real prod project exists.** Decided by George Mogga; relayed by George Chief of staff at 10:15 AM MT. · Date: 2026-10-13

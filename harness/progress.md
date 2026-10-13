@@ -518,3 +518,9 @@ Decisions: none.
 Update: ignore CANCELED deployments (latest non-canceled per target, limit 20); mutation killed.
 Update 2: raw Vercel data showed all 24 production deploys CANCELED (none ever READY; project live=false), same rows for the audit's params; query now uses state=READY,ERROR, so production reports 'none found' (YELLOW) until a production deploy succeeds.
 Update 3: test pins empty-production → 'none found' (YELLOW) with preview READY and no 'could not query'; none-found mutation killed.
+
+## 2026-10-13 16:25 (UTC) — Grok Bot — PR #134: D-023 production on fas-dev Supabase
+Did: George approved (2026-10-13 10:15 AM MT, via Chief of staff) pointing production at the synthetic fas-dev Supabase (zlizvzpatfyhdydfmxef). Added Production target to NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY and SUPABASE_SERVICE_ROLE_KEY in Vercel; redeployed main to production (dpl_CvktaAt4NoDuEY4ELk1ohFtDtPwH, READY). Recorded D-023.
+State: /api/health ok:true (app ok, supabase ok); /login 200; QA verified staff/admin/board@example.test sign in on production (fas-dev).
+Left: QA.
+Decisions: D-023.
