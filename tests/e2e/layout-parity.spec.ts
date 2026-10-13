@@ -137,3 +137,16 @@ test("methodology uses the shell Page layout for staff and board (DS-08)", async
     await page.context().clearCookies();
   }
 });
+
+test("team dashboard uses the shell Page layout for staff; board sees the signed-in 403 (DS-07a)", async ({ page }) => {
+  for (const [email, path] of [["staff@example.test", "/dashboard"], ["staff@example.test", "/dashboard?compare=prior"], ["board@example.test", "/dashboard"]] as const) {
+    await signInAs(page, email);
+    for (const width of [375, 800, 1024, 1440] as const) {
+      await page.setViewportSize({ width, height: 812 });
+      await page.goto(path);
+      const { left, width: w, container } = SHELL[width];
+      expect(await pageBox(page), `${path} ${email} @ ${width}`).toMatchObject({ left, width: w, scroll: width, ...(container ? { container } : {}) });
+    }
+    await page.context().clearCookies();
+  }
+});
