@@ -8,7 +8,8 @@ ENDPOINT / FILE: https://data.cdc.gov/resource/swc5-untb.json   VERIFIED-direct 
 AUTH: none (Socrata app token optional)   RATE LIMITS: untokened = shared IP pool, throttled (429); tokened = "do not throttle" unless abusive
 LATEST VINTAGE: 2025 release (BRFSS 2023; 5 measures BRFSS 2022)   CADENCE: annual; next release date unknown
 GEOGRAPHY: county (tract/place/ZCTA in sibling datasets)
-LICENSE / TERMS: Socrata license "Public Domain"; CDC: no logo, no endorsement   COMMERCIAL REUSE: yes
+LICENSE / TERMS: Socrata license "Public Domain"; CDC: no logo, no endorsement   PERMITTED FOR FAS GRANT USE: yes
+REQUIRED NOTICES: Attribute CDC; include a no-endorsement disclaimer; don't alter content; no CDC logo without written permission.
 FIELDS WE USE: measureid DEPRESSION, MHLTH (CrdPrv/AgeAdjPrv), data_value, CIs, locationid
 KNOWN LIMITS: model-based; CDC says don't rank, don't evaluate programs, don't trend
 SAMPLE CALL: https://data.cdc.gov/resource/swc5-untb.json?$where=stateabbr='UT' AND measureid in('DEPRESSION','MHLTH') AND datavaluetypeid='CrdPrv'&$limit=500
@@ -19,7 +20,7 @@ SAMPLE CALL: https://data.cdc.gov/resource/swc5-untb.json?$where=stateabbr='UT' 
    - Data years: 2023 and 2022. **VERIFIED-direct**
    - CDC FAQ (Dec 11, 2025, **VERIFIED-direct**, https://www.cdc.gov/places/faqs/index.html): *"PLACES data are updated on an annual basis."* Sixth release December 2025: 35 measures on 2023 BRFSS, 5 on 2022.
    - Next release: **unknown**. **ESTIMATE:** late 2026.
-3. **License:** Socrata metadata `license: {"name":"Public Domain"}`, Public Access Level "public". **VERIFIED-direct**. Grok quotes CDC's Use of Agency Materials page (https://www.cdc.gov/other/agencymaterials.html, **VERIFIED-grok**): *"Most of the information on the CDC and ATSDR websites is not subject to copyright, is in the public domain, and may be freely used or reproduced without obtaining copyright permission."* Conditions: attribute CDC, include a no-endorsement disclaimer, don't alter content, and don't use the CDC logo without written permission. **Free: yes. Paid: yes.**
+3. **License:** Socrata metadata `license: {"name":"Public Domain"}`, Public Access Level "public". **VERIFIED-direct**. Grok quotes CDC's Use of Agency Materials page (https://www.cdc.gov/other/agencymaterials.html, **VERIFIED-grok**): *"Most of the information on the CDC and ATSDR websites is not subject to copyright, is in the public domain, and may be freely used or reproduced without obtaining copyright permission."* Conditions: attribute CDC, include a no-endorsement disclaimer, don't alter content, and don't use the CDC logo without written permission. **Permitted for FAS grant use: yes.**
 4. **Key / limits:** none required. **VERIFIED-direct** (live hit without a token). Socrata (https://dev.socrata.com/docs/app-tokens.html, **VERIFIED-direct**): *"Currently we do not throttle API requests that are using an application token, unless those requests are determined to be abusive or malicious."* Untokened requests "may be subject to throttling" (429).
 5. **Utah coverage:** **29/29 VERIFIED-direct** for every measure, including DEPRESSION, MHLTH, FOODINSECU, HOUSINSECU, LONELINESS, EMOTIONSPT, LACKTRPT. No blanked values. CDC suppresses only geographic units with fewer than 50 adults (tract/place/ZCTA); counties are unaffected (**VERIFIED-direct**, FAQ).
 6. **Use caveats (VERIFIED-direct, FAQ):**

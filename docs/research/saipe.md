@@ -9,7 +9,8 @@ ENDPOINT / FILE: https://api.census.gov/data/timeseries/poverty/saipe (KEY REQUI
 AUTH: API key for API; none for bulk     RATE LIMITS: 50 vars/query; daily unknown
 LATEST VINTAGE: 2024                     CADENCE: annual; 2025 estimates planned Dec 2026
 GEOGRAPHY: state, county, school district
-LICENSE / TERMS: CC0 in API metadata; Census API ToS notice   COMMERCIAL REUSE: yes
+LICENSE / TERMS: CC0 in API metadata; Census API ToS notice   PERMITTED FOR FAS GRANT USE: yes
+REQUIRED NOTICES: "This product uses the Census Bureau Data API but is not endorsed or certified by the Census Bureau." Don't use the Census Bureau name to imply endorsement.
 FIELDS WE USE: SAEPOVALL_PT, SAEPOVRTALL_PT, SAEPOV0_17_PT, SAEMHI_PT
 KNOWN LIMITS: model-based (Empirical Bayes shrinkage toward the model in small counties)
 SAMPLE CALL: curl -s 'https://www2.census.gov/.../est24-ut.txt'
@@ -21,7 +22,7 @@ SAMPLE CALL: curl -s 'https://www2.census.gov/.../est24-ut.txt'
 2. **Vintage:**
    - 2024 estimates released **Jan 27, 2026**. **VERIFIED-direct** (file dates; the SAIPE page shows "State and County Estimates for 2024 – January 2026").
    - Next release: *"The 2025 release is planned for December 2026."* **VERIFIED-direct** (https://www.census.gov/programs-surveys/saipe/newsroom/updates.html). This matches the doc.
-3. **License:** same as Card 1. CC0 metadata plus the API ToS notice and no-endorsement rule. **Free: yes. Paid: yes.** VERIFIED-direct (ToS); INFERENCE (no commercial bar).
+3. **License:** same as Card 1. CC0 metadata plus the API ToS notice and no-endorsement rule. **Permitted for FAS grant use: yes.** VERIFIED-direct (ToS); INFERENCE (no use restriction).
 4. **Key / limits:** same as Card 1. **The API key is mandatory.** VERIFIED-direct.
 5. **Utah coverage:** **29/29 VERIFIED-direct** (est24-ut.txt). Grok reports the only county omitted nationally is Kalawao, HI (**VERIFIED-grok**, P30-15 PDF). Census says SAIPE is the most accurate subnational poverty source for counties under 65k (**VERIFIED-grok**).
 6. **Changed vs doc:** API key requirement (new). Otherwise as documented.

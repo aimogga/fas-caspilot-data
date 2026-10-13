@@ -9,7 +9,8 @@ ENDPOINT / FILE: https://api.census.gov/data/timeseries/healthins/sahie (KEY REQ
 AUTH: API key (free) for API; none for bulk         RATE LIMITS: 50 variables/query; no published daily number
 LATEST VINTAGE: 2024                                CADENCE: annual; next release "Summer 2027"
 GEOGRAPHY: state, county (no county race)
-LICENSE / TERMS: metadata license = CC0 1.0; API ToS requires "not endorsed or certified" notice   COMMERCIAL REUSE: yes
+LICENSE / TERMS: metadata license = CC0 1.0; API ToS requires "not endorsed or certified" notice   PERMITTED FOR FAS GRANT USE: yes
+REQUIRED NOTICES: "This product uses the Census Bureau Data API but is not endorsed or certified by the Census Bureau." Don't use the Census Bureau name to imply endorsement.
 FIELDS WE USE: NIPR, NUI, PCTUI (+ MOEs) by agecat / iprcat
 KNOWN LIMITS: model-based; 90% MOEs; under-65 only; no county race/ethnicity
 SAMPLE CALL: curl -sL 'https://www2.census.gov/.../sahie-2024-csv.zip'  (API call needs &key=)
@@ -29,7 +30,7 @@ SAMPLE CALL: curl -sL 'https://www2.census.gov/.../sahie-2024-csv.zip'  (API cal
      - Attribution: *"All services, which utilize or access the API, should display the following notice prominently within the application: 'This product uses the Census Bureau Data API but is not endorsed or certified by the Census Bureau.'"*
      - Endorsement: *"You may not use the Census Bureau name, or the like to imply endorsement of any product, service, or entity, not-for-profit, commercial or otherwise."*
      - The ToS also contains a Title 13 ban on re-identification.
-   - **Free: yes. Paid resale: yes.** INFERENCE: nothing in the ToS bars a commercial service, and the license is CC0. Grok also cited an ask.census.gov answer: "All U.S. Census Bureau materials… are entirely in the public domain… for the public or private use" (**VERIFIED-grok**; the exact article URL was not pinned down, so re-confirm before quoting it externally).
+   - **Permitted for FAS grant use: yes.** INFERENCE: nothing in the ToS bars this use, and the license is CC0. Grok also cited an ask.census.gov answer: "All U.S. Census Bureau materials… are entirely in the public domain… for the public or private use" (**VERIFIED-grok**; the exact article URL was not pinned down, so re-confirm before quoting it externally).
 4. **Key / limits:**
    - **A key is now required for every data query.** **VERIFIED-direct.** Live test above, plus https://www.census.gov/data/developers/guidance/api-user-guide.Query_Limits.html: *"You can include up to 50 variables in a single API query. An API key must be used with all data queries made to the Census Data API."*
    - Census video page dated May 11, 2026: *"The Census Bureau now requires an API key for all queries made to the Census Data API."* (https://www.census.gov/library/video/2026/adrm/requesting-a-census-data-api-key.html; **VERIFIED-direct** via search snippet).

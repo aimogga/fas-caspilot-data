@@ -9,7 +9,8 @@ ENDPOINT / FILE: https://www.utcourts.gov/content/dam/stats/Yearly%20Filing%20Co
 AUTH: none        RATE LIMITS: none published
 LATEST VINTAGE: FY2026 (Jul 2025–Jun 2026)   CADENCE: annual after FY close (ESTIMATE)
 GEOGRAPHY: county, district, court location
-LICENSE / TERMS: no license posted; UCJA 4-202.02 classifies statistics as public records   COMMERCIAL REUSE: unclear
+LICENSE / TERMS: no license posted; UCJA 4-202.02 classifies statistics as public records   PERMITTED FOR FAS GRANT USE: unclear (FLAG: confirm with the AOC)
+REQUIRED NOTICES: None stated by the source (no license or notice posted); attribute Utah State Courts.
 FIELDS WE USE: Fiscal Year, District, County, Court Type, Location, Category, Case Type, Filing Count
 KNOWN LIMITS: Excel only; 105 blank counts; "Statewide" pseudo-county for appellate
 SAMPLE CALL: curl -sO 'https://www.utcourts.gov/content/dam/stats/Yearly%20Filing%20Counts%202010-2026.xlsx'
@@ -22,11 +23,11 @@ SAMPLE CALL: curl -sO 'https://www.utcourts.gov/content/dam/stats/Yearly%20Filin
    - **No license, copyright notice, or reuse clause** on the page or in the workbook. **VERIFIED-direct** (page) and **VERIFIED-grok** (workbook strings).
    - UCJA Rule 4-202.02 (effective 5/18/2026, https://legacy.utcourts.gov/rules/view.php?type=ucja&rule=4-202.02, **VERIFIED-direct**): *"(1) Presumption of Public Court Records. Court records are public unless otherwise classified by this rule."* Public records include *"(2)(GG) statistical data derived from public and non-public records but that disclose only public data"* and *"(2)(W) publications of the Administrative Office"*.
    - Courts privacy policy (https://www.utcourts.gov/en/about/administration/privacy-policy.html, **VERIFIED-direct**): *"Public records are provided to anyone who asks, and some public records are posted on this website."*
-   - **Free: yes** (public record; INFERENCE). **Paid resale: unclear.** These rules govern *access*, not copyright. Utah state works are not automatically public domain (17 U.S.C. §105 is federal-only). GRAMA 63G-2-201(11) lets an entity control duplication of IP it licenses (**VERIFIED-grok**). The utah.gov portal disclaimer limits free reuse to "personal or informational use" (search snippet; it is not clearly binding on utcourts.gov).
+   - **Permitted for FAS grant use: unclear** (public record, so free access; INFERENCE). These rules govern *access*, not copyright. Utah state works are not automatically public domain (17 U.S.C. §105 is federal-only). GRAMA 63G-2-201(11) lets an entity control duplication of IP it licenses (**VERIFIED-grok**). The utah.gov portal disclaimer limits free reuse to "personal or informational use" (search snippet; it is not clearly binding on utcourts.gov).
    - **Risk: medium.** Recommend written confirmation from the AOC (courtdatarequest@utcourts.gov appears in the 2025 annual report). See Flags.
 4. **Key / limits:** none. No API, Excel only. **VERIFIED-direct**
 5. **Utah coverage:** **29/29 counties plus "Statewide"** (appellate) in FY2026. **VERIFIED-direct**
    - **No small-count suppression.** 565 FY2026 rows have counts under 5; the minimum is 0. **VERIFIED-direct**
    - 105 blank Filing Count cells (e.g., FY2020 Adjudication of Marriage), not a documented suppression code. **VERIFIED-direct**
    - Court types: District, Justice, Juvenile, Appellate.
-6. **Changed vs doc:** none in substance. The doc's "*verify* bulk reuse terms" remains **open**: no terms exist, so the paid-use risk stands.
+6. **Changed vs doc:** none in substance. The doc's "*verify* bulk reuse terms" remains **open**: no terms exist, so the reuse risk for FAS grant use stands.

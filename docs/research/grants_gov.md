@@ -10,7 +10,8 @@ AUTH: Simpler: API key via Login.gov (X-API-Key); search2: none
 RATE LIMITS: Simpler: 60/min, 10,000/day per key; inactive keys disabled after 30 days. search2: none published
 LATEST VINTAGE: live; search cached hourly (VERIFIED-grok)   CADENCE: continuous
 GEOGRAPHY: national (no county dimension)
-LICENSE / TERMS: CC0/public-domain project; legacy API requires an HHS non-endorsement notice   COMMERCIAL REUSE: yes
+LICENSE / TERMS: CC0/public-domain project; legacy API requires an HHS non-endorsement notice   PERMITTED FOR FAS GRANT USE: yes
+REQUIRED NOTICES: "This product uses the Grants.gov API but is not endorsed or certified by the U.S. Department of Health and Human Services."
 SAMPLE CALL: curl -X POST https://api.grants.gov/v1/api/search2 -H 'Content-Type: application/json' -d '{"keyword":"mental health","rows":1}'
 ```
 1. **Endpoint (VERIFIED-direct):**
@@ -20,7 +21,7 @@ SAMPLE CALL: curl -X POST https://api.grants.gov/v1/api/search2 -H 'Content-Type
 3. **License:**
    - Simpler: GitHub LICENSE says *"You can copy, modify, distribute, and perform the work, even for commercial purposes, all without asking permission."* (**VERIFIED-grok**). It covers the software project; no separate data license is posted (**VERIFIED-grok**).
    - Legacy API ToS (https://www.grants.gov/api/terms-conditions, **VERIFIED-direct**): *"You may use the Grants.gov API to search, display, analyze, retrieve, view and otherwise 'get' information from grants data."* Required notice: *"This product uses the Grants.gov API but is not endorsed or certified by the U.S. Department of Health and Human Services."*
-   - **Free: yes. Paid: yes** (INFERENCE: no commercial bar, U.S. Government data).
+   - **Permitted for FAS grant use: yes** (INFERENCE: no use restriction, U.S. Government data).
 4. **Key / limits:** https://simpler.grants.gov/developers (**VERIFIED-direct**): *"Inactive API keys are automatically disabled after 30 days without use."* and *"by default, 60 requests per minute and 10,000 requests per day per key."* This matches the doc. Legacy search2: *"Authentication and authorization is not required for search2"* (**VERIFIED-grok**). No numeric limit is published, and HHS may block or terminate at will.
 5. **Utah coverage:** not applicable (national opportunity catalog).
 6. **Changed vs doc:** none. A keyless search2 endpoint is a usable fallback if the Simpler key lapses.

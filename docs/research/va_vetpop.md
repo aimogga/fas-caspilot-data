@@ -8,7 +8,8 @@ ENDPOINT / FILE: https://www.data.va.gov/resource/jrjd-qghv.json   VERIFIED-dire
 AUTH: none (Socrata app token optional)   RATE LIMITS: Socrata rules (see Card 5)
 LATEST VINTAGE: VetPop2023 (base 9/30/2023; projections to FY2053)   CADENCE: every 2–3 years (VERIFIED-grok)
 GEOGRAPHY: county
-LICENSE / TERMS: CC0 1.0 (metadata "License: https://creativecommons.org/publicdomain/zero/1.0/")   COMMERCIAL REUSE: yes
+LICENSE / TERMS: CC0 1.0 (metadata "License: https://creativecommons.org/publicdomain/zero/1.0/")   PERMITTED FOR FAS GRANT USE: yes
+REQUIRED NOTICES: None required by CC0; attribute VA and don't use VA marks.
 FIELDS WE USE: date, fips, county_state, age_group, sex, veterans
 KNOWN LIMITS: projections; "Rounding to the nearest 1,000 is always appropriate"; must filter by date
 SAMPLE CALL: https://www.data.va.gov/resource/jrjd-qghv.json?$select=fips,county_state,sum(veterans) as v&$where=starts_with(fips,'49') AND date='2026-09-30T00:00:00.000'&$group=fips,county_state
@@ -20,7 +21,7 @@ SAMPLE CALL: https://www.data.va.gov/resource/jrjd-qghv.json?$select=fips,county
    - The dataset holds **31 projection dates (9/30/2023 → 9/30/2053+), 25,200 rows each**.
    - The VA page (https://www.va.gov/vetdata/veteran_population.asp, **VERIFIED-direct**) carries a transition notice: *"VA has transferred ownership of the Veteran Population Projection Model (VetPop) from the National Center for Veterans Analysis and Statistics (NCVAS) to the Office of Actuarial Services (OAS)."* Contact: oas_actuaries@va.gov.
    - Next VetPop release: unknown. **ESTIMATE** (Grok): 2026–2027.
-3. **License:** metadata custom field `License: https://creativecommons.org/publicdomain/zero/1.0/`. **VERIFIED-direct.** The Socrata top-level `license` field is null, so the UI may show "unspecified" (INFERENCE; Grok notes the same). CC0 text: waiver applies "for any purpose whatsoever, including without limitation commercial" (**VERIFIED-grok**, creativecommons.org). **Free: yes. Paid: yes.** CC0 doesn't waive trademarks, so don't use VA marks.
+3. **License:** metadata custom field `License: https://creativecommons.org/publicdomain/zero/1.0/`. **VERIFIED-direct.** The Socrata top-level `license` field is null, so the UI may show "unspecified" (INFERENCE; Grok notes the same). CC0 text: waiver applies "for any purpose whatsoever, including without limitation commercial" (**VERIFIED-grok**, creativecommons.org). **Permitted for FAS grant use: yes.** CC0 doesn't waive trademarks, so don't use VA marks.
 4. **Key / limits:** none required. **VERIFIED-direct.** Socrata throttling rules apply (Card 5).
 5. **Utah coverage:**
    - **29/29 VERIFIED-direct.** At date 2023-09-30 there are 29 distinct fips with Utah total veterans **129,787**. The smallest FY2026 projections are Daggett 45, Piute 105, Rich 114.

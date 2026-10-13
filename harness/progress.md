@@ -393,3 +393,7 @@ Left: QA review of docs PR.
 ## 2026-10-13 01:24 (UTC) — Grok Bot — F-002 source cards (claim)
 Did: Claimed F-002. Added docs/research/ cards for sahie, saipe, acs5, hrsa_hpsa_mh, cdc_places, ut_courts, va_vetpop, hrsa_ahrf and grants_gov, each with sample call, vintage, license and commercial-reuse answer (checked 2026-10-08).
 Left: No cards yet for usaspending, propublica_990, irs_990pf_grants, sam_entity, ut_transparency (Phase 5 Use/Verify first rows); Deep Research must add them before F-002 can pass. QA re-runs 3 sample calls (Census calls need a key).
+
+## 2026-10-13 04:35 (UTC) — Grok Bot — F-002 source cards (QA fixes)
+Did: renamed commercial-reuse/paid-resale answers to "Permitted for FAS grant use: yes/no/unclear" (D-015); added REQUIRED NOTICES to each card (Census no-endorsement, HHS non-endorsement, CDC no logo, etc.); kept the AHRF reuse-permission flag and the ut_courts unclear flag.
+Left: QA re-check.
