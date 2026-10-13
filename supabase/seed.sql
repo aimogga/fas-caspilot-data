@@ -29,6 +29,14 @@ INSERT INTO geo_county (fips, name, state, population_latest) VALUES
 INSERT INTO source_registry (id, name, owner, url, license, commercial_ok, cadence, status) VALUES
   ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'census-sahie', 'Census', 'https://api.census.gov/data/timeseries/healthins/sahie', 'public-domain', true, 'annual', 'active')
 ON CONFLICT (id) DO UPDATE SET url = EXCLUDED.url;
+-- DS-05 synthetic sources: one Stale (monthly, 60 days since success) and one Failed (latest run failed after the last success).
+INSERT INTO source_registry (id, name, owner, url, license, commercial_ok, cadence, status, last_success_at) VALUES
+  ('cccccccc-cccc-cccc-cccc-ccccccccccc2', 'example-monthly-source', 'Example owner', 'https://example.test/monthly', 'public-domain', true, 'monthly', 'active', now() - interval '60 days'),
+  ('cccccccc-cccc-cccc-cccc-ccccccccccc3', 'example-failed-source', 'Example owner', 'https://example.test/quarterly', 'public-domain', true, 'quarterly', 'active', now() - interval '10 days')
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO ingest_run (id, source_id, status, started_at, finished_at, rows_loaded, checksum, error) VALUES
+  ('dddddddd-dddd-dddd-dddd-ddddddddddd3', 'cccccccc-cccc-cccc-cccc-ccccccccccc3', 'failed', now() - interval '1 day', now() - interval '1 day', 0, 'syn-fail', 'synthetic failure')
+ON CONFLICT (id) DO NOTHING;
 INSERT INTO ingest_run (id, source_id, status, rows_loaded, checksum) VALUES
   ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'ok', 1, 'abc');
 INSERT INTO public_indicator (source_id, indicator_code, geo_fips, period, value, unit, vintage, ingest_run_id) VALUES

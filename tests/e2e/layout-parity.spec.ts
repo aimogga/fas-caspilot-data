@@ -150,3 +150,16 @@ test("team dashboard uses the shell Page layout for staff; board sees the signed
     await page.context().clearCookies();
   }
 });
+
+test("data freshness uses the shell Page layout for staff; board sees the signed-in 403 (DS-05a)", async ({ page }) => {
+  for (const email of ["staff@example.test", "board@example.test"] as const) {
+    await signInAs(page, email);
+    for (const width of [375, 800, 1024, 1440] as const) {
+      await page.setViewportSize({ width, height: 812 });
+      await page.goto("/data-freshness");
+      const { left, width: w, container } = SHELL[width];
+      expect(await pageBox(page), `/data-freshness ${email} @ ${width}`).toMatchObject({ left, width: w, scroll: width, ...(container ? { container } : {}) });
+    }
+    await page.context().clearCookies();
+  }
+});
