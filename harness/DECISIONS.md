@@ -95,7 +95,8 @@ Decided by George Mogga; relayed by George Chief of staff at 10:01 PM MT. · Dat
 Decision: **FAS covers all 29 Utah counties.** The need map shows all 29 counties. Decided by George Mogga; relayed by George Chief of staff. · Date: 2026-10-12
 
 ### D-018 Dashboard defaults (design, DS-07)
-Decision: **The dashboard defaults are approved** (latest complete quarter, M1 lead, 60-day window, prior-quarter compare, as specced in DS-07). Decided by George Mogga; relayed by George Chief of staff. · Date: 2026-10-12
+Decision: **The dashboard defaults are approved:** the latest complete quarter, M1 as the lead metric, and a 60-day never-started window. George's words: "Yes, use those dashboard defaults and that stale rule." Decided by George Mogga; relayed by George Chief of staff. · Date: 2026-10-12
+Note: the prior-quarter comparison in DS-07 is a designer default that George has not approved.
 
 ### D-019 Manual foundation grants (design, DS-07)
 Decision: **Manual foundation grants are shown** on the dashboard, tagged as manual entry (consistent with D-010). Decided by George Mogga; relayed by George Chief of staff. · Date: 2026-10-12
@@ -104,7 +105,7 @@ Decision: **Manual foundation grants are shown** on the dashboard, tagged as man
 Decision: **The county outlines are approved** (Census county outlines; FAS service counties outlined on the need map). Decided by George Mogga; relayed by George Chief of staff. · Date: 2026-10-12
 
 ### D-021 Stale rule (design, DS-05)
-Decision: **Data counts as stale once it is one update cycle overdue.** Decided by George Mogga; relayed by George Chief of staff at 9:58 PM MT. · Date: 2026-10-12
+Decision: **Data counts as stale once it is one update cycle overdue.** George's words: "Yes, use those dashboard defaults and that stale rule." (same approval as D-018) Decided by George Mogga; relayed by George Chief of staff at 9:58 PM MT. · Date: 2026-10-12
 
 ### D-022 Need-map bins placeholder (design, DS-06)
 Decision: **Keep the 5 equal-count bins as a placeholder** until George sets the need-score weights. The need-score weights themselves are still open and are not decided here. Decided by George Mogga; relayed by George Chief of staff at 9:58 PM MT. · Date: 2026-10-12
