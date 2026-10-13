@@ -88,7 +88,8 @@ export class SahieHttp {
     } catch (e) {
       const record = opts.recordFailure ?? PublicIndicatorIngest.recordFailure.bind(PublicIndicatorIngest);
       const message = IngestAlert.payload(Sahie.SOURCE_NAME, e, env).error;
-      await record(client, Sahie.SOURCE_NAME, message).catch(() => null);
+      const ingestRunId = await record(client, Sahie.SOURCE_NAME, message).catch(() => null);
+      if (e instanceof Error && ingestRunId) Object.assign(e, { ingestRunId });
       throw e;
     }
     const load = opts.load ?? PublicIndicatorIngest.load.bind(PublicIndicatorIngest);

@@ -115,7 +115,7 @@ describe('simulated failure triggers alert', () => {
       {
         env,
         run: async () => {
-          throw new Error('upstream 503 synth-cen1');
+          throw Object.assign(new Error('upstream 503 synth-cen1'), { ingestRunId: 'run-err' });
         },
         alertFetch: async (url, init) => {
           sent.push({ url: String(url), body: JSON.parse(String(init?.body)) as IngestAlertPayload });
@@ -126,7 +126,7 @@ describe('simulated failure triggers alert', () => {
     expect(res.status).toBe(500);
     expect(sent).toHaveLength(1);
     expect(sent[0]?.url).toBe(env.INGEST_ALERT_WEBHOOK_URL);
-    expect(sent[0]?.body).toMatchObject({ source: 'census-sahie', status: 'error' });
+    expect(sent[0]?.body).toMatchObject({ source: 'census-sahie', status: 'error', ingestRunId: 'run-err' });
     expect(sent[0]?.body.error).not.toContain('synth-cen1');
   });
 
@@ -146,7 +146,7 @@ describe('simulated failure triggers alert', () => {
           return 'run-err';
         },
       }),
-    ).rejects.toThrow();
+    ).rejects.toMatchObject({ ingestRunId: 'run-err' });
     expect(recorded).toEqual(['census-sahie']);
   });
 });

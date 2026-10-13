@@ -21,11 +21,16 @@ export class IngestAlert {
     return out.slice(0, IngestAlert.MAX_ERROR);
   }
 
+  static runId(error: unknown): string | null {
+    const id = (error as { ingestRunId?: unknown } | null)?.ingestRunId;
+    return typeof id === 'string' ? id : null;
+  }
+
   static payload(
     source: string,
     error: unknown,
     env: Record<string, string | undefined>,
-    ingestRunId: string | null = null,
+    ingestRunId: string | null = IngestAlert.runId(error),
     now: Date = new Date(),
   ): IngestAlertPayload {
     const raw = error instanceof Error ? error.message : 'ingest failed';

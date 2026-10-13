@@ -50,6 +50,7 @@ export class PublicIndicatorIngest {
       await client.from('ingest_run').update({
         status: 'error', error: message, finished_at: new Date().toISOString(),
       }).eq('id', ingestRunId);
+      if (e instanceof Error) Object.assign(e, { ingestRunId });
       throw e;
     }
   }

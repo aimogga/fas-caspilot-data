@@ -395,7 +395,10 @@ Did: recorded D-005, D-006 and D-009 as decided, plus design decisions D-017 to 
 Left: QA check. Need-score weights still open.
 
 ## 2026-10-13 03:30 (UTC) — Engineer Bot — PR #111 / feature F-201
-Did: claim F-201. Reused source_registry/ingest_run; pre-load failures now write an error ingest_run; `IngestAlert` posts a redacted payload to INGEST_ALERT_WEBHOOK_URL on failed POST /api/ingest/sahie (never throws); inactive n8n/ingest-failure-alert.json (webhook → email, $env recipients); idempotency + simulated-failure tests.
+Did: claim F-201. Reused source_registry/ingest_run; pre-load failures now write an error ingest_run.
+`IngestAlert` posts a redacted payload (with the failed ingest_run id) to INGEST_ALERT_WEBHOOK_URL
+on a failed POST /api/ingest/sahie, and never throws. Inactive n8n/ingest-failure-alert.json.
+Tests: idempotency, simulated failure alert, lowercase "bearer" rejected, pinned SAHIE checksum.
 State: lint/typecheck/unit green; synthetic data only.
 Left: QA; live fas-dev evidence needs fas-dev Supabase credentials and INGEST_ALERT_WEBHOOK_URL (not in repo secrets).
 Decisions: none.
