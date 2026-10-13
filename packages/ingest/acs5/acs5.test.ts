@@ -52,12 +52,10 @@ it.each([
   expect(() => Acs5.requireComplete(parsed, '2023')).toThrow(/rejected/);
 });
 
-it('fails closed: partial response, mixed vintages, or incomplete county', () => {
+it('fails closed: partial response or incomplete county', () => {
   const partial = [HDR, ut('49035', '100000', '30000', '5000')];
   expect(() => Acs5.requireComplete(Acs5.parse(partial), '2023')).toThrow(/partial/);
   const p = Acs5.parse(fixture);
-  const mixed = { rows: [...p.rows.slice(0, 29).map((r) => ({ ...r, period: '2023' })), ...p.rows.slice(29).map((r) => ({ ...r, period: '2022' }))], rejects: [] };
-  expect(() => Acs5.requireComplete(mixed, '2023')).toThrow(/mixed vintages/);
   const missingVar = { rows: p.rows.filter((r) => !(r.geo_fips === '49035' && r.indicator_code === 'veteran_population')), rejects: [] };
   expect(() => Acs5.requireComplete(missingVar, '2023')).toThrow(/partial/);
 });
@@ -79,4 +77,11 @@ it('n8n workflow inactive; CensusTable validates shape', () => {
   expect(text).not.toMatch(/20\d{2}/);
   expect(() => CensusTable.parse({})).toThrow(/census table/);
   expect(() => CensusTable.parse([['a'], [1, 2]])).toThrow(/width/);
+});
+
+it('ACS "-" parses to null (not_published)', () => {
+  expect(Acs5.num('-')).toBeNull();
+  const r = Acs5.parse(table([['Salt Lake County, Utah', '-', '10', '5', '49', '035']]));
+  expect(r.rejects).toEqual([]);
+  expect(r.rows.find((x) => x.indicator_code === 'total_population')).toMatchObject({ value: null, unit: 'not_published' });
 });

@@ -475,3 +475,7 @@ State: no local checkout; CI must run smoke (`pnpm lint && pnpm typecheck && pnp
 Evidence: PR nightly/kill-pagelayout.
 Left: QA review.
 Decisions: none.
+
+## 2026-10-13 10:20 (UTC) — Grok Bot — nightly: share census ingest helpers (PR #129)
+Did: Extended `packages/ingest/census-table.ts` with shared checksum, Utah FIPS set, `CENSUS_NOT_PUBLISHED`, `num` (ACS keeps `-` via extraNulls), `fetchJson`, and `requireCountyCoverage`. ACS/SAHIE/SAIPE call those; deleted dead ACS mixed-vintages check in `requireComplete` (parse always sets `period: ''`) and its hand-built test case. FIPS left source-local (SAIPE drop non-Utah vs SAHIE/ACS 49xxxx). Did not touch `lib/ingest/*-http.ts`, ingest-alert, #106, or `feature_list.json`.
+Left: QA on PR; later naming cleanup for acs5 folder (#106 conflict).
