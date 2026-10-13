@@ -13,7 +13,7 @@ LICENSE / TERMS: no license posted; UCJA 4-202.02 classifies statistics as publi
 REQUIRED NOTICES: None stated by the source (no license or notice posted); attribute Utah State Courts.
 FIELDS WE USE: Fiscal Year, District, County, Court Type, Location, Category, Case Type, Filing Count
 KNOWN LIMITS: Excel only; 105 blank counts; "Statewide" pseudo-county for appellate
-SAMPLE CALL: curl -sO 'https://www.utcourts.gov/content/dam/stats/Yearly%20Filing%20Counts%202010-2026.xlsx'
+SAMPLE CALL: curl -sO -A 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/129.0' 'https://www.utcourts.gov/content/dam/stats/Yearly%20Filing%20Counts%202010-2026.xlsx'  (plain curl UA gets HTTP 406)
 ```
 1. **Endpoint (VERIFIED-direct):**
    - Page returned **200 text/html**. A guessed older path, `/en/about/courts/statistics.html`, returned **404**, so use the URL above.
@@ -31,4 +31,5 @@ SAMPLE CALL: curl -sO 'https://www.utcourts.gov/content/dam/stats/Yearly%20Filin
    - 105 blank Filing Count cells (e.g., FY2020 Adjudication of Marriage), not a documented suppression code. **VERIFIED-direct**
    - Court types: District, Justice, Juvenile, Appellate.
 6. **Changed vs doc:** none in substance. The doc's "*verify* bulk reuse terms" remains **open**: no terms exist, so the reuse risk for FAS grant use stands.
-7. **Re-check 2026-10-12 ~10:55 PM MT: still INCONCLUSIVE.** The workbook URL returned **HTTP 406** to the box (also with a browser User-Agent), the same as QA's check. Needs a check from another network, or written confirmation from the AOC.
+7. **Re-check 2026-10-12 ~11:08 PM MT, data VERIFIED-direct:** with a browser User-Agent the workbook returns **HTTP 200** (xlsx, 1,590,269 B, `Last-Modified: Wed, 22 Jul 2026 19:25:18 GMT`). The plain curl User-Agent gets **406**, so that's bot filtering, not a dead link. Sheet `All` has columns Fiscal Year, District, County, Court Type, Location, Category, Case Type, Filing Count, starting FY2010. The Wayback Machine has no snapshot of this file, only earlier workbooks (e.g. `Yearly Count Filings FY2014-2025.xlsx`, 2025-09).
+8. **Terms: still a gap.** The workbook has no license, copyright or reuse text, and I found no terms page (guessed legal/policy URLs return 404). **Permitted for FAS grant use stays unclear**; get written confirmation from the AOC.
