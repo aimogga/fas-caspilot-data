@@ -21,11 +21,8 @@ function spyLoad() {
   return { calls, load };
 }
 
-function req(token?: string, body?: string): Request {
-  const headers = new Headers();
-  if (token !== undefined) headers.set('authorization', `Bearer ${token}`);
-  return new Request('http://127.0.0.1/api/ingest/saipe', { method: 'POST', headers, body });
-}
+const req = (token?: string, body?: string): Request =>
+  new Request('http://127.0.0.1/api/ingest/saipe', { method: 'POST', headers: token === undefined ? {} : { authorization: `Bearer ${token}` }, body });
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -52,6 +49,13 @@ describe('SaipeHttp', () => {
     expect(spy.calls[0].name).toBe(Saipe.SOURCE_NAME);
     expect(spy.calls[0].checksum).toBe(Saipe.checksum(spy.calls[0].rows));
     expect(spy.calls[0].rows.every((r) => r.vintage === '2023')).toBe(true);
+  });
+
+  it('pins the checksum and fails closed on mixed years', () => {
+    expect(Saipe.checksum(Saipe.requireComplete(Saipe.parse(table('2023'))))).toBe('7c66748bd8ca528f9ae6ad4998dd83902cea806b9c0419c769a767694b9c41c8');
+    const mixed = table('2023') as string[][];
+    mixed[29]![6] = '2022';
+    expect(() => Saipe.requireComplete(Saipe.parse(mixed))).toThrow(/mixed vintages/);
   });
 
   it('never loads a partial or unparseable payload', async () => {

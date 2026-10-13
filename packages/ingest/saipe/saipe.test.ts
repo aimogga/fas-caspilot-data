@@ -9,7 +9,6 @@ const ut = (fips: string, n: string, pct: string, year = '2023'): string[] =>
 
 describe('unit: saipe parser with recorded fixture', () => {
   const parsed = Saipe.parse(fixture);
-
   it('keeps Utah counties, marks N/A not_published, drops other states', () => {
     expect(parsed.rejects).toEqual([]);
     const slc = parsed.rows.filter((r) => r.geo_fips === '49035');
@@ -26,9 +25,7 @@ describe('unit: saipe parser with recorded fixture', () => {
       requested = String(url);
       return new Response('[["YEAR"]]', { status: 200 });
     });
-    expect(requested).toContain('/timeseries/poverty/saipe?');
-    expect(requested).toContain('time=2023');
-    expect(requested).toContain('key=x');
+    expect(requested).toMatch(/\/timeseries\/poverty\/saipe\?.*time=2023.*key=x/);
   });
 });
 
