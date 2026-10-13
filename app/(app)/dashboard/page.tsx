@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { ErrorState, Grid, PageHeader, Stack } from "@/components/layout";
 import { FilterBar } from "@/components/dashboard/FilterBar";
+import { FreshnessWidget } from "@/components/dashboard/FreshnessWidget";
 import { M4Table } from "@/components/dashboard/M4Table";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { PipelineWidget } from "@/components/dashboard/PipelineWidget";
@@ -32,7 +33,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       <MetricCard card={m1} />
       <Grid cols={3}>{rest.slice(0, 3).map((card) => <MetricCard key={card.id} card={card} />)}</Grid>
       <Grid cols={2}><M4Table />{rest.slice(3).map((card) => <MetricCard key={card.id} card={card} />)}</Grid>
-      {data ? <Grid cols={2}><PipelineWidget view={data.pipeline} /></Grid> : null}
+      {data ? <Grid cols={2}><FreshnessWidget view={data.freshness} /><PipelineWidget view={data.pipeline} /></Grid> : null}
     </Stack>
   );
 }
