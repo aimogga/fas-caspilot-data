@@ -4,15 +4,7 @@ Format per decision: context → options → recommendation → cost/risk → **
 
 ## Open
 
-### D-005 Outcome questionnaires (FAS leadership decision)
-Options: OQ-45 (adults) + YOQ (youth), which Utah's public mental health scorecards use, so results compare directly (confirm licensing cost); or PHQ-9 + GAD-7, which are free but have no Utah comparison.
-Recommendation: OQ/YOQ if licensing is affordable; otherwise PHQ-9/GAD-7.
-Decision: ___ · Date: ___
-
-### D-009 Cost caps
-Set monthly caps for: Cursor Cloud Agents + Automations (Automations run in Max Mode and bill as cloud-agent usage), per-run cap for the Nightly Audit, in-app LLM API, Supabase, Vercel. Max parallel cloud agents (start: 2).
-Recommendation: Chief of Staff proposes numbers from the Phase 0 cost estimate.
-Decision: ___ · Date: ___
+*(none)*
 
 ## Decided
 *(move items here with George's decision and date)*
@@ -42,7 +34,8 @@ Decision: **A**, per recommendation. Decided by George in chat. · Date: 2026-10
 ### D-006 Hosting plans and compliance tier
 Questions: Supabase and Vercel plan levels, region, backups, and whether BAAs are available/needed before real provider data (see PRIVACY_AND_COMPLIANCE.md).
 Recommendation: free/low tiers for Phases 0–5 (synthetic data); upgrade before Phase 6 based on the legal opinion.
-Decision: per recommendation: free/low tiers for Phases 0–5 (synthetic data); upgrade before Phase 6 based on the legal opinion. Decided by George in chat. · Date: 2026-10-08
+Decision (superseded 2026-10-12): per recommendation: free/low tiers for Phases 0–5 (synthetic data); upgrade before Phase 6 based on the legal opinion. Decided by George in chat. · Date: 2026-10-08
+Decision (2026-10-12): **George's current paid Vercel plan plus Supabase Pro** (Supabase up to $60/mo, per D-009). Decided by George Mogga; relayed by George Chief of staff at 10:01 PM MT. · Date: 2026-10-12
 
 ### D-007 Cursor and MCP configuration
 Questions: which MCP servers local vs. cloud agents may use; credentials scope.
@@ -82,3 +75,18 @@ Decision: Public and FAS data in FAS Evidence is used only (1) for FAS to measur
 
 ### D-016 GitHub admin standing permission
 Decision: The team (Engineer Supervisor, QA bot, Engineer Bot, UX/UI Design Bot) may do any GitHub admin needed on aimogga/fas-caspilot-data without asking George. That includes deleting merged branches, auto-delete of head branches, Actions secrets, repo settings and workflows. Admin actions use the shared GH_SECRETS_TOKEN (never printed or committed). Still gated on George: money or plan changes, real FAS data, emails in George's name, and acceptance-criteria changes. The QA gate and the main ruleset are unchanged. This does not permit weakening, disabling or bypassing the main ruleset, its required checks (ci, secret-scan), CI, the secret scan, the nightly audit or the staleness check. Any change to those, whether a ruleset edit, an Actions setting or a workflow file, goes through a PR with QA PASS at the head sha before merge. Decided by George Mogga; relayed by George Chief of staff (agent message to the Engineer Supervisor) on 2026-10-10 at 9:11 PM MT. · Date: 2026-10-10
+
+### D-005 Outcome questionnaires
+Options: OQ-45 (adults) + Y-OQ (youth), which Utah's public mental health scorecards use (licensing cost to confirm); or PHQ-9 + GAD-7, which are free but have no Utah comparison.
+Decision: **PHQ-9 and GAD-7 now**, built as a pluggable instrument registry so OQ-45 and Y-OQ can be added later without schema rework. Store total scores only. The need-score weights stay open and are not decided here. Decided by George Mogga; relayed by George Chief of staff at 10:01 PM MT. · Date: 2026-10-12
+
+### D-009 Cost caps
+Decision:
+- Cursor: $60 plan with $0 on-demand. When usage runs out, work pauses and resumes after the reset.
+- No cap on parallel agents.
+- Supabase Pro, up to $60/mo.
+- Vercel: George's current paid plan.
+- Nightly Audit: under $2 per run, on a GitHub Actions cron.
+- In-app LLM: $25/mo, starting in Phase 5.
+
+Decided by George Mogga; relayed by George Chief of staff at 10:01 PM MT. · Date: 2026-10-12
