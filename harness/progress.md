@@ -494,3 +494,4 @@ SKIPPED without SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY; report "Data freshness" 
 State: lint/typecheck/unit green; synthetic fixtures only.
 Left: QA; nightly-audit.yml reads fas-dev SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY repo secrets (D-016); grants, suppression/RLS/views, deploy health and cost stay SKIPPED until their keys or schema exist.
 Decisions: none.
+Update: grants (key-usage via grants source ingest_run, 14d pursuing deadlines), RLS+view guard via rpc/rls_guard_violations, main CI via GITHUB_TOKEN now real; suppression/no-cell<11 (no views yet), deploy health (VERCEL_TOKEN), cost (Cursor/LLM usage keys) still SKIPPED.

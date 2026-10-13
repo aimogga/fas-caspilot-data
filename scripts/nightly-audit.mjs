@@ -356,9 +356,11 @@ export function supabaseRest(env = process.env, httpFetch = fetch) {
     const rows = [];
     for (let from = 0; ; from += 1000) {
       const res = await httpFetch(`${url}/rest/v1/${path}`, {
-        headers: {apikey: key, authorization: `Bearer ${key}`, range: `${from}-${from + 999}`},
+        headers: {apikey: key, authorization: `Bearer ${key}`, range: `${from}-${from + 999}`, 'content-type': 'application/json'},
+        ...(path.startsWith('rpc/') ? {method: 'POST', body: '{}'} : {}),
       });
       if (!res.ok) throw new Error(`${path.split('?')[0]}: HTTP ${res.status}`);
+      if (path.startsWith('rpc/')) return res.json();
       const page = await res.json();
       rows.push(...page);
       if (page.length < 1000) return rows;
@@ -436,6 +438,63 @@ export async function checkData(rest = supabaseRest(), now = new Date()) {
   }
 }
 
+const GRANTS_KEY_DAYS = 25;
+
+export function evalGrants(sources, runs, pipeline, now = new Date()) {
+  const r = {status: 'GREEN', findings: [], details: []};
+  const src = sources.find(s => /grants/i.test(s.name));
+  if (!src) {
+    r.status = 'SKIPPED';
+    r.reason = 'no grants source in source_registry yet (F-3xx); key-usage and refresh not checkable';
+  } else {
+    const ok = runs.filter(x => x.source_id === src.id && x.status === 'success').map(x => new Date(x.started_at)).sort((a, b) => b - a)[0];
+    const last = ok ?? (src.last_success_at ? new Date(src.last_success_at) : null);
+    if (!last || now - last > GRANTS_KEY_DAYS * DAY_MS) {
+      r.status = 'RED';
+      r.findings.push(`Grants.gov key not used in ${GRANTS_KEY_DAYS} days (last ${last ? last.toISOString() : 'never'})`);
+    } else r.details.push(`Grants.gov last refresh ${last.toISOString()}`);
+  }
+  const soon = pipeline.filter(p => p.status === 'pursuing' && p.opportunity?.close_date)
+    .filter(p => { const d = new Date(p.opportunity.close_date) - now; return d >= 0 && d <= 14 * DAY_MS; });
+  r.details.push(soon.length ? `Pursuing deadlines (14d): ${soon.map(p => `${p.opportunity.title} ${p.opportunity.close_date}`).join('; ')}` : 'No pursuing deadlines in 14d');
+  return r;
+}
+
+export function evalRls(violations) {
+  return violations.length
+    ? {status: 'RED', findings: violations.map(v => `RLS/view guard: ${v.relname}`), details: []}
+    : {status: 'GREEN', findings: [], details: ['rls_guard_violations(): none']};
+}
+
+export async function checkGrantsAndRls(rest = supabaseRest(), now = new Date()) {
+  const skip = {status: 'SKIPPED', reason: 'needs SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY', findings: [], details: []};
+  if (!rest) return {grants: skip, rls: skip};
+  const since = new Date(now - 30 * DAY_MS).toISOString();
+  const safe = (f) => f().catch(e => ({status: 'YELLOW', findings: [`could not query database (${e.message})`], details: []}));
+  const grants = await safe(async () => evalGrants(
+    await rest('source_registry?select=id,name,last_success_at'),
+    await rest(`ingest_run?select=source_id,status,started_at&started_at=gte.${since}`),
+    await rest('pipeline_status?select=status,opportunity(title,close_date)&status=eq.pursuing'), now));
+  const rls = await safe(async () => evalRls(await rest('rpc/rls_guard_violations')));
+  return {grants, rls};
+}
+
+export async function checkMainCi(env = process.env, httpFetch = fetch) {
+  if (!env.GITHUB_TOKEN || !env.GITHUB_REPOSITORY) return {status: 'SKIPPED', findings: [], details: ['main CI: needs GITHUB_TOKEN']};
+  try {
+    const res = await httpFetch(`https://api.github.com/repos/${env.GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?branch=main&status=completed&per_page=1`,
+      {headers: {authorization: `Bearer ${env.GITHUB_TOKEN}`, accept: 'application/vnd.github+json'}});
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const run = (await res.json()).workflow_runs?.[0];
+    if (!run) return {status: 'YELLOW', findings: ['main CI: no completed run'], details: []};
+    return run.conclusion === 'success'
+      ? {status: 'GREEN', findings: [], details: [`main CI green @ ${run.head_sha.slice(0, 7)}`]}
+      : {status: 'RED', findings: [`main CI ${run.conclusion} @ ${run.head_sha.slice(0, 7)}`], details: []};
+  } catch (e) {
+    return {status: 'YELLOW', findings: [`main CI: could not query (${e.message})`], details: []};
+  }
+}
+
 export function worst(a, b) {
   const p = {RED: 3, YELLOW: 2, GREEN: 1, SKIPPED: 0};
   return p[a] > p[b] ? a : b;
@@ -501,27 +560,30 @@ export async function main(opts = {}) {
   res.checks.dataFreshness = freshness;
   res.checks.dataSanity = sanity;
   for (const c of [freshness, sanity]) res.overall = worst(res.overall, c.status === 'SKIPPED' ? 'GREEN' : c.status);
-  res.checks.grants = {status: 'SKIPPED', reason: 'needs GRANTS_GOV_API_KEY', findings: [], details: []};
-  
+  const {grants, rls} = await (opts.grantsRls || checkGrantsAndRls)();
+  res.checks.grants = grants;
+  if (grants.status !== 'SKIPPED') res.overall = worst(res.overall, grants.status);
+
   const sec = secretScan();
+  const priv = worst(sec.status, rls.status === 'SKIPPED' ? 'GREEN' : rls.status);
   res.checks.privacy = {
-    status: sec.status,
-    impl: ['Secret scan'],
-    todo: ['Suppression (needs schema)', 'RLS (needs SUPABASE_ACCESS_TOKEN)', 'Views (needs app)'],
-    findings: sec.findings,
-    details: sec.details
+    status: priv,
+    impl: ['Secret scan', ...(rls.status === 'SKIPPED' ? [] : ['RLS + view security_invoker guard'])],
+    todo: ['Suppression suite / no cell < 11 (no board/export views or suppression module yet)', ...(rls.status === 'SKIPPED' ? ['RLS (needs Supabase secrets)'] : [])],
+    findings: [...sec.findings, ...rls.findings],
+    details: [...sec.details, ...rls.details]
   };
-  if (sec.status !== 'GREEN') res.overall = worst(res.overall, sec.status);
+  if (priv !== 'GREEN') res.overall = worst(res.overall, priv);
   
-  const bld = build(), dep = deps();
+  const bld = build(), dep = deps(), ci = await (opts.mainCi || checkMainCi)();
   res.ignored = dep.ignored || [];
   res.stale = dep.stale || [];
   res.checks.buildHealth = {
-    status: worst(bld.status, dep.status),
-    impl: ['Lint', 'Typecheck', 'Test', 'Deps'],
+    status: worst(worst(bld.status, dep.status), ci.status === 'SKIPPED' ? 'GREEN' : ci.status),
+    impl: ['Lint', 'Typecheck', 'Test', 'Deps', ...(ci.status === 'SKIPPED' ? [] : ['Main CI'])],
     todo: ['Deploy health (needs VERCEL_TOKEN)'],
-    findings: [...bld.findings, ...dep.findings],
-    details: [...bld.details, ...dep.details]
+    findings: [...bld.findings, ...dep.findings, ...ci.findings],
+    details: [...bld.details, ...dep.details, ...ci.details]
   };
   if (res.checks.buildHealth.status !== 'GREEN') res.overall = worst(res.overall, res.checks.buildHealth.status);
   
@@ -529,7 +591,7 @@ export async function main(opts = {}) {
   res.checks.harnessIntegrity = {status: har.status, impl: ['Feature evidence', 'AGENTS.md commands', 'Doc refs', 'Progress log'], findings: har.findings, details: har.details};
   if (har.status !== 'GREEN') res.overall = worst(res.overall, har.status);
   
-  res.checks.cost = {status: 'SKIPPED', reason: 'needs cloud billing API', findings: [], details: []};
+  res.checks.cost = {status: 'SKIPPED', reason: 'needs CURSOR_ADMIN_API_KEY (Cloud Agent usage) and LLM provider usage key; caps in D-009', findings: [], details: []};
   
   const {path, exitCode} = emit(res);
   log(`Report: ${path}`);
@@ -547,7 +609,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   }
   const ok = () => ({status: 'GREEN', findings: [], details: [], ignored: [], stale: []});
   const opts = process.env.NIGHTLY_AUDIT_FIXTURE === 'red'
-    ? {secretScan: ok, build: ok, harness: ok, deps: () => ({status: 'RED', findings: ['fixture'], details: [], ignored: [], stale: []})}
+    ? {secretScan: ok, build: ok, harness: ok, mainCi: ok, grantsRls: async () => ({grants: ok(), rls: ok()}), deps: () => ({status: 'RED', findings: ['fixture'], details: [], ignored: [], stale: []})}
     : {};
   main(opts).then(c => process.exit(c ?? 1)).catch(e => {
     console.error('Fatal:', e);

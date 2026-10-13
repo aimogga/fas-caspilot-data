@@ -21,7 +21,7 @@ import {
   supabaseRest,
   evalFreshness,
   evalSanity,
-  checkData,
+  checkData, evalGrants, evalRls, checkGrantsAndRls, checkMainCi,
 } from './nightly-audit.mjs';
 const GHSA_IG = {id: 'GHSA-vfj7-8cjw-p6xm', package: 'braces', reason: 'CVE-2026-93687; dev-only lint toolchain transitive dep, no patched release', reviewer: 'QA bot', expires: '2026-11-08', severity: 'high'};
 const STALE_IG = {...GHSA_IG, id: 'GHSA-aaaa-bbbb-cccc', package: 'nope'};
@@ -358,5 +358,48 @@ describe('data checks (synthetic)', () => {
     await main({secretScan: ok, build: ok, deps: ok, harness: ok, data, log: () => {}, emit: (res) => { report = generateReport(res); return {path: 'x', exitCode: 0}; }});
     expect(report).toContain('Overall: YELLOW');
     expect(report).toContain('Data freshness: syn: last success never');
+  });
+});
+
+describe('grants, RLS and main CI checks (synthetic)', () => {
+  const now = new Date('2099-06-15T09:00:00Z');
+  const daysAgo = (d) => new Date(now - d * 86400000).toISOString();
+  const g = {id: 'g1', name: 'grants-gov', last_success_at: null};
+  const pursuing = [{status: 'pursuing', opportunity: {title: 'Syn Grant', close_date: '2099-06-20'}}, {status: 'pursuing', opportunity: {title: 'Far', close_date: '2099-09-01'}}];
+
+  it('grants: RED when key unused 25+ days, GREEN when recent, lists 14d pursuing deadlines', () => {
+    expect(evalGrants([g], [], [], now)).toMatchObject({status: 'RED'});
+    const r = evalGrants([g], [{source_id: 'g1', status: 'success', started_at: daysAgo(3)}], pursuing, now);
+    expect(r.status).toBe('GREEN');
+    expect(r.details.join(' ')).toContain('Syn Grant 2099-06-20');
+    expect(r.details.join(' ')).not.toContain('Far');
+    expect(evalGrants([], [], [], now).status).toBe('SKIPPED');
+  });
+
+  it('rls: RED per violating relation, GREEN when none', () => {
+    expect(evalRls([{relname: 'syn_table'}])).toMatchObject({status: 'RED', findings: ['RLS/view guard: syn_table']});
+    expect(evalRls([]).status).toBe('GREEN');
+  });
+
+  it('checkGrantsAndRls calls rpc via POST and skips without env', async () => {
+    expect((await checkGrantsAndRls(null)).rls.status).toBe('SKIPPED');
+    const seen = [];
+    const rest = supabaseRest({SUPABASE_URL: 'http://127.0.0.1:9', SUPABASE_SERVICE_ROLE_KEY: 'placeholder'}, async (url, init) => {
+      const p = String(url).split('/rest/v1/')[1].split('?')[0];
+      seen.push(`${init.method ?? 'GET'} ${p}`);
+      return Response.json(p === 'rpc/rls_guard_violations' ? [{relname: 'syn'}] : []);
+    });
+    const {grants, rls} = await checkGrantsAndRls(rest, now);
+    expect(seen).toContain('POST rpc/rls_guard_violations');
+    expect(rls.status).toBe('RED');
+    expect(grants.status).toBe('SKIPPED');
+  });
+
+  it('main CI: GREEN on success, RED on failure, SKIPPED without token', async () => {
+    const env = {GITHUB_TOKEN: 'placeholder', GITHUB_REPOSITORY: 'o/r'};
+    const run = (conclusion) => async () => Response.json({workflow_runs: [{conclusion, head_sha: 'abcdef1234'}]});
+    expect((await checkMainCi(env, run('success'))).status).toBe('GREEN');
+    expect((await checkMainCi(env, run('failure'))).findings).toEqual(['main CI failure @ abcdef1']);
+    expect((await checkMainCi({}, run('success'))).status).toBe('SKIPPED');
   });
 });

@@ -17,6 +17,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   audit:
@@ -50,6 +51,7 @@ jobs:
           # fas-dev only (D-016); never prod.
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           DATE=$(date -u +%Y-%m-%d)
           echo "audit_date=$DATE" >> $GITHUB_OUTPUT
