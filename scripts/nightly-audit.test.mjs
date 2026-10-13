@@ -476,8 +476,9 @@ describe('deploy health (synthetic)', () => {
   });
 });
 
-it('deploy health skips CANCELED deployments and uses the latest non-canceled one', async () => {
+it('deploy health asks Vercel only for READY/ERROR so canceled deploys never come back', async () => {
+  const urls = [];
   const env = {VERCEL_TOKEN: 'placeholder', VERCEL_PROJECT_ID: 'prj_syn'};
-  const r = await checkDeploys(env, async () => Response.json({deployments: [{uid: 'dpl_c', readyState: 'CANCELED'}, {uid: 'dpl_r', readyState: 'READY'}]}));
-  expect(r).toMatchObject({status: 'GREEN', details: ['production deploy READY (dpl_r)', 'preview deploy READY (dpl_r)']});
+  await checkDeploys(env, async (u) => { urls.push(new URL(String(u))); return Response.json({deployments: [{uid: 'dpl_r', readyState: 'READY'}]}); });
+  expect(urls.map(u => u.searchParams.get('state'))).toEqual(['READY,ERROR', 'READY,ERROR']);
 });

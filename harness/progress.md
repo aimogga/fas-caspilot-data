@@ -516,3 +516,4 @@ State: lint/typecheck/tests green on Node 22; 8 mutations killed; synthetic fixt
 Left: suppression / no-cell-<11 (no views yet) and cost (needs Cursor/LLM usage keys) remain todo/SKIPPED.
 Decisions: none.
 Update: ignore CANCELED deployments (latest non-canceled per target, limit 20); mutation killed.
+Update 2: raw Vercel data showed all 24 production deploys CANCELED (none ever READY; project live=false), same rows for the audit's params; query now uses state=READY,ERROR, so production reports 'none found' (YELLOW) until a production deploy succeeds.
