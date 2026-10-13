@@ -1,0 +1,10 @@
+{
+  "name": "census-saipe",
+  "active": false,
+  "nodes": [
+    {"parameters":{"rule":{"interval":[{"field":"cronExpression","expression":"0 15 2 1 *"}]}},"id":"saipe-schedule","name":"Schedule SAIPE","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1.2,"position":[0,0]},
+    {"parameters":{"method":"POST","url":"={{$env.FAS_INGEST_SAIPE_URL}}","sendHeaders":true,"headerParameters":{"parameters":[{"name":"Authorization","value":"=Bearer {{$env.INGEST_TOKEN}}"}]}},"id":"saipe-http","name":"POST ingest saipe","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[240,0]}
+  ],
+  "connections": {"Schedule SAIPE":{"main":[[{"node":"POST ingest saipe","type":"main","index":0}]]}},
+  "settings":{"executionOrder":"v1","timezone":"UTC"}
+}

@@ -344,6 +344,20 @@ Did: no-role breadcrumb "Account not set up" via `crumbFor` in `lib/shell/nav.ts
 Also: crumb uses the canonical path (fixes #78).
 Left: UI evidence (screenshots, axe, mockup comparison) needs a run with local Supabase.
 
-## 2026-10-13 01:32 (UTC) — Cloud Agent — docs DS-07 (F-401)
+## 2026-10-13 01:32 (UTC) — Cloud Agent — PR #102 docs DS-05 (F-209)
+Did: Added `docs/design/specs/DS-05.md` (Data freshness panel / F-209), copied unchanged from design handoff. Docs only; no code or real data. Split from DS-05/06/07 batch (510 lines > 400).
+Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already matched the concurrency wording; no edit.
+
+## 2026-10-13 01:55 (UTC) — Cloud Agent — PR #105 / feature F-203
+Did: claim F-203. `packages/ingest/saipe` (poverty_count, poverty_rate; fail closed on rejects, <29 counties, mixed vintages), `SaipeHttp` + token-gated POST /api/ingest/saipe with secret-free server-side error log (#96 pattern), inactive n8n/census-saipe.json ($env only), census-saipe source_registry migration.
+State: lint/typecheck/unit 309/309 green; real SAIPE 2024 sanity check 58 rows, 29 counties.
+Left: QA; test:db in CI.
+Decisions: none.
+
+## 2026-10-13 02:35 (UTC) — QA — PR #108 flip F-203 passing
+Did: F-203 set to passing in harness/feature_list.json with evidence: PR #105 QA PASS at af26c70 (squash-merged at 6f65d72, 2026-10-13 02:31:48 UTC). Live fas-dev ingest at 02:31:07 UTC loaded 58 rows (29 counties × 2 indicators, 2024); re-run at 02:31:13 UTC stayed at 58 with 0 duplicates. Added "PR #102" to the DS-05 entry heading. Features passing: 8 of 44.
+Left: none for F-203.
+
+## 2026-10-13 01:32 (UTC) — Cloud Agent — PR #104 docs DS-07 (F-401)
 Did: Added `docs/design/specs/DS-07.md` (Team dashboard / F-401), copied unchanged from design handoff. Docs only; no code or real data. Split from DS-05/06/07 batch (510 lines > 400).
 Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already matched the concurrency wording; no edit.
