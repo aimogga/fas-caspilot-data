@@ -91,7 +91,7 @@ export class SahieHttp {
       rows = await fetchRows(env);
     } catch (e) {
       const record = opts.recordFailure ?? PublicIndicatorIngest.recordFailure.bind(PublicIndicatorIngest);
-      const message = IngestAlert.payload(source.SOURCE_NAME, e, env).error;
+      const message = SahieHttp.payload(source.SOURCE_NAME, e, env).error;
       const ingestRunId = await record(client, source.SOURCE_NAME, message).catch(() => null);
       if (e instanceof Error && ingestRunId) Object.assign(e, { ingestRunId });
       throw e;
@@ -104,6 +104,12 @@ export class SahieHttp {
     const year = SahieHttp.year(opts.now ?? new Date(), opts.year);
     return SahieHttp.ingest(Sahie, opts, async (env) =>
       Sahie.requireComplete(Sahie.parse(await Sahie.fetch(year, env, opts.httpFetch))));
+  }
+
+  /** IngestAlert payload plus the `key=` query-param redaction backstop (defense in depth). */
+  static payload(source: string, e: unknown, env: Record<string, string | undefined>) {
+    const p = IngestAlert.payload(source, e, env);
+    return { ...p, error: p.error.replace(/key=[^&\s]+/g, 'key=[redacted]') };
   }
 
   /** Shared route skeleton: auth → body → run; on failure log redacted, alert, then 500. */
@@ -122,14 +128,14 @@ export class SahieHttp {
       const text = await request.text();
       year = text.length === 0 ? undefined : SahieHttp.readYear(JSON.parse(text) as unknown);
     } catch (e) {
-      console.error('[ingest] failed', { source, stage: 'request', message: IngestAlert.payload(source, e, env).error });
+      console.error('[ingest] failed', { source, stage: 'request', message: SahieHttp.payload(source, e, env).error });
       return Response.json({ error: 'bad request' }, { status: 400 });
     }
     try {
       const result = await (deps.run ?? run)({ year, now: deps.now, env, httpFetch: deps.httpFetch, client: deps.client });
       return Response.json({ ok: true, ingestRunId: result.ingestRunId, rowsLoaded: result.rowsLoaded });
     } catch (e) {
-      const payload = IngestAlert.payload(source, e, env);
+      const payload = SahieHttp.payload(source, e, env);
       console.error('[ingest] failed', { source, stage: 'run', message: payload.error });
       await IngestAlert.notify(payload, env, deps.alertFetch);
       return Response.json({ error: 'ingest failed' }, { status: 500 });
