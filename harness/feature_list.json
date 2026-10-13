@@ -200,8 +200,8 @@
       "owner": "engineer-bot",
       "acceptance": [
         "source_registry and ingest_run populated",
-        "Failed ingest runs alert within 15 minutes via n8n (email or Slack), or, until #122 is resolved, via a GitHub issue labeled ingest-alert containing source, run id, error text and timestamp, which notifies George.",
-        "When #122 closes, alerts are delivered via n8n email or Slack and this interim exception is removed.",
+        "Failed ingest runs alert within 15 minutes via n8n email or Slack (primary path); a GitHub issue labeled ingest-alert containing source, run id, error text and timestamp, which notifies George, is kept as the fallback when n8n delivery fails.",
+        "#122 is resolved (Cloudflare Bot Fight Mode turned off 2026-10-13); the n8n webhook is protected by the X-FAS-Alert-Secret shared-secret header, and requests without the correct header are rejected (401/403).",
         "The nightly audit goes YELLOW when the n8n ingest-failure-alert webhook is challenged (e.g. HTTP 403) or when ingest-alert issues exist with no matching n8n delivery.",
         "Re-running a vintage does not duplicate rows"
       ],
@@ -212,7 +212,7 @@
       "human_gate": "none",
       "status": "failing",
       "evidence": [],
-      "status_note": "interim: GitHub-issue alert exception per D-024 until #122 closes; status stays failing until QA verifies"
+      "status_note": "n8n email/Slack is the primary alert path; GitHub issue is the fallback. #122 resolved 2026-10-13 (Bot Fight Mode off). n8n email/Slack delivery not yet configured: no email or Slack credential exists in n8n. Status stays failing until QA verifies."
     },
     {
       "id": "F-202",
