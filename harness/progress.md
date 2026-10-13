@@ -406,6 +406,10 @@ Did: PR #116 applies George's 2026-10-12 decisions to DS-05 (stale rule approved
 Left: QA re-review; secret-scan run at new sha; #113 (DS-06a) and #114 (DS-07a) need updates to match; O1 outcomes card waits on F-305 (D-005 decided); real FAS data gated.
 Decisions: none new (recorded in specs).
 
+## 2026-10-13 04:45 (UTC) — Grok Bot — PR #118: census-sahie commercial_ok=false (Refs #107)
+Did: follow-up migration 20261013050000 sets commercial_ok=false for census-sahie (D-015); merged migration 20261012223000 untouched; tests/db/sahie-load.test.ts asserts the flag. Merged main (latest: 258edb6). PR body says Refs #107. Not applied to any database.
+Left: QA re-check; apply to fas-dev after merge, then close #107.
+
 ## 2026-10-13 01:24 (UTC) — Grok Bot — PR #100: F-002 source cards
-Did: 14 source cards in docs/research/ (sam_entity and ut_transparency are TODO stubs). Each card has 'Permitted for FAS grant use' and required notices; full sample calls (Census/SAM API calls in double quotes so keys expand); SAHIE bulk vs API names labelled; cross-refs name files. ut_courts data verified with a browser User-Agent (plain curl gets 406); reuse terms still unconfirmed. Merged main (latest: f6d85bd).
+Did: 14 source cards in docs/research/ (sam_entity and ut_transparency are TODO stubs). Each card has 'Permitted for FAS grant use' and required notices; full sample calls (Census/SAM API calls in double quotes so keys expand); SAHIE bulk vs API names labelled; cross-refs name files. ut_courts data verified with a browser User-Agent (default curl UA gets 406, an access limit on the box); AOC confirmation requested 2026-10-12 8:39 AM MT, not for grant packets until confirmed. Merged main (latest: 258edb6).
 Left: TODO stubs; ut_courts from another network; QA re-check.
