@@ -344,6 +344,52 @@ Did: no-role breadcrumb "Account not set up" via `crumbFor` in `lib/shell/nav.ts
 Also: crumb uses the canonical path (fixes #78).
 Left: UI evidence (screenshots, axe, mockup comparison) needs a run with local Supabase.
 
+## 2026-10-13 01:32 (UTC) — Cloud Agent — PR #102 docs DS-05 (F-209)
+Did: Added `docs/design/specs/DS-05.md` (Data freshness panel / F-209), copied unchanged from design handoff. Docs only; no code or real data. Split from DS-05/06/07 batch (510 lines > 400).
+Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already matched the concurrency wording; no edit.
+
+## 2026-10-13 01:55 (UTC) — Cloud Agent — PR #105 / feature F-203
+Did: claim F-203. `packages/ingest/saipe` (poverty_count, poverty_rate; fail closed on rejects, <29 counties, mixed vintages), `SaipeHttp` + token-gated POST /api/ingest/saipe with secret-free server-side error log (#96 pattern), inactive n8n/census-saipe.json ($env only), census-saipe source_registry migration.
+State: lint/typecheck/unit 309/309 green; real SAIPE 2024 sanity check 58 rows, 29 counties.
+Left: QA; test:db in CI.
+Decisions: none.
+
+## 2026-10-13 02:35 (UTC) — QA — PR #108 flip F-203 passing
+Did: F-203 set to passing in harness/feature_list.json with evidence: PR #105 QA PASS at af26c70 (squash-merged at 6f65d72, 2026-10-13 02:31:48 UTC). Live fas-dev ingest at 02:31:07 UTC loaded 58 rows (29 counties × 2 indicators, 2024); re-run at 02:31:13 UTC stayed at 58 with 0 duplicates. Added "PR #102" to the DS-05 entry heading. Features passing: 8 of 44.
+Left: none for F-203.
+
+## 2026-10-13 01:32 (UTC) — Cloud Agent — PR #103 docs DS-06 (F-211)
+Did: Added `docs/design/specs/DS-06.md` (County need map explorer / F-211), copied unchanged from design handoff. Docs only; no code or real data. Split from DS-05/06/07 batch (510 lines > 400).
+Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already matched the concurrency wording; no edit.
+
+## 2026-10-13 01:32 (UTC) — Cloud Agent — PR #104 docs DS-07 (F-401)
+Did: Added `docs/design/specs/DS-07.md` (Team dashboard / F-401), copied unchanged from design handoff. Docs only; no code or real data. Split from DS-05/06/07 batch (510 lines > 400).
+Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already matched the concurrency wording; no edit.
+
+## 2026-10-12 23:46 (UTC) — Cloud Agent — PR #95 health probe from env URL
+Did: `/api/health` probes `${NEXT_PUBLIC_SUPABASE_URL}/auth/v1/health` with the publishable `apikey`; falls back to local `127.0.0.1:54321` only when the URL is unset. Closes #12.
+State: lint/typecheck/unit 286/286 green; local `/api/health` ok vs GoTrue.
+Evidence: https://github.com/aimogga/fas-caspilot-data/pull/95
+Left: CI + secret-scan, then QA.
+Decisions: none.
+
+## 2026-10-13 00:21 (UTC) — Cloud Agent — PR #95 QA FAIL health status
+Did: `SupabaseHealthProbe.responds` now returns `response.ok` (2xx only). Injected-fetch tests: reject → false, timeout → false, 503 → false, 200 → true.
+State: lint/typecheck/unit 301/301 green.
+Evidence: https://github.com/aimogga/fas-caspilot-data/pull/95
+Left: CI + secret-scan, then QA re-check.
+Decisions: none.
+
+## 2026-10-13 03:30 (UTC) — Cloud Agent — PR #95 timeout-test mutation gap
+Did: merged origin/main (progress.md conflict kept both sides). Timeout test mock now resolves 200 when no abort signal is passed, so removing `AbortSignal.timeout` fails it; a non-aborting signal makes it time out.
+State: lint/typecheck/unit green.
+Left: CI + secret-scan, preview, QA re-check.
+Decisions: none.
+
+## 2026-10-13 03:52 (UTC) — Cloud Agent — PR #115 docs reporting rule
+Did: Created `harness/preferences.md` with standing Reporting rule (George, 2026-10-12): FAS bots report to Chief of staff on merges, completed features, blockers, and anything needing George; short note with what landed / PR / tests; never George directly; new packets inherit.
+Left: QA review of docs PR.
+
 ## 2026-10-13 01:24 (UTC) — Grok Bot — F-002 source cards (claim)
 Did: Claimed F-002. Added docs/research/ cards for sahie, saipe, acs5, hrsa_hpsa_mh, cdc_places, ut_courts, va_vetpop, hrsa_ahrf and grants_gov, each with sample call, vintage, license and commercial-reuse answer (checked 2026-10-08).
 Left: No cards yet for usaspending, propublica_990, irs_990pf_grants, sam_entity, ut_transparency (Phase 5 Use/Verify first rows); Deep Research must add them before F-002 can pass. QA re-runs 3 sample calls (Census calls need a key).
