@@ -29,6 +29,11 @@ describe('unit: acs5 parser with recorded fixture', () => {
     expect(parsed.rows.length).toBe(29 * 3);
   });
 
+  it('checksum is stable for the fixture', () => {
+    const rows = Acs5.requireComplete(Acs5.parse(fixture), '2023');
+    expect(Acs5.checksum(rows)).toBe('18934844e7c50351516b3f734bd740c09e636ccc1bd2e80c9a42432cd44a1eb3');
+  });
+
   it('fetch reads CENSUS_API_KEY from env only', async () => {
     await expect(Acs5.fetch('2024', {}, async () => new Response('[]'))).rejects.toThrow(
       'CENSUS_API_KEY is not set',

@@ -55,8 +55,6 @@ describe('role-guards', () => {
     expect(isPublicRoute('/api/ingest/sahie/')).toBe(false);
     expect(isPublicRoute('/api/ingest/saipe/')).toBe(false);
     expect(isPublicRoute('/api/ingest/acs/')).toBe(false);
-    expect(isPublicRoute('/api/ingest/saipe/')).toBe(false);
->>>>>>> origin/main
     expect(isPublicRoute('/api/ingest')).toBe(false);
     expect(isPublicRoute('/healthz')).toBe(false);
     expect(isPublicRoute('/403/x')).toBe(false);
