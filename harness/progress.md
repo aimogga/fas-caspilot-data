@@ -410,6 +410,14 @@ Decisions: none new (recorded in specs).
 Did: follow-up migration 20261013050000 sets commercial_ok=false for census-sahie (D-015); merged migration 20261012223000 untouched; tests/db/sahie-load.test.ts asserts the flag. Merged main (latest: f6d85bd). PR body says Refs #107. Not applied to any database.
 Left: QA re-check; apply to fas-dev after merge, then close #107.
 
+## 2026-10-13 01:24 (UTC) — Grok Bot — PR #100: F-002 source cards
+Did: 14 source cards in docs/research/ (sam_entity and ut_transparency are TODO stubs). Each card has 'Permitted for FAS grant use' and required notices; full sample calls (Census/SAM API calls in double quotes so keys expand); SAHIE bulk vs API names labelled; cross-refs name files. ut_courts data verified with a browser User-Agent (default curl UA gets 406, an access limit on the box); AOC confirmation requested 2026-10-12 8:39 AM MT, not for grant packets until confirmed. Merged main (latest: 258edb6).
+Left: TODO stubs; ut_courts from another network; QA re-check.
+
+## 2026-10-13 01:24 (UTC) — Grok Bot — PR #98: F-000 plugin inventory
+Did: landed harness/PLUGIN_INVENTORY.md (Grok, Cursor local + Cloud, n8n; Use/Maybe/Avoid with reasons and an FAS-data column). Aligned with D-009 (cron labelled an implementation choice); added user-Supabase--casepilot and user-Refero rows; live read-only n8n inventory (2 workflows); GitHub Actions row lists real workflows; D-001/002/005/006/007/009 shown decided; proposals renamed P-1 to P-5; recounted by script (83 rows: Use 14 · Maybe 24 · Avoid 45). Merged main (latest: 258edb6).
+Left: QA re-check; George sign-off.
+
 ## 2026-10-13 03:55 (UTC) — Cloud Agent — PR #113 / feature F-211 (DS-06a, PR 1 of 3)
 Did: claim F-211. `/need-map` (all roles) table: 29 counties by rank, score, bin, latest-vintage indicators, status; `Not available yet` / `Not published`; source footer; empty and error states.
 Fixes (UX + QA on 08350b0): scroll region with sticky County, right-aligned numbers, display names and units, per-column source + vintage + as-of, placeholder bins, ErrorState body.
