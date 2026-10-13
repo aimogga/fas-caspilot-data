@@ -495,6 +495,27 @@ export async function checkMainCi(env = process.env, httpFetch = fetch) {
   }
 }
 
+export async function checkDeploys(env = process.env, httpFetch = fetch) {
+  if (!env.VERCEL_TOKEN || !env.VERCEL_PROJECT_ID) return {status: 'SKIPPED', findings: [], details: ['deploy health: needs VERCEL_TOKEN']};
+  const r = {status: 'GREEN', findings: [], details: []};
+  try {
+    for (const target of ['production', 'preview']) {
+      const q = new URLSearchParams({projectId: env.VERCEL_PROJECT_ID, target, limit: '1', ...(env.VERCEL_TEAM_ID ? {teamId: env.VERCEL_TEAM_ID} : {})});
+      const res = await httpFetch(`https://api.vercel.com/v6/deployments?${q}`, {headers: {authorization: `Bearer ${env.VERCEL_TOKEN}`}});
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const d = (await res.json()).deployments?.[0];
+      const state = d?.readyState ?? d?.state;
+      if (!d) { r.status = worst(r.status, 'YELLOW'); r.findings.push(`${target} deploy: none found`); }
+      else if (state === 'READY') r.details.push(`${target} deploy READY (${d.uid})`);
+      else if (state === 'ERROR') { r.status = 'RED'; r.findings.push(`${target} deploy ERROR (${d.uid})`); }
+      else { r.status = worst(r.status, 'YELLOW'); r.findings.push(`${target} deploy ${state} (${d.uid})`); }
+    }
+    return r;
+  } catch (e) {
+    return {status: 'YELLOW', findings: [`deploy health: could not query (${e.message})`], details: []};
+  }
+}
+
 export function worst(a, b) {
   const p = {RED: 3, YELLOW: 2, GREEN: 1, SKIPPED: 0};
   return p[a] > p[b] ? a : b;
@@ -575,15 +596,15 @@ export async function main(opts = {}) {
   };
   if (priv !== 'GREEN') res.overall = worst(res.overall, priv);
   
-  const bld = build(), dep = deps(), ci = await (opts.mainCi || checkMainCi)();
+  const bld = build(), dep = deps(), ci = await (opts.mainCi || checkMainCi)(), dpl = await (opts.deploys || checkDeploys)();
   res.ignored = dep.ignored || [];
   res.stale = dep.stale || [];
   res.checks.buildHealth = {
-    status: worst(worst(bld.status, dep.status), ci.status === 'SKIPPED' ? 'GREEN' : ci.status),
-    impl: ['Lint', 'Typecheck', 'Test', 'Deps', ...(ci.status === 'SKIPPED' ? [] : ['Main CI'])],
-    todo: ['Deploy health (needs VERCEL_TOKEN)'],
-    findings: [...bld.findings, ...dep.findings, ...ci.findings],
-    details: [...bld.details, ...dep.details, ...ci.details]
+    status: [ci, dpl].reduce((s, c) => worst(s, c.status === 'SKIPPED' ? 'GREEN' : c.status), worst(bld.status, dep.status)),
+    impl: ['Lint', 'Typecheck', 'Test', 'Deps', ...(ci.status === 'SKIPPED' ? [] : ['Main CI']), ...(dpl.status === 'SKIPPED' ? [] : ['Deploy health'])],
+    todo: dpl.status === 'SKIPPED' ? ['Deploy health (needs VERCEL_TOKEN)'] : [],
+    findings: [...bld.findings, ...dep.findings, ...ci.findings, ...dpl.findings],
+    details: [...bld.details, ...dep.details, ...ci.details, ...dpl.details]
   };
   if (res.checks.buildHealth.status !== 'GREEN') res.overall = worst(res.overall, res.checks.buildHealth.status);
   
@@ -609,7 +630,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   }
   const ok = () => ({status: 'GREEN', findings: [], details: [], ignored: [], stale: []});
   const opts = process.env.NIGHTLY_AUDIT_FIXTURE === 'red'
-    ? {secretScan: ok, build: ok, harness: ok, mainCi: ok, grantsRls: async () => ({grants: ok(), rls: ok()}), deps: () => ({status: 'RED', findings: ['fixture'], details: [], ignored: [], stale: []})}
+    ? {secretScan: ok, build: ok, harness: ok, mainCi: ok, deploys: ok, grantsRls: async () => ({grants: ok(), rls: ok()}), deps: () => ({status: 'RED', findings: ['fixture'], details: [], ignored: [], stale: []})}
     : {};
   main(opts).then(c => process.exit(c ?? 1)).catch(e => {
     console.error('Fatal:', e);

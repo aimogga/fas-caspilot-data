@@ -505,3 +505,9 @@ State: lint/typecheck/unit green; synthetic fixtures only.
 Left: QA; nightly-audit.yml reads fas-dev SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY repo secrets (D-016); grants, suppression/RLS/views, deploy health and cost stay SKIPPED until their keys or schema exist.
 Decisions: none.
 Update: grants (key-usage via grants source ingest_run, 14d pursuing deadlines), RLS+view guard via rpc/rls_guard_violations, main CI via GITHUB_TOKEN now real; suppression/no-cell<11 (no views yet), deploy health (VERCEL_TOKEN), cost (Cursor/LLM usage keys) still SKIPPED.
+
+## 2026-10-13 15:45 (UTC) — Grok Bot — PR #NNN / feature F-601 deploy health (check 5)
+Did: `checkDeploys` in `scripts/nightly-audit.mjs`: latest production and preview Vercel deployments must be READY (ERROR → RED, other/none → YELLOW, HTTP error → YELLOW "could not query", no token → SKIPPED); folds into buildHealth/overall. `nightly-audit.yml` passes `secrets.VERCEL_TOKEN/VERCEL_PROJECT_ID/VERCEL_TEAM_ID`.
+State: lint/typecheck/tests green on Node 22; 8 mutations killed; synthetic fixtures only.
+Left: suppression / no-cell-<11 (no views yet) and cost (needs Cursor/LLM usage keys) remain todo/SKIPPED.
+Decisions: none.
