@@ -516,6 +516,55 @@ export async function checkDeploys(env = process.env, httpFetch = fetch) {
   }
 }
 
+// F-201: n8n ingest-failure-alert health. Issue bodies from both paths share the same lines, and both
+// authenticate as the same GitHub user, so the only reliable discriminator is an explicit body line:
+// n8n workflow writes `Delivered-by: n8n`, the app fallback writes `Delivered-by: app-fallback`.
+export const N8N_MARKER = 'Delivered-by: n8n';
+
+export function classifyProbe(status, headers = {}, body = '') {
+  const h = (k) => (typeof headers.get === 'function' ? headers.get(k) : headers[k]) ?? '';
+  if (h('cf-mitigated') === 'challenge') return {ok: false, why: 'Cloudflare challenge (cf-mitigated)'};
+  if (status === 403 && /cf-chl|challenge-platform|Just a moment|Attention Required/i.test(body)) return {ok: false, why: 'Cloudflare challenge page'};
+  if (status === 401 || status === 403) return {ok: true};
+  return {ok: false, why: `unauthenticated probe got HTTP ${status}`};
+}
+
+export function unmatchedAlertIssues(issues, now = new Date()) {
+  return issues.filter(i => !i.pull_request && (i.state === 'open' || now - new Date(i.created_at) <= DAY_MS))
+    .filter(i => !String(i.body ?? '').includes(N8N_MARKER));
+}
+
+export async function checkIngestAlerts(env = process.env, httpFetch = fetch, now = new Date()) {
+  const url = env.INGEST_ALERT_WEBHOOK_URL;
+  if (!url) return {status: 'SKIPPED', reason: 'needs INGEST_ALERT_WEBHOOK_URL', findings: [], details: []};
+  const r = {status: 'GREEN', findings: [], details: []};
+  const yellow = (f) => { r.status = 'YELLOW'; r.findings.push(f); };
+  try {
+    const res = await httpFetch(url, {method: 'POST', headers: {'content-type': 'application/json'},
+      body: JSON.stringify({source: 'nightly-audit-probe', status: 'error', error: 'synthetic unauthenticated probe', ingestRunId: null, at: now.toISOString()})});
+    const p = classifyProbe(res.status, res.headers, await res.text().catch(() => ''));
+    if (p.ok) r.details.push(`webhook rejects unauthenticated probe (HTTP ${res.status})`);
+    else yellow(`webhook challenged: ${p.why}`);
+  } catch (e) {
+    yellow(`webhook challenged: probe failed (${e.message})`);
+  }
+  if (!env.GITHUB_TOKEN || !env.GITHUB_REPOSITORY) r.details.push('ingest-alert issues: needs GITHUB_TOKEN');
+  else {
+    try {
+      const since = new Date(now - DAY_MS).toISOString();
+      const res = await httpFetch(`https://api.github.com/repos/${env.GITHUB_REPOSITORY}/issues?labels=ingest-alert&state=all&since=${since}&per_page=100`,
+        {headers: {authorization: `Bearer ${env.GITHUB_TOKEN}`, accept: 'application/vnd.github+json'}});
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const bad = unmatchedAlertIssues(await res.json(), now);
+      if (bad.length) yellow(`ingest-alert issue(s) without n8n delivery: ${bad.map(i => `#${i.number}`).join(', ')}`);
+      else r.details.push('ingest-alert issues: all delivered by n8n');
+    } catch (e) {
+      yellow(`ingest-alert issues: could not query (${e.message})`);
+    }
+  }
+  return r;
+}
+
 export function worst(a, b) {
   const p = {RED: 3, YELLOW: 2, GREEN: 1, SKIPPED: 0};
   return p[a] > p[b] ? a : b;
@@ -612,6 +661,10 @@ export async function main(opts = {}) {
   res.checks.harnessIntegrity = {status: har.status, impl: ['Feature evidence', 'AGENTS.md commands', 'Doc refs', 'Progress log'], findings: har.findings, details: har.details};
   if (har.status !== 'GREEN') res.overall = worst(res.overall, har.status);
   
+  const alerts = await (opts.alerts || checkIngestAlerts)();
+  res.checks.ingestAlerts = alerts;
+  if (alerts.status !== 'SKIPPED') res.overall = worst(res.overall, alerts.status);
+
   res.checks.cost = {status: 'SKIPPED', reason: 'needs CURSOR_ADMIN_API_KEY (Cloud Agent usage) and LLM provider usage key; caps in D-009', findings: [], details: []};
   
   const {path, exitCode} = emit(res);
@@ -630,7 +683,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   }
   const ok = () => ({status: 'GREEN', findings: [], details: [], ignored: [], stale: []});
   const opts = process.env.NIGHTLY_AUDIT_FIXTURE === 'red'
-    ? {secretScan: ok, build: ok, harness: ok, mainCi: ok, deploys: ok, grantsRls: async () => ({grants: ok(), rls: ok()}), deps: () => ({status: 'RED', findings: ['fixture'], details: [], ignored: [], stale: []})}
+    ? {secretScan: ok, build: ok, harness: ok, mainCi: ok, deploys: ok, alerts: ok, grantsRls: async () => ({grants: ok(), rls: ok()}), deps: () => ({status: 'RED', findings: ['fixture'], details: [], ignored: [], stale: []})}
     : {};
   main(opts).then(c => process.exit(c ?? 1)).catch(e => {
     console.error('Fatal:', e);

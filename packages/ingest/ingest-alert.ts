@@ -92,7 +92,7 @@ export class IngestAlert {
         },
         body: JSON.stringify({
           title: `Ingest failed: ${payload.source}`,
-          body: `Source: ${payload.source}\nAt: ${payload.at}\nIngest run: ${payload.ingestRunId}\nError: ${payload.error}`,
+          body: `Source: ${payload.source}\nAt: ${payload.at}\nIngest run: ${payload.ingestRunId}\nError: ${payload.error}\nDelivered-by: app-fallback`,
           labels: ['ingest-alert'],
         }),
       });
