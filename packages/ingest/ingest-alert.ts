@@ -52,6 +52,41 @@ export class IngestAlert {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(payload),
       });
+      if (res.ok && res.headers.get('cf-mitigated') !== 'challenge') {
+        return true;
+      }
+    } catch {
+      // fall through to the GitHub fallback
+    }
+    return IngestAlert.githubIssue(payload, env, httpFetch);
+  }
+
+  /** Fallback when n8n is unreachable: opens the same issue the n8n workflow would. */
+  static async githubIssue(
+    payload: IngestAlertPayload,
+    env: Record<string, string | undefined>,
+    httpFetch: typeof fetch,
+  ): Promise<boolean> {
+    const token = env.INGEST_ALERT_GITHUB_TOKEN;
+    if (!token) {
+      console.warn('ingest alert: n8n webhook failed and INGEST_ALERT_GITHUB_TOKEN is unset');
+      return false;
+    }
+    const repo = env.INGEST_ALERT_GITHUB_REPO || 'aimogga/fas-caspilot-data';
+    try {
+      const res = await httpFetch(`https://api.github.com/repos/${repo}/issues`, {
+        method: 'POST',
+        headers: {
+          accept: 'application/vnd.github+json',
+          authorization: `Bearer ${token}`,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: `Ingest failed: ${payload.source}`,
+          body: `Source: ${payload.source}\nAt: ${payload.at}\nIngest run: ${payload.ingestRunId}\nError: ${payload.error}`,
+          labels: ['ingest-alert'],
+        }),
+      });
       return res.ok;
     } catch {
       return false;

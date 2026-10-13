@@ -160,3 +160,36 @@ it('n8n alert workflow is inactive and opens an ingest-alert issue', () => {
   expect(text).toContain('$json.body.ingestRunId');
   expect(text).not.toMatch(/gh[pousr]_|github_pat_/);
 });
+
+describe('IngestAlert GitHub fallback', () => {
+  const p = IngestAlert.payload('synthetic-source', new Error('boom'), {}, 'run-synth-1');
+  const env = { INGEST_ALERT_WEBHOOK_URL: 'http://127.0.0.1/hook', INGEST_ALERT_GITHUB_TOKEN: 'synth-gh' };
+  const recorder = (n8n: Response) => {
+    const calls: Array<{ url: string; body: Record<string, unknown> }> = [];
+    const f = async (url: RequestInfo | URL, init?: RequestInit) => {
+      calls.push({ url: String(url), body: JSON.parse(String(init?.body)) as Record<string, unknown> });
+      return calls.length === 1 ? n8n : new Response(null, { status: 201 });
+    };
+    return { calls, f: f as typeof fetch };
+  };
+
+  it('opens a labeled issue when n8n returns a Cloudflare challenge', async () => {
+    const { calls, f } = recorder(new Response(null, { status: 403, headers: { 'cf-mitigated': 'challenge' } }));
+    expect(await IngestAlert.notify(p, env, f)).toBe(true);
+    expect(calls[1]?.url).toBe('https://api.github.com/repos/aimogga/fas-caspilot-data/issues');
+    expect(calls[1]?.body).toMatchObject({ title: 'Ingest failed: synthetic-source', labels: ['ingest-alert'] });
+    expect(calls[1]?.body.body).toContain('run-synth-1');
+  });
+
+  it('does not call GitHub when n8n succeeds', async () => {
+    const { calls, f } = recorder(new Response(null, { status: 200 }));
+    expect(await IngestAlert.notify(p, env, f)).toBe(true);
+    expect(calls).toHaveLength(1);
+  });
+
+  it('skips without throwing when no token is set', async () => {
+    const { calls, f } = recorder(new Response(null, { status: 502 }));
+    expect(await IngestAlert.notify(p, { INGEST_ALERT_WEBHOOK_URL: env.INGEST_ALERT_WEBHOOK_URL }, f)).toBe(false);
+    expect(calls).toHaveLength(1);
+  });
+});
