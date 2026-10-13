@@ -1,6 +1,4 @@
-import { createHash } from 'node:crypto';
-import { COUNTIES } from '../../../lib/synthetic/generate';
-import { CensusTable } from '../census-table';
+import { CensusTable, CENSUS_NOT_PUBLISHED, UTAH_COUNTY_FIPS } from '../census-table';
 import type { IndicatorRow } from '../public-indicator';
 
 const CODES = ['uninsured_count', 'uninsured_rate'] as const;
@@ -10,14 +8,13 @@ const FIELDS = {
   uninsured_rate: ['PCTUI_PT', 'PCTUI_MOE'],
 } as const;
 const FILTERS = { AGECAT: '0', SEXCAT: '0', RACECAT: '0', IPRCAT: '0' } as const;
-const UTAH = new Set(COUNTIES.map((c) => c.fips));
 
 export type SahieParse = { rows: IndicatorRow[]; rejects: string[] };
 
 export class Sahie {
   static readonly SOURCE_NAME = 'census-sahie';
   static readonly ENDPOINT = 'https://api.census.gov/data/timeseries/healthins/sahie';
-  static readonly NOT_PUBLISHED = 'not_published';
+  static readonly NOT_PUBLISHED = CENSUS_NOT_PUBLISHED;
 
   static requestUrl(year: string, key: string): URL {
     const q = `get=NAME,GEOID,NUI_PT,NUI_MOE,PCTUI_PT,PCTUI_MOE,YEAR&for=county:*&in=state:49&time=${year}&AGECAT=0&SEXCAT=0&RACECAT=0&IPRCAT=0&key=${encodeURIComponent(key)}`;
@@ -29,17 +26,11 @@ export class Sahie {
     env: Record<string, string | undefined> = process.env,
     httpFetch: typeof fetch = fetch,
   ): Promise<unknown> {
-    const key = env.CENSUS_API_KEY;
-    if (!key) throw new Error('CENSUS_API_KEY is not set');
-    const res = await httpFetch(Sahie.requestUrl(year, key));
-    if (!res.ok) throw new Error(`SAHIE fetch failed: ${res.status}`);
-    return res.json();
+    return CensusTable.fetchJson((key) => Sahie.requestUrl(year, key), 'SAHIE', env, httpFetch);
   }
 
   static num(raw: string | undefined): number | null | undefined {
-    if (raw == null || raw === '' || raw === 'N/A') return null;
-    const n = Number(raw);
-    return Number.isFinite(n) ? n : undefined;
+    return CensusTable.num(raw);
   }
 
   static fips(row: Record<string, string>): string | null {
@@ -84,7 +75,7 @@ export class Sahie {
         rejects.push(`${geo_fips} missing year`);
         continue;
       }
-      if (!UTAH.has(geo_fips)) continue;
+      if (!UTAH_COUNTY_FIPS.has(geo_fips)) continue;
       for (const code of CODES) {
         const value = Sahie.num(row[FIELDS[code][0]]);
         const moe = Sahie.num(row[FIELDS[code][1]]);
@@ -108,18 +99,11 @@ export class Sahie {
   }
 
   static requireComplete(parsed: SahieParse): IndicatorRow[] {
-    if (parsed.rejects.length > 0) throw new Error(`SAHIE rejected ${parsed.rejects.length} rows`);
-    const n = new Map<string, number>();
-    for (const r of parsed.rows) n.set(r.geo_fips, (n.get(r.geo_fips) ?? 0) + 1);
-    if ([...n.values()].some((c) => c !== 2) || n.size !== COUNTIES.length) {
-      throw new Error(`SAHIE partial response: ${n.size} counties`);
-    }
+    CensusTable.requireCountyCoverage(parsed.rows, parsed.rejects, CODES.length, 'SAHIE');
     return parsed.rows;
   }
 
   static checksum(rows: IndicatorRow[]): string {
-    const key = (r: IndicatorRow) => `${r.geo_fips}:${r.indicator_code}`;
-    const sorted = [...rows].sort((a, b) => key(a).localeCompare(key(b)));
-    return createHash('sha256').update(JSON.stringify(sorted)).digest('hex');
+    return CensusTable.checksum(rows);
   }
 }
