@@ -1,43 +1,224 @@
 # Plugin, MCP and Integration Inventory
 
-**Seeded from the integrations connected to George's Claude account (October 2026).** Grok, Cursor and n8n may have a different set. In Phase 0 the Chief of Staff confirms what is actually available in each tool, adds missing rows, and gets George's sign-off. Anything not marked **Use** needs a DECISIONS.md entry before a packet may list it in `plugins_allowed`.
+> Phase 0, F-000. Filled in by the Chief of Staff on 2026-10-08 (MT), from the reviewed box draft (Rev 2). **Status update 2026-10-12:** rows describe the current setup. D-009 (George): Cursor $60 plan with $0 on-demand; Nightly Audit under $2 per run. George's 7:55 PM MT relay: no cap on parallel agents; work pauses when usage runs out and resumes after the reset. Implementation (not George's words): Cursor Automations not used; the Nightly Audit runs on a GitHub Actions cron.
+> Originally seeded from the integrations on George's Claude account. This draft re-checks what is **actually** connected on the Grok side (live tool catalog and light read-only calls on 2026-10-08), what the repo declares for Cursor, and what the docs assume about n8n. Nothing here was created or changed in any service.
+
+**Rules that apply to every row (from the kickoff + `docs/PRIVACY_AND_COMPLIANCE.md`):** synthetic data only until the Phase 6 gate · least privilege · no FAS data goes to a third party without a DECISIONS.md entry · anything not marked **Use** needs a DECISIONS.md entry before a packet may list it in `plugins_allowed`.
+
+**Column key**
+- **Verdict:** **Use** / Maybe / Avoid.
+- **FAS data → 3rd party?** **Yes** = using the tool for its purpose here would send FAS data (real or derived) outside CasePilot's own stack · **No** = it never touches FAS data · **Only if misused** = safe for its intended use, but someone could paste or route FAS data into it. Synthetic data only until Phase 6 applies regardless.
+- **Verified?** ✅ = confirmed live on 2026-10-08 · ⚠️ = partly confirmed · ❓ = unverified, needs George or the Engineer Supervisor to confirm.
+
+---
 
 ## Core build tools
-| Tool | Where | Verdict | Use it for | Guardrails |
-|---|---|---|---|---|
-| Cursor (local + Cloud Agents) | Build | **Use** | All coding; one cloud agent per packet | Dev/preview credentials only |
-| Cursor Automations | Build | Avoid | Not on George's $20 plan; Nightly Audit runs as a GitHub Actions cron instead | — |
-| Cursor Bugbot / PR review (if enabled) | Build | Maybe | Second-opinion review on PRs | Doesn't replace QA |
-| GitHub | Build | **Use** | Repo, Issues (packets), PRs, Actions CI + Nightly Audit cron | Branch protection on main |
-| Supabase MCP | Cursor | **Use** (dev/preview only) | Schema inspection, migrations on dev, advisors | Never connected to production project |
-| Vercel MCP | Cursor | **Use** (read-mostly) | Deployment status, logs, preview URLs | Promotions to production need George |
-| Shadcn UI MCP | Cursor | **Use** | UI components and blocks | — |
-| n8n MCP | Cursor | **Use** (CasePilot instance, dev only) | Create/inspect schedule + alert workflows | New workflows inactive; don't edit live ones (D-002, D-007) |
-| Context7 (docs MCP) | Cursor | Maybe → recommended | Current library docs so agents don't use outdated APIs | Add in Phase 0 if not installed |
-| Playwright MCP | Cursor/QA | Maybe → recommended | QA screenshots of dashboards and exported PDFs | Preview environments only |
+*Template rows kept. "Cursor (local + Cloud Agents)" is split into two rows so the Cloud Agents and Automations verdicts are visible separately.*
+
+| Tool | Where | Verdict | Use it for | Guardrails | FAS data → 3rd party? | Verified? |
+|---|---|---|---|---|---|---|
+| Cursor (local IDE agent) | Build | **Use** | Local coding; reviewing Cloud Agent PRs | Dev/preview credentials only; `.cursor/rules/*` always on | Only if misused (code and synthetic data go to Cursor's model providers) | ❓ plan, IDE config and MCPs not visible to Grok |
+| Cursor Cloud Agents | Build | **Use** | One cloud agent per packet (F-003, PLAN working limits) | Cursor $60 plan with $0 on-demand (D-009). When usage runs out, work pauses and resumes after the reset; no cap on parallel agents (George's 7:55 PM MT relay). Dev/preview secrets only | Only if misused (code + synthetic data go to the selected model's provider) | ⚠️ in use per D-009 |
+| Cursor Automations | Build | Avoid | Not used. The Nightly Audit runs on a GitHub Actions cron instead (implementation choice, not D-009 wording) | Each Automation run is a Cloud Agent using the model's **maximum** context window (cursor.com/docs/cloud-agent/automations); with $0 on-demand there's no budget for it | Only if misused | n/a |
+| Cursor Bugbot / PR review (if enabled) | Build | Maybe | Second-opinion review on PRs | Doesn't replace QA | Only if misused | ❓ |
+| GitHub (`aimogga/fas-caspilot-data`, private) | Build | **Use** | Repo, Issues (packets), PRs, Actions CI | Branch protection on main (F-104). Repo is under the personal `aimogga` account; D-001 recommends a CasePilot org | No (repo must never hold real data) | ✅ read via cursor-github |
+| GitHub Actions | Build | **Use** | CI (F-104) and the Nightly Audit cron (implementation choice; D-009 sets the under-$2-per-run cap) | Secret scanning on; no production secrets | No | ✅ workflows on main: ci.yml, nightly-audit.yml, nightly-audit-backup.yml, audit-staleness.yml, copilot-setup-steps.yml |
+| Supabase MCP | Cursor | **Use** (dev/preview only) | Schema inspection, migrations on dev, advisors | Never connected to production project | No while on dev/synthetic. **Yes** if pointed at production | ❓ Cursor side. A Grok-side Supabase connector also exists (see Grok table) |
+| Vercel MCP | Cursor | **Use** (read-mostly) | Deployment status, logs, preview URLs | Promotions to production need George | No (preview/synthetic) | ❓ Cursor side |
+| Shadcn UI MCP | Cursor | **Use** | UI components and blocks | — | No | ⚠️ in the Cursor marketplace (cursor.com/marketplace/shadcn); install not confirmed |
+| n8n MCP | Cursor | Maybe *(template said Use)* | Create/inspect schedule + alert workflows | CasePilot instance, dev only; new workflows inactive; don't edit live ones (D-002, D-007). **D-007 says Cursor's `mcp.json` currently points at the ModernLine n8n MCP server, which is the wrong instance** | Only if misused | ❓ no official Cursor plugin found; community `n8n-mcp` or `n8n-as-code` would be needed |
+| Context7 (docs MCP) | Cursor | Maybe → recommended | Current library docs so agents don't use outdated APIs | Add in Phase 0 if not installed | Only if misused (queries go to Upstash) | ⚠️ in the Cursor marketplace (cursor.com/marketplace/upstash); install not confirmed |
+| Playwright MCP | Cursor/QA | Maybe → recommended | QA screenshots of dashboards and exported PDFs | Preview environments only | No (preview/synthetic) | ❓ Cursor side. A Grok-side Playwright connector exists |
 
 ## Connected business tools (seeded list)
-| Tool | Verdict | Reason |
-|---|---|---|
-| Google Drive | Maybe | Storing finished board packets and docs for humans; never the source of truth for data |
-| Gmail | Maybe | Weekly digest could send via n8n's Gmail node; agents never send email directly |
-| Google Calendar | Avoid (v1) | Not needed; maybe later for grant deadline reminders |
-| PDF Tools | Maybe | QA inspection of exported PDFs |
-| Canva | Avoid (core) | Manual design work only; the app must generate packets itself |
-| Claude in Chrome / Control Chrome / macOS control | Avoid | Desktop control is not reproducible in cloud builds and is risky with credentials |
-| Stripe | Avoid (v1) | No billing in v1 |
-| HubSpot, Clay, Vibe Prospecting | Avoid for FAS data | Never send FAS data to sales/CRM tools; may be useful later for CasePilot's own sales |
-| Apify (scraping) | Avoid | Prefer official APIs; scraping can break site terms |
-| Buffer, OpusClip | Avoid | Not relevant to this build |
+*Seeded from the Claude account. The "On Grok side?" column shows whether the same tool is connected to this Grok account.*
+
+| Tool | Verdict | Reason | On Grok side? | FAS data → 3rd party? |
+|---|---|---|---|---|
+| Google Drive | Maybe | For storing finished board packets and docs for humans. Never the source of truth for data. Storing real packets after Phase 6 puts FAS-Shareable data in Google, so that needs a decision | Yes (`user-Google-drive`, ready + skill) | Only if misused until Phase 6, then **Yes** |
+| Gmail (via n8n Gmail node) | Maybe | The weekly digest could send through n8n's Gmail node. Digest content is grant matches only, never client data. Agents never send email directly | Yes (`user-Gmail--casepilot-llc`, see Grok table) | Only if misused |
+| Google Calendar | Avoid (v1) | Not needed. Maybe later for grant deadline reminders | Yes (`user-Google-calendar`) | Only if misused |
+| PDF Tools | Maybe | QA inspection of exported PDFs | No. Grok equivalent is poppler on the box | No (exports are synthetic before Phase 6) |
+| Canva | Avoid (core) | Manual design only; the app must generate packets itself | No | Only if misused |
+| Claude in Chrome / Control Chrome / macOS control | Avoid | Desktop control isn't reproducible in cloud builds and is risky with credentials | No (Claude-only) | Only if misused |
+| Stripe | Avoid (v1) | No billing in v1 | No | No |
+| HubSpot, Clay, Vibe Prospecting | **Avoid for FAS data** | Sales and CRM tools. FAS client data must never go to them. Might help CasePilot's own sales later | HubSpot + Clay yes; Vibe no | **Yes** if ever used with FAS data |
+| Apify (scraping) | Avoid | Prefer official APIs. PRD non-goals and DATA_SOURCES "Avoid" both forbid scraping | Yes (`user-Apify` + 5 skills) | Only if misused |
+| Buffer, OpusClip | Avoid | Not relevant to this build | Buffer yes (wrong account, see below); OpusClip no | Only if misused |
 
 ## Grok-side tools
-*(Chief of Staff fills in: which tools, connectors, browsing and code-execution features each Grok bot has, and which repo/issue access they need.)*
 
-| Bot | Tools it has | Repo access needed | Notes |
+### Per-bot summary (template table)
+*Verified only for the Chief of Staff instance (this account). All six bots run on George's Grok account, which shares one connector set and one box, so the other bots probably see the same tools. That's unverified. The **Tools it should use** column is a proposed least-privilege allowlist, not a description of what each bot can technically reach.*
+
+| Bot | Tools it should use (proposed allowlist) | Repo access needed | Notes |
 |---|---|---|---|
-| Chief of Staff |  | Read; write to harness/ via PR |  |
-| Engineer Supervisor |  | Write (packets, PR review, merge) |  |
-| Engineer Bot |  | Via Cursor only |  |
-| Deep Research |  | Write to docs/research/ via PR | Needs web access |
-| QA Bot |  | Read + CI + preview access | Only bot that edits feature statuses |
-| Nightly Audit |  | Read; PRs for doc drift only | Runs as GitHub Actions cron |
+| Chief of Staff | cursor-github (read), web search/fetch, box shell + file generation, routines, Google Drive (harness docs only) | Read; write to harness/ via PR | Verified tool set below. Can technically reach far more than it needs (see Gaps) |
+| Engineer Supervisor | cursor-github (Issues/packets, PR review, merge), Vercel (`user-Vercel-xai`, read-mostly), Supabase (dev/preview only, per D-001/D-007), Vercel + Supabase skills, engineering-workflow skills | Write (packets, PR review, merge) | Owns F-003; Cursor usage per D-009 |
+| Engineer Bot | None directly. Works through Cursor | Via Cursor only | Cursor config unverified |
+| Deep Research | Web search/fetch, box shell (sample API calls to public endpoints), box browser for public pages only | Write to docs/research/ via PR | Needs web access ✅. Never put FAS data in search queries |
+| QA Bot | cursor-github (read, CI status), Playwright (preview only), box shell (poppler, python-docx to inspect exports) | Read + CI + preview access | Only bot that edits feature statuses |
+| Nightly Audit | cursor-github (read), Supabase advisors (read, dev only), Vercel (read) | Read; PRs for doc drift only | Runs on a GitHub Actions cron (implementation choice); under $2 per run (D-009) |
+
+### Grok connector inventory (live catalog, 2026-10-08)
+*Sources: GetDynamicTools catalog and namespace statuses. Account identity is confirmed only where a read-only identity call was made. `GetMcpServerStatus` and `SearchPlugins` weren't available to this subagent, so namespace status comes from the catalog's `namespaceStatus` field.*
+
+| Connector (namespace) | Status | Account (how confirmed) | Verdict | Reason | FAS data → 3rd party? |
+|---|---|---|---|---|---|
+| cursor-github | ready | `mogga1991` (George Mogga) + `aimogga` ✅ get_me | **Use** | Only connector that can read the repo. Has write/merge/delete tools across both accounts; restrict to the bots that need it | No |
+| cursor-origin | ready | Origin-hosted repos (not checked) | Avoid | Repo lives on GitHub, not Origin. Not needed | Only if misused |
+| user-GitHub-xai | ready | `modernline-developer` ✅ get_me | Avoid | Wrong account (ModernLine). Can't see the repo | Only if misused |
+| user-Vercel-xai | ready | Team "aimogga's projects" ✅ list_teams | Maybe | Matches the planned stack. Read-mostly for deployment status/logs once the project exists. D-001 recommends a CasePilot-owned team instead | No (preview/synthetic) |
+| user-Vercel | ready | **Unknown**: list_teams returns 0 teams; `/v2/user` returns 404 "User not found" | Avoid | Can't tell which account it is. Don't use until identified or removed | Only if misused |
+| user-Vercel--aimogga | ready | **Unknown**: same results as above, despite the "aimogga" label | Avoid | Same as above. Three Vercel connectors is two too many | Only if misused |
+| user-Supabase | ready | Not checked (no calls made) ❓ | Maybe | Planned stack. Very powerful: execute_sql, apply_migration, create_project, merge_branch, pause_project. Dev/preview only, per D-001/D-007, once confirmed the org/project | No on dev. **Yes** if pointed at production |
+| user-Supabase--casepilot | ready | Not checked (no calls made) ❓; label says "casepilot" | Maybe | Same tools as user-Supabase, probably the CasePilot org (D-001). Dev/preview only; confirm which projects it reaches; keep one Supabase connector | No on dev. **Yes** if pointed at production |
+| user-Google-drive | ready | Not checked ❓ | Maybe | Harness docs and finished packets for humans. Not the source of truth | Only if misused; **Yes** for real packets after Phase 6 |
+| user-Google-sheets | ready | Not checked ❓ | Maybe | Handy for George reviewing plans and trackers. Never FAS records | Only if misused |
+| user-Google-calendar | ready | Not checked ❓ | Avoid (v1) | Not needed in v1 | Only if misused |
+| user-Gmail--casepilot-llc | ready | "casepilot llc" (tool descriptions) | Avoid | Agents never send email directly (template + F-505's `george-before-send` gate). The digest goes through n8n | **Yes** if used to send FAS data |
+| user-Gmail (personal) | **not found** | — | Avoid | Named in the kickoff but **not present** in the catalog today | n/a |
+| user-Hubspot--casepilot | ready | "casepilot" (namespace label) | **Avoid** | CRM. Never touches FAS data | **Yes** |
+| user-Clay | ready | Not checked | **Avoid** | Prospecting/enrichment. Never touches FAS data | **Yes** |
+| user-Apify | ready | Not checked | **Avoid** | Scraping is out of scope. Use official APIs | Only if misused |
+| user-Buffer-xai | ready | hello@stillcoolsleep.com (per kickoff; not re-checked) | **Avoid** | **Not George's company.** Social posting. Not relevant | **Yes** if anything were posted |
+| user-Linear | ready (**installed**) | Not checked | Avoid (v1) | Packets are GitHub Issues (AGENTS.md). A second tracker would split the source of truth | Only if misused |
+| user-Sentry | ready (**installed**) | Not checked | Maybe | Error monitoring for the Next.js app isn't in the docs yet. Error events can carry request data, so add scrubbing and include it in the D-006 BAA review before real data | Only if misused before Phase 6; **Yes** risk after unless scrubbed |
+| user-Playwright | ready | Runs where? ❓ | Maybe | QA screenshots on preview. Includes `browser_run_code_unsafe` | No (preview/synthetic) |
+| user-Cloudflare | ready | Not checked | Maybe | Only if Cloudflare Tunnel is chosen for agent networking (ARCHITECTURE "Networking"). Only relevant once Cloud Agents are live and need a private dev endpoint | Only if misused |
+| user-Notion | ready | Not checked | Avoid | Not in stack. Docs live in the repo | Only if misused |
+| user-Airtable | ready | Not checked | Avoid | Not in stack | Only if misused |
+| user-Supermemory | ready | Not checked | Avoid | Stores agent "memories" with a third party, where FAS context could leak | **Yes** if it captured FAS context |
+| user-Agentmail | ready | Not checked | Avoid | Agents don't send email | Only if misused |
+| user-Browserless | ready | Not checked | Avoid | Third-party cloud browser. The box browser and Playwright cover this | Only if misused |
+| user-Railway | ready | Not checked | Avoid | Not in stack | Only if misused |
+| user-Render | ready | Not checked | Avoid | Not in stack | Only if misused |
+| user-PlanetScale | ready | Not checked | Avoid | Not in stack (Supabase is) | Only if misused |
+| user-Turso | ready | Not checked | Avoid | Not in stack | Only if misused |
+| user-Mongodb | ready | Not checked | Avoid | Not in stack | Only if misused |
+| user-Mongodb-atlas | ready | Not checked | Avoid | Not in stack | Only if misused |
+| user-Convex | ready | Not checked | Avoid | Not in stack | Only if misused |
+| user-Firebase | ready | Not checked | Avoid | Not in stack | Only if misused |
+| user-Pinecone | ready | Not checked | Avoid | Not in stack | Only if misused |
+| user-Clerk--aimogga | ready | "aimogga" (label) | Avoid | Auth is Supabase Auth. Snippet tools only | No |
+| user-Mobbin | ready | Not checked | Avoid (v1) | UI inspiration only. shadcn covers the build | No |
+| user-Refero | ready | Not checked | Avoid (v1) | UI/UX reference screens, like Mobbin. shadcn covers the build | No |
+| user-X | ready | Not checked | Avoid | Not relevant. Can send DMs | Only if misused |
+| x (X search) | ready | Built-in | Avoid | Not relevant | No |
+| user-Finance-xai | **needsAuth** | — | Avoid | Not usable and not relevant | n/a |
+| user-Superhuman-mail | **needsAuth** | — | Avoid | Not usable and not relevant | n/a |
+| user-Turbopuffer | **error** (discovery failed) | — | Avoid | Not usable and not relevant | n/a |
+
+### Grok built-ins
+| Tool | Verdict | Use it for | FAS data → 3rd party? | Verified? |
+|---|---|---|---|---|
+| Web search + web fetch | **Use** | Deep Research source cards (F-002), checking docs and terms | Only if misused (query text goes to the search provider) | ✅ |
+| Box shell (Python 3.13, pandas, openpyxl, python-docx, python-pptx; poppler `pdftotext`; LibreOffice; Chrome; Node + pnpm) | **Use** | Sample API calls to public sources, inspecting exported PDF/DOCX, analysis on synthetic data | No | ✅ Gaps: no Docker or Supabase CLI on the box; `gh` not logged in; no reportlab/pypdf |
+| Box browser | Maybe | Public pages only (source research, preview screenshots) | Only if misused. Logins are **shared by all of George's agents on the box**, so never log into FAS systems here | ✅ exists |
+| Routines (scheduled prompts) | Maybe | Chief of Staff reminders (e.g., Grants.gov key check, weekly status). Not a replacement for n8n schedules (D-002) | Only if misused | ✅ skill present |
+| File generation (DOCX/XLSX/PPTX/PDF on the box) | **Use** | Decision memos and harness docs for George. **Not** product exports; the app generates packets itself (D-004) | No | ✅ |
+| CopyToBox / CopyFromBox / Upload / Download file | Maybe | Moving harness drafts to George's machine or Drive | Only if misused | ✅ |
+
+### Installed plugin skills (box plugin cache, 44 plugins / 331 skills)
+| Skill pack | Verdict | Reason | FAS data → 3rd party? |
+|---|---|---|---|
+| Vercel (33 skills: deployments-cicd, env-vars, vercel-functions, vercel-cli, …) | **Use** | Reference guidance for the planned host. No data leaves | No |
+| Supabase (2: supabase, supabase-postgres-best-practices) | **Use** | Reference for RLS, migrations, Postgres | No |
+| Google Drive (1) | Maybe | Same rules as the Drive connector | Only if misused |
+| Apify (5: ultimate-scraper, actor development, …) | Avoid | Scraping is out of scope | Only if misused |
+| Sentry (8) | Maybe | Goes with the Sentry decision | Only if misused |
+| Superpowers (14: TDD, code review, verification), Cursor Team Kit (18: fix-ci, run-smoke-tests, review-and-ship), Compound Engineering (36) | Maybe | Engineering-workflow guidance for the Engineer Supervisor/QA. Overlaps with AGENTS.md; pick one set | No |
+| Docker skills (11) | Maybe | `supabase start` needs Docker (AGENTS.md) | No |
+| Parallel (4: deep research, enrichment, web search) | Avoid | Third-party research/enrichment API. Web search covers Deep Research | Only if misused |
+| Everything else installed (Harness.io, Temporal, Render, Railway, Convex, Firebase, Clerk, Cloudflare, PlanetScale, Turso, MongoDB ×2, Pinecone, Turbopuffer, Airtable, Notion, Agentmail, mcp-mail/Superhuman, Supermemory, X, Docs Canvas, Cursor SDK, Google Sheets) | Avoid | Not in this build's stack | Only if misused |
+
+### Available but not installed (or not found)
+| Item | Finding | Verdict |
+|---|---|---|
+| Supabase, Sentry, Linear connectors | **Already installed and ready** on the Grok side, contrary to the kickoff's assumption (see rows above) | (see above) |
+| n8n | No n8n connector on the Grok side. No official Cursor marketplace plugin found; community options are `czlonkowski/n8n-mcp` and `n8n-as-code` (Cursor plugin) | Maybe (see n8n section) |
+| Census | No connector found. Not needed: SAHIE/SAIPE/ACS come from the public Census API directly in `packages/ingest/` (DATA_SOURCES.md) | n/a, use the API |
+| Context7, shadcn | In the Cursor marketplace (cursor.com/marketplace/upstash, cursor.com/marketplace/shadcn). Install not confirmed | (see Core table) |
+| `SearchPlugins` / `GetMcpServerStatus` | Not available to this subagent, so marketplace installability for the Grok side wasn't checked through Grok's own plugin search | ❓ |
+
+---
+
+## Cursor (local + Cloud)
+**Declared in the repo (✅ read 2026-10-08):**
+| Item | What it says |
+|---|---|
+| `.cursor/rules/00-core.mdc` (alwaysApply) | Read AGENTS.md + progress.md first; one feature_id; tests from acceptance criteria; run lint/typecheck/test; progress entry + PR; don't edit feature statuses; stop and ask if a decision is missing |
+| `.cursor/rules/10-privacy.mdc` (alwaysApply) | Synthetic data only; county-level; no exact dates; suppress < 11 with complementary suppression; no clinical/SUD/court-document fields; RLS deny-by-default; no secrets |
+| `.cursor/rules/20-data-ingestion.mdc` (globs `packages/ingest/**`, `supabase/functions/ingest-*/**`, `n8n/**`) | One module per source; only endpoints/licenses in DATA_SOURCES.md; idempotent runs; Grants.gov key keep-alive; n8n workflows created inactive, JSON exported to `n8n/` |
+| `.cursor/rules/30-grant-strategy.mdc` (globs `lib/grants/**`, `app/**/grants/**`, `supabase/functions/strategy-*/**`) | Explainable matching; flags not hidden; cited JSON drafts; DRAFT label; LLM only via `lib/llm/` |
+| `.cursor/environment.example.json` | install `corepack enable && pnpm install --frozen-lockfile`; start `supabase start`; terminal `web: pnpm dev`. The real `.cursor/environment.json` doesn't exist yet (F-003) |
+| `.cursor/mcp.json` | **Not in the repo.** D-007 says George's local `mcp.json` points at the ModernLine n8n MCP |
+
+**Unverified. Needs George or the Engineer Supervisor to confirm:**
+- **Cursor Cloud Agents:** in use on the $60 plan with $0 on-demand (D-009). Work pauses when usage runs out and resumes after the reset (George's 7:55 PM MT relay). Automations are not used. Confirm which account the plan is billed to (D-001).
+- Cursor plan tier, Bugbot availability, Secrets tab, and which MCPs are installed locally (Supabase, Vercel, shadcn, Context7, Playwright, n8n). None of this is visible to Grok.
+- Whether Docker runs on the Cursor machine(s) for `supabase start`.
+
+## n8n
+**Access:** read-only REST API at `https://n8n.casepilot.io/api/v1` with `N8N_API_KEY` (the key is in the env, never printed). ✅ listed 2026-10-12 ~10:50 PM MT.
+
+**Workflows on n8n.casepilot.io (live inventory):**
+| ID | Name | Active? | Nodes | Last updated | Verdict | Notes |
+|---|---|---|---|---|---|---|
+| `HAlHEECkaQGTQ9sX` | ingest-failure-alert | **active** | 2 (webhook → GitHub) | 2026-10-13 UTC | **Use** | F-201 failure alerts. Must carry run IDs only, never row payloads |
+| `6AB2M9paBu2ewn95` | My workflow | inactive | 7 (schedule trigger, HTTP request) | 2026-10-01 | Maybe | Unnamed scratch workflow; rename or delete (George's call). Don't activate |
+
+No ingest-schedule workflows are on the instance yet, though `n8n/census-sahie.json` and `n8n/census-saipe.json` exist in the repo. Region, hosting (self-hosted GCP vs. n8n Cloud) and execution-data retention weren't readable through the API and are still unconfirmed.
+
+**Doc assumptions (still unverified):**
+| Assumption | Source |
+|---|---|
+| "Already running on CasePilot's Google Cloud", i.e. **self-hosted on GCP**, not n8n Cloud | D-002 |
+| Workflow JSON exported to `n8n/`; new workflows created inactive; live workflows not edited without George | 20-data-ingestion.mdc, D-002, D-007 |
+| Cursor's n8n MCP currently points at **ModernLine's** n8n, not CasePilot's | D-007 |
+
+**Data-residency note:** if n8n is self-hosted on CasePilot's GCP, execution data stays in CasePilot's project; if it's n8n Cloud, n8n GmbH becomes a processor and needs a decision. Workflows should pass run IDs and aggregates only, and failure alerts must never include row payloads. **Instance verdict: Maybe until hosting and retention are confirmed. FAS data → 3rd party: Only if misused (self-hosted) / Yes (n8n Cloud).**
+
+---
+
+## Gaps that need George to confirm
+1. **Cursor plan (D-009, decided):** $60 plan, $0 on-demand; no cap on parallel agents (7:55 PM MT relay). Implementation: Automations not used; Nightly Audit on a GitHub Actions cron. Still to confirm: which account pays (D-001).
+2. **n8n:** confirm the instance (`n8n.casepilot.io`), hosting (self-hosted GCP vs. cloud), region, retention, and repoint the MCP away from ModernLine (D-002, D-007).
+3. **Supabase:** the Grok connector is installed and ready, but which org/projects it can reach wasn't checked. Confirm the org (D-001 recommends CasePilot-owned), that a dev/preview project exists, and that no agent-visible token can reach production.
+4. **Vercel:** three connectors. Only `user-Vercel-xai` resolves (team "aimogga's projects"). `user-Vercel` and `user-Vercel--aimogga` return no teams and 404 on user lookup. Pick one; disconnect or fix the others (D-001).
+5. **Least privilege on the Grok side:** every bot on this account can reach ~40 connectors, including write/merge on GitHub, SQL on Supabase, and send on Gmail/X/Agentmail. Proposed: a decision entry with a per-bot allowlist (table above) and disconnecting unused connectors.
+6. **Task-packet template: resolved.** `grok/task_packet_template.md` was added in commit bc9a07d (2026-10-08). It defines `context_files`, `plugins_allowed` ("only items marked Use in harness/PLUGIN_INVENTORY.md"), `data_allowed`, `environments_allowed` and `human_gate`. Consequence: until the Maybe rows here are decided, packets can only list the Use rows in `plugins_allowed`.
+
+## Conflicts between the docs and the kickoff rules
+1. **Cloud Agents assumed everywhere:** template, AGENTS.md, ARCHITECTURE, PLAN, F-003, NIGHTLY_AUDIT and D-009 all assume Cloud Agents; that matches the D-009 setup. Docs that say the Nightly Audit runs as a Cursor Automation in "Max Mode" should be updated: it runs on a GitHub Actions cron (implementation choice).
+2. **Template pre-marked Use before decisions:** D-001, D-002, D-005, D-006, D-007 and D-009 are now decided (see harness/DECISIONS.md). n8n MCP stays Maybe until the instance is confirmed and the MCP is repointed (Gap 2); Cursor Automations are Avoid (not used, D-009).
+3. **Ownership:** D-001 recommends CasePilot-owned GitHub org/Vercel team/Supabase org. The repo is on personal `aimogga`, and the only working Vercel connector is "aimogga's projects". (Also: the repo name is spelled `fas-caspilot-data`, missing an "e". Intended?)
+4. **Template header** says it was seeded from the Claude account. Several seeded rows (PDF Tools, Canva, Claude in Chrome, Stripe, Vibe Prospecting, OpusClip) don't exist on the Grok side, and the Grok side has ~30 connectors the template never mentions.
+5. **Google Drive for packets (template: Maybe)** would put FAS-Shareable data in Google after Phase 6. The kickoff requires a decision before any FAS data goes to a third party, so D-006's BAA/plan review should cover Google Workspace too, not just Supabase/Vercel/LLM.
+6. **The Grok bots themselves are an LLM third party.** PRIVACY's BAA list names "any LLM provider that would see the data". The synthetic-only rule covers Phases 0–5, but D-003 and D-006 should explicitly cover the build agents (Grok, Cursor's model providers), not just the in-app LLM.
+
+## Proposed DECISIONS.md entries (drafts, not written to the repo)
+*Numbered P-1 to P-5 so they don't collide with the D-011 to D-016 entries now on main.*
+- **P-1 Grok-side connector allowlist per bot** (table above) and disconnecting unused or wrong-account connectors (GitHub-xai, Buffer-xai, the two unidentified Vercel connectors).
+- **P-2 Cursor Cloud Agents plan:** covered by D-009 (decided 2026-10-12); no separate entry needed.
+- **P-3 Error monitoring (Sentry): yes/no;** PII scrubbing and BAA review if yes.
+- **P-4 Where finished packets live** (Supabase Storage only vs. also Google Drive) after Phase 6.
+- **P-5 Task packet format:** `grok/task_packet_template.md` exists (commit bc9a07d); no separate entry needed.
+
+## Counts (this draft)
+Counted 2026-10-12 by script: every table row with a Verdict column whose cell starts with Use, Maybe or Avoid (bold stripped). Rows that say "(see above)" or n/a aren't counted. **83 rated rows: Use 14 · Maybe 24 · Avoid 45.**
+
+| Table | Use | Maybe | Avoid |
+|---|---|---|---|
+| Core build tools | 7 | 4 | 1 |
+| Connected business tools | 0 | 3 | 7 |
+| Grok connector inventory | 1 | 8 | 34 |
+| Grok built-ins | 3 | 3 | 0 |
+| Installed plugin skills | 2 | 4 | 3 |
+| Available but not installed | 0 | 1 | 0 |
+| n8n workflows | 1 | 1 | 0 |
+| **Total** | **14** | **24** | **45** |
+
+QA's earlier count (81 rows, Use 15) was taken before the Supabase--casepilot, Refero and n8n workflow rows were added; any remaining gap is down to which rows count as rated. The Cursor-side Use rows (Cursor local, Cloud Agents, Supabase MCP, Vercel MCP, shadcn) are unverified from the Grok side.
+
+*Sources: repo files read via cursor-github on 2026-10-08, including grok/ (commit bc9a07d) for rev 2 (AGENTS.md, docs/*.md, harness/*.md, harness/feature_list.json, .cursor/*); Grok tool catalog (GetDynamicTools) on 2026-10-08; read-only identity calls: cursor-github get_me, user-GitHub-xai get_me, Vercel list_teams ×3 and get_auth_user ×2; box plugin cache listing; web search for Cursor marketplace (Context7, shadcn, n8n).*
