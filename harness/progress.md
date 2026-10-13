@@ -365,3 +365,9 @@ Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already
 ## 2026-10-13 01:32 (UTC) — Cloud Agent — PR #104 docs DS-07 (F-401)
 Did: Added `docs/design/specs/DS-07.md` (Team dashboard / F-401), copied unchanged from design handoff. Docs only; no code or real data. Split from DS-05/06/07 batch (510 lines > 400).
 Left: Engineer starts from merged or linked spec. DESIGN_WORKFLOW step 2 already matched the concurrency wording; no edit.
+
+## 2026-10-13 03:45 (UTC) — Cloud Agent — claim F-401 (DS-07a PR 1)
+Did: claim F-401. `/dashboard` route guarded to admin and staff (board 403 via middleware). Page header plus M1, M2, M3, M5, M4 table, M6 and O1 cards, each showing `Not available yet` with no value or footer. M4 is an accessible table (caption, `th scope`, numbers right-aligned, fixed layout for 375). Synthetic only: no data wired.
+State: lint/typecheck/unit green; each guard mutation-checked.
+Left: nav unhide and crumb (lib/shell/nav.ts, held for #77), filters, freshness and pipeline widgets, e2e and layout-parity, then DS-07b/c.
+Decisions: none.
