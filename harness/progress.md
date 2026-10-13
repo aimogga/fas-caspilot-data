@@ -505,3 +505,7 @@ State: lint/typecheck/unit green; synthetic fixtures only.
 Left: QA; nightly-audit.yml reads fas-dev SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY repo secrets (D-016); grants, suppression/RLS/views, deploy health and cost stay SKIPPED until their keys or schema exist.
 Decisions: none.
 Update: grants (key-usage via grants source ingest_run, 14d pursuing deadlines), RLS+view guard via rpc/rls_guard_violations, main CI via GITHUB_TOKEN now real; suppression/no-cell<11 (no views yet), deploy health (VERCEL_TOKEN), cost (Cursor/LLM usage keys) still SKIPPED.
+
+## 2026-10-13 15:27 (UTC) — Cloud Agent — PR #132 docs DS-08 (F-210)
+Did: Added `docs/design/specs/DS-08.md` (Need score methodology / F-210), copied unchanged from design handoff. Docs only; no code or real data.
+Left: Engineer starts DS-08a from merged or linked spec; fix drift in-budget (nav.ts HIDDEN_LABELS, CRUMB /need-map + /methodology, ErrorState Try again).
