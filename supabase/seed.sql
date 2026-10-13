@@ -83,3 +83,19 @@ INSERT INTO export_job (id, org_id, type, params, file_path, suppression_applied
 INSERT INTO audit_log (id, org_id, actor, action, entity, details) VALUES
   ('70707070-7070-7070-7070-707070707071', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '11111111-1111-1111-1111-111111111111', 'seed', 'org', '{}'),
   ('70707070-7070-7070-7070-707070707072', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '55555555-5555-5555-5555-555555555555', 'seed', 'org', '{}');
+
+-- F-211 DS-06a: synthetic need scores, local/CI only (never hosted). 26 scored incl. one tie (Davis = Cache), 3 not published.
+INSERT INTO geo_county (fips, name, state) VALUES
+  ('49001', 'Beaver', 'UT'), ('49003', 'Box Elder', 'UT'), ('49005', 'Cache', 'UT'), ('49007', 'Carbon', 'UT'), ('49009', 'Daggett', 'UT'),
+  ('49011', 'Davis', 'UT'), ('49013', 'Duchesne', 'UT'), ('49015', 'Emery', 'UT'), ('49017', 'Garfield', 'UT'), ('49019', 'Grand', 'UT'),
+  ('49021', 'Iron', 'UT'), ('49023', 'Juab', 'UT'), ('49025', 'Kane', 'UT'), ('49027', 'Millard', 'UT'), ('49029', 'Morgan', 'UT'),
+  ('49031', 'Piute', 'UT'), ('49033', 'Rich', 'UT'), ('49035', 'Salt Lake', 'UT'), ('49037', 'San Juan', 'UT'), ('49039', 'Sanpete', 'UT'),
+  ('49041', 'Sevier', 'UT'), ('49043', 'Summit', 'UT'), ('49045', 'Tooele', 'UT'), ('49047', 'Uintah', 'UT'), ('49049', 'Utah', 'UT'),
+  ('49051', 'Wasatch', 'UT'), ('49053', 'Washington', 'UT'), ('49055', 'Wayne', 'UT'), ('49057', 'Weber', 'UT')
+ON CONFLICT (fips) DO NOTHING;
+INSERT INTO need_score_config (version, weights, created_at, approved_by) VALUES
+  ('v2-synthetic', '{"uninsured":1}', '2026-10-01', '00000000-0000-4000-8000-000000000211'), ('v3-draft', '{"uninsured":2}', '2026-10-10', NULL);
+INSERT INTO need_score (version, geo_fips, score, components)
+  SELECT 'v2-synthetic', fips, round(((substr(fips, 3)::int * 7) % 29 - 14) / 10.0, 2), '{}' FROM geo_county WHERE fips LIKE '49%' AND fips NOT IN ('49009', '49031', '49055');
+UPDATE need_score SET score = (SELECT score FROM need_score WHERE version = 'v2-synthetic' AND geo_fips = '49005') WHERE version = 'v2-synthetic' AND geo_fips = '49011';
+INSERT INTO need_score (version, geo_fips, score, components) VALUES ('v3-draft', '49009', 9, '{}');

@@ -457,3 +457,8 @@ Did: claim F-211. `/need-map` (all roles) table: 29 counties by rank, score, bin
 Fixes (UX + QA on 08350b0): scroll region with sticky County, right-aligned numbers, display names and units, per-column source + vintage + as-of, placeholder bins, ErrorState body.
 Left: seed + seeded e2e in stacked #119 (D-012); nav and crumb (#77's nav.ts), layout-parity, DS-06b map, DS-06c tiles.
 Decisions: none.
+
+## 2026-10-13 04:40 (UTC) — Cloud Agent — PR #119 / feature F-211 (DS-06a part 2, after #113)
+Did: local/CI-only synthetic seed: approved `v2-synthetic`, newer unapproved `v3-draft`, 26 scored counties with a tie (Cache = Davis), 3 not published (Daggett, Piute, Wayne).
+State: e2e asserts rank order, the tie, bins, Not published last and the footer version. Nothing written to hosted fas-dev by this PR.
+Left: QA at head.
