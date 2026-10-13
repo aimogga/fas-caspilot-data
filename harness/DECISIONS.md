@@ -34,8 +34,9 @@ Decision: **A**, per recommendation. Decided by George in chat. · Date: 2026-10
 ### D-006 Hosting plans and compliance tier
 Questions: Supabase and Vercel plan levels, region, backups, and whether BAAs are available/needed before real provider data (see PRIVACY_AND_COMPLIANCE.md).
 Recommendation: free/low tiers for Phases 0–5 (synthetic data); upgrade before Phase 6 based on the legal opinion.
-Decision (superseded 2026-10-12): per recommendation: free/low tiers for Phases 0–5 (synthetic data); upgrade before Phase 6 based on the legal opinion. Decided by George in chat. · Date: 2026-10-08
-Decision (2026-10-12): **George's current paid Vercel plan plus Supabase Pro** (Supabase up to $60/mo, per D-009). Decided by George Mogga; relayed by George Chief of staff at 10:01 PM MT. · Date: 2026-10-12
+Decision (2026-10-08): per recommendation: free/low tiers for Phases 0–5 (synthetic data); upgrade before Phase 6 based on the legal opinion. Decided by George in chat. · Date: 2026-10-08
+Update (2026-10-12): the **plan levels only** are superseded: **Supabase Pro (up to $60/mo) and George's current paid Vercel plan**. Decided by George Mogga; relayed by George Chief of staff at 10:01 PM MT. · Date: 2026-10-12
+Still in force from 2026-10-08: region, backups, the BAA question, and the upgrade before Phase 6 based on the legal opinion.
 
 ### D-007 Cursor and MCP configuration
 Questions: which MCP servers local vs. cloud agents may use; credentials scope.
@@ -78,21 +79,27 @@ Decision: The team (Engineer Supervisor, QA bot, Engineer Bot, UX/UI Design Bot)
 
 ### D-005 Outcome questionnaires
 Options: OQ-45 (adults) + Y-OQ (youth), which Utah's public mental health scorecards use (licensing cost to confirm); or PHQ-9 + GAD-7, which are free but have no Utah comparison.
-Decision: **PHQ-9 and GAD-7 now**, built as a pluggable instrument registry so OQ-45 and Y-OQ can be added later without schema rework. Store total scores only. The need-score weights stay open and are not decided here. Decided by George Mogga; relayed by George Chief of staff at 10:01 PM MT. · Date: 2026-10-12
-
-### D-009 Cost caps
-Decision:
-- Cursor: $60 plan with $0 on-demand. When usage runs out, work pauses and resumes after the reset.
-- No cap on parallel agents.
-- Supabase Pro, up to $60/mo.
-- Vercel: George's current paid plan.
-- Nightly Audit: under $2 per run, on a GitHub Actions cron.
-- In-app LLM: $25/mo, starting in Phase 5.
+Decision: **PHQ-9 and GAD-7 now.**
+- Built as a pluggable instrument registry, so OQ-45 and Y-OQ can be added later without schema rework.
+- "Store total scores only." (George's words in his 10:01 PM MT decision, relayed verbatim by Chief of staff.)
+- The need-score weights stay open and are not decided here.
 
 Decided by George Mogga; relayed by George Chief of staff at 10:01 PM MT. · Date: 2026-10-12
 
+### D-009 Cost caps
+Decision (locked; decided by George Mogga, relayed by George Chief of staff at 10:01 PM MT):
+- Cursor: $60 plan with $0 on-demand.
+- Supabase Pro, up to $60/mo.
+- Vercel: George's current paid plan.
+- Nightly Audit: under $2 per run.
+- In-app LLM: $25/mo, starting in the grants phase (Phase 5).
+
+From George's 7:55 PM MT relay: no cap on parallel agents; when usage runs out, work pauses and resumes after the reset.
+Implementation note (not George's words): the Nightly Audit runs on a GitHub Actions cron.
+· Date: 2026-10-12
+
 ### D-017 County coverage (design)
-Decision: **FAS covers all 29 Utah counties.** The need map shows all 29 counties. Decided by George Mogga; relayed by George Chief of staff. · Date: 2026-10-12
+Decision: **The board shows all 29 Utah counties, with FAS's service counties highlighted.** Decided by George Mogga; relayed by George Chief of staff. · Date: 2026-10-12
 
 ### D-018 Dashboard defaults (design, DS-07)
 Decision: **The dashboard defaults are approved:** the latest complete quarter, M1 as the lead metric, and a 60-day never-started window. George's words: "Yes, use those dashboard defaults and that stale rule." Decided by George Mogga; relayed by George Chief of staff. · Date: 2026-10-12
@@ -102,10 +109,10 @@ Note: the prior-quarter comparison in DS-07 is a designer default that George ha
 Decision: **Manual foundation grants are shown** on the dashboard, tagged as manual entry (consistent with D-010). Decided by George Mogga; relayed by George Chief of staff. · Date: 2026-10-12
 
 ### D-020 County outlines (design, DS-06)
-Decision: **The county outlines are approved** (Census county outlines; FAS service counties outlined on the need map). Decided by George Mogga; relayed by George Chief of staff. · Date: 2026-10-12
+Decision: **The county outlines are approved** (Census county outlines). Decided by George Mogga; relayed by George Chief of staff. · Date: 2026-10-12
 
 ### D-021 Stale rule (design, DS-05)
 Decision: **Data counts as stale once it is one update cycle overdue.** George's words: "Yes, use those dashboard defaults and that stale rule." (same approval as D-018) Decided by George Mogga; relayed by George Chief of staff at 9:58 PM MT. · Date: 2026-10-12
 
 ### D-022 Need-map bins placeholder (design, DS-06)
-Decision: **Keep the 5 equal-count bins as a placeholder** until George sets the need-score weights. The need-score weights themselves are still open and are not decided here. Decided by George Mogga; relayed by George Chief of staff at 9:58 PM MT. · Date: 2026-10-12
+Decision: **Keep the 5 equal-count bins as a placeholder** until George sets the need-score weights. The need-score weights stay open and are not decided here. In-scope ruling by George Chief of staff (not a George decision). · Date: 2026-10-12
