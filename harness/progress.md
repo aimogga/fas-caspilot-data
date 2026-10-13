@@ -462,3 +462,9 @@ Decisions: none.
 Did: local/CI-only synthetic seed: approved `v2-synthetic`, newer unapproved `v3-draft`, 26 scored counties with a tie (Cache = Davis), 3 not published (Daggett, Piute, Wayne).
 State: e2e asserts rank order, the tie, bins, Not published last and the footer version. Nothing written to hosted fas-dev by this PR.
 Left: QA at head.
+
+## 2026-10-13 10:20 (UTC) — Grok Bot (nightly audit) — nightly cleanup: ingest HTTP parity
+Did: ACS and SAIPE ingest failures now record an error `ingest_run` (`recordFailure`) and fire `IngestAlert.notify`, same as SAHIE. One shared skeleton in `SahieHttp` (`ingest` + `respond`) used by all three routes; deleted the duplicate `logFailure` redactors (logs now redact via `IngestAlert`); dropped unused `AcsRunOpts`, `SaipeRunOpts`, `SahieLoad`. ACS year fallback unchanged.
+State: scoped vitest (lib/ingest + packages/ingest, 64 tests) green on Node 22, scoped tsc and eslint clean in a scratch tree built from API-fetched files. Full CI must still run.
+Left: CI + QA.
+Decisions: none.
