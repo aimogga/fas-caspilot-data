@@ -537,3 +537,9 @@ Did: Recorded George's 11:03 AM MT 2026-10-13 approvals verbatim (via Chief of s
 State: F-201 status stays failing; human_gate unchanged; status_note removed from feature_list (context kept here).
 Left: QA.
 Decisions: D-024, D-025, D-026, D-027.
+
+## 2026-10-14 00:40 (UTC) — Cloud Agent (P14 subagent, lead-reviewed) — F-208 VA VetPop2023 county veteran counts
+Did: `packages/ingest/va_vetpop` (`va-vetpop`, Socrata `jrjd-qghv`): `veterans_count` per Utah county for the latest fiscal year, rounded to the nearest thousand (DATA_SOURCES rule); tolerant `COLUMNS` candidate mapper that **fails closed** (`VetPop: unknown columns …`) when no value or geography column resolves, name → fips fallback, `fill` so 29 rows always hold; request uses full-text `$q=Utah` (a `$where` on a guessed column would 400), state and year filtered client-side. `lib/ingest/vetpop-http.ts` + `POST /api/ingest/vetpop`; migration registers `va-vetpop` (VA, CC0, annual); `n8n/va-vetpop.json` (inactive, September); fixture 30 rows (one county missing, one older year, one non-Utah); `tests/db/vetpop-load.test.ts` (CI). Per-1,000 rate is computed at need-score time from `geo_county.population_latest`, not here.
+State: gate vs main: secret/D-012 (+393/−1 = 394)/300-char pass; lint/typecheck/unit (410) pass; 3 mutants killed (rounding, unknown-schema throw, fill). **data.va.gov is blocked from the sandbox: real column names unverified; QA curl in the PR body.** A per-age/sex breakdown in the live data would surface as duplicate-row rejects → fail closed.
+Left: QA PASS at head; trim `COLUMNS` to the real names after the curl; shares the `isPublicRoute` line with #160 and the HRSA PR.
+Decisions: none new.
