@@ -532,6 +532,12 @@ Left: QA; merge before relying on n8n delivery (until merged, deployed code post
 Decisions: none (implements D-024 context).
 Update: QA fix — test secret is now the scanner-allowed placeholder 'not-a-secret' (secret-scan clean); added a no-leak test (console logs, GitHub fallback headers, issue body); 4 leak mutations killed; 17/17 tests.
 
+## 2026-10-13 17:05 (UTC) — Grok Bot — PR #136: George 10-13 approvals; F-201 interim alert AC
+Did: Recorded George's 11:03 AM MT 2026-10-13 approvals verbatim (via Chief of staff) as D-024 (GitHub-issue alert interim exception), D-025 (weights stored as fractions, shown as points), D-026 (weights v1 50/50 then v2 30/20/30/10/10), D-027 (George applies Cloudflare fix). Updated F-201 acceptance criteria (n8n primary, GitHub-issue fallback, webhook secret rejection, nightly audit YELLOW). #122 resolved 2026-10-13 (Bot Fight Mode off).
+State: F-201 status stays failing; human_gate unchanged; status_note removed from feature_list (context kept here).
+Left: QA.
+Decisions: D-024, D-025, D-026, D-027.
+
 ## 2026-10-13 17:36 (UTC) — Cloud Agent — PR #141 / feature F-210 part 1: need score v1
 Did: `lib/need-score/compute.ts` (score = Σ weight × z-score, weights are fractions of 1 per D-026, validated not normalized, newest vintage per input, county missing an input gets no score, components keep value/z/weight/vintage/source rows). `tests/golden/need-score-ranking.json` (hand-computed 4-county fixture; 50/50 vs poverty-only reorders). `NeedScoreRecompute` + token-auth `POST /api/ingest/need-score` (public route like the other ingests) writes `need_score` for the newest approved config and removes stale counties. Migration adds config `v1-poverty-uninsured` (poverty_rate 0.5, uninsured_rate 0.5), unapproved. `NeedMapQuery.approved`/`latest` made generic for reuse.
 State: lint/typecheck clean, 412/412 unit tests, `pnpm build` ok, built app returns 401/405 on the new route; compute mutations (weights ignored, sample sd) killed. Diff 374 lines. test:db and e2e not run locally (no Supabase CLI); CI runs them.

@@ -200,7 +200,10 @@
       "owner": "engineer-bot",
       "acceptance": [
         "source_registry and ingest_run populated",
-        "Failed runs alert via n8n (email or Slack)",
+        "Failed ingest runs alert within 15 minutes via n8n email or Slack (primary path).",
+        "If n8n delivery fails, a GitHub issue labeled ingest-alert is opened containing source, run id, error text and timestamp (permanent fallback).",
+        "The n8n webhook rejects requests without the correct X-FAS-Alert-Secret header (401/403).",
+        "The nightly audit goes YELLOW when the webhook is challenged or ingest-alert issues exist with no matching n8n delivery.",
         "Re-running a vintage does not duplicate rows"
       ],
       "tests": [
