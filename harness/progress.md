@@ -384,11 +384,6 @@ Decisions: none.
 Did: merged origin/main (progress.md conflict kept both sides). Timeout test mock now resolves 200 when no abort signal is passed, so removing `AbortSignal.timeout` fails it; a non-aborting signal makes it time out.
 State: lint/typecheck/unit green.
 Left: CI + secret-scan, preview, QA re-check.
-
-## 2026-10-13 03:20 (UTC) — Engineer Bot — PR #112 / feature F-601 nightly audit data checks
-Did: claim F-601. `pnpm audit:nightly` script; data freshness (active sources within cadence, failures last 24h, RED on 2 nights in a row) and data sanity (29 counties, ±20% rows vs previous vintage, null spike) via Supabase REST, SKIPPED without SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY; report "Data freshness" line filled.
-State: lint/typecheck/unit green; synthetic fixtures only.
-Left: QA; nightly-audit.yml reads fas-dev SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY repo secrets (D-016); grants, suppression/RLS/views, deploy health and cost stay SKIPPED until their keys or schema exist.
 Decisions: none.
 
 ## 2026-10-13 03:52 (UTC) — Cloud Agent — PR #115 docs reporting rule
@@ -398,3 +393,9 @@ Left: QA review of docs PR.
 ## 2026-10-13 04:10 (UTC) — Grok Bot — PR #117: DECISIONS.md, George decisions of 2026-10-12
 Did: recorded D-005, D-006 and D-009 as decided, plus design decisions D-017 to D-022 (29 counties, dashboard defaults, manual foundation grants, county outlines, stale rule, placeholder bins). Unblocks QA on #116.
 Left: QA check. Need-score weights still open.
+
+## 2026-10-13 03:20 (UTC) — Engineer Bot — PR #112 / feature F-601 nightly audit data checks
+Did: claim F-601. `pnpm audit:nightly` script; data freshness (active sources within cadence, failures last 24h, RED on 2 nights in a row) and data sanity (29 counties, ±20% rows vs previous vintage, null spike) via Supabase REST, SKIPPED without SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY; report "Data freshness" line filled.
+State: lint/typecheck/unit green; synthetic fixtures only.
+Left: QA; nightly-audit.yml reads fas-dev SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY repo secrets (D-016); grants, suppression/RLS/views, deploy health and cost stay SKIPPED until their keys or schema exist.
+Decisions: none.
