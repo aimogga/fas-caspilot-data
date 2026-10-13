@@ -484,13 +484,14 @@ Left: QA on PR; later naming cleanup for acs5 folder (#106 conflict).
 Did: ACS and SAIPE ingest failures now record an error `ingest_run` (`recordFailure`) and fire `IngestAlert.notify`, same as SAHIE. One shared skeleton in `SahieHttp` (`ingest` + `respond`) used by all three routes; deleted the duplicate `logFailure` redactors (logs now redact via `IngestAlert`); dropped unused `AcsRunOpts`, `SaipeRunOpts`, `SahieLoad`. ACS year fallback unchanged.
 State: scoped vitest (lib/ingest + packages/ingest, 64 tests) green on Node 22, scoped tsc and eslint clean in a scratch tree built from API-fetched files. Full CI must still run.
 Left: CI + QA.
+Decisions: none.
+
+## 2026-10-13 13:48 (UTC) — Grok Bot — PR #131: F-000/F-001 sign-off cleanup
+Did: George approved F-000 (PR #98, merged as feaa7d2) and F-001 (PR #99, merged as 9aad6c0) on 2026-10-12 at 11:20 PM MT, relayed by Chief of staff. Flipped both to passing in harness/feature_list.json (AC met; human_gate none; evidence links). Marked both Done in docs/PROGRESS_CHECKLIST.md (11 of 44). No open issues or george-before-merge labels remained on those PRs.
+Left: QA.
 
 ## 2026-10-13 05:20 (UTC) — Grok Bot — PR #123 / feature F-201 follow-up
 Did: GitHub-issue fallback in IngestAlert when the n8n webhook throws, returns non-2xx, or is Cloudflare-challenged; warns with the HTTP status on failure. Env INGEST_ALERT_GITHUB_TOKEN/REPO in .env.example.
 State: lint/typecheck/unit green (Node 22); live preview test opened #124 for run 12d2feb7 (closed).
 Left: QA re-review; retarget to main after #111 merges. #122 (Cloudflare rule) is still the root-cause fix.
 Decisions: none.
-
-## 2026-10-13 13:48 (UTC) — Grok Bot — PR #131: F-000/F-001 sign-off cleanup
-Did: George approved F-000 (PR #98, merged as feaa7d2) and F-001 (PR #99, merged as 9aad6c0) on 2026-10-12 at 11:20 PM MT, relayed by Chief of staff. Flipped both to passing in harness/feature_list.json (AC met; human_gate none; evidence links). Marked both Done in docs/PROGRESS_CHECKLIST.md (11 of 44). No open issues or george-before-merge labels remained on those PRs.
-Left: QA.
