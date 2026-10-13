@@ -393,3 +393,7 @@ Left: QA review of docs PR.
 ## 2026-10-13 01:24 (UTC) — Grok Bot — F-001 decision memos (claim)
 Did: Claimed F-001. Added harness/DECISION_MEMOS.md (options, recommendation, cost and risk for D-001 to D-010) and linked it from harness/DECISIONS.md.
 Left: D-005 and D-009 still have no decision/date in DECISIONS.md; George must decide before F-001 can pass. QA check; George's sign-off.
+
+## 2026-10-13 04:25 (UTC) — Grok Bot — F-001 decision memos (QA fixes)
+Did: removed the "resolved: upgrade" header and the enable-on-demand action item; dropped "or sell" (D-001) and the future paid-product line (D-010); D-001 memo matches main (A); D-005, D-006 and D-009 marked decided 2026-10-12; old cost numbers labelled superseded proposals.
+Left: QA re-check.
