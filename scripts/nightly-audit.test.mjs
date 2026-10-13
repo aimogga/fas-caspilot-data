@@ -1,6 +1,28 @@
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'child_process';
-import { worst, generateReport, matchSecretLine, checkProgressLog, parseAgentsCommands, parseAudit, checkSecretScan, checkSecretScanTree, scanFileContents, secretsOnlyExit, localServiceRoleJwts, checkDocRefs, auditExitCode, writeAndPrintReport, checkDeps, main, runPnpmAudit, supabaseRest, evalFreshness, evalSanity, checkData } from './nightly-audit.mjs';
+import {
+  worst,
+  generateReport,
+  matchSecretLine,
+  checkProgressLog,
+  parseAgentsCommands,
+  parseAudit,
+  checkSecretScan,
+  checkSecretScanTree,
+  scanFileContents,
+  secretsOnlyExit,
+  localServiceRoleJwts,
+  checkDocRefs,
+  auditExitCode,
+  writeAndPrintReport,
+  checkDeps,
+  main,
+  runPnpmAudit,
+  supabaseRest,
+  evalFreshness,
+  evalSanity,
+  checkData,
+} from './nightly-audit.mjs';
 const GHSA_IG = {id: 'GHSA-vfj7-8cjw-p6xm', package: 'braces', reason: 'CVE-2026-93687; dev-only lint toolchain transitive dep, no patched release', reviewer: 'QA bot', expires: '2026-11-08', severity: 'high'};
 const STALE_IG = {...GHSA_IG, id: 'GHSA-aaaa-bbbb-cccc', package: 'nope'};
 const BRACES_JSON = JSON.stringify({advisories: {'1240992': {severity: 'high', module_name: 'braces', cves: ['CVE-2026-93687'], github_advisory_id: 'GHSA-vfj7-8cjw-p6xm'}}, metadata: {vulnerabilities: {critical: 0, high: 1, moderate: 0, low: 0}}});

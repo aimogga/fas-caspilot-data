@@ -395,7 +395,10 @@ Did: recorded D-005, D-006 and D-009 as decided, plus design decisions D-017 to 
 Left: QA check. Need-score weights still open.
 
 ## 2026-10-13 03:20 (UTC) — Engineer Bot — PR #112 / feature F-601 nightly audit data checks
-Did: claim F-601. `pnpm audit:nightly` script; data freshness (active sources within cadence, failures last 24h, RED on 2 nights in a row) and data sanity (29 counties, ±20% rows vs previous vintage, null spike) via Supabase REST, SKIPPED without SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY; report "Data freshness" line filled.
+Did: claim F-601. `pnpm audit:nightly` script.
+Data freshness: active sources within cadence, failures in last 24h, RED on 2 nights in a row.
+Data sanity: 29 counties, ±20% rows vs previous vintage, null spike; via Supabase REST.
+SKIPPED without SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY; report "Data freshness" line filled.
 State: lint/typecheck/unit green; synthetic fixtures only.
 Left: QA; nightly-audit.yml reads fas-dev SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY repo secrets (D-016); grants, suppression/RLS/views, deploy health and cost stay SKIPPED until their keys or schema exist.
 Decisions: none.
