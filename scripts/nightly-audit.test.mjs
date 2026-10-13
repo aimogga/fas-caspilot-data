@@ -482,3 +482,13 @@ it('deploy health asks Vercel only for READY/ERROR so canceled deploys never com
   await checkDeploys(env, async (u) => { urls.push(new URL(String(u))); return Response.json({deployments: [{uid: 'dpl_r', readyState: 'READY'}]}); });
   expect(urls.map(u => u.searchParams.get('state'))).toEqual(['READY,ERROR', 'READY,ERROR']);
 });
+
+it('deploy health: empty production list is "none found" (not a query failure) while preview is READY', async () => {
+  const env = {VERCEL_TOKEN: 'placeholder', VERCEL_PROJECT_ID: 'prj_syn'};
+  const r = await checkDeploys(env, async (u) => Response.json({deployments: new URL(String(u)).searchParams.get('target') === 'production' ? [] : [{uid: 'dpl_p', readyState: 'READY'}]}));
+  const all = [...r.findings, ...r.details].join('\n');
+  expect(r.status).toBe('YELLOW');
+  expect(all).toContain('production deploy: none found');
+  expect(all).toContain('preview deploy READY');
+  expect(all).not.toContain('could not query');
+});
