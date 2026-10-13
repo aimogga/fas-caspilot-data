@@ -1,6 +1,6 @@
 import { MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { Column, CountyRow } from "@/lib/need-map/query";
 
 export const SELECT_PROMPT = "Select a county on the map or in the table.";
@@ -14,9 +14,9 @@ export function CountyPanel({ county, columns, version, rankedCount, sources }: 
   return (
     <Card data-slot="county-panel" aria-labelledby="county-panel-title" role="region">
       <CardHeader>
-        <CardTitle id="county-panel-title" className="flex flex-wrap items-center gap-2 text-base">
+        <h2 id="county-panel-title" data-slot="card-title" aria-live="polite" className="flex flex-wrap items-center gap-2 text-base leading-none font-semibold">
           {title}{county?.fas ? <Badge variant="info" prefix={<MapPin aria-hidden />}>FAS county</Badge> : null}
-        </CardTitle>
+        </h2>
         {county ? <p className="text-sm text-muted-foreground tabular-nums">Rank {county.rank} · Need score {county.score}</p> : null}
         {county ? <p className="text-xs text-muted-foreground">Need score version {version ?? NOT_PUBLISHED} · {rankedCount} counties ranked</p> : null}
       </CardHeader>

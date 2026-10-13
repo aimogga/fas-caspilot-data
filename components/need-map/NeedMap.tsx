@@ -48,7 +48,7 @@ export function NeedMap({ data, fas = false, selected = null }: { data: NeedTabl
           const on = c.fips === ring;
           return (
             <path key={c.fips} d={GEO.counties[c.fips].d} data-fips={c.fips} data-bin={shown(c) ? c.binNo ?? 0 : undefined} data-dim={shown(c) ? undefined : "true"} data-selected={on ? "true" : undefined}
-              tabIndex={0} role="button" aria-pressed={on} aria-label={NeedMapQuery.rowLabel(c)} style={{ fill }} stroke="var(--border)" strokeWidth={1} />
+              tabIndex={0} role="button" aria-pressed={on} aria-label={NeedMapQuery.rowLabel(c)} style={{ fill }} stroke="var(--border)" strokeWidth={1} className="focus-visible:outline-2 focus-visible:outline-ring" />
           );
         })}
         {/* FAS counties: 2 px --foreground outline in a second pass so neighbours never cover it (DESIGN need-map rule 2). */}
