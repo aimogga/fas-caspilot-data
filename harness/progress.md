@@ -384,11 +384,6 @@ Decisions: none.
 Did: merged origin/main (progress.md conflict kept both sides). Timeout test mock now resolves 200 when no abort signal is passed, so removing `AbortSignal.timeout` fails it; a non-aborting signal makes it time out.
 State: lint/typecheck/unit green.
 Left: CI + secret-scan, preview, QA re-check.
-
-## 2026-10-13 03:30 (UTC) — Engineer Bot — PR #111 / feature F-201
-Did: claim F-201. Reused source_registry/ingest_run; pre-load failures now write an error ingest_run; `IngestAlert` posts a redacted payload to INGEST_ALERT_WEBHOOK_URL on failed POST /api/ingest/sahie (never throws); inactive n8n/ingest-failure-alert.json (webhook → email, $env recipients); idempotency + simulated-failure tests.
-State: lint/typecheck/unit green; synthetic data only.
-Left: QA; live fas-dev evidence needs fas-dev Supabase credentials and INGEST_ALERT_WEBHOOK_URL (not in repo secrets).
 Decisions: none.
 
 ## 2026-10-13 03:52 (UTC) — Cloud Agent — PR #115 docs reporting rule
@@ -398,3 +393,9 @@ Left: QA review of docs PR.
 ## 2026-10-13 04:10 (UTC) — Grok Bot — PR #117: DECISIONS.md, George decisions of 2026-10-12
 Did: recorded D-005, D-006 and D-009 as decided, plus design decisions D-017 to D-022 (29 counties, dashboard defaults, manual foundation grants, county outlines, stale rule, placeholder bins). Unblocks QA on #116.
 Left: QA check. Need-score weights still open.
+
+## 2026-10-13 03:30 (UTC) — Engineer Bot — PR #111 / feature F-201
+Did: claim F-201. Reused source_registry/ingest_run; pre-load failures now write an error ingest_run; `IngestAlert` posts a redacted payload to INGEST_ALERT_WEBHOOK_URL on failed POST /api/ingest/sahie (never throws); inactive n8n/ingest-failure-alert.json (webhook → email, $env recipients); idempotency + simulated-failure tests.
+State: lint/typecheck/unit green; synthetic data only.
+Left: QA; live fas-dev evidence needs fas-dev Supabase credentials and INGEST_ALERT_WEBHOOK_URL (not in repo secrets).
+Decisions: none.
