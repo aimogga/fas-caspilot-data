@@ -543,3 +543,9 @@ Did: table `fas_service_county` (RLS enabled + forced, SELECT for the 3 roles, F
 State: `pnpm gate` on dc89514: lint/typecheck/unit (401) /secret scan/D-012 (+237/-27 = 264)/300-char all pass; `pnpm build` green; mutation `−`→`-` killed. test:db and e2e run in CI only (no local runtime).
 Left: QA PASS + DESIGN APPROVED at head; real FAS service-county list from George (seed is synthetic). Next: P3a DS-06b map after #147 merges.
 Decisions: none new (D-017, D-022, D-029 applied).
+
+## 2026-10-13 19:42 (UTC) — Cloud Agent — PR #150 / need-map Methodology link (DS-08 follow-up)
+Did: `/need-map` PageHeader actions gain an outline-button link `Methodology` → `/methodology` beside the FAS filter (4 lines). Base is #147's branch; merge after #147 and #149.
+State: gate (lint/typecheck/unit/secret scan) green. The map.spec link assertion lands with the map packet (that file is in flight).
+Left: QA; retarget to main after #147 merges.
+Decisions: none.
