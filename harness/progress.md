@@ -434,3 +434,10 @@ Tests: idempotency, simulated failure alert, lowercase "bearer" rejected, pinned
 State: lint/typecheck/unit green; synthetic data only.
 Left: QA; live fas-dev evidence needs fas-dev Supabase credentials and INGEST_ALERT_WEBHOOK_URL (not in repo secrets).
 Decisions: none.
+
+## 2026-10-13 05:46 (UTC) — Cloud Agent — PR #110 / feature F-204 tests
+Did: merged origin/main (01a6a56) after #109 squash; added acs-http test that a failed primary ACS year plus loaded fallback tags every row with the fallback vintage and period (mutation-checked: deleting `year = fallback;` in AcsHttp.run fails it). Earlier #110 commits: acs-http tests, docs/DATA_SOURCES.md, tests/db/acs-load.test.ts.
+State: unit tests green on Node 22.
+Evidence: PR #110.
+Left: CI + secret-scan, preview, QA.
+Decisions: none.
