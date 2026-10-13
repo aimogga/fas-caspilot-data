@@ -53,8 +53,8 @@ describe('run and CLI', () => {
     expect(loadGenerated(() => { throw new Error('ENOENT'); })).toEqual([]);
   });
 
-  it('CLI --skip-tests exits 0 on this repo', () => {
-    const r = spawnSync(process.execPath, ['scripts/pr-gate.mjs', '--skip-tests'], { encoding: 'utf8', timeout: 60000 });
+  it('CLI --skip-tests exits 0 on this repo (base HEAD: CI checkouts have no origin/main)', () => {
+    const r = spawnSync(process.execPath, ['scripts/pr-gate.mjs', '--skip-tests', '--base', 'HEAD'], { encoding: 'utf8', timeout: 60000 });
     expect(r.stdout).toContain('secret scan | ');
     expect(r.status).toBe(0);
   });
