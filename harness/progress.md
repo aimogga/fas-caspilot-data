@@ -509,3 +509,9 @@ Update: grants (key-usage via grants source ingest_run, 14d pursuing deadlines),
 ## 2026-10-13 15:27 (UTC) — Cloud Agent — PR #132 docs DS-08 (F-210)
 Did: Added `docs/design/specs/DS-08.md` (Need score methodology / F-210), copied unchanged from design handoff. Docs only; no code or real data.
 Left: Engineer starts DS-08a from merged or linked spec; fix drift in-budget (nav.ts HIDDEN_LABELS, CRUMB /need-map + /methodology, ErrorState Try again).
+
+## 2026-10-13 16:25 (UTC) — Grok Bot — PR #134: D-023 production on fas-dev Supabase
+Did: George approved (2026-10-13 10:15 AM MT, via Chief of staff) pointing production at the synthetic fas-dev Supabase (zlizvzpatfyhdydfmxef). Added Production target to NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY and SUPABASE_SERVICE_ROLE_KEY in Vercel; redeployed main to production (dpl_CvktaAt4NoDuEY4ELk1ohFtDtPwH, READY). Recorded D-023.
+State: /api/health ok:true (app ok, supabase ok); /login 200; /api/auth/login answers 401 for bad creds. seed.sql test users are local-only and do not sign in on fas-dev.
+Left: QA; seed synthetic test users on fas-dev if a live login check is needed.
+Decisions: D-023.
