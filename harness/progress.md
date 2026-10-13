@@ -509,3 +509,12 @@ Update: grants (key-usage via grants source ingest_run, 14d pursuing deadlines),
 ## 2026-10-13 15:27 (UTC) — Cloud Agent — PR #132 docs DS-08 (F-210)
 Did: Added `docs/design/specs/DS-08.md` (Need score methodology / F-210), copied unchanged from design handoff. Docs only; no code or real data.
 Left: Engineer starts DS-08a from merged or linked spec; fix drift in-budget (nav.ts HIDDEN_LABELS, CRUMB /need-map + /methodology, ErrorState Try again).
+
+## 2026-10-13 15:45 (UTC) — Grok Bot — PR #133 / feature F-601 deploy health (check 5)
+Did: `checkDeploys` in `scripts/nightly-audit.mjs`: latest production and preview Vercel deployments must be READY (ERROR → RED, other/none → YELLOW, HTTP error → YELLOW "could not query", no token → SKIPPED); folds into buildHealth/overall. `nightly-audit.yml` passes `secrets.VERCEL_TOKEN/VERCEL_PROJECT_ID/VERCEL_TEAM_ID`.
+State: lint/typecheck/tests green on Node 22; 8 mutations killed; synthetic fixtures only.
+Left: suppression / no-cell-<11 (no views yet) and cost (needs Cursor/LLM usage keys) remain todo/SKIPPED.
+Decisions: none.
+Update: ignore CANCELED deployments (latest non-canceled per target, limit 20); mutation killed.
+Update 2: raw Vercel data showed all 24 production deploys CANCELED (none ever READY; project live=false), same rows for the audit's params; query now uses state=READY,ERROR, so production reports 'none found' (YELLOW) until a production deploy succeeds.
+Update 3: test pins empty-production → 'none found' (YELLOW) with preview READY and no 'could not query'; none-found mutation killed.
