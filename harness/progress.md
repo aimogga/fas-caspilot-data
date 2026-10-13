@@ -440,3 +440,10 @@ Did: claim F-401. `/dashboard` route guarded to admin and staff (board 403 via m
 State: lint/typecheck/unit green; each guard mutation-checked.
 Left: nav unhide and crumb (lib/shell/nav.ts, held for #77), filters, freshness and pipeline widgets, e2e and layout-parity, then DS-07b/c.
 Decisions: none.
+
+## 2026-10-13 05:46 (UTC) — Cloud Agent — PR #110 / feature F-204 tests
+Did: merged origin/main (01a6a56) after #109 squash; added acs-http test that a failed primary ACS year plus loaded fallback tags every row with the fallback vintage and period (mutation-checked: deleting `year = fallback;` in AcsHttp.run fails it). Earlier #110 commits: acs-http tests, docs/DATA_SOURCES.md, tests/db/acs-load.test.ts.
+State: unit tests green on Node 22.
+Evidence: PR #110.
+Left: CI + secret-scan, preview, QA.
+Decisions: none.
