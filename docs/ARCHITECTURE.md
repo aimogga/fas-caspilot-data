@@ -29,6 +29,7 @@
 - `ingest_run` (id, source_id FK, started_at, finished_at, status, rows_loaded, checksum, error)
 - `public_indicator` (id, source_id, indicator_code, geo_fips, period, value, moe, unit, vintage, ingest_run_id) — long format; unique on (source_id, indicator_code, geo_fips, period, vintage)
 - `need_score_config` (version, weights jsonb, created_at, approved_by) · `need_score` (version, geo_fips, score, components jsonb)
+- `fas_service_county` (fips PK → geo_county, added_at) — FAS service-county list marked on the need map; config/seed, synthetic until FAS provides the real list (DS-06a2)
 
 **FAS (tenant-scoped, `org_id` on every row)**
 - `org` (id, name, ein, uei, state, settings jsonb)

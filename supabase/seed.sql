@@ -99,3 +99,7 @@ INSERT INTO need_score (version, geo_fips, score, components)
   SELECT 'v2-synthetic', fips, round(((substr(fips, 3)::int * 7) % 29 - 14) / 10.0, 2), '{}' FROM geo_county WHERE fips LIKE '49%' AND fips NOT IN ('49009', '49031', '49055');
 UPDATE need_score SET score = (SELECT score FROM need_score WHERE version = 'v2-synthetic' AND geo_fips = '49005') WHERE version = 'v2-synthetic' AND geo_fips = '49011';
 INSERT INTO need_score (version, geo_fips, score, components) VALUES ('v3-draft', '49009', 9, '{}');
+
+-- DS-06a2: synthetic FAS service counties (5 fips) until FAS provides the real list.
+INSERT INTO fas_service_county (fips) VALUES ('49035'), ('49049'), ('49011'), ('49057'), ('49045')
+ON CONFLICT (fips) DO NOTHING;
