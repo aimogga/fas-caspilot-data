@@ -37,6 +37,24 @@ describe('scoreOpportunity', () => {
     expect(score('state-only').components.at(-1)).toEqual({ key: 'blocker_cap', label: 'Blocker', weight: 0, value: 0, points: 0, max: 0, reason: 'Score capped at 0: Only state governments may apply', source_refs: ['opportunity.eligibility.applicant_types'] });
     expect(score('floor-too-high').components.at(-1)?.reason).toBe('Score capped at 0: Only applicants in Colorado may apply');
   });
+  it('F-504b params: floors cap genuine zeros (never "could not score"), min_days_to_close zeroes effort, max_cost_share_pct and award_too_small_value zero award fit; v0 params untouched', () => {
+    const v1 = { ...config, id: 'v1-test', params: { ...config.params, floor_components: ['mission_fit', 'award_size_fit', 'effort_vs_time'], award_too_small_value: 0, min_days_to_close: 7, max_cost_share_pct: 25 } };
+    const soon = score('closes-soon', v1); // 6 days < 7: effort 0, floored
+    expect(soon.score).toBe(0);
+    expect(soon.components.find((c) => c.key === 'effort_vs_time')).toMatchObject({ points: 0, reason: 'Only 6 days to the 2026-10-20 close date, under the 7-day minimum', source_refs: ['opportunity.close_date', 'match_config.params.prep_days', 'match_config.params.min_days_to_close'] });
+    expect(soon.components.at(-1)).toMatchObject({ key: 'floor_cap', label: 'Floor', weight: 0, points: 0, max: 0, reason: 'Score capped at 0 (effort vs time scored 0): Only 6 days to the 2026-10-20 close date, under the 7-day minimum' });
+    expect(soon.components.at(-1)?.source_refs).toContain('match_config.params.floor_components');
+    expect(score('closes-soon', { ...v1, params: { ...v1.params, min_days_to_close: 6 } }).score).toBe(80); // boundary: 6 days is not under 6
+    const missing = score('missing-eligibility', v1); // no close date: "could not score" effort stays 0 but never floors
+    expect([missing.components.some((c) => c.key === 'floor_cap'), missing.score > 0]).toEqual([false, true]);
+    const match = score('national-cost-share', { ...v1, params: { ...v1.params, max_cost_share_pct: 20 } }); // fixture asks a 25% match
+    expect(match.components.find((c) => c.key === 'award_size_fit')).toMatchObject({ points: 0, reason: 'Requires cost share or match of 25%, above the 20% the matching rules allow', source_refs: ['opportunity.eligibility.is_cost_sharing', 'match_config.params.max_cost_share_pct'] });
+    expect([match.score, score('national-cost-share', v1).components.find((c) => c.key === 'award_size_fit')?.points]).toEqual([0, 15]); // 25 is not above 25
+    const tiny = { ...opp('eligible'), id: 'tiny', award_floor: null, award_ceiling: 5000 };
+    const tinyScore = (cfg: MatchConfig) => scoreOpportunity(tiny, org, checkEligibility(tiny, org, NOW), cfg, NOW);
+    expect([tinyScore(v1).score, tinyScore(v1).components.find((c) => c.key === 'award_size_fit')?.reason, tinyScore(config).components.find((c) => c.key === 'award_size_fit')?.points]).toEqual([0, 'Award ceiling $5,000 is below the $10,000 minimum worth applying for', 8]);
+    for (const o of fixture.opportunities) expect(score(o.id!).components.map((c) => c.key)).not.toContain('floor_cap'); // v0 params never floor
+  });
   it('weights must be known components summing to 1 (D-025); otherwise it throws', () => {
     expect(() => validateWeights({ ...W, geography: 0.2 })).toThrow(/must sum to 1/);
     expect(() => validateWeights({ mission_fit: 1, bogus: 0 })).toThrow(/unknown match component bogus/);
