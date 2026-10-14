@@ -40,7 +40,8 @@ describe('scoreOpportunity', () => {
   it('F-504b params: floors cap genuine zeros (never "could not score"), min_days_to_close zeroes effort, max_cost_share_pct and award_too_small_value zero award fit; v0 params untouched', () => {
     const v1 = { ...config, id: 'v1-test', params: { ...config.params, floor_components: ['mission_fit', 'award_size_fit', 'effort_vs_time'], award_too_small_value: 0, min_days_to_close: 7, max_cost_share_pct: 25 } };
     const soon = score('closes-soon', v1); // 6 days < 7: effort 0, floored
-    expect(soon.score).toBe(0); expect(soon.components.find((c) => c.key === 'effort_vs_time')).toMatchObject({ points: 0, reason: 'Only 6 days to the 2026-10-20 close date, under the 7-day minimum', source_refs: ['opportunity.close_date', 'match_config.params.prep_days', 'match_config.params.min_days_to_close'] });
+    expect(soon.score).toBe(0);
+    expect(soon.components.find((c) => c.key === 'effort_vs_time')).toMatchObject({ points: 0, reason: 'Only 6 days to the 2026-10-20 close date, under the 7-day minimum', source_refs: ['opportunity.close_date', 'match_config.params.prep_days', 'match_config.params.min_days_to_close'] });
     expect(soon.components.at(-1)).toMatchObject({ key: 'floor_cap', label: 'Floor', weight: 0, points: 0, max: 0, reason: 'Score capped at 0 (effort vs time scored 0): Only 6 days to the 2026-10-20 close date, under the 7-day minimum' });
     expect(soon.components.at(-1)?.source_refs).toContain('match_config.params.floor_components');
     expect(score('closes-soon', { ...v1, params: { ...v1.params, min_days_to_close: 6 } }).score).toBe(80); // boundary: 6 days is not under 6
