@@ -98,9 +98,11 @@ jobs:
       - name: Start local Supabase
         if: steps.scope.outputs.docs_only != 'true'
         run: |
-          supabase start > /tmp/supabase-start.log 2>&1
-          status=$?
+          # The step shell runs with -e, so capture the exit code inline or nothing below runs on failure.
+          status=0
+          supabase start > /tmp/supabase-start.log 2>&1 || status=$?
           awk 'BEGIN{IGNORECASE=1} /migrat|seed/' /tmp/supabase-start.log
+          if [ "$status" != 0 ]; then echo "::group::supabase start log (failed)"; tail -n 80 /tmp/supabase-start.log; echo "::endgroup::"; fi
           exit $status
 
       - name: Database tests
