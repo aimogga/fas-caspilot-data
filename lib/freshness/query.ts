@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { aggregate, Freshness, humanCadence, RANK, runDate, staleDays, type FreshnessIndicator, type FreshnessStatus } from './status';
+import { aggregate, Freshness, humanCadence, RANK, runDate, staleDays, topBarChip, type FreshnessIndicator, type FreshnessStatus, type TopBarChip } from './status';
 
 export type SourceRow = { id: string; name: string; owner: string | null; cadence: string | null; status: string; last_success_at: string | null };
 export type RunRow = { id: string; source_id: string; status: string; started_at: string };
@@ -7,7 +7,7 @@ export type FreshnessPageRow = {
   name: string; owner: string | null; paused: boolean; latestVintage: string; lastSuccess: string; cadence: string;
   status: FreshnessStatus; staleDays: number | null; runId: string | null;
 };
-export type FreshnessPageView = { rows: FreshnessPageRow[]; asOf: string | null; aggregate: FreshnessStatus | null; showRun: boolean };
+export type FreshnessPageView = { rows: FreshnessPageRow[]; asOf: string | null; aggregate: FreshnessStatus | null; chip: TopBarChip | null; showRun: boolean };
 
 export class FreshnessPage {
   /** Rows sorted Failed → Stale → Not published → Current, then name A–Z. The run id column is admin-only (DS-05). */
@@ -24,7 +24,7 @@ export class FreshnessPage {
       })
       .sort((a, b) => RANK[a.status] - RANK[b.status] || a.name.localeCompare(b.name));
     const latestSuccess = sources.map((s) => s.last_success_at).filter((d): d is string => !!d).sort().pop();
-    return { rows, asOf: latestSuccess ? runDate(latestSuccess) : null, aggregate: aggregate(rows), showRun: role === 'admin' };
+    return { rows, asOf: latestSuccess ? runDate(latestSuccess) : null, aggregate: aggregate(rows), chip: topBarChip(rows, sources, now), showRun: role === 'admin' };
   }
 
   static async load(client: SupabaseClient, now: Date, role: string | null | undefined): Promise<FreshnessPageView> {

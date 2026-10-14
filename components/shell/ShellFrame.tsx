@@ -4,6 +4,8 @@ import { useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BookOpen, House, LayoutDashboard, Menu, Shield, type LucideIcon } from "lucide-react";
+import { AggregateFreshnessChip } from "@/components/freshness/AggregateFreshnessChip";
+import type { TopBarChip } from "@/lib/freshness/status";
 import { Page } from "@/components/layout";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ORGANIZATION_NAME, PRODUCT_NAME } from "@/lib/branding";
@@ -38,7 +40,7 @@ function NavLinks({ groups, pathname, onNavigate }: { groups: NavGroup[]; pathna
   ));
 }
 
-export function ShellFrame({ role, roleLabel, name, showSynthetic, children }: { role: string; roleLabel: string; name: string; showSynthetic: boolean; children: ReactNode }) {
+export function ShellFrame({ role, roleLabel, name, showSynthetic, freshnessChip = null, children }: { role: string; roleLabel: string; name: string; showSynthetic: boolean; freshnessChip?: TopBarChip | null; children: ReactNode }) {
   const pathname = usePathname();
   const { groups, footer } = navForRole(role);
   const [open, setOpen] = useState(false);
@@ -92,7 +94,7 @@ export function ShellFrame({ role, roleLabel, name, showSynthetic, children }: {
           </div>
           <div data-slot="topbar-sub">
             <nav data-slot="crumbs" aria-label="Breadcrumb"><ol><li aria-current="page">{crumbFor(role, pathname, PRODUCT_NAME)}</li></ol></nav>
-            <div data-slot="freshness-slot" hidden />
+            <AggregateFreshnessChip role={role} chip={freshnessChip} />
             {showSynthetic ? <span data-slot="env-badge">Synthetic data</span> : null}
           </div>
         </header>

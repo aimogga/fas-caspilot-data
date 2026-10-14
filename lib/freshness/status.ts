@@ -32,3 +32,23 @@ export function runDate(iso: string | null): string {
   const t = Date.parse(iso);
   return Number.isNaN(t) ? 'Never' : new Date(t).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 }
+
+export type TopBarChip = { status: FreshnessStatus; label: string };
+/** `today` / `1 day ago` / `N days ago` for the Current chip (public-source run metadata, so a day is allowed). */
+export function relativeDays(days: number): string {
+  return days <= 0 ? 'today' : days === 1 ? '1 day ago' : `${days} days ago`;
+}
+
+/** DS-05 top-bar copy by aggregate priority; null means the chip stays hidden (no sources). */
+export function topBarChip(rows: ReadonlyArray<{ status: FreshnessStatus; staleDays: number | null }>, sources: ReadonlyArray<{ last_success_at: string | null }>, now: Date): TopBarChip | null {
+  const status = aggregate(rows);
+  if (status === null) return null;
+  if (status === 'failed') return { status, label: 'Last run failed' };
+  if (status === 'not_published') return { status, label: 'Not published' };
+  if (status === 'stale') {
+    const worst = Math.max(...rows.filter((r) => r.status === 'stale').map((r) => r.staleDays ?? 0));
+    return { status, label: `Stale · ${worst} days` };
+  }
+  const ages = sources.map((s) => staleDays(s, now)).filter((d): d is number => d !== null);
+  return { status, label: `Public data updated ${relativeDays(Math.min(...ages))}` };
+}
