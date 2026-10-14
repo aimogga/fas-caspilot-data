@@ -63,6 +63,8 @@ for (const [email, home, navigates] of [["staff@example.test", "/staff", true], 
       await page.setViewportSize({ width, height: 900 });
       await page.goto(home);
       const chip = page.locator("[data-slot=topbar-sub] [data-slot=freshness-chip]");
+      // The chip renders client-side after a browser Supabase query; allow a slow dev server, and show the bar when it never appears.
+      await chip.waitFor({ state: "attached", timeout: 20_000 }).catch(async () => console.log(`topbar-sub @ ${width}:`, await page.locator("[data-slot=topbar-sub]").innerHTML()));
       await expect(chip, `chip @ ${width}`).toBeVisible();
       await expect(chip).toHaveAttribute("data-status", "failed");
       await expect(chip).toHaveText(/^\W*Last run failed$/);
