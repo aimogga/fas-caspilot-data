@@ -9,7 +9,8 @@ import { NeedMapQuery } from '../need-map/query';
 import { COUNTIES } from '../synthetic/generate';
 import { buildPacket, countyName, type Packet, type PacketScope, type PacketVariant } from './model';
 
-export type Actor = { userId: string; orgId: string };
+/** `exportType` names the `export_job.type` a file export writes (`packet-docx`, `packet-csv`); a page render keeps the default. */
+export type Actor = { userId: string; orgId: string; exportType?: string };
 export const EXPORT_TYPE = 'packet-html', AUDIT_ACTION = 'packet.render';
 const warn = (step: string) => (e: unknown) => { console.error(`[packets] ${step} failed`, { message: e instanceof Error ? e.message : 'unknown' }); return null; };
 /** `?variant=` and `?county=` → a safe variant and scope (unknown values fall back to grant / statewide). */
@@ -34,7 +35,7 @@ export const PacketQuery = {
   /** One `export_job` (type `packet-html`, suppression applied) and one `audit_log` (`packet.render`) per staff/admin render; RLS requires `created_by`/`actor` = the user. */
   async record(client: SupabaseClient, p: Packet, actor: Actor): Promise<void> {
     const params = { variant: p.variant, scope: p.scope, status: 'rendered', asOf: p.asOf };
-    const job = await client.from('export_job').insert({ org_id: actor.orgId, type: EXPORT_TYPE, params, suppression_applied: true, created_by: actor.userId }).select('id').single();
+    const job = await client.from('export_job').insert({ org_id: actor.orgId, type: actor.exportType ?? EXPORT_TYPE, params, suppression_applied: true, created_by: actor.userId }).select('id').single();
     if (job.error) throw new Error(job.error.message);
     const audit = await client.from('audit_log').insert({ org_id: actor.orgId, actor: actor.userId, action: AUDIT_ACTION, entity: 'export_job', entity_id: job.data.id, details: params });
     if (audit.error) throw new Error(audit.error.message);

@@ -40,6 +40,8 @@ describe('role-guards', () => {
     expect(matchGuardedPrefix('/need-map')).toBe('/need-map');
     expect([...(['board_viewer', 'staff', 'admin'] as const), null].map((r) => isRouteAllowed('/methodology', r))).toEqual([true, true, true, false]);
     expect(matchGuardedPrefix('/methodology')).toBe('/methodology');
+    expect([...(['board_viewer', 'staff', 'admin'] as const), null].map((r) => isRouteAllowed('/api/packets/export', r))).toEqual([false, true, true, false]);
+    expect(matchGuardedPrefix('/api/packets/export')).toBe('/api/packets');
   });
   it('allowlists public routes only', () => {
     expect(isPublicRoute('/login')).toBe(true);

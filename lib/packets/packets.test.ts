@@ -3,7 +3,10 @@ import { generate } from '@/lib/synthetic/generate';
 import { MetricsQuery, type M2Row, type O1Row } from '@/lib/dashboard/metrics-query';
 import { MethodologyQuery } from '@/lib/methodology/query';
 import { NeedMapQuery } from '@/lib/need-map/query';
-import { assertPacket, renderText } from './assert';
+import { assertPacket, CASE_FIELDS, EXACT_DATE, renderText } from './assert';
+import { BOM, CSV_HEADER, csvCell, csvRows, packetToCsv } from './csv';
+import { docxText, packetToDocx } from './docx';
+import { exportFilename, renderExport } from './export';
 import { buildPacket, scopeLabel, type Packet, type PacketInput } from './model';
 import { PacketQuery, parsePacketParams } from './query';
 type Rec = Record<string, unknown>;
@@ -76,5 +79,41 @@ describe('PacketQuery (F-403)', () => {
     inserts.length = 0;
     const board = await PacketQuery.load(client, 'board', { county: '49035' }, new Date('2026-10-14T00:00:00Z'), null, 'preview');
     expect([inserts, board.scopeLabel, board.sections[0]?.paragraphs[1]]).toEqual([[], 'Statewide', 'FAS service counties are not available yet.']);
+  });
+});
+describe('DOCX and CSV exports (F-404)', () => {
+  /** The three text rules of `assertPacket`, run over any list of strings (the DOCX text or the CSV). */
+  const scan = (texts: string[]) => texts.flatMap((t) => [...t.matchAll(EXACT_DATE), ...t.matchAll(CASE_FIELDS), ...t.matchAll(/\bn = (\d+)\b|\((\d+) of (\d+)\)/g)].map((m) => m[0]));
+  it('docxText carries every model string, passes the exact-date / small-cell / case-field checks on the golden packets, and catches an injected violation', async () => {
+    for (const p of [buildPacket(input()), buildPacket(input({ variant: 'board' })), buildPacket(input({ scope: {}, need: null, method: null, metrics: null }))]) {
+      const text = docxText(p), joined = text.join('\n');
+      expect(scan(text)).toEqual([]);
+      for (const t of renderText(p)) expect(joined).toContain(t.includes(' · as of ') ? t.split(': ')[0] : t);
+      expect([text[0], text[1], text[2], text.at(-1)]).toEqual(['DRAFT · for review', p.title, `${p.prepared} · ${p.asOf}`, p.footer]);
+    }
+    const bad = buildPacket(input()); bad.sections[1]?.paragraphs.push('Court order dated 2024-07-01 for case_id 12 (3 of 14).');
+    expect(scan(docxText(bad))).toEqual(['2024-07-01', 'case_id', '(3 of 14)']);
+    const bytes = await packetToDocx(buildPacket(input()));
+    expect([bytes[0], bytes[1], bytes.length > 4000]).toEqual([0x50, 0x4b, true]);
+  });
+  it('CSV: BOM + header, one row per figure, suppressed figures carry fewer_than_11 / hidden with an empty value, RFC 4180 quoting, no exact dates', () => {
+    const p = buildPacket(input()), csv = packetToCsv(p), lines = csv.split('\r\n'), figures = p.sections.flatMap((s) => s.figures);
+    expect([csv.startsWith(BOM), lines[0], lines.length - 2, lines.at(-1)]).toEqual([true, BOM + CSV_HEADER.join(','), figures.length, '']);
+    const rows = csvRows(p), m2 = rows.find((r) => r[1]?.startsWith('Days from application'));
+    expect(m2).toEqual(['FAS results', m2?.[1], '', '', 'FAS records · Jul–Sep 2024 (Q3)', 'Oct 2024', 'fewer_than_11']);
+    expect(rows[0]).toEqual(['County need profile', 'Uninsured rate', '9.1% ± 0.4', 'percent', 'Census SAHIE 2023', 'Oct 2026', 'shown']);
+    expect(rows.every((r) => r.length === 7 && (r[6] === 'shown' ? r[2] !== '' : r[2] === '' && r[3] === ''))).toBe(true);
+    expect(rows.filter((r) => r[6] === 'fewer_than_11').length).toBeGreaterThan(0);
+    expect(scan(lines)).toEqual([]);
+    expect(csv).not.toMatch(/Connections Counseling|Counts under 11 are hidden/);
+    expect([csvCell('a,b'), csvCell('say "hi"'), csvCell('x\ny'), csvCell('plain')]).toEqual(['"a,b"', '"say ""hi"""', '"x\ny"', 'plain']);
+    const hidden = buildPacket(input()); hidden.sections[1]?.figures.push({ label: 'Cases', value: 'hidden', kind: 'count', sourceLabel: 'FAS records', asOf: 'Oct 2024' });
+    expect(csvRows(hidden).find((r) => r[1] === 'Cases')?.slice(2)).toEqual(['', '', 'FAS records', 'Oct 2024', 'hidden']);
+  });
+  it('filenames carry the month only and the scope slug; renderExport pairs body, MIME and name', async () => {
+    const now = new Date('2026-10-14T12:00:00Z'), g = buildPacket(input()), b = buildPacket(input({ variant: 'board' }));
+    expect([exportFilename(g, 'docx', now), exportFilename(b, 'csv', now)]).toEqual(['fas-evidence-packet-grant-salt-lake-county-2026-10.docx', 'fas-evidence-packet-board-statewide-2026-10.csv']);
+    const csv = await renderExport(g, 'csv', now), docx = await renderExport(g, 'docx', now);
+    expect([csv.mime, new TextDecoder('utf-8', { ignoreBOM: true }).decode(csv.body).startsWith(BOM), docx.mime.includes('wordprocessingml'), docx.body[0]]).toEqual(['text/csv; charset=utf-8', true, true, 0x50]);
   });
 });
