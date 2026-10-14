@@ -54,9 +54,9 @@ test("Save commits a batch, the list shows it, Roll back removes the rows", asyn
   await signIn(page, "staff@example.test");
   const ids = [crypto.randomUUID(), crypto.randomUUID()]; // fixed ids: the second commit only succeeds because the rollback removed the first batch's rows
   const commit = async () => {
-    await page.goto("/staff/intake");
+    await openIntake(page);
     await page.setInputFiles("#intake-file", idsCsv(ids));
-    for (let i = 0; i < 2; i++) await page.getByRole("button", { name: "Next" }).click();
+    for (let i = 0; i < 2; i++) await page.getByRole("button", { name: "Next", exact: true }).click();
     await expect(page.locator("[data-slot=preview-summary]")).toHaveText("2 rows ready · 0 rows with errors");
     await page.getByRole("button", { name: "Save" }).click();
     await expect(page.getByRole("status")).toHaveText(/^Saved 2 rows as batch [0-9a-f]{8}$/);
