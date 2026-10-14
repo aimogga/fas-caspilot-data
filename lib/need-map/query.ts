@@ -12,8 +12,9 @@ export type NeedInput = { configs: ConfigRow[]; scores: ScoreRow[]; indicators: 
 export type BuildOptions = { fas?: boolean };
 export type CountyRow = { fips: string; name: string; fas: boolean; rank: string; score: string; bin: string; status: string; cells: Record<string, string>; value: number | null; binNo: number | null };
 export type Column = { code: string; label: string; note: string };
+export type ColumnSource = { code: string; name: string; vintage: string; asOf: string };
 /** `rows` honours the FAS filter; `counties` is always all 29 (the map greys non-FAS counties instead of dropping them). */
-export type NeedTableData = { version: string | null; hasData: boolean; columns: Column[]; rows: CountyRow[]; counties: CountyRow[]; footer: string };
+export type NeedTableData = { version: string | null; hasData: boolean; columns: Column[]; sources: ColumnSource[]; rows: CountyRow[]; counties: CountyRow[]; footer: string };
 
 export const NOT_YET = 'Not available yet';
 export const NOT_PUBLISHED = 'Not published';
@@ -25,6 +26,12 @@ const INDICATORS: Record<string, { label: string; noun?: string }> = {
   total_households: { label: 'Households', noun: 'households' },
   total_population: { label: 'Population', noun: 'people' },
   veteran_population: { label: 'Veterans', noun: 'veterans' },
+  child_poverty_rate: { label: 'Child poverty rate' },
+  child_poverty_count: { label: 'In child poverty', noun: 'people' },
+  single_parent_pct: { label: 'Single-parent households' },
+  single_parent_households: { label: 'Single-parent households (count)', noun: 'households' },
+  no_vehicle_pct: { label: 'No-vehicle households' },
+  no_vehicle_households: { label: 'No-vehicle households (count)', noun: 'households' },
 };
 const SOURCES: Record<string, string> = { 'census-sahie': 'Census SAHIE', 'census-saipe': 'Census SAIPE', 'census-acs': 'Census ACS 5-year' };
 
@@ -79,16 +86,18 @@ export class NeedMapQuery {
     return new Date(iso).toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
   }
 
-  static note(row: IndicatorRow, sources: SourceRow[]): string {
+  /** Source name, vintage and as-of month for one indicator column (panel rows; the column note is `<name> <vintage>`). */
+  static columnSource(row: IndicatorRow, sources: SourceRow[]): ColumnSource {
     const src = sources.find((s) => s.id === row.source_id);
     const name = src ? SOURCES[src.name] ?? src.name : 'Unknown source';
     const asOf = src?.last_success_at ? NeedMapQuery.monthYear(src.last_success_at) : NOT_YET;
-    return `${name} ${row.vintage} · as of ${asOf}`;
+    return { code: row.indicator_code, name, vintage: row.vintage, asOf };
   }
 
-  static footer(version: string | null, columns: Column[]): string {
-    const notes = [...new Set(columns.map((c) => c.note))].join('; ') || NOT_YET;
-    return `Public sources: ${notes} · Need score version ${version ?? NOT_YET} · Placeholder bins`;
+  /** `latest` is the newest `last_success_at` among the sources in use (ISO). */
+  static footer(version: string | null, sources: ColumnSource[], latest: string | null): string {
+    const names = [...new Set(sources.map((s) => s.name))].join(', ') || NOT_YET;
+    return `Public sources: ${names} · Need score version ${version ?? NOT_YET} · as of ${latest ? NeedMapQuery.monthYear(latest) : NOT_YET} · Placeholder bins`;
   }
 
   /** All 29 counties; `opts.fas` keeps FAS service counties only, each with its statewide rank. */
@@ -97,10 +106,9 @@ export class NeedMapQuery {
     const fas = FasCounties.fromRows(input.fas);
     const indicators = NeedMapQuery.latest(input.indicators);
     const codes = [...new Set(indicators.map((i) => i.indicator_code))].sort();
-    const columns = codes.map((code) => {
-      const first = indicators.find((i) => i.indicator_code === code) as IndicatorRow;
-      return { code, label: NeedMapQuery.label(code), note: NeedMapQuery.note(first, input.sources) };
-    });
+    const sources = codes.map((code) => NeedMapQuery.columnSource(indicators.find((i) => i.indicator_code === code) as IndicatorRow, input.sources));
+    const columns = sources.map((s) => ({ code: s.code, label: NeedMapQuery.label(s.code), note: `${s.name} ${s.vintage}` }));
+    const latest = input.sources.filter((s) => indicators.some((i) => i.source_id === s.id)).map((s) => s.last_success_at ?? '').sort().at(-1) || null;
     const scored = COUNTIES.map((c) => {
       const hit = input.scores.find((s) => s.version === version && s.geo_fips === c.fips);
       return { fips: c.fips, score: hit ? Number(hit.score) : null };
@@ -121,7 +129,7 @@ export class NeedMapQuery {
     counties.sort((a, b) => (ranks.get(a.fips) ?? Infinity) - (ranks.get(b.fips) ?? Infinity) || a.name.localeCompare(b.name));
     const rows = counties.filter((r) => !opts.fas || r.fas);
     const hasData = indicators.length > 0 || ranks.size > 0;
-    return { version, hasData, columns, rows, counties, footer: NeedMapQuery.footer(version, columns) };
+    return { version, hasData, columns, sources, rows, counties, footer: NeedMapQuery.footer(version, sources, latest) };
   }
 
   static async load(client: SupabaseClient, opts: BuildOptions = {}): Promise<NeedTableData> {

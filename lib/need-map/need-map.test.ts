@@ -13,7 +13,7 @@ const input = (over: Partial<NeedInput> = {}): NeedInput => ({
   configs: [{ version: 'v1', created_at: '2026-10-01', approved_by: 'u1' }, { version: 'v2', created_at: '2026-10-02', approved_by: 'u1' }, { version: 'v3', created_at: '2026-10-03', approved_by: null }],
   scores: [{ version: 'v2', geo_fips: '49035', score: '1.5' }, { version: 'v2', geo_fips: '49049', score: -0.25 }, { version: 'v3', geo_fips: '49001', score: 9 }],
   indicators: [ind('49035', 50, '2023'), ind('49035', 9.2), ind('49001', null, '2024', 'not_published')],
-  sources: [{ id: 's1', name: 'census-sahie', last_success_at: '2026-10-12T23:46:22Z' }, { id: 's9', name: 'unused', last_success_at: '2027-01-01T00:00:00Z' }],
+  sources: [{ id: 's1', name: 'census-sahie', last_success_at: '2026-10-12T23:46:22Z' }, { id: 's9', name: 'census-saipe', last_success_at: '2027-01-01T00:00:00Z' }],
   fas: ['49035', '49049', '49011', '49057', '49045'].map((fips) => ({ fips })),
   ...over,
 });
@@ -56,14 +56,20 @@ describe('NeedMapQuery.build', () => {
     expect(NeedMapQuery.cell(count('veteran_population'))).toBe('2,518 veterans');
     expect(NeedMapQuery.cell(count('new_code'))).toBe('2,518');
     expect([NeedMapQuery.label('total_households'), NeedMapQuery.label('total_population'), NeedMapQuery.label('new_code')]).toEqual(['Households', 'Population', 'New code']);
+    expect(['child_poverty_rate', 'child_poverty_count', 'single_parent_pct', 'single_parent_households', 'no_vehicle_pct', 'no_vehicle_households'].map(NeedMapQuery.label))
+      .toEqual(['Child poverty rate', 'In child poverty', 'Single-parent households', 'Single-parent households (count)', 'No-vehicle households', 'No-vehicle households (count)']);
+    expect([NeedMapQuery.cell(count('child_poverty_count')), NeedMapQuery.cell(count('no_vehicle_households'))]).toEqual(['2,518 people', '2,518 households']);
     expect(NeedMapQuery.cell(ind('1', 5, '2024', 'not_published'))).toBe(NOT_PUBLISHED);
     expect(NeedMapQuery.cell({ ...ind('1', 0.1, '2024', 'rate'), moe: null })).toBe('0.1');
   });
 
-  it('footer cites only used sources and their latest success month', () => {
-    expect(data.columns).toEqual([{ code: 'uninsured_rate', label: 'Uninsured rate', note: 'Census SAHIE 2024 · as of Oct 2026' }]);
-    expect(data.footer).toBe('Public sources: Census SAHIE 2024 · as of Oct 2026 · Need score version v2 · Placeholder bins');
-    expect(NeedMapQuery.note({ ...ind('1', 1), source_id: 'nope' }, [])).toBe(`Unknown source 2024 · as of ${NOT_YET}`);
+  it('notes `<source> <vintage>` per column; the footer lists used sources once and their latest success month', () => {
+    expect(data.columns).toEqual([{ code: 'uninsured_rate', label: 'Uninsured rate', note: 'Census SAHIE 2024' }]);
+    expect(data.sources).toEqual([{ code: 'uninsured_rate', name: 'Census SAHIE', vintage: '2024', asOf: 'Oct 2026' }]);
+    expect(data.footer).toBe('Public sources: Census SAHIE · Need score version v2 · as of Oct 2026 · Placeholder bins');
+    expect(NeedMapQuery.columnSource({ ...ind('1', 1), source_id: 'nope' }, [])).toEqual({ code: 'uninsured_rate', name: 'Unknown source', vintage: '2024', asOf: NOT_YET });
+    const two = NeedMapQuery.build(input({ indicators: [ind('49035', 9.2), { ...ind('49035', 5, '2023', 'count'), source_id: 's9', indicator_code: 'poverty_count' }] }));
+    expect([two.columns[0].note, two.footer]).toEqual(['Census SAIPE 2023', 'Public sources: Census SAIPE, Census SAHIE · Need score version v2 · as of Jan 2027 · Placeholder bins']);
   });
 
   it('says Not available yet everywhere when no version is approved', () => {
@@ -71,13 +77,13 @@ describe('NeedMapQuery.build', () => {
     expect(none.version).toBeNull();
     expect(none.hasData).toBe(true);
     expect(none.rows.every((r) => r.rank === NOT_YET && r.score === NOT_YET && r.bin === NOT_YET && r.status === NOT_YET)).toBe(true);
-    expect(none.footer).toBe('Public sources: Census SAHIE 2024 · as of Oct 2026 · Need score version Not available yet · Placeholder bins');
+    expect(none.footer).toBe('Public sources: Census SAHIE · Need score version Not available yet · as of Oct 2026 · Placeholder bins');
   });
 
   it('reports no data when nothing is loaded', () => {
     const empty = NeedMapQuery.build(input({ scores: [], indicators: [] }));
     expect(empty.hasData).toBe(false);
-    expect(empty.footer).toBe(`Public sources: ${NOT_YET} · Need score version v2 · Placeholder bins`);
+    expect(empty.footer).toBe(`Public sources: ${NOT_YET} · Need score version v2 · as of ${NOT_YET} · Placeholder bins`);
   });
 
   it('marks FAS counties, filters to them on request and keeps the statewide rank', () => {
@@ -115,7 +121,7 @@ describe('NeedTable markup', () => {
   it('wraps the table in a focusable labelled scroll region with a sticky County column', () => {
     expect(html).toMatch(/^<div role="region" tabindex="0" aria-label="County need table"[^>]*overflow-x-auto/);
     expect(html).toMatch(/<th scope="col" class="[^"]*md:sticky md:left-0[^"]*">County<\/th>/);
-    expect(html).toMatch(/<th scope="row" class="[^"]*md:sticky md:left-0[^"]*">Salt Lake County<span data-slot="badge"/);
+    expect(html).toMatch(/<th scope="row" class="[^"]*md:sticky md:left-0[^"]*"><a [^>]*>Salt Lake County<\/a><span data-slot="badge"/);
   });
 
   it('badges each FAS county and names it in the row label', () => {
@@ -125,10 +131,14 @@ describe('NeedTable markup', () => {
     expect(html).not.toMatch(/<tr[^>]*aria-label="Beaver County[^"]*FAS county"/);
   });
 
-  it('right-aligns number headers and cells, and notes the source and date per column', () => {
-    expect(html).toMatch(/<th scope="col" aria-sort="ascending" class="[^"]*tabular-nums md:text-right!">Rank<\/th>/);
-    expect(html).toMatch(/<td class="[^"]*tabular-nums md:text-right!"><span[^>]*>Rank: <\/span>1 of 2<\/td>/);
-    expect(html).toContain('Uninsured rate<span class="block text-xs font-normal text-muted-foreground">Census SAHIE 2024 · as of Oct 2026</span>');
+  it('right-aligns number headers and cells at every width, notes `<source> <vintage>` per column and links county names', () => {
+    expect(html).toMatch(/<th scope="col" aria-sort="ascending" class="[^"]*text-right tabular-nums">Rank<\/th>/);
+    expect(html).toMatch(/<td class="[^"]*text-right tabular-nums"><span[^>]*>Rank: <\/span>1 of 2<\/td>/);
+    expect(html).not.toContain('text-left tabular-nums');
+    expect(html).toContain('Uninsured rate<span class="block text-xs font-normal text-muted-foreground">Census SAHIE 2024</span>');
+    expect(html).toMatch(/<a [^>]*href="\?county=49035"[^>]*>Salt Lake County<\/a>/);
+    const fasHtml = renderToStaticMarkup(createElement(NeedTable, { data: NeedMapQuery.build(input(), { fas: true }), fas: true }));
+    expect(fasHtml).toMatch(/href="\?county=49035&amp;fas=1"/);
   });
 
   it('ErrorState renders its body inside the alert', () => {

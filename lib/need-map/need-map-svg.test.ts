@@ -1,6 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import { SELECT_PROMPT } from '@/components/need-map/CountyPanel';
 import { NeedMap, legendBins, summary } from '@/components/need-map/NeedMap';
 import { COUNTIES } from '../synthetic/generate';
 import { NeedBins } from './bins';
@@ -34,8 +35,8 @@ describe('NeedBins ties', () => {
 });
 
 describe('NeedMap markup', () => {
-  it('draws 29 focusable labelled county paths, hatches the 3 unscored and fills the rest by bin', () => {
-    expect(count(html, /<path [^>]*data-fips="49\d{3}"[^>]*tabindex="0" role="img" aria-label="[^"]+ County, [^"]+"[^>]*stroke="var\(--border\)" stroke-width="1"/g)).toBe(29);
+  it('draws 29 focusable labelled county buttons, hatches the 3 unscored and fills the rest by bin', () => {
+    expect(count(html, /<path [^>]*data-fips="49\d{3}"[^>]*tabindex="0" role="button" aria-pressed="false" aria-label="[^"]+ County, [^"]+"[^>]*stroke="var\(--border\)" stroke-width="1"/g)).toBe(29);
     expect(count(html, /<path [^>]*data-bin="0"[^>]*aria-label="[^"]+ County, not published"[^>]*style="fill:url\(#need-map-hatch\)"/g)).toBe(3);
     expect(html).toMatch(/<pattern id="need-map-hatch"[^>]*><rect [^>]*fill="var\(--suppressed\)"/);
     const bins = [...NeedBins.assign(data.counties.map((c) => ({ fips: c.fips, score: c.value }))).values()];
@@ -67,9 +68,22 @@ describe('NeedMap markup', () => {
     expect(html).toMatch(/<text [^>]*fill="var\(--primary-foreground\)"[^>]*>1<\/text>/);
   });
 
+  it('selected county: aria-pressed, a 3 px --ring outline above the FAS outlines, and the panel in the legend column', () => {
+    expect(html).toContain(SELECT_PROMPT);
+    expect(html).not.toContain('data-selected-outline=');
+    const selected = data.counties.find((c) => c.fips === '49011') ?? null;
+    const out = renderToStaticMarkup(createElement(NeedMap, { data, selected }));
+    expect(count(out, /aria-pressed="true"/g)).toBe(1);
+    expect(out).toMatch(/<path [^>]*data-fips="49011"[^>]*data-selected="true"[^>]*aria-pressed="true"/);
+    expect(out).toMatch(/<path [^>]*data-selected-outline="49011" fill="none" stroke="var\(--ring\)" stroke-width="3" pointer-events="none" aria-hidden="true"/);
+    expect(out.indexOf('data-selected-outline=')).toBeGreaterThan(out.lastIndexOf('data-fas-outline='));
+    expect(out).toMatch(/<div class="order-last lg:order-none lg:col-span-5 lg:sticky lg:top-4 lg:self-start"><div[^>]*data-slot="county-panel"[^>]*>[^]*Davis County[^]*Rank 20 of 26 · Need score −0\.80[^]*<\/div><figcaption/);
+    expect(out).not.toContain(SELECT_PROMPT);
+  });
+
   it('?fas=1 greys non-FAS counties to --muted but keeps them focusable and labelled', () => {
     const dim = renderToStaticMarkup(createElement(NeedMap, { data: NeedMapQuery.build(input, { fas: true }), fas: true }));
-    expect(count(dim, /<path [^>]*data-dim="true"[^>]*tabindex="0" role="img" aria-label="[^"]+"[^>]*style="fill:var\(--muted\)"/g)).toBe(24);
+    expect(count(dim, /<path [^>]*data-dim="true"[^>]*tabindex="0" role="button"[^>]*aria-label="[^"]+"[^>]*style="fill:var\(--muted\)"/g)).toBe(24);
     expect([count(dim, /<path [^>]*data-fips=/g), count(dim, /<path [^>]*data-fas-outline=/g), count(dim, /<text /g)]).toEqual([29, 5, 5]);
   });
 });

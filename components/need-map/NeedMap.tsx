@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { CountyPanel } from "@/components/need-map/CountyPanel";
 import { NeedMapQuery, type CountyRow, type NeedTableData } from "@/lib/need-map/query";
 import geo from "@/public/geo/utah-counties.json";
 
@@ -30,24 +31,31 @@ export function summary(counties: CountyRow[]): string {
 
 const Swatch = ({ style }: { style?: CSSProperties }) => <span aria-hidden="true" className="inline-block size-3.5 shrink-0 rounded-xs border border-border" style={style} />;
 
-/** Inline SVG county map (DS-06b). `fas` greys non-FAS counties to `--muted`; they stay focusable and labelled. */
-export function NeedMap({ data, fas = false }: { data: NeedTableData; fas?: boolean }) {
+/** Inline SVG county map (DS-06b). `fas` greys non-FAS counties to `--muted`; they stay focusable and labelled. `selected` gets the ring and the panel. */
+export function NeedMap({ data, fas = false, selected = null }: { data: NeedTableData; fas?: boolean; selected?: CountyRow | null }) {
   const counties = data.counties.filter((c) => GEO.counties[c.fips]);
+  const ring = selected && GEO.counties[selected.fips] ? selected.fips : null;
   const shown = (c: CountyRow) => !fas || c.fas;
   const labelled = (c: CountyRow) => shown(c) && c.binNo !== null && GEO.counties[c.fips].bbox.every((v, i, b) => i < 2 || b[i] - b[i - 2] >= MIN_LABEL_BOX);
   return (
     <figure data-slot="need-map" className="m-0 grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-12 [&>*]:min-w-0">
       <p id="need-map-summary" className="sr-only">{summary(counties)}</p>
-      <svg viewBox={GEO.viewBox} role="group" aria-label="Utah county need map" aria-describedby="need-map-summary" className="mx-auto h-auto max-h-[640px] w-full lg:col-span-7">
+      <svg viewBox={GEO.viewBox} role="group" aria-label="Utah county need map" aria-describedby="need-map-summary" className="mx-auto h-auto max-h-[640px] w-full lg:col-span-7 lg:row-span-2">
         <defs>
           <pattern id="need-map-hatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(-45)"><rect width="6" height="6" fill="var(--suppressed)" /><line x1="0" y1="0" x2="0" y2="6" stroke={HATCH_LINE} strokeWidth="1.5" /></pattern>
         </defs>
         {counties.map((c) => {
           const fill = !shown(c) ? "var(--muted)" : c.binNo === null ? "url(#need-map-hatch)" : fillFor(c.binNo);
-          return <path key={c.fips} d={GEO.counties[c.fips].d} data-fips={c.fips} data-bin={shown(c) ? c.binNo ?? 0 : undefined} data-dim={shown(c) ? undefined : "true"} tabIndex={0} role="img" aria-label={NeedMapQuery.rowLabel(c)} style={{ fill }} stroke="var(--border)" strokeWidth={1} />;
+          const on = c.fips === ring;
+          return (
+            <path key={c.fips} d={GEO.counties[c.fips].d} data-fips={c.fips} data-bin={shown(c) ? c.binNo ?? 0 : undefined} data-dim={shown(c) ? undefined : "true"} data-selected={on ? "true" : undefined}
+              tabIndex={0} role="button" aria-pressed={on} aria-label={NeedMapQuery.rowLabel(c)} style={{ fill }} stroke="var(--border)" strokeWidth={1} className="focus-visible:outline-2 focus-visible:outline-ring" />
+          );
         })}
         {/* FAS counties: 2 px --foreground outline in a second pass so neighbours never cover it (DESIGN need-map rule 2). */}
         {counties.filter((c) => c.fas).map((c) => <path key={c.fips} d={GEO.counties[c.fips].d} data-fas-outline={c.fips} fill="none" stroke="var(--foreground)" strokeWidth={2} pointerEvents="none" aria-hidden="true" />)}
+        {/* Selected county: 3 px --ring outline in a third pass, above the FAS outline (DS-06 colour rules). */}
+        {ring ? <path d={GEO.counties[ring].d} data-selected-outline={ring} fill="none" stroke="var(--ring)" strokeWidth={3} pointerEvents="none" aria-hidden="true" /> : null}
         {/* Rank at the centroid at ≥ 1440 only, where the county box is ≥ 28 px each way (DS-06 1440 layout). */}
         {counties.filter(labelled).map((c) => {
           const [x, y] = GEO.counties[c.fips].centroid;
@@ -55,6 +63,10 @@ export function NeedMap({ data, fas = false }: { data: NeedTableData; fas?: bool
           return <text key={c.fips} x={x} y={y} fill={fill} fontSize={11} textAnchor="middle" dominantBaseline="central" aria-hidden="true" pointerEvents="none" className="hidden font-mono tabular-nums min-[1440px]:block">{c.rank.split(" ")[0]}</text>;
         })}
       </svg>
+      {/* Panel: right column above the legend at ≥ 1024 (sticky), a card under the map and legend below (DS-06 L38-46). */}
+      <div className="order-last lg:order-none lg:col-span-5 lg:sticky lg:top-4 lg:self-start">
+        <CountyPanel county={selected} columns={data.columns} version={data.version} rankedCount={counties.filter((c) => c.status === "Ranked").length} sources={data.sources} />
+      </div>
       <figcaption data-slot="map-legend" className="flex flex-col gap-2 text-sm lg:col-span-5">
         <p className="m-0 font-medium">Need score (version {data.version}) · Placeholder bins</p>
         <ul className="m-0 flex list-none flex-wrap gap-x-4 gap-y-1 p-0 lg:flex-col lg:gap-1">

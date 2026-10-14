@@ -38,7 +38,7 @@ for (const [email, eyebrow] of [["staff@example.test", "WORKSPACE"], ["admin@exa
       for (const [i, name] of ["Daggett", "Piute", "Wayne"].entries()) {
         await expect(rows.nth(26 + i)).toContainText(new RegExp(`${name} County.*Not published.*Not published`));
       }
-      await expect(page.locator("[data-slot=source-footer]")).toContainText(/^Public sources: Census SAHIE 2023 · as of .* · Need score version v2-synthetic · Placeholder bins$/);
+      await expect(page.locator("[data-slot=source-footer]")).toContainText(/^Public sources: .+ · Need score version \S+ · as of \w+ \d{4} · Placeholder bins$/);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
       const violations = (await new AxeBuilder({ page }).analyze()).violations.filter((v) => v.impact === "serious" || v.impact === "critical");
       expect(violations).toEqual([]);
@@ -87,7 +87,7 @@ test("map: 29 county paths above the table, legend copy, FAS outlines, hatch; li
       await page.setViewportSize({ width, height: 900 });
       await page.goto("/need-map");
       const map = page.locator("[data-slot=need-map]");
-      await expect(map.locator("path[data-fips][tabindex='0'][role=img]")).toHaveCount(29);
+      await expect(map.locator("path[data-fips][tabindex='0'][role=button]")).toHaveCount(29);
       await expect(map.locator("path[data-fas-outline]")).toHaveCount(5);
       await expect(map.locator("path[data-bin='0']")).toHaveCount(3);
       await expect(map.locator("path[data-fips='49009']")).toHaveAttribute("aria-label", "Daggett County, not published");
@@ -110,4 +110,47 @@ test("map: 29 county paths above the table, legend copy, FAS outlines, hatch; li
   await expect(map.locator("path[data-dim='true']")).toHaveCount(24);
   await expect(map.locator("path[data-fas-outline]")).toHaveCount(5);
   await expect(map.locator("path[data-fips='49005']")).toHaveAttribute("aria-label", "Cache County, rank 20 of 26, need score −0.80");
+});
+
+test("county selection: click or ?county= selects, panel copy, table link, arrows move to a neighbour, Enter selects, Esc clears", async ({ page }) => {
+  await signIn(page, "board@example.test");
+  const panel = page.locator("[data-slot=county-panel]");
+  const heading = panel.getByRole("heading");
+  for (const width of [375, 800, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/need-map");
+    await expect(panel).toContainText("Select a county on the map or in the table.");
+    await page.locator("path[data-fips='49035']").click();
+    await expect(page).toHaveURL(/\/need-map\?county=49035$/);
+    await expect(heading).toContainText("Salt Lake County");
+    await expect(panel.locator("[data-slot=badge]")).toHaveText(/FAS county$/);
+    await expect(panel).toContainText(/Rank \d+ of 26 · Need score [+−]\d\.\d\d/);
+    await expect(panel.locator("[data-slot=panel-indicator] [data-slot=source-footer]").first()).toHaveText(/^Census SAHIE · \d{4} · as of \w+ \d{4}$/);
+    await expect(page.locator("path[data-fips='49035']")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("path[data-selected-outline='49035']")).toHaveCount(1);
+    await expect(page.locator("path[aria-pressed='true']")).toHaveCount(1);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+    const violations = (await new AxeBuilder({ page }).analyze()).violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+    expect(violations).toEqual([]);
+    await page.screenshot({ path: `${ART_B}/need-map-selected-${width}.png`, fullPage: true });
+  }
+  await page.goto("/need-map?fas=1&county=49011");
+  await expect(heading).toContainText("Davis County");
+  await page.locator("tr[data-fips='49049'] a").click();
+  await expect(page).toHaveURL(/\?county=49049&fas=1$/);
+  await expect(heading).toContainText("Utah County");
+  await page.goto("/need-map?county=49035");
+  await page.locator("path[data-fips='49035']").focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(page.locator("path[data-fips='49043']")).toBeFocused();
+  await page.keyboard.press("ArrowDown");
+  await expect(page.locator("path[data-fips='49051']")).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\?county=49051$/);
+  await expect(heading).toContainText("Wasatch County");
+  await page.locator("path[data-fips='49051']").focus();
+  await page.keyboard.press("Escape");
+  await expect(page).toHaveURL(/\/need-map$/);
+  await expect(panel).toContainText("Select a county on the map or in the table.");
+  await expect(page.locator("path[aria-pressed='true']")).toHaveCount(0);
 });

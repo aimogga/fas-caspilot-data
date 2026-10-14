@@ -549,6 +549,12 @@ Did: `scripts/build-utah-geo.mjs` (+test) decodes Census 1:10m boundaries from `
 State: gate vs #147's branch: lint/typecheck/unit (410)/secret/D-012 (+319/-17 = 336) pass; build green; 2 mutants killed. The gate's 300-char row flagged the generated JSON → fixed in #145 (generated files skip it).
 Left: QA PASS + DESIGN APPROVED; retarget to main after #147. Part 2 (panel, click/keyboard, column notes) on `ds-06b-panel`.
 Decisions: none new (D-017, D-020, D-022 applied).
+
+## 2026-10-13 19:59 (UTC) — Cloud Agent (P3b subagent, lead-reviewed) — DS-06b part 2: county panel, selection, column notes (F-211)
+Did: `?county=<fips>` selects a county (unknown values ignored); map paths become `role="button"` with `aria-pressed` and a 3 px `--ring` selected-outline pass; `components/need-map/MapSelect.tsx` (client) wires click/Enter/Space → push `?county=` (keeps `?fas=1`), arrow keys → nearest neighbour by centroid (`lib/need-map/neighbors.ts`, `NeedNeighbors.toward`), Escape clears. `CountyPanel` shows name, FAS badge, rank/score, each indicator with `source · year · as of`; sticky right column at ≥1024, under the legend below. Column notes shortened to `<source> <vintage>`; footer `Public sources: … · Need score version <v> · as of <Mon YYYY> · Placeholder bins` (DESIGN need-map rule 8); map.spec footer regex vintage-agnostic. Table numbers right-aligned at every width; county names link to `?county=`. Labels for the new F-210 indicator codes. map.spec: click, keyboard, Escape, `?fas=1&county=` at 4 widths, axe.
+State: gate vs `ds-06b-map`: secret/D-012 (+352/-39 = 391)/300-char pass; lint/typecheck/unit (419) pass; build green; 2 mutants killed (selected-outline pass, footer format). e2e CI-only (no local runtime); stacked on #152 so Actions run after retarget.
+Left: QA PASS + DESIGN APPROVED at head; retarget after #152 → main. No `aria-live` announcement of the panel heading (budget) — flag for design review.
+Decisions: none new (D-017, D-020, D-022 applied).
 ## 2026-10-13 19:42 (UTC) — Cloud Agent — PR #150 / need-map Methodology link (DS-08 follow-up)
 Did: `/need-map` PageHeader actions gain an outline-button link `Methodology` → `/methodology` beside the FAS filter (4 lines). Base is #147's branch; merge after #147 and #149.
 State: gate (lint/typecheck/unit/secret scan) green. The map.spec link assertion lands with the map packet (that file is in flight).
