@@ -3,6 +3,8 @@ import { expect, test, type Page } from "@playwright/test";
 import { latestCompleteQuarter, quarterLabel } from "../../lib/dashboard/filters";
 
 const ART = "/opt/cursor/artifacts/ds-07a";
+// Each role walks filters, widgets, the filter sheet, axe and screenshots on a dev server that compiles on first hit; 30 s flaked on CI.
+test.setTimeout(90_000);
 const LABEL = quarterLabel(latestCompleteQuarter(new Date()));
 async function signIn(page: Page, email: string) {
   await page.goto("/login");
