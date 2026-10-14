@@ -538,7 +538,7 @@ State: F-201 status stays failing; human_gate unchanged; status_note removed fro
 Left: QA.
 Decisions: D-024, D-025, D-026, D-027.
 
-## 2026-10-14 04:45 (UTC) — Cloud Agent — PR #? / feature F-507 foundation grant history
+## 2026-10-14 04:45 (UTC) — Cloud Agent — PR #181 / feature F-507 foundation grant history
 Did: claim F-507. `packages/ingest/propublica` (ProPublica Nonprofit Explorer API v2: search → 501(c)(3) candidates, best name/EIN match, organization → last 3 filings, capacity band, data years + gaps; one `award_history` row per 990-PF year, `source 'irs_990pf'`, `recipient`/`amount` null because the API exposes filing totals only). `POST /api/ingest/propublica` (token, `{ funders?: string[] }`, watchlist + `opportunity.funder` of foundation_manual/foundation_csv, upsert on (source, external_id), ingest_run, last_success_at, failure alert). `lib/grants/funder-history.ts` (`funderSummary`, `FunderHistoryQuery.byFunderName`). Migration registers `propublica_990` (quarterly, commercial_ok false) and repeats F-506's guarded `external_id`/`ingest_run_id`/unique index DDL. Inactive `n8n/propublica-quarterly.json`. `lib/ingest/rate-limit.ts` copied byte-identical from F-501/F-506.
 State: lint/typecheck/unit green (406 tests); synthetic fixtures only; `tests/db/propublica-load.test.ts` is CI-only (no local Supabase here). The IRS 990-PF bulk XML (`irs_990pf_grants`, Phase 5b) is NOT ingested.
 Left: QA confirms the UNVERIFIED v2 shapes with the curl in the PR (sandbox proxy blocks projects.propublica.org); grantee-level grants paid wait for Phase 5b.
