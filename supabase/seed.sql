@@ -29,6 +29,14 @@ INSERT INTO geo_county (fips, name, state, population_latest) VALUES
 INSERT INTO source_registry (id, name, owner, url, license, commercial_ok, cadence, status) VALUES
   ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'census-sahie', 'Census', 'https://api.census.gov/data/timeseries/healthins/sahie', 'public-domain', true, 'annual', 'active')
 ON CONFLICT (id) DO UPDATE SET url = EXCLUDED.url;
+-- DS-05 synthetic sources: one Stale (monthly, 60 days since success) and one Failed (latest run failed after the last success).
+INSERT INTO source_registry (id, name, owner, url, license, commercial_ok, cadence, status, last_success_at) VALUES
+  ('cccccccc-cccc-cccc-cccc-ccccccccccc2', 'example-monthly-source', 'Example owner', 'https://example.test/monthly', 'public-domain', true, 'monthly', 'active', now() - interval '60 days'),
+  ('cccccccc-cccc-cccc-cccc-ccccccccccc3', 'example-failed-source', 'Example owner', 'https://example.test/quarterly', 'public-domain', true, 'quarterly', 'active', now() - interval '10 days')
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO ingest_run (id, source_id, status, started_at, finished_at, rows_loaded, checksum, error) VALUES
+  ('dddddddd-dddd-dddd-dddd-ddddddddddd3', 'cccccccc-cccc-cccc-cccc-ccccccccccc3', 'failed', now() - interval '1 day', now() - interval '1 day', 0, 'syn-fail', 'synthetic failure')
+ON CONFLICT (id) DO NOTHING;
 INSERT INTO ingest_run (id, source_id, status, rows_loaded, checksum) VALUES
   ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'ok', 1, 'abc');
 INSERT INTO public_indicator (source_id, indicator_code, geo_fips, period, value, unit, vintage, ingest_run_id) VALUES
@@ -126,3 +134,7 @@ INSERT INTO need_score (version, geo_fips, score, components)
   SELECT 'v2-synthetic', fips, round(((substr(fips, 3)::int * 7) % 29 - 14) / 10.0, 2), '{}' FROM geo_county WHERE fips LIKE '49%' AND fips NOT IN ('49009', '49031', '49055');
 UPDATE need_score SET score = (SELECT score FROM need_score WHERE version = 'v2-synthetic' AND geo_fips = '49005') WHERE version = 'v2-synthetic' AND geo_fips = '49011';
 INSERT INTO need_score (version, geo_fips, score, components) VALUES ('v3-draft', '49009', 9, '{}');
+
+-- DS-06a2: synthetic FAS service counties (5 fips) until FAS provides the real list.
+INSERT INTO fas_service_county (fips) VALUES ('49035'), ('49049'), ('49011'), ('49057'), ('49045')
+ON CONFLICT (fips) DO NOTHING;
