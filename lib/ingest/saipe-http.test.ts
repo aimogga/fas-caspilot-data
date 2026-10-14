@@ -7,9 +7,9 @@ import type { IndicatorRow } from '../../packages/ingest/public-indicator';
 import { Saipe } from '../../packages/ingest/saipe';
 import { SaipeHttp } from './saipe-http';
 
-const HDR = ['NAME', 'GEOID', 'SAEPOVALL_PT', 'SAEPOVALL_MOE', 'SAEPOVRTALL_PT', 'SAEPOVRTALL_MOE', 'YEAR', 'state', 'county'];
+const HDR = ['NAME', 'GEOID', 'SAEPOVALL_PT', 'SAEPOVALL_MOE', 'SAEPOVRTALL_PT', 'SAEPOVRTALL_MOE', 'SAEPOV0_17_PT', 'SAEPOV0_17_MOE', 'SAEPOVRT0_17_PT', 'SAEPOVRT0_17_MOE', 'YEAR', 'state', 'county'];
 const table = (year: string, counties = COUNTIES): unknown =>
-  [HDR, ...counties.map((c) => [c.name, c.fips, '100', '1', '8.0', '0.1', year, '49', c.fips.slice(2)])];
+  [HDR, ...counties.map((c) => [c.name, c.fips, '100', '1', '8.0', '0.1', '40', '2', '12.5', '0.3', year, '49', c.fips.slice(2)])];
 const ok = (body: unknown): typeof fetch => async () => new Response(JSON.stringify(body), { status: 200 });
 const client = {} as SupabaseClient;
 
@@ -45,17 +45,18 @@ describe('SaipeHttp', () => {
   it('loads all 29 counties with source, checksum and year', async () => {
     const spy = spyLoad();
     const res = await SaipeHttp.run({ year: '2023', env: { CENSUS_API_KEY: 'k' }, httpFetch: ok(table('2023')), client, load: spy.load });
-    expect(res.rowsLoaded).toBe(58);
+    expect(res.rowsLoaded).toBe(116);
     expect(spy.calls).toHaveLength(1);
+    expect(spy.calls[0].rows.filter((r) => r.indicator_code === 'child_poverty_rate')).toHaveLength(29);
     expect(spy.calls[0].name).toBe(Saipe.SOURCE_NAME);
     expect(spy.calls[0].checksum).toBe(Saipe.checksum(spy.calls[0].rows));
     expect(spy.calls[0].rows.every((r) => r.vintage === '2023')).toBe(true);
   });
 
   it('pins the checksum and fails closed on mixed years', () => {
-    expect(Saipe.checksum(Saipe.requireComplete(Saipe.parse(table('2023'))))).toBe('7c66748bd8ca528f9ae6ad4998dd83902cea806b9c0419c769a767694b9c41c8');
+    expect(Saipe.checksum(Saipe.requireComplete(Saipe.parse(table('2023'))))).toBe('cbdfe1402a0a9f1b622a19b50ced1d4d0968d5264e26d98f78a7bbea40f995db');
     const mixed = table('2023') as string[][];
-    mixed[29]![6] = '2022';
+    mixed[29]![10] = '2022';
     expect(() => Saipe.requireComplete(Saipe.parse(mixed))).toThrow(/mixed vintages/);
   });
 

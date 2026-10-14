@@ -1,9 +1,13 @@
 export type UserRole = 'admin' | 'staff' | 'board_viewer';
 const ALL: UserRole[] = ['admin', 'staff', 'board_viewer'];
 const RULES: Record<string, UserRole[]> = {
-  '/login': ALL, '/': ALL, '/staff': ['admin', 'staff'], '/admin': ['admin'], '/board': ALL, '/dashboard': ['admin', 'staff'], '/need-map': ALL,
+  '/login': ALL, '/': ALL, '/staff': ['admin', 'staff'], '/admin': ['admin'], '/board': ALL, '/dashboard': ['admin', 'staff'], '/need-map': ALL, '/methodology': ALL,
+  '/data-freshness': ['admin', 'staff'],
+  '/api/packets': ['admin', 'staff'],
+  '/api/intake': ['admin', 'staff'],
+  '/api/grants': ['admin', 'staff'],
 };
-const GUARDED_PREFIXES = ['/admin', '/staff', '/board', '/dashboard', '/need-map'] as const;
+const GUARDED_PREFIXES = ['/admin', '/staff', '/board', '/dashboard', '/need-map', '/methodology', '/data-freshness', '/api/packets', '/api/intake', '/api/grants'] as const;
 export type GuardedPrefix = (typeof GUARDED_PREFIXES)[number];
 const DECODE_PASSES = 8;
 const NOROLE_ALLOWED = ['/403', '/login', '/api/auth/signout'] as const;
@@ -114,8 +118,31 @@ const HOME: Record<UserRole, string> = { admin: '/admin', staff: '/staff', board
 export function roleHome(role: UserRole | null): string | null {
   return role ? HOME[role] ?? null : null;
 }
+// Token- or session-free routes; one per line so each new ingest route is an additive one-line change.
+const PUBLIC_PATHS = new Set<string>([
+  '/login',
+  '/403',
+  '/api/auth/signout',
+  '/api/auth/login',
+  '/api/health',
+  '/api/ingest/sahie',
+  '/api/ingest/saipe',
+  '/api/ingest/acs',
+  '/api/ingest/need-score',
+  '/api/ingest/places',
+  '/api/ingest/vetpop',
+  '/api/ingest/hpsa',
+  '/api/ingest/ut-courts',
+  '/api/grants/recompute',
+  '/api/ingest/grants-gov',
+  '/api/ingest/usaspending',
+  '/api/ingest/propublica',
+  '/ui',
+  '/health',
+  '/dev-error',
+]);
 export function isPublicRoute(path: string): boolean {
-  return path === '/login' || path === '/403' || path === '/api/auth/signout' || path === '/api/auth/login' || path === '/api/health' || path === '/api/ingest/sahie' || path === '/api/ingest/saipe' || path === '/api/ingest/acs' || path === '/ui' || path === '/health' || path === '/dev-error';
+  return PUBLIC_PATHS.has(path);
 }
 export function hadSession(cookieNames: string[]): boolean {
   return cookieNames.some((name) => name.startsWith('sb-') && name.includes('-auth-token'));

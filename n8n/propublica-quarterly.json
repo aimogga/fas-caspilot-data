@@ -1,0 +1,9 @@
+{
+  "name": "propublica-quarterly", "active": false,
+  "nodes": [
+    {"parameters":{"rule":{"interval":[{"field":"cronExpression","expression":"0 14 3 1,4,7,10 *"}]}},"id":"propublica-schedule","name":"Schedule ProPublica","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1.2,"position":[0,0]},
+    {"parameters":{"method":"POST","url":"={{$env.FAS_INGEST_PROPUBLICA_URL}}","sendHeaders":true,"headerParameters":{"parameters":[{"name":"Authorization","value":"=Bearer {{$env.INGEST_TOKEN}}"}]}},
+      "id":"propublica-http","name":"POST ingest propublica","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[240,0]}
+  ],
+  "connections": {"Schedule ProPublica":{"main":[[{"node":"POST ingest propublica","type":"main","index":0}]]}}, "settings":{"executionOrder":"v1","timezone":"UTC"}
+}

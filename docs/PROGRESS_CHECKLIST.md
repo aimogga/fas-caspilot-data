@@ -53,6 +53,7 @@ Last updated: 2026-10-13
 - Docs: checklist and progress for #81 and #82, #66 done (PR #88, squash-merged at b4ed683, 2026-10-12 22:02:49 UTC).
 - Fix: signed-in error page uses the role-shell content area (PR #90, QA PASS and DESIGN APPROVED at 2f0a13f, squash-merged at d1432ad, 2026-10-12 22:55:30 UTC, refs #65). #65 stays open; its leftovers are tracked in #91, which now includes a loading-skeleton note.
 - #77 Copilot pilot: should unblock once main is merged into it (PR #90 landed the error-page layout).
+- **DS-06a2** FAS county badge, `Show FAS counties only` (`?fas=1`) filter with empty state, synthetic `fas_service_county` seed, true minus sign: PR #147 (open; QA + design pending).
 
 ## Decisions
 
@@ -85,7 +86,7 @@ Last updated: 2026-10-13
 - [ ] **Not started** F-207 Ingest: Utah Courts filings by county (workbook): brings in court case filing counts for each county.
 - [ ] **Not started** F-208 Ingest: VA VetPop2023 county: brings in the number of veterans living in each county.
 - [ ] **Not started** F-209 Data freshness panel: a screen showing how up to date each data source is, with stale ones clearly labeled.
-- [ ] **Not started** F-210 County need score v1 with methodology page: one score per county showing where need is greatest, with a page explaining how it's calculated.
+- [ ] **In progress** F-210 County need score v1 with methodology page: one score per county showing where need is greatest, with a page explaining how it's calculated. Engine + route + v1 config: PR #141 (open). v2 inputs: PR #148 (open). Methodology page: PR #149 (open). All await QA.
 - [ ] **Not started** F-211 Utah county map explorer: a map of Utah colored by need; click a county to see its numbers and where they came from.
 
 ## Phase 3: FAS's own data and results
