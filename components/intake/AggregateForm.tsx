@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { Stack } from "@/components/layout";
 import { AggregateBadge } from "@/components/trust";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { AGGREGATE_METRICS, EMPTY_AGGREGATE, formatValue, metricLabel, NOTE_MAX, periodLabel, validateAggregate, type AggregateError, type AggregateInput, type AggregateRecent } from "@/lib/intake/aggregate";
 
 type County = { fips: string; name: string };
@@ -44,7 +45,7 @@ export function AggregateForm({ counties, recent }: { counties: County[]; recent
     const describedBy = [hint && `${id}-hint`, err && `${id}-error`].filter(Boolean).join(" ") || undefined;
     return (
       <div key={k} data-slot="form-field">
-        <label htmlFor={id} className="mb-2 block text-sm font-medium">{LABEL[k]}</label>
+        <Label htmlFor={id}>{LABEL[k]}</Label>
         {control({ id, "aria-invalid": err ? true : undefined, "aria-describedby": describedBy, className: err ? "border-destructive" : undefined, value: input[k], onChange: (e: { target: { value: string } }) => setInput({ ...input, [k]: e.target.value }) })}
         {hint ? <p id={`${id}-hint`} className="mt-1 text-sm text-muted-foreground">{hint}</p> : null}
         {err ? <p id={`${id}-error`} data-slot="field-error" className="mt-1 text-sm font-medium text-destructive">✕ {err}</p> : null}
