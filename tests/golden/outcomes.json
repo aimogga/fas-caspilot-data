@@ -1,0 +1,17 @@
+{
+  "seed": 20,
+  "nCases": 20,
+  "note": "O1 for generate(20, 20). change = followup - baseline; lower is better for all four, so a negative change is an improvement. 3 rows have null follow-ups and are excluded. Means match synthetic-20.json meanWorked.",
+  "measures": [
+    { "code": "PHQ-9", "label": "PHQ-9", "direction": "lower_is_better", "n": 4, "meanChange": 0.5, "shareImproved": 0.25, "improved": 1, "unchanged": 2, "worsened": 1 },
+    { "code": "GAD-7", "label": "GAD-7", "direction": "lower_is_better", "n": 4, "meanChange": 0.25, "shareImproved": 0.25, "improved": 1, "unchanged": 2, "worsened": 1 },
+    { "code": "OQ-45", "label": "OQ-45", "direction": "lower_is_better", "n": 3, "meanChange": -1, "shareImproved": 0.6667, "improved": 2, "unchanged": 0, "worsened": 1 },
+    { "code": "YOQ", "label": "Y-OQ", "direction": "lower_is_better", "n": 3, "meanChange": -0.3333, "shareImproved": 0.3333, "improved": 1, "unchanged": 1, "worsened": 1 }
+  ],
+  "worked": {
+    "PHQ-9": { "changes": [0, 3, -1, 0], "mean": "(0+3-1+0)/4 = 0.5", "improved": "1 of 4 (-1) = 0.25" },
+    "GAD-7": { "changes": [0, -2, 0, 3], "nullFollowups": 1, "mean": "(0-2+0+3)/4 = 0.25", "improved": "1 of 4 (-2) = 0.25" },
+    "OQ-45": { "changes": [3, -3, -3], "nullFollowups": 1, "mean": "(3-3-3)/3 = -1", "improved": "2 of 3 (-3, -3) = 0.6667" },
+    "YOQ": { "changes": [-4, 3, 0], "nullFollowups": 1, "mean": "(-4+3+0)/3 = -0.3333", "improved": "1 of 3 (-4) = 0.3333" }
+  }
+}
