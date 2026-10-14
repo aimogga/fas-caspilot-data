@@ -13,8 +13,8 @@ const axe = (page: Page) => new AxeBuilder({ page }).analyze().then((r) => r.vio
 
 test("role nav, mobile sheet, and shell screenshots", async ({ page }) => {
   const cases = [
-    ["admin@example.test", "/admin", ["Home", "Team dashboard", "Data freshness", "Evidence packets", "Upload data", "Methodology", "Overview"], "Admin", false, "Admin · Overview"],
-    ["staff@example.test", "/staff", ["Home", "Team dashboard", "Data freshness", "Evidence packets", "Upload data", "Methodology"], "Staff", false, "Home"],
+    ["admin@example.test", "/admin", ["Home", "Team dashboard", "Data freshness", "Evidence packets", "Upload data", "Enter data", "Methodology", "Overview"], "Admin", false, "Admin · Overview"],
+    ["staff@example.test", "/staff", ["Home", "Team dashboard", "Data freshness", "Evidence packets", "Upload data", "Enter data", "Methodology"], "Staff", false, "Home"],
     ["board@example.test", "/board", ["Board dashboard", "Methodology"], "Board · read-only", true, "Board dashboard"],
   ] as const;
   for (const [email, path, labels, role, footer, crumb] of cases) {
