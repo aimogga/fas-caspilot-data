@@ -98,7 +98,7 @@ test("a CSV with bad county, date order and enum shows errors and offers the rep
   await expect(page.locator("td[data-error][title*='not allowed']")).toHaveCount(1);
   const [dl] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Download error report" }).click()]);
   expect(dl.suggestedFilename()).toBe("fas-case-errors.csv");
-  await page.getByRole("button", { name: "Back" }).click();
+  await page.getByRole("button", { name: "Back", exact: true }).click(); // "Roll back batch …" also matches a loose "Back"
   await page.selectOption("#map-county_fips", "");
   await expect(page.getByRole("button", { name: "Next", exact: true })).toBeDisabled();
   await expect(page.getByRole("alert").filter({ hasText: /^Choose a column/ })).toContainText("County code (Utah FIPS)"); // Next.js adds its own route-announcer alert
@@ -118,7 +118,7 @@ test("375 and 1024: no horizontal scroll, 44px targets, axe clean on each step",
         return Math.min(...els.map((r) => Math.min(r.width, r.height)));
       });
       if (width < 1024) expect(minTarget, `step ${step} targets @ ${width}`).toBeGreaterThanOrEqual(44);
-      if (step > 1) await page.getByRole("button", { name: "Back" }).click();
+      if (step > 1) await page.getByRole("button", { name: "Back", exact: true }).click();
     }
   }
 });
