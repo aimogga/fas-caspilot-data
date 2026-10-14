@@ -20,7 +20,7 @@ describe('BoardQuery (F-402)', () => {
     expect([out.metrics.m1, out.asOf, out.freshness]).toEqual([{ error: true }, 'Dec 2024', null]);
   });
   it('as-of is the latest card month, or Not available yet when no card has a date', () => {
-    const NA = 'Not available yet', w = (asOf: string) => ({ rows: 0, n: 0, asOf, delta: null });
+    const NA = 'Not available yet', w = (asOf: string) => ({ rows: 0, viewRows: 0, n: 0, asOf, delta: null });
     const x = (asOf: string[]) => ({ m1: w(asOf[0] ?? NA), m2: w(asOf[1] ?? NA), m3: { error: true }, m4: w(NA), m5: w(NA), m6: w(NA), o1: w(NA), trend: [], filtered: false });
     expect([boardAsOf(x(['Jul 2026', 'Dec 2025']) as never), boardAsOf(x(['Jan 2026', 'Mar 2026']) as never), boardAsOf(x([]) as never)]).toEqual(['Jul 2026', 'Mar 2026', 'Not available yet']);
   });
@@ -34,6 +34,6 @@ describe('BoardQuery (F-402)', () => {
     const client = { from: (table: string) => { calls.push(table); return chain(table); } } as never;
     const out = await BoardQuery.load(client, new Date('2026-10-14T00:00:00Z'));
     expect(calls).toEqual(expect.arrayContaining(['m1_court_to_first_session', 'm4_m5_m6_episodes', 'outcome_measure', 'source_registry']));
-    expect([out.period, out.freshness, out.asOf, out.metrics.m2]).toEqual(['2026-Q3', null, 'Not available yet', { rows: 0, n: 0, median: null, asOf: 'Not available yet', delta: null }]);
+    expect([out.period, out.freshness, out.asOf, out.metrics.m2]).toEqual(['2026-Q3', null, 'Not available yet', { rows: 0, viewRows: 0, n: 0, median: null, asOf: 'Not available yet', delta: null }]);
   });
 });
