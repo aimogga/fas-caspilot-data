@@ -23,11 +23,12 @@ for (const [email, admin] of [["staff@example.test", false], ["admin@example.tes
     await expect(page.locator("thead th")).toHaveText(admin ? [...HEADERS, "Latest run"] : HEADERS);
     const stale = page.locator("tr[data-row=example-monthly-source]");
     await expect(stale).toContainText(/example-monthly-source.*Example owner.*Monthly.*Stale · \d+ days/s);
-    await expect(stale.locator("td").nth(1)).toHaveText(/^\w{3} \d{1,2}, \d{4}$/);
+    // Every cell carries its md:hidden mobile label ("Last successful run: "); textContent includes it at any width.
+    await expect(stale.locator("td").nth(1)).toHaveText(/^Last successful run: \w{3} \d{1,2}, \d{4}$/);
     const failed = page.locator("tr[data-row=example-failed-source]");
     await expect(failed).toContainText(/example-failed-source.*Quarterly.*Failed/s);
-    await expect(failed.locator("td").nth(1)).toHaveText(/^\w{3} \d{1,2}, \d{4}$/);
-    if (admin) await expect(failed.locator("td").last()).toHaveText("dddddddd");
+    await expect(failed.locator("td").nth(1)).toHaveText(/^Last successful run: \w{3} \d{1,2}, \d{4}$/);
+    if (admin) await expect(failed.locator("td").last()).toHaveText("Latest run: dddddddd");
     const statuses = await page.locator("tbody tr").evaluateAll((rows) => rows.map((r) => r.getAttribute("data-status") ?? ""));
     const ranks = statuses.map((s) => ["failed", "stale", "not_published", "current"].indexOf(s));
     expect(ranks, "rows sorted Failed → Stale → Not published → Current").toEqual([...ranks].sort((a, b) => a - b));
