@@ -35,7 +35,10 @@ export const HIDDEN_LABELS = [
   "Board packets",
 ] as const;
 
-export const CRUMB: Record<string, string> = { "/staff": "Home", "/admin": "Admin · Overview", "/board": "Board dashboard", "/methodology": "Methodology", "/dashboard": "Team dashboard", "/data-freshness": "Data freshness", "/staff/packets": "Evidence packets", "/staff/intake": "Upload data", "/staff/entry": "Enter data" };
+export const CRUMB: Record<string, string> = {
+  "/staff": "Home", "/admin": "Admin · Overview", "/board": "Board dashboard", "/methodology": "Methodology", "/dashboard": "Team dashboard",
+  "/data-freshness": "Data freshness", "/staff/packets": "Evidence packets", "/staff/intake": "Upload data", "/staff/entry": "Enter data",
+};
 
 export const NO_ROLE_CRUMB = "Account not set up";
 
