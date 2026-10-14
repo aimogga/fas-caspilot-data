@@ -38,7 +38,7 @@ test("role nav, mobile sheet, and shell screenshots", async ({ page }) => {
     await page.locator("[data-slot=user-menu] summary").click();
     await expect(page.locator("[data-slot=role-label]")).toHaveText(role);
     await expect(page.locator("[data-slot=env-badge]")).toHaveText("Synthetic data");
-    await expect(page.locator("[data-slot=freshness-slot]")).toBeHidden();
+    await expect(page.locator("[data-slot=freshness-slot]")).toBeVisible(); // DS-05b fills the slot for every role
     await page.context().clearCookies();
   }
   await signIn(page, "admin@example.test");
