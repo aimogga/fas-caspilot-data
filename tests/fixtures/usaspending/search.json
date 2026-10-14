@@ -1,0 +1,11 @@
+{"limit": 100, "page_metadata": {"page": 1, "hasNext": false, "hasPrevious": false}, "results": [
+  {"internal_id": 101, "generated_internal_id": "ASST_NON_90CA1001_7501", "Award ID": "90CA1001", "Recipient Name": "Example Family Services Inc", "Award Amount": 450000.0,
+   "Awarding Agency": "Department of Health and Human Services", "Awarding Sub Agency": "Administration for Children and Families", "Start Date": "2024-09-30", "End Date": "2027-09-29",
+   "Description": "COMMUNITY-BASED CHILD ABUSE PREVENTION: FAMILY THERAPY FOR COURT-REFERRED FAMILIES", "CFDA Number": "93.590", "Place of Performance State Code": "UT", "recipient_id": "abc-R"},
+  {"internal_id": 102, "generated_internal_id": "ASST_NON_SM081002_7523", "Award ID": "SM081002", "Recipient Name": "Sample County Behavioral Health", "Award Amount": "1200000",
+   "Awarding Agency": "Department of Health and Human Services", "Awarding Sub Agency": "Substance Abuse and Mental Health Services Administration", "Start Date": "2024-10-01", "End Date": null,
+   "Description": null, "Assistance Listings": [{"cfda_number": "93.243", "cfda_program_title": "Projects of Regional and National Significance"}], "Place of Performance State Code": "ut", "recipient_id": "def-R"},
+  {"internal_id": 103, "generated_internal_id": "ASST_NON_90CA1003_7501", "Award ID": "90CA1003", "Recipient Name": "Demo State University", "Award Amount": 80000,
+   "Awarding Agency": "Department of Health and Human Services", "Awarding Sub Agency": "Department of Health and Human Services", "Start Date": "2025-03-15", "End Date": "2026-03-14",
+   "Description": "Youth mental health services evaluation", "CFDA Number": "93.104", "Place of Performance State Code": "ID", "recipient_id": "ghi-R", "Recipient Type": "higher_education"},
+  {"internal_id": 101, "generated_internal_id": "ASST_NON_90CA1001_7501", "Award ID": "90CA1001", "Recipient Name": "Example Family Services Inc", "Award Amount": 450000.0, "Start Date": "2024-09-30"}]}

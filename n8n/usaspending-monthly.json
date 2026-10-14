@@ -1,0 +1,10 @@
+{
+  "name": "usaspending-monthly", "active": false,
+  "nodes": [
+    {"parameters":{"rule":{"interval":[{"field":"cronExpression","expression":"0 14 2 * *"}]}},"id":"usaspending-schedule","name":"Schedule USAspending","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1.2,"position":[0,0]},
+    {"parameters":{"method":"POST","url":"={{$env.FAS_INGEST_USASPENDING_URL}}","sendHeaders":true,"headerParameters":{"parameters":[{"name":"Authorization","value":"=Bearer {{$env.INGEST_TOKEN}}"}]}},
+      "id":"usaspending-http","name":"POST ingest usaspending","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[240,0]}
+  ],
+  "connections": {"Schedule USAspending":{"main":[[{"node":"POST ingest usaspending","type":"main","index":0}]]}},
+  "settings":{"executionOrder":"v1","timezone":"UTC"}
+}
