@@ -9,9 +9,10 @@ async function signIn(page: Page, email: string) {
   await Promise.all([page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 10000 }), page.click("button[type=submit]")]);
 }
 
-/** Opens /staff/entry and switches the entity selector to the sixth option. */
+/** Opens /staff/entry and switches the entity selector to the sixth option, once React has hydrated (a controlled select resets an earlier choice). */
 async function openAggregate(page: Page) {
   await page.goto("/staff/entry");
+  await page.locator("[data-slot=entry-form][data-hydrated]").waitFor();
   await page.selectOption("#entry-entity", "aggregate");
   await expect(page.locator("[data-slot=aggregate-form]")).toBeVisible();
 }
@@ -46,7 +47,7 @@ test("a valid total saves, is listed under Recent aggregate totals with the badg
   await page.getByRole("button", { name: "Save total" }).click();
   const status = page.locator("[data-slot=entry-saved]");
   // When the save never confirms, print the form so the failing run says why.
-  await status.waitFor({ timeout: 10_000 }).catch(async () => console.log("aggregate form after Save:", await page.locator("form").first().innerText()));
+  await status.waitFor({ timeout: 10_000 }).catch(async () => console.log("aggregate form after Save:", await page.locator("[data-slot=aggregate-form]").innerText()));
   await expect(status).toContainText("Saved aggregate total"); const id = (await status.getAttribute("data-id")) ?? "";
   const row = page.locator(`[data-slot=aggregate-recent] li[data-id="${id}"]`);
   await expect(row).toContainText("Apr–Jun 2026 (Q2) · Episodes completed · 31 · Salt Lake");
