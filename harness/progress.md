@@ -572,3 +572,9 @@ Did: `lib/dashboard/metrics-query.ts` reads the four base views with county/refe
 State: gate vs merge base 05d6e23 (#157 + #158): +367/−28 = 395, 300-char and secret scan pass; lint/typecheck/unit (431) pass; `next build --webpack` green; 4 mutants killed. Seed has no quarter with n ≥ 11, so the page shows `No closed cases this quarter` / `Not enough closed episodes` and footers; value and delta states are unit-tested. e2e CI-only.
 Left: QA PASS + DESIGN APPROVED; base `ds-07a-freshness-widget` on GitHub shows #158's files too until both merge. DS-07c next.
 Decisions: none new (D-018 applied).
+
+## 2026-10-13 22:52 (UTC) — Cloud Agent (P8 subagent, lead-reviewed) — F-305 O1 outcome change (pure compute)
+Did: `lib/metrics/instruments.ts` registry (PHQ-9 0–27 and GAD-7 0–21 active; OQ-45 0–180 and Y-OQ 0–240 inactive; all lower-is-better; `directionNote`, `isImprovement`, unknown code throws) per D-005. `lib/metrics/outcomes.ts` `Outcomes.compute(rows, { measures, includeInactive, filters })`: change = follow-up − baseline, null scores skipped, unknown codes counted in `excludedUnknown`, inclusive follow-up-date filter, mean and share improved to 4 dp, registry order; `Outcomes.suppressed` hides mean/share when n < 11. Golden `tests/golden/outcomes.json` on generate(20, 20), hand-classified, means match `synthetic-20.json`.
+State: gate vs main: secret/D-012 (+198/−0)/300-char pass; lint/typecheck/unit (410, +15) pass; 3 mutants killed (direction flip, rounding, inactive filter).
+Left: QA PASS at head. SQL views and the dashboard O1 card (DS-07c) are separate packets; complementary suppression of counts lives in the F-306 module (P7 branch).
+Decisions: none new (D-005 applied).
