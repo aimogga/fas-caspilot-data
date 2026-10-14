@@ -115,6 +115,7 @@ export function roleHome(role: UserRole | null): string | null {
   return role ? HOME[role] ?? null : null;
 }
 export function isPublicRoute(path: string): boolean {
+  if (path === '/api/grants/recompute') return true;
   return path === '/login' || path === '/403' || path === '/api/auth/signout' || path === '/api/auth/login' || path === '/api/health' || path === '/api/ingest/sahie' || path === '/api/ingest/saipe' || path === '/api/ingest/acs' || path === '/ui' || path === '/health' || path === '/dev-error';
 }
 export function hadSession(cookieNames: string[]): boolean {
