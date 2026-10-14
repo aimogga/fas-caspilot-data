@@ -17,7 +17,7 @@
   [data-slot=packet-controls] { display: none !important; }
   [data-slot=packet-section] { break-before: page; page-break-before: always; }
   [data-slot=packet-cover] { min-height: 40vh; }
-  [data-slot=packet-footer] { margin-top: 24pt; font-size: 9pt; text-align: center; page-break-inside: avoid; }
+  [data-slot=packet-footer] { position: fixed; bottom: 0; left: 0; right: 0; font-size: 9pt; text-align: center; }
   [data-slot=packet-figures] { display: block !important; }
   [data-slot=packet-figures] > * { break-inside: avoid; border: 1px solid #000; margin-bottom: 6pt; }
 }

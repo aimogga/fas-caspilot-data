@@ -43,7 +43,7 @@ function PacketView({ packet }: { packet: Packet }) {
     <article data-slot="packet" className="flex flex-col gap-10">
       <header data-slot="packet-cover" className="flex flex-col gap-3 rounded-lg border p-6">
         <p data-slot="packet-ribbon" className="text-sm font-semibold uppercase tracking-wide text-warning">{packet.ribbon}</p>
-        <h1 data-slot="packet-title" className="font-serif text-2xl font-semibold">{packet.title}</h1>
+        <p data-slot="packet-title" className="font-serif text-2xl font-semibold">{packet.title}</p>
         <p className="text-sm text-muted-foreground">{packet.prepared} · {packet.asOf}</p>
         <ol className="list-decimal pl-5 text-sm">{packet.sections.map((s) => <li key={s.id}>{SECTION_TITLES[s.id]}</li>)}</ol>
       </header>
