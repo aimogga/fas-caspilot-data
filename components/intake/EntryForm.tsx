@@ -4,6 +4,7 @@ import { useState, type FormEvent, type ReactNode } from "react";
 import { FormField, Stack } from "@/components/layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { controlFor, emptyRow, hintFor } from "@/lib/intake/entry";
 import { INTAKE_ENTITIES, INTAKE_SCHEMA, isIntakeEntity, type Field, type IntakeEntity } from "@/lib/intake/schema";
 import { validateRows, type RowError } from "@/lib/intake/validate";
@@ -86,9 +87,9 @@ export function EntryForm({ counties, aggregate }: { counties: County[]; aggrega
           const err = errorFor(f.key), hint = hintFor(f);
           return (
             <div key={f.key} data-slot="form-field">
-              <label htmlFor={`entry-${f.key}`} className="mb-2 flex items-center gap-2 text-sm font-medium">
+              <Label htmlFor={`entry-${f.key}`} className="flex items-center gap-2">
                 {f.label} {f.required ? <Badge variant="info" prefix={<span aria-hidden>*</span>}>Required</Badge> : null}
-              </label>
+              </Label>
               {control(f)}
               {hint ? <p id={`entry-${f.key}-hint`} className="mt-1 text-sm text-muted-foreground">{hint}</p> : null}
               {err ? <p id={`entry-${f.key}-error`} data-slot="field-error" className="mt-1 text-sm font-medium text-destructive">✕ {err}</p> : null}
