@@ -86,7 +86,8 @@ export function ResponsiveTable({ stack = false, children }: { stack?: boolean; 
     return () => ro.disconnect();
   }, [stack]);
   return (
-    <div ref={ref} data-slot={stack ? "table-stack" : "table-scroll"}>
+    // A scroller that actually overflows must be reachable from the keyboard (axe scrollable-region-focusable), so it becomes a named, focusable region.
+    <div ref={ref} data-slot={stack ? "table-stack" : "table-scroll"} tabIndex={overflow ? 0 : undefined} role={overflow ? "region" : undefined} aria-label={overflow ? "Table, scrolls sideways" : undefined}>
       {stack || !overflow ? null : <p className="scroll-hint"><span aria-hidden>Scroll →</span><span className="sr-only">Scroll</span></p>}
       <table>{children}</table>
     </div>
