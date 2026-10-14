@@ -51,7 +51,7 @@ export function EmptyState({ icon, title, children, action, headingLevel = "h2" 
 }
 
 export function ErrorState({ message, referenceId, onRetry, href, children }: { message: string; referenceId: string; onRetry?: () => void; href?: string; children?: ReactNode }) {
-  const retry = href ? <a href={href} className={buttonVariants({ variant: "outline" })}>Retry</a> : onRetry ? <Button type="button" variant="outline" onClick={onRetry}>Retry</Button> : null;
+  const retry = href ? <a href={href} className={buttonVariants({ variant: "outline" })}>Try again</a> : onRetry ? <Button type="button" variant="outline" onClick={onRetry}>Try again</Button> : null;
   return (
     <Alert variant="destructive" data-slot="error-state">
       <CircleAlert />

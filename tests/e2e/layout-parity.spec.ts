@@ -108,6 +108,22 @@ test("signed-in 404, signed-in error and the / redirect use the shell Page layou
   }
 });
 
+for (const [email, paths] of [["staff@example.test", ["/need-map"]], ["board@example.test", ["/need-map", "/need-map?fas=1"]]] as const) {
+  test(`need map uses the shell Page layout for ${email}`, async ({ page }) => {
+    await signInAs(page, email);
+    for (const path of paths) {
+      for (const width of [375, 800, 1024, 1440] as const) {
+        await page.setViewportSize({ width, height: 812 });
+        await page.goto(path);
+        const got = await pageBox(page);
+        const exp = SHELL[width];
+        expect(got, `${path} @ ${width}`).toMatchObject({ left: exp.left, width: exp.width, scroll: width });
+        if (exp.container) expect(got?.container, `${path} container @ ${width}`).toBe(exp.container);
+      }
+    }
+  });
+}
+
 test("placeholder subtitle left edge equals the h1 left edge", async ({ page }) => {
   await signInAs(page, "admin@example.test");
   for (const width of [375, 1024, 1440] as const) {
@@ -122,5 +138,44 @@ test("placeholder subtitle left edge equals the h1 left edge", async ({ page }) 
       });
       expect(Math.abs(edges.sub - edges.h1), `${path} @ ${width}`).toBeLessThanOrEqual(1);
     }
+  }
+});
+
+test("methodology uses the shell Page layout for staff and board (DS-08)", async ({ page }) => {
+  for (const email of ["staff@example.test", "board@example.test"] as const) {
+    await signInAs(page, email);
+    for (const width of [375, 800, 1024, 1440] as const) {
+      await page.setViewportSize({ width, height: 812 });
+      await page.goto("/methodology");
+      const exp = SHELL[width];
+      expect(await pageBox(page), `/methodology ${email} @ ${width}`).toMatchObject({ left: exp.left, width: exp.width, scroll: width, ...(exp.container ? { container: exp.container } : {}) });
+    }
+    await page.context().clearCookies();
+  }
+});
+
+test("team dashboard uses the shell Page layout for staff; board sees the signed-in 403 (DS-07a)", async ({ page }) => {
+  for (const [email, path] of [["staff@example.test", "/dashboard"], ["staff@example.test", "/dashboard?compare=prior"], ["board@example.test", "/dashboard"]] as const) {
+    await signInAs(page, email);
+    for (const width of [375, 800, 1024, 1440] as const) {
+      await page.setViewportSize({ width, height: 812 });
+      await page.goto(path);
+      const { left, width: w, container } = SHELL[width];
+      expect(await pageBox(page), `${path} ${email} @ ${width}`).toMatchObject({ left, width: w, scroll: width, ...(container ? { container } : {}) });
+    }
+    await page.context().clearCookies();
+  }
+});
+
+test("data freshness uses the shell Page layout for staff; board sees the signed-in 403 (DS-05a)", async ({ page }) => {
+  for (const email of ["staff@example.test", "board@example.test"] as const) {
+    await signInAs(page, email);
+    for (const width of [375, 800, 1024, 1440] as const) {
+      await page.setViewportSize({ width, height: 812 });
+      await page.goto("/data-freshness");
+      const { left, width: w, container } = SHELL[width];
+      expect(await pageBox(page), `/data-freshness ${email} @ ${width}`).toMatchObject({ left, width: w, scroll: width, ...(container ? { container } : {}) });
+    }
+    await page.context().clearCookies();
   }
 });

@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { BatchList, type BatchRow } from "@/components/intake/BatchList";
 import { UploadWizard } from "@/components/intake/UploadWizard";
 import { ErrorState, PageHeader, Stack } from "@/components/layout";
 import { createClient } from "@/lib/supabase/server";
@@ -19,8 +20,16 @@ async function loadCountyFips(): Promise<string[] | null> {
   }
 }
 
+/** Newest 20 batches of the caller's org under RLS; an empty list on any failure keeps the wizard usable. */
+async function loadBatches(): Promise<BatchRow[]> {
+  const client = await createClient();
+  const res = client ? await client.from("upload_batch").select("id, created_at, entity, rows_ok, status").order("created_at", { ascending: false }).limit(20) : null;
+  if (res?.error) console.error("[staff/intake] batch list failed", { message: res.error.message });
+  return (res?.data as BatchRow[] | null) ?? [];
+}
+
 export default async function IntakePage() {
-  const countyFips = await loadCountyFips();
+  const [countyFips, batches] = await Promise.all([loadCountyFips(), loadBatches()]);
   return (
     <Stack gap={6}>
       <PageHeader eyebrow="WORKSPACE" title="Upload data" description={DESCRIPTION} />
@@ -29,6 +38,7 @@ export default async function IntakePage() {
       ) : (
         <ErrorState message="Couldn't load the county list" referenceId={randomUUID()} href="/staff/intake">County codes are needed to check uploads. Try again.</ErrorState>
       )}
+      <BatchList batches={batches} />
     </Stack>
   );
 }

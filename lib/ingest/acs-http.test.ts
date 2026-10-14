@@ -9,6 +9,7 @@ import { SahieHttp } from './sahie-http';
 const fixture = JSON.parse(
   readFileSync('tests/fixtures/acs5/utah-counties.json', 'utf8'),
 ) as unknown;
+const HDR = ['NAME', 'B01003_001E', 'B11001_001E', 'B21001_002E', 'B11003_010E', 'B11003_016E', 'B08201_002E', 'state', 'county'];
 
 describe('acs-http.ts', () => {
   describe('year', () => {
@@ -75,10 +76,10 @@ describe('acs-http.ts', () => {
   it('run does not call load on incomplete or rejected payload', async () => {
     const load = vi.fn();
     const recordFailure = vi.fn(async () => null);
-    const partial = [['NAME', 'B01003_001E', 'B11001_001E', 'B21001_002E', 'state', 'county'], ['n49035', '100000', '30000', '5000', '49', '035']];
+    const partial = [HDR, ['n49035', '100000', '30000', '5000', '450', '1500', '1200', '49', '035']];
     await expect(AcsHttp.run({ year: '2023', env: { CENSUS_API_KEY: 'key' }, httpFetch: async () => new Response(JSON.stringify(partial)), client: createClient('http://x', 'key'), load, recordFailure })).rejects.toThrow(/partial/);
     expect(load).not.toHaveBeenCalled();
-    const rejected = [['NAME', 'B01003_001E', 'B11001_001E', 'B21001_002E', 'state', 'county'], ['n49035', 'invalid', '30000', '5000', '49', '035']];
+    const rejected = [HDR, ['n49035', 'invalid', '30000', '5000', '450', '1500', '1200', '49', '035']];
     await expect(AcsHttp.run({ year: '2023', env: { CENSUS_API_KEY: 'key' }, httpFetch: async () => new Response(JSON.stringify(rejected)), client: createClient('http://x', 'key'), load, recordFailure })).rejects.toThrow(/rejected/);
     expect(load).toHaveBeenCalledTimes(0);
     expect(recordFailure).toHaveBeenCalledTimes(2);
