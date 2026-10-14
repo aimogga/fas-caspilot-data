@@ -15,10 +15,14 @@ function fakeDb(opts: { failInsert?: string } = {}) {
   const db: EntryDb = {
     from: (table) => ({
       select: () => ({ eq: (_c, v) => (table === 'geo_county' ? ok([{ fips: '49035' }, { fips: '49049' }]) : ok(table === 'case' && v === CASE ? [{ id: CASE }] : [])) }),
-      insert: (row) => ({ select: () => ({ single: () => {
-        inserts.push({ table, row });
-        return Promise.resolve(opts.failInsert === table ? { data: null, error: { message: 'boom' } } : { data: { id: NEW }, error: null });
-      } }) }),
+      insert: (row) => {
+        const run = () => {
+          inserts.push({ table, row });
+          return Promise.resolve(opts.failInsert === table ? { data: null, error: { message: 'boom' } } : { data: { id: NEW }, error: null });
+        };
+        // Awaitable like the real builder (audit rows are inserted without RETURNING) and selectable for the record insert.
+        return { then: (f, r) => run().then(f, r), select: () => ({ single: run }) };
+      },
     }),
   };
   return { db, inserts };
