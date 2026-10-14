@@ -79,7 +79,7 @@ test("existing screens use the shell Page layout", async ({ page }) => {
       const exp = SHELL[width];
       // On a horizontal overflow, name the widest elements so the failing run says what pushed past the viewport.
       if (got && got.scroll > width) console.log(`${path} @ ${width} overflow:`, await page.evaluate(() => [...document.querySelectorAll("body *")]
-        .map((el) => ({ right: Math.round(el.getBoundingClientRect().right), tag: el.tagName.toLowerCase(), id: el.getAttribute("data-slot") ?? el.id ?? el.className.toString().slice(0, 40) }))
+        .map((el) => ({ right: Math.round(el.getBoundingClientRect().right), tag: el.tagName.toLowerCase(), pos: getComputedStyle(el).position, id: el.getAttribute("data-slot") || el.id || el.className.toString().slice(0, 40) }))
         .filter((x) => x.right > window.innerWidth).sort((a, b) => b.right - a.right).slice(0, 8)));
       expect(got, `${path} @ ${width}`).toMatchObject({ left: exp.left, width: exp.width, scroll: width, inner: width });
       if (exp.container) expect(got?.container, `${path} container @ ${width}`).toBe(exp.container);

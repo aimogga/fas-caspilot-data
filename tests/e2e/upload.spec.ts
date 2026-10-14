@@ -11,9 +11,15 @@ async function signIn(page: Page, email: string) {
   await Promise.all([page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 10000 }), page.click("button[type=submit]")]);
 }
 
+/** The wizard only handles the file input once React has hydrated, so wait for its marker before touching the form. */
+async function openIntake(page: Page) {
+  await page.goto("/staff/intake");
+  await page.locator("[data-slot=wizard-steps][data-hydrated]").waitFor();
+}
+
 /** File → mapping → preview. The template headers match the keys, so step 2 is pre-filled. */
 async function uploadToPreview(page: Page, file: string) {
-  await page.goto("/staff/intake");
+  await openIntake(page);
   await page.setInputFiles("#intake-file", `${FIX}/${file}`);
   await expect(page.getByText(/data rows found/)).toBeVisible();
   await page.getByRole("button", { name: "Next", exact: true }).click();
@@ -48,9 +54,9 @@ test("Save commits a batch, the list shows it, Roll back removes the rows", asyn
   await signIn(page, "staff@example.test");
   const ids = [crypto.randomUUID(), crypto.randomUUID()]; // fixed ids: the second commit only succeeds because the rollback removed the first batch's rows
   const commit = async () => {
-    await page.goto("/staff/intake");
+    await openIntake(page);
     await page.setInputFiles("#intake-file", idsCsv(ids));
-    for (let i = 0; i < 2; i++) await page.getByRole("button", { name: "Next" }).click();
+    for (let i = 0; i < 2; i++) await page.getByRole("button", { name: "Next", exact: true }).click();
     await expect(page.locator("[data-slot=preview-summary]")).toHaveText("2 rows ready · 0 rows with errors");
     await page.getByRole("button", { name: "Save" }).click();
     await expect(page.getByRole("status")).toHaveText(/^Saved 2 rows as batch [0-9a-f]{8}$/);
@@ -95,7 +101,7 @@ test("a CSV with bad county, date order and enum shows errors and offers the rep
   await page.getByRole("button", { name: "Back" }).click();
   await page.selectOption("#map-county_fips", "");
   await expect(page.getByRole("button", { name: "Next", exact: true })).toBeDisabled();
-  await expect(page.getByRole("alert")).toContainText("County code (Utah FIPS)");
+  await expect(page.getByRole("alert").filter({ hasText: /^Choose a column/ })).toContainText("County code (Utah FIPS)"); // Next.js adds its own route-announcer alert
 });
 
 test("375 and 1024: no horizontal scroll, 44px targets, axe clean on each step", async ({ page }) => {
