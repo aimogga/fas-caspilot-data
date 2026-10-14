@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import type { FreshnessStatus } from "@/lib/freshness/status";
 import type { FreshnessPageRow, FreshnessPageView } from "@/lib/freshness/query";
 
-const NUM = "text-right tabular-nums max-md:text-left";
+const NUM = "text-right tabular-nums";
 const CELL = "min-w-0 break-words py-3 pr-3 align-top lg:py-2";
 const COLS: ReadonlyArray<readonly [label: string, numeric: boolean]> = [["Latest vintage", true], ["Last successful run", true], ["Cadence", false], ["Status", false]];
 
