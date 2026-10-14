@@ -538,6 +538,11 @@ State: F-201 status stays failing; human_gate unchanged; status_note removed fro
 Left: QA.
 Decisions: D-024, D-025, D-026, D-027.
 
+## 2026-10-13 18:32 (UTC) — Cloud Agent (P1a subagent, lead-reviewed) — PR #148 / F-210 ingest variables for v2
+Did: SAIPE `child_poverty_count`/`child_poverty_rate` (`SAEPOV0_17_*`, `SAEPOVRT0_17_*`), `bad()` rate check on every percent code, completeness 4×29, `Saipe.CODES`; ACS raw `single_parent_households` (B11003_010E + B11003_016E) and `no_vehicle_households` (B08201_002E) plus derived `single_parent_pct`/`no_vehicle_pct` (÷ B11001_001E × 100, 1 dp, not_published when missing or 0), completeness 7×29, `Acs5.CODES`; fixtures, HDR arrays and pinned checksums recomputed by running the code; DATA_SOURCES.md "Census indicator codes" table.
+State: `pnpm gate` on 3af63ae: lint/typecheck/unit (399)/secret scan/D-012 (+162/-88 = 250)/300-char all pass; 3 mutants killed. test:db runs in CI only.
+Left: QA PASS at head. **Unresolved:** the Census variable-id pre-check could not run here (egress proxy denies api.census.gov, 403 on CONNECT); ids cross-checked on mirrors; the exact curl/jq for QA is in the PR body; a wrong id fails closed at ingest. Next: P1b (v2 config row + golden + labels) after #141 and DS-06b merge.
+Decisions: none new (D-026 applied).
 ## 2026-10-13 18:30 (UTC) — Cloud Agent (P2 subagent, lead-reviewed) — PR #147 / DS-06a2 FAS service counties (F-211)
 Did: table `fas_service_county` (RLS enabled + forced, SELECT for the 3 roles, F-102 DO-block), synthetic 5-fips seed (additions only), ARCH list + rls fixture + ARCHITECTURE.md; `lib/need-map/fas-counties.ts` (+test); `NeedMapQuery` loads the list, `CountyRow.fas`, `?fas=1` filter with statewide rank kept, U+2212 minus; `FAS county` badge + aria-label suffix; `Show FAS counties only` switch (hand-written shadcn switch, counted) toggling `?fas=1`; empty state `No FAS counties set`; map.spec + layout-parity additions (`/need-map` staff+board, `/need-map?fas=1` board at 375/800/1024/1440).
 State: `pnpm gate` on dc89514: lint/typecheck/unit (401) /secret scan/D-012 (+237/-27 = 264)/300-char all pass; `pnpm build` green; mutation `−`→`-` killed. test:db and e2e run in CI only (no local runtime).
