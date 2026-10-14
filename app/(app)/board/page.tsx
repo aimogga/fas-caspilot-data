@@ -10,6 +10,7 @@ import { summarize } from "@/lib/board/summary";
 import { METRIC_CARDS, NOT_AVAILABLE } from "@/lib/dashboard/cards";
 import { quarterLabel } from "@/lib/dashboard/filters";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 
 export const dynamic = "force-dynamic";
 /** F-402 board dashboard: one screen, plain language, the same suppressed aggregates as the team dashboard, print-friendly, as-of on every number. */
@@ -18,7 +19,9 @@ export default async function BoardPage() {
   let data: BoardData | null = null;
   let errorId: string | undefined;
   try {
-    const client = await createClient();
+    // Board viewers cannot read FAS record rows (RLS: admin/staff only), so the aggregates are computed server-side with the
+    // service role and only MetricsQuery's suppressed numbers reach the page; without the key the user's session is used.
+    const client = createServiceClient() ?? (await createClient());
     data = client ? await BoardQuery.load(client, now) : null;
   } catch (e) {
     errorId = randomUUID();
