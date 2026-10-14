@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { ORGANIZATION_NAME, PRODUCT_NAME } from "@/lib/branding";
+import { FreshnessPage } from "@/lib/freshness/query";
 import { createClient } from "@/lib/supabase/server";
 import { roleLabel, syntheticBadgeVisible } from "@/lib/shell/nav";
 import { ShellFrame } from "./ShellFrame";
@@ -20,8 +21,10 @@ export async function AppShell({ children }: { children: ReactNode }) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
   const role = typeof user.app_metadata?.role === "string" ? user.app_metadata.role : "unknown";
+  // DS-05b top-bar chip: loaded here with the user's session (auth cookies are httpOnly, so the browser cannot); a failure only hides the chip.
+  const freshnessChip = await FreshnessPage.load(supabase, new Date(), role).then((v) => v.chip).catch(() => null);
   return (
-    <ShellFrame role={role} roleLabel={roleLabel(role)} name={user.email ?? "Signed in"} showSynthetic={syntheticBadgeVisible(process.env.NEXT_PUBLIC_ENV)}>
+    <ShellFrame role={role} roleLabel={roleLabel(role)} name={user.email ?? "Signed in"} showSynthetic={syntheticBadgeVisible(process.env.NEXT_PUBLIC_ENV)} freshnessChip={freshnessChip}>
       {children}
     </ShellFrame>
   );
