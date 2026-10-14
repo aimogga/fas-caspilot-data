@@ -7,6 +7,7 @@ import { NeedMapQuery, type NeedTableData } from "@/lib/need-map/query";
 
 const NUM = "text-right tabular-nums";
 const STICKY = "bg-background md:sticky md:left-0 md:z-10";
+const LINK = "rounded-sm text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2";
 
 function Cell({ label, children }: { label: string; children: ReactNode }) {
   return <td className={`min-w-0 break-words py-2 pr-3 align-top ${NUM}`}><span className="text-xs text-muted-foreground md:hidden">{label}: </span>{children}</td>;
@@ -35,7 +36,8 @@ export function NeedTable({ data, fas = false }: { data: NeedTableData; fas?: bo
           {data.rows.map((row) => (
             <tr key={row.fips} data-fips={row.fips} aria-label={NeedMapQuery.rowLabel(row)} className="border-t border-border">
               <th scope="row" className={`py-2 pr-3 text-left font-medium ${STICKY}`}>
-                <Link href={href(row.fips)} scroll={false} className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">{row.name}</Link>{row.fas ? <Badge variant="info" className="ml-2 align-middle" prefix={<MapPin aria-hidden />}>FAS county</Badge> : null}
+                <Link href={href(row.fips)} scroll={false} className={LINK}>{row.name}</Link>
+                {row.fas ? <Badge variant="info" className="ml-2 align-middle" prefix={<MapPin aria-hidden />}>FAS county</Badge> : null}
               </th>
               <Cell label="Rank">{row.rank}</Cell>
               <Cell label="Need score">{row.score}</Cell>
