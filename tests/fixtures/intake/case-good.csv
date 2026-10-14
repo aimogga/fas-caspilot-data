@@ -1,0 +1,4 @@
+id,referral_source,court_involved,court_order_date,referral_date,county_fips,household_size,income_band,prior_services
+,court,yes,2024-02-01,2024-02-15,49035,4,b,school counseling
+,self,no,,2024-03-02,049,2,a,
+,school,yes,3/1/2024,3/9/2024,49011,5,c,none

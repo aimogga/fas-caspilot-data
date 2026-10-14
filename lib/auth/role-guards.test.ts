@@ -24,6 +24,7 @@ describe('role-guards', () => {
     expect(getAllowedRoles('/staff')).toEqual(['admin', 'staff']);
     expect(getAllowedRoles('/admin')).toEqual(['admin']);
     expect(getAllowedRoles('/staff/reports')).toEqual(['admin', 'staff']);
+    expect(getAllowedRoles('/staff/intake')).toEqual(['admin', 'staff']);
     expect(getAllowedRoles('/administrator')).toEqual([]);
   });
   it('applies the role map to nested prefix paths', () => {
