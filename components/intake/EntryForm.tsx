@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { controlFor, emptyRow, hintFor } from "@/lib/intake/entry";
 import { INTAKE_ENTITIES, INTAKE_SCHEMA, type Field, type IntakeEntity } from "@/lib/intake/schema";
 import { validateRows, type RowError } from "@/lib/intake/validate";
+import { useHydrated } from "@/lib/use-hydrated";
 
 type County = { fips: string; name: string };
 const titleCase = (s: string) => s[0].toUpperCase() + s.slice(1);
@@ -20,6 +21,7 @@ export function EntryForm({ counties }: { counties: County[] }) {
   const [saving, setSaving] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const fields = INTAKE_SCHEMA[entity].fields.filter((f) => controlFor(f) !== "hidden");
+  const hydrated = useHydrated();
   const errorFor = (key: string) => errors.find((e) => e.column === key)?.message;
 
   const reset = (next: IntakeEntity) => { setEntity(next); setRow(emptyRow(next)); setErrors([]); setSaved(null); setProblem(null); };
@@ -70,7 +72,7 @@ export function EntryForm({ counties }: { counties: County[] }) {
 
   const n = new Set(errors.map((e) => e.column)).size;
   return (
-    <form noValidate onSubmit={onSubmit} data-slot="entry-form">
+    <form noValidate onSubmit={onSubmit} data-slot="entry-form" data-hydrated={hydrated || undefined}>
       <Stack gap={4}>
         <FormField label="What are you adding?" htmlFor="entry-entity">
           <select id="entry-entity" value={entity} onChange={(e) => reset(e.target.value as IntakeEntity)}>
