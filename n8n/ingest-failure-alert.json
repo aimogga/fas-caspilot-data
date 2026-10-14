@@ -40,7 +40,7 @@
           "value": "fas-caspilot-data"
         },
         "title": "=Ingest failed: {{$json.body.source}}",
-        "body": "=Source: {{$json.body.source}}\nAt: {{$json.body.at}}\nIngest run: {{$json.body.ingestRunId}}\nError: {{$json.body.error}}",
+        "body": "=Source: {{$json.body.source}}\nAt: {{$json.body.at}}\nIngest run: {{$json.body.ingestRunId}}\nError: {{$json.body.error}}\nDelivered-by: n8n",
         "labels": [
           {
             "label": "ingest-alert"

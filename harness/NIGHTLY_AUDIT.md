@@ -30,3 +30,10 @@ Data freshness: <source: last success / vintage>
 Spend: <month-to-date vs cap>
 Doc-drift PR: <link | none>
 ```
+
+## Ingest alerts (F-201)
+`checkIngestAlerts` (needs `INGEST_ALERT_WEBHOOK_URL`; issue half needs `GITHUB_TOKEN`) goes YELLOW when:
+- an unauthenticated synthetic POST to the n8n webhook returns anything but 401/403, or is a Cloudflare challenge (`cf-mitigated: challenge` header, or a 403 whose body is a CF challenge page). A plain n8n 403 ("Authorization data is wrong!") is healthy.
+- an open or last-24h `ingest-alert` issue lacks the body line `Delivered-by: n8n`.
+
+Discriminator: the n8n GitHub node and the app fallback (`IngestAlert.githubIssue`) both post as the same GitHub user with no app attribution and identical body lines, so author/app cannot tell them apart. Each path now writes an explicit last line: `Delivered-by: n8n` (workflow JSON) or `Delivered-by: app-fallback`. The live n8n workflow must be synced from `n8n/ingest-failure-alert.json`; until then n8n issues also count as unmatched.

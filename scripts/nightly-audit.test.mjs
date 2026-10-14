@@ -22,6 +22,7 @@ import {
   evalFreshness,
   evalSanity,
   checkData, evalGrants, evalRls, checkGrantsAndRls, checkMainCi, checkDeploys,
+  classifyProbe, unmatchedAlertIssues, checkIngestAlerts, N8N_MARKER,
 } from './nightly-audit.mjs';
 const GHSA_IG = {id: 'GHSA-vfj7-8cjw-p6xm', package: 'braces', reason: 'CVE-2026-93687; dev-only lint toolchain transitive dep, no patched release', reviewer: 'QA bot', expires: '2026-11-08', severity: 'high'};
 const STALE_IG = {...GHSA_IG, id: 'GHSA-aaaa-bbbb-cccc', package: 'nope'};
@@ -491,4 +492,75 @@ it('deploy health: empty production list is "none found" (not a query failure) w
   expect(all).toContain('production deploy: none found');
   expect(all).toContain('preview deploy READY');
   expect(all).not.toContain('could not query');
+});
+
+describe('ingest alerts (F-201, synthetic)', () => {
+  const now = new Date('2026-10-13T12:00:00Z');
+  const env = {INGEST_ALERT_WEBHOOK_URL: 'https://n8n.example.test/webhook/x', GITHUB_TOKEN: 'placeholder', GITHUB_REPOSITORY: 'syn/repo'};
+  const issue = (n, body, extra = {}) => ({number: n, state: 'open', created_at: '2026-10-13T06:00:00Z', body, ...extra});
+  const fake = (probe, issues = []) => async (u) => String(u).includes('api.github.com') ? Response.json(issues) : probe();
+
+  it('classifyProbe: plain n8n 401/403 healthy; cf challenge and other codes challenged', () => {
+    expect(classifyProbe(403, {}, 'Authorization data is wrong!').ok).toBe(true);
+    expect(classifyProbe(401, {}, '').ok).toBe(true);
+    expect(classifyProbe(403, {'cf-mitigated': 'challenge'}, '')).toMatchObject({ok: false, why: 'Cloudflare challenge (cf-mitigated)'});
+    expect(classifyProbe(403, new Headers(), '<title>Just a moment...</title><script src="/cdn-cgi/challenge-platform/x">')).toMatchObject({ok: false, why: 'Cloudflare challenge page'});
+    expect(classifyProbe(200, {}, '')).toMatchObject({ok: false, why: 'unauthenticated probe got HTTP 200'});
+    expect(classifyProbe(200, new Headers({'cf-mitigated': 'challenge'}), '').ok).toBe(false);
+  });
+
+  it('unmatchedAlertIssues: open or last-24h issues lacking the n8n marker; skips PRs and old closed', () => {
+    const bad = unmatchedAlertIssues([
+      issue(1, `Source: syn\n${N8N_MARKER}`),
+      issue(2, 'Source: syn\nDelivered-by: app-fallback'),
+      issue(3, 'Source: syn', {state: 'closed', created_at: '2026-10-12T13:00:00Z'}),
+      issue(4, 'Source: syn', {state: 'closed', created_at: '2026-10-10T00:00:00Z'}),
+      issue(5, null, {pull_request: {}}),
+      issue(6, null),
+    ], now);
+    expect(bad.map(i => i.number)).toEqual([2, 3, 6]);
+  });
+
+  it('GREEN when probe is rejected by n8n and every issue carries the marker', async () => {
+    const r = await checkIngestAlerts(env, fake(() => new Response('Authorization data is wrong!', {status: 403}), [issue(9, N8N_MARKER)]), now);
+    expect(r).toMatchObject({status: 'GREEN', findings: []});
+    expect(r.details).toContain('webhook rejects unauthenticated probe (HTTP 403)');
+  });
+
+  it('probe sends no secret header and a synthetic body', async () => {
+    let init;
+    await checkIngestAlerts({INGEST_ALERT_WEBHOOK_URL: env.INGEST_ALERT_WEBHOOK_URL}, async (u, i) => { init = i; return new Response('', {status: 401}); }, now);
+    expect(Object.keys(init.headers).map(k => k.toLowerCase())).not.toContain('x-fas-alert-secret');
+    expect(JSON.parse(init.body).source).toBe('nightly-audit-probe');
+  });
+
+  it('YELLOW when challenged, open, or unreachable', async () => {
+    const cf = await checkIngestAlerts(env, fake(() => new Response('', {status: 403, headers: {'cf-mitigated': 'challenge'}})), now);
+    expect(cf).toMatchObject({status: 'YELLOW', findings: ['webhook challenged: Cloudflare challenge (cf-mitigated)']});
+    expect((await checkIngestAlerts(env, fake(() => new Response("ok", {status: 200})), now)).status).toBe('YELLOW');
+    const down = await checkIngestAlerts(env, fake(() => { throw new Error('ECONNREFUSED'); }), now);
+    expect(down.findings).toEqual(['webhook challenged: probe failed (ECONNREFUSED)']);
+  });
+
+  it('YELLOW on fallback-only issues or GitHub query failure; SKIPPED without URL', async () => {
+    const r = await checkIngestAlerts(env, fake(() => new Response('', {status: 403}), [issue(7, 'Delivered-by: app-fallback')]), now);
+    expect(r).toMatchObject({status: 'YELLOW', findings: ['ingest-alert issue(s) without n8n delivery: #7']});
+    const q = await checkIngestAlerts(env, async (u) => new Response('', {status: String(u).includes('api.github') ? 500 : 403}), now);
+    expect(q.findings).toEqual(['ingest-alert issues: could not query (HTTP 500)']);
+    expect((await checkIngestAlerts({}, fake(() => new Response('', {status: 200})), now)).status).toBe('SKIPPED');
+  });
+
+  it('queries ingest-alert label for the last 24h and folds into overall', async () => {
+    const urls = [];
+    await checkIngestAlerts(env, async (u) => { urls.push(String(u)); return u.includes('api.github') ? Response.json([]) : new Response('', {status: 403}); }, now);
+    expect(urls[1]).toContain('labels=ingest-alert');
+    expect(urls[1]).toContain('since=2026-10-12T12:00:00.000Z');
+    const ok = () => ({status: 'GREEN', findings: [], details: [], ignored: [], stale: []});
+    let overall;
+    await main({secretScan: ok, build: ok, deps: ok, harness: ok, data: async () => ({freshness: ok(), sanity: ok()}), mainCi: async () => ok(),
+      deploys: async () => ok(), grantsRls: async () => ({grants: ok(), rls: ok()}), log: () => {},
+      alerts: async () => ({status: 'YELLOW', findings: ['syn'], details: []}),
+      emit: (res) => { overall = res.overall; return {path: 'x', exitCode: 0}; }});
+    expect(overall).toBe('YELLOW');
+  });
 });

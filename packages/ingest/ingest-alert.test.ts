@@ -158,6 +158,7 @@ it('n8n alert workflow is inactive and opens an ingest-alert issue', () => {
   expect(wf.nodes.map((n) => n.type)).toEqual(['n8n-nodes-base.webhook', 'n8n-nodes-base.github']);
   expect(text).toContain('"label": "ingest-alert"');
   expect(text).toContain('$json.body.ingestRunId');
+  expect(text).toContain('Delivered-by: n8n');
   expect(text).not.toMatch(/gh[pousr]_|github_pat_/);
 });
 
@@ -183,6 +184,7 @@ describe('IngestAlert GitHub fallback', () => {
     expect(calls[1]?.body).toMatchObject({ title: 'Ingest failed: synthetic-source', labels: ['ingest-alert'] });
     expect(calls[1]?.body.body).toContain('run-synth-1');
     expect(calls[1]?.body.body).toContain('Error: boom');
+    expect(calls[1]?.body.body).toContain('Delivered-by: app-fallback');
     expect(info).toHaveBeenCalledWith('ingest-alert: opened issue #7 for run run-synth-1');
     info.mockRestore();
   });

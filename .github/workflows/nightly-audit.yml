@@ -55,6 +55,7 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          INGEST_ALERT_WEBHOOK_URL: https://n8n.casepilot.io/webhook/ingest-failure-alert
         run: |
           DATE=$(date -u +%Y-%m-%d)
           echo "audit_date=$DATE" >> $GITHUB_OUTPUT
