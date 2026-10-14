@@ -138,7 +138,8 @@ export class SahieHttp {
       const payload = SahieHttp.payload(source, e, env);
       console.error('[ingest] failed', { source, stage: 'run', message: payload.error });
       await IngestAlert.notify(payload, env, deps.alertFetch);
-      return Response.json({ error: 'ingest failed' }, { status: 500 });
+      const status = e instanceof Error && 'httpStatus' in e && typeof e.httpStatus === 'number' ? e.httpStatus : 500;
+      return Response.json({ error: status === 500 || !(e instanceof Error) ? 'ingest failed' : e.message }, { status });
     }
   }
 

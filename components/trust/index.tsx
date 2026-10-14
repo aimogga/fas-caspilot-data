@@ -42,3 +42,8 @@ export function DraftBanner() {
     </Alert>
   );
 }
+
+/** F-303: every view of an aggregate submission carries this label (PRD §C2, DS-07 footer rule). */
+export function AggregateBadge() {
+  return <Badge variant="info" aria-label="Aggregate submission" prefix={<span aria-hidden>Σ</span>}>Aggregate</Badge>;
+}
