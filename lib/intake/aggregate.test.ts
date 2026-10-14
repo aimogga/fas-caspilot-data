@@ -14,10 +14,14 @@ function fakeDb(failInsert?: string) {
   const inserts: { table: string; row: Record<string, unknown> }[] = [];
   const db: EntryDb = { from: (table) => ({
     select: () => ({ eq: () => Promise.resolve({ data: table === 'geo_county' ? [{ fips: '49035' }] : [], error: null }) }),
-    insert: (row) => ({ select: () => ({ single: () => {
-      inserts.push({ table, row });
-      return Promise.resolve(failInsert === table ? { data: null, error: { message: 'boom' } } : { data: { id: NEW }, error: null });
-    } }) }),
+    insert: (row) => {
+      const run = () => {
+        inserts.push({ table, row });
+        return Promise.resolve(failInsert === table ? { data: null, error: { message: 'boom' } } : { data: { id: NEW }, error: null });
+      };
+      // Awaitable like the real builder (audit rows are inserted without RETURNING) and selectable for the record insert.
+      return { then: (f, r) => run().then(f, r), select: () => ({ single: run }) };
+    },
   }) };
   return { db, inserts };
 }
