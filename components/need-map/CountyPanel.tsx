@@ -32,13 +32,12 @@ function Indicator({ county, column, source }: { county: CountyRow; column: Colu
   const name = source?.name ?? "Source";
   const vintage = source?.vintage ?? NOT_PUBLISHED;
   return (
-    <div data-slot="panel-indicator" className="grid gap-0.5 border-t border-border pt-2">
-      <div className="flex items-baseline justify-between gap-3">
-        <dt className="text-sm">{column.label}</dt>
-        <dd className="text-right text-sm font-medium tabular-nums">{value}</dd>
-      </div>
-      {value === NOT_PUBLISHED ? <p className="text-xs text-muted-foreground">{name} did not publish this for {county.name} in {vintage}.</p> : null}
-      <p data-slot="source-footer" className="text-xs font-medium tracking-wide text-muted-foreground">{name} · {vintage} · as of {source?.asOf ?? NOT_PUBLISHED}</p>
+    // A <dl> may only hold <dt>/<dd> groups, or one <div> per group (axe definition-list, dlitem): the notes are extra <dd> rows.
+    <div data-slot="panel-indicator" className="grid grid-cols-[1fr_auto] items-baseline gap-x-3 gap-y-0.5 border-t border-border pt-2">
+      <dt className="text-sm">{column.label}</dt>
+      <dd className="text-right text-sm font-medium tabular-nums">{value}</dd>
+      {value === NOT_PUBLISHED ? <dd className="col-span-2 text-xs text-muted-foreground">{name} did not publish this for {county.name} in {vintage}.</dd> : null}
+      <dd data-slot="source-footer" className="col-span-2 text-xs font-medium tracking-wide text-muted-foreground">{name} · {vintage} · as of {source?.asOf ?? NOT_PUBLISHED}</dd>
     </div>
   );
 }
