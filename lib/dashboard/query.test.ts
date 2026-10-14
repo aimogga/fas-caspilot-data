@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { DashboardQuery, STAGES, type PipelineRow } from './query';
 
 const NOW = new Date('2026-10-13T12:00:00Z');
@@ -23,5 +24,16 @@ describe('pipeline widget query (DS-07a)', () => {
     const view = DashboardQuery.pipeline(rows, sources, NOW);
     expect([view.deadline, view.footer]).toEqual(['Next deadline: Soon, closes Nov 5', 'Grants.gov and foundation lists · as of Sep 2026']);
     expect(DashboardQuery.pipeline([{ status: 'new', opportunity: null }], [], NOW).stages[0]?.count).toBe('1');
+  });
+
+  it('load wires the freshness view from source_registry, ingest_run and public_indicator', async () => {
+    const tables: Record<string, unknown[]> = {
+      source_registry: [{ id: 's1', name: 'census-sahie', cadence: 'annual', last_success_at: null }],
+      public_indicator: [{ source_id: 's1', vintage: '2023' }],
+    };
+    const result = (table: string) => Object.assign(Promise.resolve({ data: tables[table] ?? [], error: null }), { order: () => ({ limit: () => result(table) }) });
+    const client = { from: (table: string) => ({ select: () => result(table) }) } as unknown as SupabaseClient;
+    const data = await DashboardQuery.load(client, NOW);
+    expect(data.freshness).toEqual({ rows: [{ name: 'census-sahie', status: 'not_published', latestVintage: '2023' }], asOf: 'Not available yet' });
   });
 });

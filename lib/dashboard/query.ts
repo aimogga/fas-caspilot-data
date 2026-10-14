@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { NeedMapQuery } from '../need-map/query';
+import { Freshness, type FreshnessIndicator, type FreshnessRun, type FreshnessSource, type FreshnessView } from './freshness';
 
 export const STAGES = ['New', 'Reviewing', 'Pursuing', 'Submitted', 'Awarded', 'Declined', 'Passed'] as const;
 export type Opportunity = { id: string; title: string; source: string; close_date: string | null; posted_date: string | null };
@@ -8,7 +9,7 @@ export type SourceRow = { name: string; last_success_at: string | null };
 export type Stage = { name: string; count: string; manual: number };
 export type CountyRow = { fips: string; name: string };
 export type PipelineView = { stages: Stage[]; manualCount: number; deadline: string; footer: string; empty: boolean };
-export type DashboardData = { counties: CountyRow[]; referrals: string[]; pipeline: PipelineView };
+export type DashboardData = { counties: CountyRow[]; referrals: string[]; pipeline: PipelineView; freshness: FreshnessView };
 
 const monthDay = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 const opp = (r: PipelineRow): Opportunity | null => (Array.isArray(r.opportunity) ? r.opportunity[0] ?? null : r.opportunity);
@@ -33,15 +34,18 @@ export class DashboardQuery {
   }
 
   static async load(client: SupabaseClient, now: Date): Promise<DashboardData> {
-    const [counties, cases, pipeline, sources] = await Promise.all([
+    const [counties, cases, pipeline, sources, runs, indicators] = await Promise.all([
       client.from('geo_county').select('fips,name'),
       client.from('case').select('referral_source'),
       client.from('pipeline_status').select('status,opportunity(id,title,source,close_date,posted_date)'),
-      client.from('source_registry').select('name,last_success_at'),
+      client.from('source_registry').select('id,name,cadence,last_success_at'),
+      client.from('ingest_run').select('source_id,status,started_at').order('started_at', { ascending: false }).limit(500),
+      client.from('public_indicator').select('source_id,vintage').order('vintage', { ascending: false }).limit(2000),
     ]);
-    for (const r of [counties, cases, pipeline, sources]) if (r.error) throw new Error(r.error.message);
+    for (const r of [counties, cases, pipeline, sources, runs, indicators]) if (r.error) throw new Error(r.error.message);
+    const freshness = Freshness.view((sources.data ?? []) as FreshnessSource[], (runs.data ?? []) as FreshnessRun[], (indicators.data ?? []) as FreshnessIndicator[], now);
     const referrals = [...new Set((cases.data ?? []).map((c: { referral_source: string | null }) => c.referral_source ?? '').filter(Boolean))].sort();
     const countyRows = ((counties.data ?? []) as CountyRow[]).filter((c) => c.fips.startsWith('49')).sort((a, b) => a.name.localeCompare(b.name));
-    return { counties: countyRows, referrals, pipeline: DashboardQuery.pipeline((pipeline.data ?? []) as PipelineRow[], (sources.data ?? []) as SourceRow[], now) };
+    return { counties: countyRows, referrals, pipeline: DashboardQuery.pipeline((pipeline.data ?? []) as PipelineRow[], (sources.data ?? []) as SourceRow[], now), freshness };
   }
 }

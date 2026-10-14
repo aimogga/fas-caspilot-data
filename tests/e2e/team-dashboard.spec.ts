@@ -59,3 +59,17 @@ for (const email of ["staff@example.test", "admin@example.test"] as const) {
     await expect(button).toBeFocused();
   });
 }
+
+test("public data freshness widget lists the seeded sources with text statuses (DS-07a follow-up, F-401)", async ({ page }) => {
+  await signIn(page, "staff@example.test");
+  expect((await page.goto("/dashboard"))?.status()).toBe(200);
+  const widget = page.locator("[data-slot=freshness-widget]");
+  await expect(widget.getByRole("heading", { level: 2, name: "Public data freshness" })).toBeVisible();
+  const rows = widget.locator("li");
+  expect(await rows.count()).toBeGreaterThan(0);
+  for (const row of await rows.all()) await expect(row).toHaveText(/^\W*(Current|Stale|Failed|Not published)\s/);
+  // census-sahie is "Not published" only until an ingest succeeds; CI's test:db load records one, so accept either state.
+  await expect(rows.filter({ hasText: "census-sahie" })).toHaveText(/^\W*(Current|Stale|Not published)\s*census-sahie\s*Latest 2023$/);
+  await expect(widget.locator("[data-slot=source-footer]")).toHaveText(/^Source registry · as of (Not available yet|\w{3} \d{4})$/);
+  await expect(page.getByRole("link", { name: "See all sources" })).toHaveCount(0);
+});

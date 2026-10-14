@@ -6,7 +6,9 @@ import { M4Table } from "@/components/dashboard/M4Table";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { METRIC_CARDS, M4_COLUMNS } from "@/lib/dashboard/cards";
 
-vi.mock("@/lib/supabase/server", () => ({ createClient: async () => ({ from: () => ({ select: async () => ({ data: [], error: null }) }) }) }));
+const empty = { data: [], error: null };
+const query = Object.assign(Promise.resolve(empty), { order: () => ({ limit: async () => empty }) });
+vi.mock("@/lib/supabase/server", () => ({ createClient: async () => ({ from: () => ({ select: () => query }) }) }));
 const page = async (params = {}) => renderToStaticMarkup(await DashboardPage({ searchParams: Promise.resolve(params) }));
 const text = (markup: string) => markup.replace(/<[^>]+>/g, " ");
 
@@ -24,6 +26,7 @@ describe("DS-07a team dashboard (F-401)", () => {
       "Completion rate by income band",
       "Where therapy dollars went",
       "Outcome change",
+      "Public data freshness",
       "Grant pipeline",
     ]);
   });
@@ -41,7 +44,7 @@ describe("DS-07a team dashboard (F-401)", () => {
   it("each card is a section labelled by its h2", async () => {
     const markup = await page();
     const sections = [...markup.matchAll(/<section aria-labelledby="([^"]+)"/g)].map((match) => match[1]);
-    expect(sections).toHaveLength(8);
+    expect(sections).toHaveLength(9);
     for (const id of sections) {
       expect(markup).toContain(`<h2 id="${id}"`);
     }
@@ -63,11 +66,12 @@ describe("DS-07a team dashboard (F-401)", () => {
     expect(markup).toMatch(/<th[^>]*break-words/);
   });
 
-  it("hides unbuilt actions; describes the filters in the header; renders the pipeline widget with empty data", async () => {
+  it("hides unbuilt actions; describes the filters in the header; renders the freshness and pipeline widgets with empty data", async () => {
     const markup = await page({ county: "bogus", referral: "court", compare: "none" });
     expect(text(markup)).not.toMatch(/Export packet|Open pipeline|Upload data|See all sources|View as table/);
     expect(text(markup)).toMatch(/\w{3}\u2013\w{3} \d{4} \(Q[1-4]\) · All counties · court/);
     expect(markup).toMatch(/<form data-slot="filter-form"[^>]*action="\/dashboard" method="get".*Filters · 2/);
+    expect(text(markup)).toMatch(/Public data freshness.*No sources registered yet.*Source registry · as of Not available yet.*Grant pipeline/);
     expect(text(markup)).toMatch(/Grant pipeline.*No opportunities in the pipeline yet.*New.*Reviewing.*Pursuing.*Submitted.*Awarded.*Declined.*Passed.*No upcoming deadline.*as of Not available yet/);
   });
 });
