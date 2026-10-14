@@ -538,7 +538,7 @@ State: F-201 status stays failing; human_gate unchanged; status_note removed fro
 Left: QA.
 Decisions: D-024, D-025, D-026, D-027.
 
-## 2026-10-14 04:26 (UTC) — Cloud Agent — PR #? / feature F-506 award history
+## 2026-10-14 04:26 (UTC) — Cloud Agent — PR #179 / feature F-506 award history
 Did: `packages/ingest/usaspending` (UsaSpending: searchBody per ALN × completed federal FY, tolerant FIELDS parse → award_history rows, dedupe, checksum, paged search behind a take()); `lib/ingest/usaspending-http.ts` + `app/api/ingest/usaspending` (token POST via SahieHttp.respond, upsert on (source, external_id), ingest_run + last_success_at, failed run + one alert); `lib/grants/award-history.ts` (similarAwards with reason + source_ref, summarize, AwardHistoryQuery.forOpportunity under RLS); migration (source_registry usaspending, award_history external_id/recipient_type/ingest_run_id, unique index, SQL award_history_summary); inactive `n8n/usaspending-monthly.json`; /api/ingest/usaspending public route; copied `lib/ingest/rate-limit.ts` byte-for-byte from #176 (same path, merges clean).
 State: lint, typecheck, 406 unit tests green; next build pending; test:db is CI-only (tests/db/usaspending-load.test.ts). Synthetic fixture only; no secrets.
 Left: QA runs the UNVERIFIED curl (PR body) against api.usaspending.gov and trims FIELDS/REQUEST_FIELDS; F-504 panel / F-508 drafts call AwardHistoryQuery later.
