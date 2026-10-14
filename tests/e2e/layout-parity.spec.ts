@@ -108,6 +108,22 @@ test("signed-in 404, signed-in error and the / redirect use the shell Page layou
   }
 });
 
+for (const [email, paths] of [["staff@example.test", ["/need-map"]], ["board@example.test", ["/need-map", "/need-map?fas=1"]]] as const) {
+  test(`need map uses the shell Page layout for ${email}`, async ({ page }) => {
+    await signInAs(page, email);
+    for (const path of paths) {
+      for (const width of [375, 800, 1024, 1440] as const) {
+        await page.setViewportSize({ width, height: 812 });
+        await page.goto(path);
+        const got = await pageBox(page);
+        const exp = SHELL[width];
+        expect(got, `${path} @ ${width}`).toMatchObject({ left: exp.left, width: exp.width, scroll: width });
+        if (exp.container) expect(got?.container, `${path} container @ ${width}`).toBe(exp.container);
+      }
+    }
+  });
+}
+
 test("placeholder subtitle left edge equals the h1 left edge", async ({ page }) => {
   await signInAs(page, "admin@example.test");
   for (const width of [375, 1024, 1440] as const) {
