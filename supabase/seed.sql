@@ -77,6 +77,11 @@ INSERT INTO strategy_draft (id, org_id, opportunity_id, inputs_snapshot, output,
 INSERT INTO pipeline_status (opportunity_id, org_id, status, owner, notes) VALUES
   ('10101010-1010-1010-1010-101010101010', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'watch', 'a', 'n'),
   ('10101010-1010-1010-1010-101010101010', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'watch', 'b', 'n');
+INSERT INTO opportunity (id, source, external_id, title, funder, posted_date, close_date, eligibility, description, raw) VALUES
+  ('10101010-1010-1010-1010-101010101011', 'foundation_manual', 'syn-manual-1', 'Synthetic Family Fund', 'Synthetic Foundation', '2026-10-01', '2027-03-01', '{}', 'd', '{}');
+INSERT INTO pipeline_status (opportunity_id, org_id, status, owner, notes) VALUES
+  ('10101010-1010-1010-1010-101010101011', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'pursuing', 'a', 'n'),
+  ('10101010-1010-1010-1010-101010101011', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'pursuing', 'b', 'n');
 INSERT INTO export_job (id, org_id, type, params, file_path, suppression_applied, created_by) VALUES
   ('60606060-6060-6060-6060-606060606061', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'pdf', '{}', '/synthetic/a.pdf', true, '11111111-1111-1111-1111-111111111111'),
   ('60606060-6060-6060-6060-606060606062', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'pdf', '{}', '/synthetic/b.pdf', true, '55555555-5555-5555-5555-555555555555');
