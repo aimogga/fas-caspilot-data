@@ -5,8 +5,8 @@ describe("DS-02 nav", () => {
   it("shows only existing routes for each role", () => {
     const groups = (role: string) => navForRole(role).groups.map((g) => g.label);
     const labels = (role: string) => navForRole(role).groups.flatMap((g) => g.items.map((i) => i.label));
-    expect(labels("staff")).toEqual(["Home"]);
-    expect(labels("admin")).toEqual(["Home", "Overview"]);
+    expect(labels("staff")).toEqual(["Home", "Grant matches"]);
+    expect(labels("admin")).toEqual(["Home", "Grant matches", "Overview"]);
     expect(labels("board_viewer")).toEqual(["Board dashboard"]);
     expect(groups("staff")).toEqual(["Workspace"]);
     expect(groups("admin")).toEqual(["Workspace", "Admin"]);
@@ -37,6 +37,7 @@ describe("shell breadcrumb", () => {
   it("keeps the existing crumbs for roles that have a home", () => {
     expect(crumbFor("admin", "/admin", "FAS Evidence")).toBe("Admin · Overview");
     expect(crumbFor("staff", "/staff", "FAS Evidence")).toBe("Home");
+    expect(crumbFor("staff", "/staff/grants/matches", "FAS Evidence")).toBe("Grant matches");
     expect(crumbFor("board_viewer", "/board", "FAS Evidence")).toBe("Board dashboard");
     expect(crumbFor("admin", "/%61dmin", "FAS Evidence")).toBe("Admin · Overview");
     expect(crumbFor("board_viewer", "/403", "FAS Evidence")).toBe("FAS Evidence");
