@@ -538,7 +538,7 @@ State: F-201 status stays failing; human_gate unchanged; status_note removed fro
 Left: QA.
 Decisions: D-024, D-025, D-026, D-027.
 
-## 2026-10-14 03:54 (UTC) — Cloud Agent — PR #? / feature F-501 Grants.gov ingest
+## 2026-10-14 03:54 (UTC) — Cloud Agent — PR #176 / feature F-501 Grants.gov ingest
 Did: `packages/ingest/grants_gov` (GrantsGov: searchBody per theme, tolerant FIELDS mapper → `opportunity` columns incl. `eligibility` jsonb and `raw`, dedupe, fail-closed on unknown shape), `lib/ingest/rate-limit.ts` (RateLimiter 60/min rolling + 10,000/UTC-day, injectable clock, RateLimitExceeded), `lib/ingest/grants-gov-http.ts` (OpportunityIngest upsert on (source, external_id) + ingest_run + last_success_at; 503 `api key not configured` recorded as failed run, one alert), route `/api/ingest/grants-gov` (public-route entry), migration (source_registry row, unique index, `opportunity.ingest_run_id`), inactive n8n `grants-gov-weekly.json` (Mondays 13:00 UTC). `SahieHttp.respond` honours an error's `httpStatus` (2 lines).
 State: lint/typecheck clean; vitest 407 green; db load test is CI-only (`tests/db/grants-gov-load.test.ts`). Live API unreachable from the sandbox (proxy): fixture and FIELDS are UNVERIFIED; QA runs the curl in the PR.
 Left: QA; George sets `SIMPLER_GRANTS_API_KEY` in Vercel + n8n; import/activate the n8n workflow after merge (D-014).
