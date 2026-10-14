@@ -59,6 +59,7 @@ describe('role-guards', () => {
     expect(isPublicRoute('/api/ingest/sahie')).toBe(true);
     expect(isPublicRoute('/api/ingest/saipe')).toBe(true);
     expect(isPublicRoute('/api/ingest/acs')).toBe(true);
+    expect(isPublicRoute('/api/ingest/propublica')).toBe(true);
     expect(isPublicRoute('/api/ingest/usaspending')).toBe(true);
     expect(isPublicRoute('/api/ingest/grants-gov')).toBe(true);
     expect(isPublicRoute('/api/grants/recompute')).toBe(true);
@@ -80,6 +81,7 @@ describe('role-guards', () => {
     expect(isPublicRoute('/api/ingest/sahie/')).toBe(false);
     expect(isPublicRoute('/api/ingest/saipe/')).toBe(false);
     expect(isPublicRoute('/api/ingest/acs/')).toBe(false);
+    expect(isPublicRoute('/api/ingest/propublica/')).toBe(false);
     expect(isPublicRoute('/api/ingest/usaspending/')).toBe(false);
     expect(isPublicRoute('/api/ingest/grants-gov/')).toBe(false);
     expect(isPublicRoute('/api/grants/recompute/')).toBe(false);

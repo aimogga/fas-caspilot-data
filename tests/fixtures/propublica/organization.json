@@ -1,0 +1,9 @@
+{"organization": {"ein": 100000001, "strein": "10-0000001", "name": "EXAMPLE FAMILY FOUNDATION", "city": "SALT LAKE CITY", "state": "UT", "ntee_code": "T20", "subsection_code": 3, "updated_at": "2026-01-15T00:00:00.000Z"},
+ "filings_with_data": [
+  {"tax_prd": 202312, "tax_prd_yr": 2023, "formtype": 2, "pdf_url": "https://projects.propublica.org/nonprofits/download-filing?path=example-2023.pdf", "totrevenue": 3100000, "totfuncexpns": 2500000, "totassetsend": 41000000, "totliabend": 120000, "pct_compnsatncurrofcr": 0.02},
+  {"tax_prd": 202212, "tax_prd_yr": 2022, "formtype": 2, "pdf_url": null, "totrevenue": "2800000", "totfuncexpns": "2200000", "totassetsend": 39000000, "totliabend": 100000},
+  {"tax_prd": 202112, "tax_prd_yr": 2021, "formtype": 2, "pdf_url": null, "totrevenue": 2600000, "totfuncexpns": 1900000, "totassetsend": 37000000},
+  {"tax_prd": 202012, "tax_prd_yr": 2020, "formtype": 2, "pdf_url": null, "totrevenue": 2000000, "totfuncexpns": 1500000, "totassetsend": 35000000},
+  {"tax_prd": 201912, "tax_prd_yr": 2019, "formtype": 0, "pdf_url": null, "totrevenue": 1000000, "totfuncexpns": 900000, "totassetsend": 30000000},
+  {"tax_prd": 201812, "formtype": 2, "totrevenue": 1}],
+ "filings_without_data": [{"tax_prd": 202412, "tax_prd_yr": 2024, "formtype": 2, "pdf_url": "https://projects.propublica.org/nonprofits/download-filing?path=example-2024.pdf"}]}
