@@ -25,7 +25,7 @@ function metricProps(id: string, x: DashboardMetrics | null, f: Filters): Partia
   switch (id) {
     case "m1": return fas(x?.m1, NO_CASES, (v) => ({
       value: days(v.median), valueText: `Median ${days(v.median)} from court order to first session, ${quarterShort(f.period)} ${f.period.slice(0, 4)}`,
-      stats: [`25th pct ${num(v.p25)}`, `75th pct ${num(v.p75)}`, `n = ${v.n}`, v.stillWaitingShare == null ? null : `Still waiting ${pct(v.stillWaitingShare)}`].filter(Boolean).join(" · "),
+      stats: [v.p25 != null ? `25th pct ${num(v.p25)}` : null, v.p75 != null ? `75th pct ${num(v.p75)}` : null, `n = ${v.n}`, v.stillWaitingShare == null ? null : `Still waiting ${pct(v.stillWaitingShare)}`].filter(Boolean).join(" · "),
       trend: x ? <TrendLine points={x.trend} label={METRIC_CARDS[0]?.title ?? ""} /> : null,
     }));
     case "m2": return fas(x?.m2, NO_CASES, (v) => ({ value: days(v.median) }));
