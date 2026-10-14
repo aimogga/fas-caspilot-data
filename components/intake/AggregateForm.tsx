@@ -74,7 +74,7 @@ export function AggregateForm({ counties, recent }: { counties: County[]; recent
         <h2 id="agg-recent-title" className="mb-2 text-base font-semibold">Recent aggregate totals</h2>
         {list.length ? (
           <ul data-slot="aggregate-recent" className="divide-y divide-border text-sm">
-            {list.map((r) => <li key={r.id} data-id={r.id} className="flex flex-wrap items-center gap-2 py-2"><AggregateBadge /> {periodLabel(r.period)} · {metricLabel(r.metric_code)} ·
+            {list.map((r) => <li key={r.id} data-id={r.id} className="flex flex-wrap items-center gap-2 py-2"><AggregateBadge /> {periodLabel(r.period)} · {metricLabel(r.metric_code)} ·{" "}
               <span className="tabular-nums font-medium">{formatValue(r.metric_code, r.value)}</span> · {countyName(r.county_fips)}</li>)}
           </ul>
         ) : <p className="text-sm text-muted-foreground">No aggregate totals yet.</p>}
