@@ -242,7 +242,8 @@
 }
 [data-slot=form-field] { display: flex; flex-direction: column; width: 100%; }
 [data-slot=form-field] :is(input, [data-slot=input]) { max-width: none; }
-[data-slot=table-scroll] { overflow-x: auto; }
+/* position: relative keeps absolutely positioned descendants (sr-only cell text) inside the scroller instead of widening the page. */
+[data-slot=table-scroll] { position: relative; overflow-x: auto; }
 [data-slot=table-scroll] table { min-width: 40rem; }
 [data-slot=table-scroll] th, [data-slot=table-stack] th { text-align: left; }
 .scroll-hint { font-size: 12px; color: var(--muted-foreground); }
