@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { controlFor, emptyRow, hintFor } from "@/lib/intake/entry";
 import { INTAKE_ENTITIES, INTAKE_SCHEMA, isIntakeEntity, type Field, type IntakeEntity } from "@/lib/intake/schema";
 import { validateRows, type RowError } from "@/lib/intake/validate";
+import { useHydrated } from "@/lib/use-hydrated";
 
 type County = { fips: string; name: string };
 const titleCase = (s: string) => s[0].toUpperCase() + s.slice(1);
@@ -21,6 +22,7 @@ export function EntryForm({ counties, aggregate }: { counties: County[]; aggrega
   const [saving, setSaving] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const fields = isIntakeEntity(entity) ? INTAKE_SCHEMA[entity].fields.filter((f) => controlFor(f) !== "hidden") : [];
+  const hydrated = useHydrated();
   const errorFor = (key: string) => errors.find((e) => e.column === key)?.message;
 
   const reset = (next: Mode) => { setEntity(next); setRow(isIntakeEntity(next) ? emptyRow(next) : {}); setErrors([]); setSaved(null); setProblem(null); };
@@ -80,7 +82,7 @@ export function EntryForm({ counties, aggregate }: { counties: County[]; aggrega
         </select>
       </FormField>
       {entity === "aggregate" ? aggregate : (
-    <form noValidate onSubmit={onSubmit} data-slot="entry-form">
+    <form noValidate onSubmit={onSubmit} data-slot="entry-form" data-hydrated={hydrated || undefined}>
       <Stack gap={4}>
         {n ? <p role="alert" data-slot="entry-alert" className="text-sm font-medium text-destructive">{n === 1 ? "1 field needs" : `${n} fields need`} attention. Fix the errors shown below each field.</p> : null}
         {fields.map((f) => {

@@ -52,19 +52,24 @@ test("gallery sizes, axe, and screenshots", async ({ page }) => {
   expect(await page.locator(".scroll-hint [aria-hidden]").textContent()).toContain("Scroll");
   expect((await new AxeBuilder({ page }).analyze()).violations.filter((x) => x.impact === "serious" || x.impact === "critical")).toEqual([]);
   await page.screenshot({ path: `${ART}/gallery-375.png`, fullPage: true });
+  // A viewport resize reflows asynchronously, so poll the page padding instead of reading it once (flaked 3/3 on CI).
+  const padLeft = () => page.evaluate(() => {
+    const pad = Math.round(parseFloat(getComputedStyle(document.querySelector("[data-slot=page]")!).paddingLeft));
+    return { pad, left: Math.round(document.querySelector("[data-slot=page-header] h1")!.getBoundingClientRect().left) };
+  });
   await page.setViewportSize({ width: 800, height: 900 });
-  expect(await page.evaluate(() => ({ pad: Math.round(parseFloat(getComputedStyle(document.querySelector("[data-slot=page]")!).paddingLeft)), left: Math.round(document.querySelector("[data-slot=page-header] h1")!.getBoundingClientRect().left) }))).toEqual({ pad: 24, left: 24 });
+  await expect.poll(padLeft, { message: `page padding @ 800` }).toEqual({ pad: 24, left: 24 });
   await page.setViewportSize({ width: 1024, height: 900 });
-  expect(await page.evaluate(() => ({ pad: Math.round(parseFloat(getComputedStyle(document.querySelector("[data-slot=page]")!).paddingLeft)), left: Math.round(document.querySelector("[data-slot=page-header] h1")!.getBoundingClientRect().left) }))).toEqual({ pad: 32, left: 32 });
+  await expect.poll(padLeft, { message: `page padding @ 1024` }).toEqual({ pad: 32, left: 32 });
   await page.screenshot({ path: `${ART}/gallery-1024.png`, fullPage: true });
   await page.setViewportSize({ width: 1280, height: 900 });
-  expect(await page.evaluate(() => {
+  await expect.poll(() => page.evaluate(() => {
     const h = (t: string) => [...document.querySelectorAll("[data-slot=button]")].find((el) => el.textContent === t)!.getBoundingClientRect().height;
     const b = (name: string) => getComputedStyle(document.querySelector(`[data-variant="${name}"]`)!).borderTopWidth;
     return { sm: h("sm"), def: h("default"), ghost: b("ghost"), link: b("link") };
-  })).toMatchObject({ sm: 32, def: 40, ghost: "0px", link: "0px" });
+  }), { message: "button sizes @ 1280" }).toMatchObject({ sm: 32, def: 40, ghost: "0px", link: "0px" });
   await page.setViewportSize({ width: 1440, height: 900 });
-  expect(await page.evaluate(() => ({ pad: Math.round(parseFloat(getComputedStyle(document.querySelector("[data-slot=page]")!).paddingLeft)), left: Math.round(document.querySelector("[data-slot=page-header] h1")!.getBoundingClientRect().left) }))).toEqual({ pad: 32, left: 152 });
+  await expect.poll(padLeft, { message: `page padding @ 1440` }).toEqual({ pad: 32, left: 152 });
   await expect(page.locator(".scroll-hint")).toHaveCount(0);
   await page.screenshot({ path: `${ART}/gallery-1440.png`, fullPage: true });
   await page.locator("[data-slot=button]").first().focus();
