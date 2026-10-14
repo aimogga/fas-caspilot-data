@@ -116,10 +116,24 @@ const HOME: Record<UserRole, string> = { admin: '/admin', staff: '/staff', board
 export function roleHome(role: UserRole | null): string | null {
   return role ? HOME[role] ?? null : null;
 }
+// Token- or session-free routes; one per line so each new ingest route is an additive one-line change.
+const PUBLIC_PATHS = new Set<string>([
+  '/login',
+  '/403',
+  '/api/auth/signout',
+  '/api/auth/login',
+  '/api/health',
+  '/api/ingest/sahie',
+  '/api/ingest/saipe',
+  '/api/ingest/acs',
+  '/api/ingest/need-score',
+  '/api/ingest/places',
+  '/ui',
+  '/health',
+  '/dev-error',
+]);
 export function isPublicRoute(path: string): boolean {
-  return path === '/login' || path === '/403' || path === '/api/auth/signout' || path === '/api/auth/login' || path === '/api/health'
-    || path === '/api/ingest/sahie' || path === '/api/ingest/saipe' || path === '/api/ingest/acs' || path === '/api/ingest/need-score'
-    || path === '/ui' || path === '/health' || path === '/dev-error';
+  return PUBLIC_PATHS.has(path);
 }
 export function hadSession(cookieNames: string[]): boolean {
   return cookieNames.some((name) => name.startsWith('sb-') && name.includes('-auth-token'));
