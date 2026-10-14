@@ -538,6 +538,11 @@ State: F-201 status stays failing; human_gate unchanged; status_note removed fro
 Left: QA.
 Decisions: D-024, D-025, D-026, D-027.
 
+## 2026-10-13 19:19 (UTC) — Cloud Agent (P4 subagent, lead-reviewed) — PR #149 / DS-08a methodology page (F-210 part 2)
+Did: route `/methodology` for all roles (role-guards RULES + GUARDED_PREFIXES, nav item + crumb unhidden, BookOpen icon); `lib/methodology/query.ts` + `labels.ts` (+tests): newest approved config, inputs only for weight keys, weights + percent + Total + mismatch sentence, vintages/as-of, Not-published count, draft notice for staff/admin without a hard-coded draft name; page with every DS-08 state, TOC, formula, six limits, footer, Synthetic badge; `tests/e2e/methodology.spec.ts` + layout-parity entries.
+State: `pnpm gate` on 01b6ed3: all rows pass, +374/-15 = 389; build lists /methodology; 2 mutants killed. e2e/parity run in CI only.
+Left: QA PASS + DESIGN APPROVED at head. Follow-up after #147 merges: the one-line `/need-map` header link to `/methodology` (DS-08 scope, deferred to avoid a conflict with #147). ErrorState label stays "Retry" (shared component); flagged for design.
+Decisions: none new (D-022, D-026 applied; D-029 branch-per-packet).
 ## 2026-10-13 18:32 (UTC) — Cloud Agent (P1a subagent, lead-reviewed) — PR #148 / F-210 ingest variables for v2
 Did: SAIPE `child_poverty_count`/`child_poverty_rate` (`SAEPOV0_17_*`, `SAEPOVRT0_17_*`), `bad()` rate check on every percent code, completeness 4×29, `Saipe.CODES`; ACS raw `single_parent_households` (B11003_010E + B11003_016E) and `no_vehicle_households` (B08201_002E) plus derived `single_parent_pct`/`no_vehicle_pct` (÷ B11001_001E × 100, 1 dp, not_published when missing or 0), completeness 7×29, `Acs5.CODES`; fixtures, HDR arrays and pinned checksums recomputed by running the code; DATA_SOURCES.md "Census indicator codes" table.
 State: `pnpm gate` on 3af63ae: lint/typecheck/unit (399)/secret scan/D-012 (+162/-88 = 250)/300-char all pass; 3 mutants killed. test:db runs in CI only.

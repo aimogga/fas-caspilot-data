@@ -140,3 +140,16 @@ test("placeholder subtitle left edge equals the h1 left edge", async ({ page }) 
     }
   }
 });
+
+test("methodology uses the shell Page layout for staff and board (DS-08)", async ({ page }) => {
+  for (const email of ["staff@example.test", "board@example.test"] as const) {
+    await signInAs(page, email);
+    for (const width of [375, 800, 1024, 1440] as const) {
+      await page.setViewportSize({ width, height: 812 });
+      await page.goto("/methodology");
+      const exp = SHELL[width];
+      expect(await pageBox(page), `/methodology ${email} @ ${width}`).toMatchObject({ left: exp.left, width: exp.width, scroll: width, ...(exp.container ? { container: exp.container } : {}) });
+    }
+    await page.context().clearCookies();
+  }
+});
