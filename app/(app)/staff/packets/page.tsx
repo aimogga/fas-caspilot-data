@@ -12,6 +12,10 @@ import { COUNTIES } from "@/lib/synthetic/generate";
 export const dynamic = "force-dynamic";
 const SELECT = "h-12 lg:h-11 w-full min-w-0 rounded-md border border-input bg-transparent px-3 text-base shadow-xs dark:bg-input/30";
 const opt = (value: string, label: string) => <option key={value} value={value}>{label}</option>;
+/** F-404: plain links to the export route (DOCX or CSV appendix) for the current variant and county; hidden in print with the other controls. */
+const download = (variant: string, county: string | undefined, format: "docx" | "csv", label: string) => (
+  <a data-slot="packet-download" className={buttonVariants({ variant: "outline" })} href={`/api/packets/export?variant=${variant}&county=${county ?? ""}&format=${format}`}>{label}</a>
+);
 
 /** F-403 part 1: print-ready evidence packet. The browser's Print → Save as PDF makes the PDF; staff/admin only (`/staff` prefix guard). */
 export default async function PacketsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
@@ -32,7 +36,10 @@ export default async function PacketsPage({ searchParams }: { searchParams: Prom
       <form method="get" action="/staff/packets" data-slot="packet-controls" className="flex flex-wrap items-end gap-3">
         <FormField label="Variant" htmlFor="variant"><select id="variant" name="variant" defaultValue={variant} className={SELECT}>{(Object.keys(VARIANT_LABEL) as (keyof typeof VARIANT_LABEL)[]).map((v) => opt(v, VARIANT_LABEL[v]))}</select></FormField>
         <FormField label="County" htmlFor="county"><select id="county" name="county" defaultValue={scope.county ?? ALL} className={SELECT}>{[opt(ALL, "Statewide"), ...COUNTIES.map((c) => opt(c.fips, c.name))]}</select></FormField>
-        <div className="flex flex-wrap gap-3"><button type="submit" className={buttonVariants()}>Update</button><PrintButton label="Print / Save as PDF" /></div>
+        <div className="flex flex-wrap gap-3">
+          <button type="submit" className={buttonVariants()}>Update</button><PrintButton label="Print / Save as PDF" />
+          {download(variant, scope.county, "docx", "Download Word (.docx)")}{download(variant, scope.county, "csv", "Download CSV appendix")}
+        </div>
       </form>
       {packet ? <PacketView packet={packet} /> : <ErrorState message="Couldn't build the packet" referenceId={errorId ?? randomUUID()} href="/staff/packets">Something went wrong on our side. Try again.</ErrorState>}
     </Stack>

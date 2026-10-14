@@ -1,4 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
+import { mkdir, writeFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
 
 const ART = "/opt/cursor/artifacts/f-403";
@@ -50,3 +51,33 @@ for (const [variant, query, scope] of [["grant", "variant=grant&county=49035", "
     await page.pdf({ path: `${ART}/packet-${variant}.pdf`, format: "Letter", printBackground: true });
   });
 }
+
+/** F-404: DOCX + CSV appendix downloads through the signed-in context. The files land in the artifacts folder for the manual Word / Google Docs check. */
+test("staff downloads the DOCX and CSV appendix with month-only filenames; board gets 403; bad format 400 (F-404)", async ({ page }) => {
+  await signIn(page, "staff@example.test");
+  await page.goto("/staff/packets?variant=board&county=49035");
+  const links = page.locator("[data-slot=packet-download]");
+  await expect(links).toHaveText(["Download Word (.docx)", "Download CSV appendix"]);
+  await expect(links.first()).toHaveAttribute("href", "/api/packets/export?variant=board&county=49035&format=docx");
+  await page.emulateMedia({ media: "print" });
+  await expect(links.first()).toBeHidden();
+  const docx = await page.request.get("/api/packets/export?variant=board&format=docx");
+  expect([docx.status(), docx.headers()["content-type"]]).toEqual([200, "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]);
+  expect(docx.headers()["content-disposition"]).toMatch(/^attachment; filename="fas-evidence-packet-board-statewide-\d{4}-\d{2}\.docx"$/);
+  const docxBody = await docx.body();
+  await mkdir(ART, { recursive: true });
+  expect(docxBody.subarray(0, 2).toString()).toBe("PK");
+  await writeFile(`${ART}/packet-board-statewide.docx`, docxBody);
+  const csv = await page.request.get("/api/packets/export?variant=grant&county=49035&format=csv");
+  expect([csv.status(), csv.headers()["content-type"]]).toEqual([200, "text/csv; charset=utf-8"]);
+  expect(csv.headers()["content-disposition"]).toMatch(/^attachment; filename="fas-evidence-packet-grant-salt-lake-county-\d{4}-\d{2}\.csv"$/);
+  const text = await csv.text();
+  expect(text.startsWith("﻿section,label,value,unit,source,as_of,status\r\n")).toBe(true);
+  expect(text).toMatch(/,fewer_than_11\r\n/);
+  expect(text).not.toMatch(EXACT_DATE);
+  await writeFile(`${ART}/packet-grant-salt-lake-county.csv`, text);
+  expect((await page.request.get("/api/packets/export?variant=grant&format=xlsx")).status()).toBe(400);
+  await page.context().clearCookies();
+  await signIn(page, "board@example.test");
+  expect((await page.request.get("/api/packets/export?variant=board&format=docx")).status()).toBe(403);
+});
