@@ -65,7 +65,7 @@ function PacketSectionView({ section: s }: { section: PacketSection }) {
       <h2 className="font-serif text-xl font-semibold">{s.title}</h2>
       {s.paragraphs.map((t, i) => <p key={i} className="max-w-prose leading-7">{t}</p>)}
       {s.figures.length ? <dl data-slot="packet-figures" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {s.figures.map((f, i) => <div key={i} className="rounded-md border p-3"><dt className="text-sm text-muted-foreground">{f.label}</dt><dd className="text-lg font-semibold">{f.value}</dd><dd className="text-xs text-muted-foreground">{f.sourceLabel} · as of {f.asOf}</dd></div>)}
+          {s.figures.map((f, i) => <div key={i} className="rounded-md border p-3"><dt className="text-sm text-muted-foreground">{f.label}</dt><dd className="text-lg font-semibold tabular-nums">{f.value}</dd><dd className="text-xs text-muted-foreground">{f.sourceLabel} · as of {f.asOf}</dd></div>)}
       </dl> : null}
       <p data-slot="source-footer" className="text-xs font-medium tracking-wide text-muted-foreground">{s.source}</p>
     </section>
