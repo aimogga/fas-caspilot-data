@@ -1,6 +1,10 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
+// Each map test loads the page up to 8 times (2 color schemes × 4 widths) with an axe scan and a full-page screenshot
+// per load, against the dev server with parallel workers; the default 30 s budget timed out in CI (run 38615882214).
+test.setTimeout(180_000);
+
 const ART = "/opt/cursor/artifacts/ds-06a2";
 const ART_B = "/opt/cursor/artifacts/ds-06b";
 const FAS = ["49035", "49049", "49011", "49057", "49045"];
