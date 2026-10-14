@@ -2,11 +2,13 @@ import { CensusTable, CENSUS_NOT_PUBLISHED, UTAH_COUNTY_FIPS } from '../census-t
 import { Sahie } from '../sahie';
 import type { IndicatorRow } from '../public-indicator';
 
-const CODES = ['poverty_count', 'poverty_rate'] as const;
-const UNITS = { poverty_count: 'count', poverty_rate: 'percent' } as const;
+const CODES = ['poverty_count', 'poverty_rate', 'child_poverty_count', 'child_poverty_rate'] as const;
+const UNITS = { poverty_count: 'count', poverty_rate: 'percent', child_poverty_count: 'count', child_poverty_rate: 'percent' } as const;
 const FIELDS = {
   poverty_count: ['SAEPOVALL_PT', 'SAEPOVALL_MOE'],
   poverty_rate: ['SAEPOVRTALL_PT', 'SAEPOVRTALL_MOE'],
+  child_poverty_count: ['SAEPOV0_17_PT', 'SAEPOV0_17_MOE'],
+  child_poverty_rate: ['SAEPOVRT0_17_PT', 'SAEPOVRT0_17_MOE'],
 } as const;
 
 export type SaipeParse = { rows: IndicatorRow[]; rejects: string[] };
@@ -15,9 +17,11 @@ export class Saipe {
   static readonly SOURCE_NAME = 'census-saipe';
   static readonly ENDPOINT = 'https://api.census.gov/data/timeseries/poverty/saipe';
   static readonly NOT_PUBLISHED = CENSUS_NOT_PUBLISHED;
+  static readonly CODES = CODES;
 
   static requestUrl(year: string, key: string): URL {
-    const q = `get=NAME,GEOID,SAEPOVALL_PT,SAEPOVALL_MOE,SAEPOVRTALL_PT,SAEPOVRTALL_MOE,YEAR&for=county:*&in=state:49&time=${year}&key=${encodeURIComponent(key)}`;
+    const vars = 'SAEPOVALL_PT,SAEPOVALL_MOE,SAEPOVRTALL_PT,SAEPOVRTALL_MOE,SAEPOV0_17_PT,SAEPOV0_17_MOE,SAEPOVRT0_17_PT,SAEPOVRT0_17_MOE';
+    const q = `get=NAME,GEOID,${vars},YEAR&for=county:*&in=state:49&time=${year}&key=${encodeURIComponent(key)}`;
     return new URL(`${Saipe.ENDPOINT}?${q}`);
   }
 
@@ -37,7 +41,7 @@ export class Saipe {
     if (value === undefined) return `${fips} ${code} not numeric`;
     if (moe === undefined) return `${fips} ${code} moe not numeric`;
     if (value != null && value < 0) return `${fips} ${code} < 0`;
-    if (value != null && code === 'poverty_rate' && value > 100) return `${fips} rate out of range`;
+    if (value != null && UNITS[code] === 'percent' && value > 100) return `${fips} ${code} out of range`;
     return moe != null && moe < 0 ? `${fips} ${code} moe < 0` : null;
   }
 
