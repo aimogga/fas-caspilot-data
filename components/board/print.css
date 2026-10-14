@@ -1,0 +1,23 @@
+/* F-402 board dashboard print sheet: letter-size, black on white, no shell, cards never split across pages. */
+@media print {
+  @page { margin: 16mm; }
+  [data-slot=sidebar], [data-slot=topbar], [data-slot=skip], [data-slot=actions], [data-slot=print-button], [data-slot=sheet-content], button { display: none !important; }
+  html, body, [data-slot=column], [data-slot=page], [data-slot=metric-card] [data-slot=card], [data-slot=freshness-widget] [data-slot=card] { background: #fff !important; }
+  body, body * { color: #000 !important; }
+  [data-slot=column] > [data-slot=page] { max-width: none; padding: 0; font-size: 11pt; }
+  [data-slot=page-header] { display: flex; flex-direction: column; gap: 6pt; }
+  [data-slot=page-header] h1 { font-size: 22pt; }
+  [data-slot=grid] { display: block !important; }
+  [data-slot=grid] > * { margin-bottom: 8pt; }
+  [data-slot=metric-card], [data-slot=freshness-widget], [data-slot=board-summary], [data-slot=board-note] { break-inside: avoid; page-break-inside: avoid; }
+  [data-slot=metric-card] [data-slot=card], [data-slot=freshness-widget] [data-slot=card] { border: 1px solid #000; box-shadow: none; }
+  [data-slot=suppressed] { background: none; border: 1px dashed #000; }
+  a[href] { text-decoration: none; }
+  /* F-403 evidence packet: controls hidden, each section on its own page, running footer on every printed page. */
+  [data-slot=packet-controls] { display: none !important; }
+  [data-slot=packet-section] { break-before: page; page-break-before: always; }
+  [data-slot=packet-cover] { min-height: 40vh; }
+  [data-slot=packet-footer] { position: fixed; bottom: 0; left: 0; right: 0; font-size: 9pt; text-align: center; }
+  [data-slot=packet-figures] { display: block !important; }
+  [data-slot=packet-figures] > * { break-inside: avoid; border: 1px solid #000; margin-bottom: 6pt; }
+}

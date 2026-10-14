@@ -1,0 +1,10 @@
+{
+  "eligible": {"score": 100, "points": {"mission_fit": 30, "eligibility_certainty": 20, "evidence_readiness": 15, "award_size_fit": 15, "geography": 10, "effort_vs_time": 10}},
+  "state-only": {"score": 0, "points": {"mission_fit": 30, "eligibility_certainty": 18, "evidence_readiness": 15, "award_size_fit": 15, "geography": 10, "effort_vs_time": 10, "blocker_cap": 0}},
+  "national-cost-share": {"score": 83, "points": {"mission_fit": 20, "eligibility_certainty": 18, "evidence_readiness": 15, "award_size_fit": 15, "geography": 5, "effort_vs_time": 10}},
+  "closed-last-week": {"score": 0, "points": {"mission_fit": 30, "eligibility_certainty": 18, "evidence_readiness": 15, "award_size_fit": 15, "geography": 10, "effort_vs_time": 0, "blocker_cap": 0}},
+  "closes-soon": {"score": 80, "points": {"mission_fit": 20, "eligibility_certainty": 18, "evidence_readiness": 15, "award_size_fit": 15, "geography": 10, "effort_vs_time": 2}},
+  "floor-too-high": {"score": 0, "points": {"mission_fit": 10, "eligibility_certainty": 16, "evidence_readiness": 15, "award_size_fit": 0, "geography": 0, "effort_vs_time": 10, "blocker_cap": 0}},
+  "missing-eligibility": {"score": 16, "points": {"mission_fit": 0, "eligibility_certainty": 8, "evidence_readiness": 0, "award_size_fit": 8, "geography": 0, "effort_vs_time": 0}},
+  "loi-required": {"score": 88, "points": {"mission_fit": 20, "eligibility_certainty": 18, "evidence_readiness": 15, "award_size_fit": 15, "geography": 10, "effort_vs_time": 10}}
+}
