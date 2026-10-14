@@ -16,10 +16,10 @@ async function uploadToPreview(page: Page, file: string) {
   await page.goto("/staff/intake");
   await page.setInputFiles("#intake-file", `${FIX}/${file}`);
   await expect(page.getByText(/data rows found/)).toBeVisible();
-  await page.getByRole("button", { name: "Next" }).click();
+  await page.getByRole("button", { name: "Next", exact: true }).click();
   await expect(page.getByRole("heading", { level: 2, name: "Step 2 of 3: Map columns" })).toBeVisible();
   await expect(page.locator("#map-county_fips")).toHaveValue("county_fips");
-  await page.getByRole("button", { name: "Next" }).click();
+  await page.getByRole("button", { name: "Next", exact: true }).click();
   await expect(page.getByRole("heading", { level: 2, name: "Step 3 of 3: Preview" })).toBeVisible();
 }
 
@@ -55,7 +55,7 @@ test("a CSV with bad county, date order and enum shows errors and offers the rep
   expect(dl.suggestedFilename()).toBe("fas-case-errors.csv");
   await page.getByRole("button", { name: "Back" }).click();
   await page.selectOption("#map-county_fips", "");
-  await expect(page.getByRole("button", { name: "Next" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Next", exact: true })).toBeDisabled();
   await expect(page.getByRole("alert")).toContainText("County code (Utah FIPS)");
 });
 
