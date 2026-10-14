@@ -43,7 +43,8 @@ export function needProfile(x: PacketInput): PacketSection {
   const fas = `FAS records · as of ${x.asOf}`, rows = x.need?.rows ?? [], src = x.need?.footer ?? NOT_AVAILABLE, county = x.variant === 'grant' ? countyName(x.scope.county) : null;
   const row = county ? rows.find((r) => r.name === county) : undefined;
   if (county && row) {
-    const figures = (x.need?.columns ?? []).map((c) => { const [s, a] = splitNote(c.note); return fig(c.label, row.cells[c.code] ?? NOT_AVAILABLE, a, s); });
+    // DS-06b keeps the as-of month in `sources` (the column note is `<source> <vintage>`); older notes with ` · as of ` still parse.
+    const figures = (x.need?.columns ?? []).map((c) => { const [s, a] = splitNote(c.note); return fig(c.label, row.cells[c.code] ?? NOT_AVAILABLE, x.need?.sources?.find((q) => q.code === c.code)?.asOf ?? a, s); });
     const rank = row.status === 'Ranked' ? `ranks ${row.rank} Utah counties on the FAS need score (version ${x.need?.version}, score ${row.score})` : `has no published need score (${row.status})`;
     return { id: 'need-profile', title: SECTION_TITLES['need-profile'], paragraphs: [`${county} ${rank}. Public indicators for the county are listed below with their source and vintage.`], figures, source: src };
   }

@@ -4,6 +4,7 @@ import { useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BookOpen, House, LayoutDashboard, Menu, Shield, type LucideIcon } from "lucide-react";
+import { AggregateFreshnessChip } from "@/components/freshness/AggregateFreshnessChip";
 import { Page } from "@/components/layout";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ORGANIZATION_NAME, PRODUCT_NAME } from "@/lib/branding";
@@ -92,7 +93,7 @@ export function ShellFrame({ role, roleLabel, name, showSynthetic, children }: {
           </div>
           <div data-slot="topbar-sub">
             <nav data-slot="crumbs" aria-label="Breadcrumb"><ol><li aria-current="page">{crumbFor(role, pathname, PRODUCT_NAME)}</li></ol></nav>
-            <div data-slot="freshness-slot" hidden />
+            <AggregateFreshnessChip role={role} />
             {showSynthetic ? <span data-slot="env-badge">Synthetic data</span> : null}
           </div>
         </header>
