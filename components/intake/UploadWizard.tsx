@@ -10,6 +10,7 @@ import { parseCsv, toErrorReportCsv } from "@/lib/intake/csv";
 import { applyMapping, autoMap, fileProblem, missingRequired, PREVIEW_ROWS, summarize, type Mapping } from "@/lib/intake/mapping";
 import { INTAKE_ENTITIES, INTAKE_SCHEMA, type IntakeEntity } from "@/lib/intake/schema";
 import { validateRows } from "@/lib/intake/validate";
+import { useHydrated } from "@/lib/use-hydrated";
 
 type Step = 1 | 2 | 3; type Parsed = { name: string; headers: string[]; rows: string[][] };
 type Saved = { batchId: string; rows: number };
@@ -38,6 +39,7 @@ export function UploadWizard({ countyFips }: { countyFips: string[] }) {
   const router = useRouter();
   const fields = INTAKE_SCHEMA[entity].fields;
   const missing = missingRequired(mapping, entity);
+  const hydrated = useHydrated();
 
   const preview = useMemo(() => {
     if (step !== 3 || !parsed) return null;
@@ -84,7 +86,7 @@ export function UploadWizard({ countyFips }: { countyFips: string[] }) {
 
   return (
     <Stack gap={6}>
-      <ol data-slot="wizard-steps" className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+      <ol data-slot="wizard-steps" data-hydrated={hydrated || undefined} className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
         {STEPS.map((label, i) => (
           <li key={label} aria-current={step === i + 1 ? "step" : undefined} className={step === i + 1 ? "font-semibold" : "text-muted-foreground"}>
             {i + 1} {label}{step === i + 1 ? <span className="sr-only"> (current step)</span> : null}
