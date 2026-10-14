@@ -113,7 +113,8 @@ test("public data freshness widget lists the seeded sources with text statuses (
   const rows = widget.locator("li");
   expect(await rows.count()).toBeGreaterThan(0);
   for (const row of await rows.all()) await expect(row).toHaveText(/^\W*(Current|Stale|Failed|Not published)\s/);
-  await expect(rows.filter({ hasText: "census-sahie" })).toHaveText(/^\W*Not published\s*census-sahie\s*Latest 2023$/);
-  await expect(widget.locator("[data-slot=source-footer]")).toHaveText("Source registry · as of Not available yet");
+  // census-sahie is "Not published" only until an ingest succeeds; CI's test:db load records one, so accept either state.
+  await expect(rows.filter({ hasText: "census-sahie" })).toHaveText(/^\W*(Current|Stale|Not published)\s*census-sahie\s*Latest 2023$/);
+  await expect(widget.locator("[data-slot=source-footer]")).toHaveText(/^Source registry · as of (Not available yet|\w{3} \d{4})$/);
   await expect(page.getByRole("link", { name: "See all sources" })).toHaveCount(0);
 });
