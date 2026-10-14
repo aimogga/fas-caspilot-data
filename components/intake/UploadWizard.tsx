@@ -1,9 +1,11 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useMemo, useState, type ChangeEvent } from "react";
 import { FormField, ResponsiveTable, Stack } from "@/components/layout";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { postJson, savedText } from "@/lib/intake/commit";
 import { parseCsv, toErrorReportCsv } from "@/lib/intake/csv";
 import { applyMapping, autoMap, fileProblem, missingRequired, PREVIEW_ROWS, summarize, type Mapping } from "@/lib/intake/mapping";
 import { INTAKE_ENTITIES, INTAKE_SCHEMA, type IntakeEntity } from "@/lib/intake/schema";
@@ -11,6 +13,7 @@ import { validateRows } from "@/lib/intake/validate";
 import { useHydrated } from "@/lib/use-hydrated";
 
 type Step = 1 | 2 | 3; type Parsed = { name: string; headers: string[]; rows: string[][] };
+type Saved = { batchId: string; rows: number };
 const STEPS = ["Choose file", "Map columns", "Preview"] as const;
 const NOT_IN_FILE = "";
 const NUMERIC = new Set(["integer", "money"]);
@@ -30,6 +33,10 @@ export function UploadWizard({ countyFips }: { countyFips: string[] }) {
   const [parsed, setParsed] = useState<Parsed | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [mapping, setMapping] = useState<Mapping>({});
+  const [saved, setSaved] = useState<Saved | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const router = useRouter();
   const fields = INTAKE_SCHEMA[entity].fields;
   const missing = missingRequired(mapping, entity);
   const hydrated = useHydrated();
@@ -53,6 +60,29 @@ export function UploadWizard({ countyFips }: { countyFips: string[] }) {
     setParsed({ name: file.name, headers: hs, rows });
     setMapping(autoMap(hs, entity));
   }
+
+  /** Both writes go through the API routes; the server re-validates and the database stamps org and batch ids. */
+  async function post(path: string, body: unknown) {
+    setBusy(true); setSaveError(null);
+    const { data, error } = await postJson(path, body);
+    setBusy(false); setSaveError(error); router.refresh(); return data;
+  }
+  async function save() {
+    const data = parsed && (await post("/api/intake/commit", { entity, mapping, headers: parsed.headers, rows: parsed.rows }));
+    if (data) setSaved({ batchId: String(data.batchId), rows: Number(data.rows) });
+  }
+  const reset = () => { setStep(1); setParsed(null); setFileError(null); setMapping({}); setSaved(null); setSaveError(null); };
+  /** After a rollback the wizard restarts; the batch shows as Rolled back in the list below. */
+  const rollBack = async () => saved && window.confirm("Roll back this upload? Its rows will be removed.") && (await post("/api/intake/rollback", { batchId: saved.batchId })) && reset();
+
+  if (saved) return (
+    <Stack gap={4}>
+      <h2 className="font-serif text-xl font-semibold">Upload saved</h2>
+      <p role="status" className="text-base tabular-nums">{savedText(saved.rows, saved.batchId)}</p>
+      {saveError ? <p role="alert" className="text-sm text-destructive">{saveError}</p> : null}
+      <div className="flex flex-wrap gap-3"><Button type="button" variant="outline" disabled={busy} onClick={rollBack}>Roll back this upload</Button><Button type="button" onClick={reset}>Start another upload</Button></div>
+    </Stack>
+  );
 
   return (
     <Stack gap={6}>
@@ -136,9 +166,10 @@ export function UploadWizard({ countyFips }: { countyFips: string[] }) {
             {preview.result.errors.length ? (
               <Button type="button" variant="outline" onClick={() => download(`fas-${entity}-errors.csv`, toErrorReportCsv(preview.result.errors))}>Download error report</Button>
             ) : null}
-            <Button type="button" disabled aria-describedby="save-help">Save</Button>
+            <Button type="button" disabled={preview.result.errors.length > 0 || busy} loading={busy} aria-describedby="save-help" onClick={save}>Save</Button>
           </div>
-          <p id="save-help" className="text-sm text-muted-foreground">Saving arrives in the next release. Nothing from this file has been stored yet.</p>
+          {saveError ? <p role="alert" className="text-sm text-destructive">{saveError}</p> : null}
+          <p id="save-help" className="text-sm text-muted-foreground">{preview.result.errors.length ? "Fix every error before saving. Nothing from this file has been stored yet." : `Save stores all ${preview.result.ok.length} rows as one batch you can roll back later.`}</p>
         </Stack>
       ) : null}
     </Stack>

@@ -3,7 +3,7 @@ import { INTAKE_SCHEMA, type Field, type IntakeEntity } from './schema';
 export type Cell = string | number | boolean | null;
 export type ValidRow = { row: number; values: Record<string, Cell> };
 export type RowError = { row: number; column: string; code: string; message: string };
-export type ValidateCtx = { countyFips: Set<string>; knownIds?: Set<string> };
+export type ValidateCtx = { countyFips: Set<string>; knownIds?: Set<string> | Record<string, Set<string>> };
 type Coerced = { value: Cell } | { code: string; message: string };
 
 const MONEY = /^\$?(\d{1,3}(,\d{3})+|\d+)(\.\d{1,2})?$/;
@@ -57,8 +57,8 @@ export function coerce(field: Field, raw: string, ctx: ValidateCtx): Coerced {
     case 'uuid':
     case 'uuid_ref': {
       if (!UUID.test(raw)) return bad('type', `${field.label} must be a UUID, got ${q}`);
-      const v = raw.toLowerCase();
-      if (field.type === 'uuid_ref' && ctx.knownIds && !ctx.knownIds.has(v)) return bad('reference', `${field.label} ${v} does not match any existing record`);
+      const v = raw.toLowerCase(), known = ctx.knownIds instanceof Set ? ctx.knownIds : ctx.knownIds?.[field.key];
+      if (field.type === 'uuid_ref' && known && !known.has(v)) return bad('reference', `${field.label} ${v} does not match any existing record`);
       return { value: v };
     }
   }
