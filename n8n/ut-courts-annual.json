@@ -1,0 +1,11 @@
+{
+  "name": "ut-courts-annual",
+  "active": false,
+  "nodes": [
+    {"parameters":{"rule":{"interval":[{"field":"cronExpression","expression":"0 15 7 9 *"}]}},"id":"ut-courts-schedule","name":"Schedule UT Courts","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1.2,"position":[0,0]},
+    {"parameters":{"method":"POST","url":"={{$env.FAS_INGEST_UT_COURTS_URL}}","sendHeaders":true,"headerParameters":{"parameters":[{"name":"Authorization","value":"=Bearer {{$env.INGEST_TOKEN}}"}]}},
+     "id":"ut-courts-http","name":"POST ingest ut-courts","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[240,0]}
+  ],
+  "connections": {"Schedule UT Courts":{"main":[[{"node":"POST ingest ut-courts","type":"main","index":0}]]}},
+  "settings":{"executionOrder":"v1","timezone":"UTC"}
+}
