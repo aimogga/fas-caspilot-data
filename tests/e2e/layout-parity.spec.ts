@@ -1,6 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 
 /** Signed-out screens in the Page container (h1 left, content width, container width). */
+// Eight shell routes at several widths, each compiled on first hit by the dev server: the 30 s default timed out on CI.
+test.setTimeout(120_000);
+
 const SIGNED_OUT: Record<number, { left: number; width: number; container?: number }> = {
   375: { left: 16, width: 343 },
   800: { left: 24, width: 752 },
