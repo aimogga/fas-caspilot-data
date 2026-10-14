@@ -543,6 +543,12 @@ Did: table `fas_service_county` (RLS enabled + forced, SELECT for the 3 roles, F
 State: `pnpm gate` on dc89514: lint/typecheck/unit (401) /secret scan/D-012 (+237/-27 = 264)/300-char all pass; `pnpm build` green; mutation `−`→`-` killed. test:db and e2e run in CI only (no local runtime).
 Left: QA PASS + DESIGN APPROVED at head; real FAS service-county list from George (seed is synthetic). Next: P3a DS-06b map after #147 merges.
 Decisions: none new (D-017, D-022, D-029 applied).
+
+## 2026-10-13 19:42 (UTC) — Cloud Agent — PR #150 / need-map Methodology link (DS-08 follow-up)
+Did: `/need-map` PageHeader actions gain an outline-button link `Methodology` → `/methodology` beside the FAS filter (4 lines). Base is #147's branch; merge after #147 and #149.
+State: gate (lint/typecheck/unit/secret scan) green. The map.spec link assertion lands with the map packet (that file is in flight).
+Left: QA; retarget to main after #147 merges.
+Decisions: none.
 ## 2026-10-13 18:18 (UTC) — Cloud Agent — PR #145 / harness P0: pnpm gate + push hook
 Did: George's harness prompt (2026-10-13) set up: plan.md and checks.md (session scratchpad), one worktree + branch per packet (D-029), and the deterministic gate. `scripts/pr-gate.mjs` (`pnpm gate`): lint, typecheck, unit, secret scan over tracked + untracked files, D-012 count vs origin/main with exclusions named (`harness/generated-files.json`), 300-char line check, progress.md append-only check; one `step | requirement | verdict | evidence` row per rule. `scripts/pr-gate-hook.mjs` + `.claude/settings.json` run it before `git push` in Claude Code sessions. DECISIONS D-028..D-031.
 State: gate on this branch: all rows pass, +235/-0 (markdown excluded); 8/8 new unit tests; CLI test pinned to `--base HEAD` so it runs in CI checkouts. Hook verified by hand (JSON valid, non-push/non-JSON exit 0); the block path only fires on a failing gate.
