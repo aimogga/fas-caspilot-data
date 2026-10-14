@@ -24,6 +24,7 @@ describe('role-guards', () => {
     expect(getAllowedRoles('/staff')).toEqual(['admin', 'staff']);
     expect(getAllowedRoles('/admin')).toEqual(['admin']);
     expect(getAllowedRoles('/staff/reports')).toEqual(['admin', 'staff']);
+    expect(getAllowedRoles('/staff/intake')).toEqual(['admin', 'staff']);
     expect(getAllowedRoles('/administrator')).toEqual([]);
   });
   it('applies the role map to nested prefix paths', () => {
@@ -38,6 +39,14 @@ describe('role-guards', () => {
     expect(isRouteAllowed('/need-map', 'staff')).toBe(true);
     expect(isRouteAllowed('/need-map', null)).toBe(false);
     expect(matchGuardedPrefix('/need-map')).toBe('/need-map');
+    expect([...(['board_viewer', 'staff', 'admin'] as const), null].map((r) => isRouteAllowed('/methodology', r))).toEqual([true, true, true, false]);
+    expect(matchGuardedPrefix('/methodology')).toBe('/methodology');
+    expect([...(['board_viewer', 'staff', 'admin'] as const), null].map((r) => isRouteAllowed('/data-freshness', r))).toEqual([false, true, true, false]);
+    expect(isRouteAllowed('/Data-Freshness/x', 'board_viewer')).toBe(false);
+    expect(getAllowedRoles('/data-freshness')).toEqual(['admin', 'staff']);
+    expect(matchGuardedPrefix('/data-freshness')).toBe('/data-freshness');
+    expect([...(['board_viewer', 'staff', 'admin'] as const), null].map((r) => isRouteAllowed('/api/packets/export', r))).toEqual([false, true, true, false]);
+    expect(matchGuardedPrefix('/api/packets/export')).toBe('/api/packets');
   });
   it('allowlists public routes only', () => {
     expect(isPublicRoute('/login')).toBe(true);
@@ -49,6 +58,11 @@ describe('role-guards', () => {
     expect(isPublicRoute('/api/ingest/saipe')).toBe(true);
     expect(isPublicRoute('/api/ingest/acs')).toBe(true);
     expect(isPublicRoute('/api/grants/recompute')).toBe(true);
+    expect(isPublicRoute('/api/ingest/ut-courts')).toBe(true);
+    expect(isPublicRoute('/api/ingest/hpsa')).toBe(true);
+    expect(isPublicRoute('/api/ingest/vetpop')).toBe(true);
+    expect(isPublicRoute('/api/ingest/places')).toBe(true);
+    expect(isPublicRoute('/api/ingest/need-score')).toBe(true);
     expect(isPublicRoute('/ui')).toBe(true);
     expect(isPublicRoute('/health')).toBe(true);
     expect(isPublicRoute('/dev-error')).toBe(true);
@@ -64,6 +78,11 @@ describe('role-guards', () => {
     expect(isPublicRoute('/api/ingest/acs/')).toBe(false);
     expect(isPublicRoute('/api/grants/recompute/')).toBe(false);
     expect(isPublicRoute('/api/grants')).toBe(false);
+    expect(isPublicRoute('/api/ingest/ut-courts/')).toBe(false);
+    expect(isPublicRoute('/api/ingest/hpsa/')).toBe(false);
+    expect(isPublicRoute('/api/ingest/vetpop/')).toBe(false);
+    expect(isPublicRoute('/api/ingest/places/')).toBe(false);
+    expect(isPublicRoute('/api/ingest/need-score/')).toBe(false);
     expect(isPublicRoute('/api/ingest')).toBe(false);
     expect(isPublicRoute('/healthz')).toBe(false);
     expect(isPublicRoute('/403/x')).toBe(false);

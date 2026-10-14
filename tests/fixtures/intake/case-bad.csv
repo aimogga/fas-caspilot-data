@@ -1,0 +1,5 @@
+id,referral_source,court_involved,court_order_date,referral_date,county_fips,household_size,income_band,prior_services
+,court,yes,2024-02-01,2024-02-15,99999,4,b,CASE-0001
+,self,no,2024-04-01,2024-03-02,49035,2,a,CASE-0002
+,walk-in,yes,,2024-03-09,49011,0,c,CASE-0003
+,court,maybe,2024-01-01,2024-01-20,49049,3,b,CASE-0004

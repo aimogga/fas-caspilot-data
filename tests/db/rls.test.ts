@@ -32,14 +32,14 @@ const ADMIN = '11111111-1111-1111-1111-111111111111';
 const STAFF = '22222222-2222-2222-2222-222222222222';
 const ACTORS = ['anon', 'admin', 'staff', 'board_viewer', 'other-org', 'other-admin', 'no-role', 'org-norole'] as const;
 const OPS = ['select', 'insert', 'update', 'delete'] as const;
-const PUBLIC = ['geo_county', 'source_registry', 'ingest_run', 'public_indicator', 'need_score_config', 'need_score', 'match_config'] as const;
+const PUBLIC = ['geo_county', 'source_registry', 'ingest_run', 'public_indicator', 'need_score_config', 'need_score', 'fas_service_county', 'match_config'] as const;
 const FAS = ['case', 'application', 'authorization', 'provider', 'delivery_episode', 'outcome_measure', 'upload_batch', 'aggregate_submission'] as const;
 const GLOB = ['opportunity', 'opportunity_criteria', 'award_history'] as const;
 const GRW = ['match_result', 'strategy_draft', 'pipeline_status'] as const;
 const JOB = ['export_job', 'audit_log'] as const;
 const ORG_T = [...FAS, ...GRW, ...JOB] as const;
 const TABLES = [...PUBLIC, 'org', ...FAS, ...GLOB, ...GRW, ...JOB] as const;
-const ARCH = ['aggregate_submission','application','audit_log','authorization','award_history','case','delivery_episode','export_job','geo_county','ingest_run','match_config','match_result',
+const ARCH = ['aggregate_submission','application','audit_log','authorization','award_history','case','delivery_episode','export_job','fas_service_county','geo_county','ingest_run','match_config','match_result',
   'need_score','need_score_config','opportunity','opportunity_criteria','org','outcome_measure','pipeline_status','provider','public_indicator','source_registry','strategy_draft','upload_batch'] as const;
 const SIGNED = new Set(['admin', 'staff', 'board_viewer', 'other-org', 'other-admin']);
 type Actor = (typeof ACTORS)[number];
@@ -48,7 +48,7 @@ type Table = (typeof TABLES)[number];
 type Rec = Record<string, unknown>;
 const TAG: Record<Table, string> = {
   geo_county: 'fips', source_registry: 'name', ingest_run: 'checksum', public_indicator: 'indicator_code',
-  need_score_config: 'version', need_score: 'geo_fips', match_config: 'id', org: 'uei', case: 'referral_source',
+  need_score_config: 'version', need_score: 'geo_fips', fas_service_county: 'fips', match_config: 'id', org: 'uei', case: 'referral_source',
   application: 'decision', authorization: 'service_type', provider: 'npi', delivery_episode: 'discharge_status',
   outcome_measure: 'measure_code', upload_batch: 'file_path', aggregate_submission: 'period',
   opportunity: 'external_id', opportunity_criteria: 'criterion', award_history: 'description',
@@ -74,6 +74,7 @@ const M: Record<Table, { s: Rec; r: (t: string) => Rec; p: Rec; u: Rec }> = {
   public_indicator: { s: { vintage: '2023' }, r: (t) => ({ source_id: SID, indicator_code: t, geo_fips: '49035', period: '2023', value: 1, unit: 'n', vintage: t, ingest_run_id: RID }), p: { moe: 1 }, u: { moe: null } },
   need_score_config: { s: { version: 'v1' }, r: (t) => ({ version: t, weights: {} }), p: { weights: { x: 1 } }, u: { weights: { uninsured: 1 } } },
   need_score: { s: { version: 'v1', geo_fips: '49035' }, r: () => ({ version: 'v1', geo_fips: '49049', score: 1, components: {} }), p: { score: 9 }, u: { score: 0 } },
+  fas_service_county: { s: { fips: '49035' }, r: () => ({ fips: '49001' }), p: { added_at: '2001-01-01' }, u: { added_at: '2026-10-13' } },
   match_config: { s: { id: 'v0-draft' }, r: (t) => ({ id: t, weights: {} }), p: { params: { x: 1 } }, u: { params: { prep_days: 30, themes_for_full_credit: 3, evidence_available: [] } } },
   org: { s: { id: ORG1 }, r: (t) => ({ name: t, ein: '00-0000099', uei: t, state: 'UT', settings: {} }), p: { uei: 'X' }, u: { uei: 'UEIFAS0001' } },
   case: { s: { id: C1 }, r: (t) => ({ org_id: ORG1, referral_source: t, court_involved: false, county_fips: '49035', household_size: 2, income_band: 'a', prior_services: [], upload_batch_id: UB1 }), p: { income_band: 'x' }, u: { income_band: 'a' } },
@@ -117,6 +118,7 @@ function sql(q: string): string {
 
 function tagq(table: Table, t: string, row?: Rec): Rec {
   if (table === 'need_score') return { version: 'v1', geo_fips: '49049' };
+  if (table === 'fas_service_county') return { fips: '49001' };
   if (table === 'strategy_draft' && row?.id) return { id: row.id };
   if (table === 'strategy_draft') return { inputs_snapshot: { t } };
   return { [TAG[table]]: t };
@@ -354,9 +356,9 @@ describe('rls', () => {
 
   it('guard flags a public view without security_invoker', async () => {
     try {
-      sql('CREATE VIEW public._rls_guard_view AS SELECT 1 AS x; CREATE VIEW public._rls_guard_view_off WITH (security_invoker=false) AS SELECT 1 AS x; ' +
-        'CREATE VIEW public._rls_guard_view_off2 WITH (security_invoker=off) AS SELECT 1 AS x; CREATE VIEW public._rls_guard_view_0 WITH (security_invoker=0) AS SELECT 1 AS x; ' +
-        'CREATE VIEW public._rls_guard_view_no WITH (security_invoker=no) AS SELECT 1 AS x; CREATE VIEW public._rls_ok_view WITH (security_invoker=true) AS SELECT 1 AS x');
+      sql(`CREATE VIEW public._rls_guard_view AS SELECT 1 AS x; CREATE VIEW public._rls_guard_view_off WITH (security_invoker=false) AS SELECT 1 AS x;
+        CREATE VIEW public._rls_guard_view_off2 WITH (security_invoker=off) AS SELECT 1 AS x; CREATE VIEW public._rls_guard_view_0 WITH (security_invoker=0) AS SELECT 1 AS x;
+        CREATE VIEW public._rls_guard_view_no WITH (security_invoker=no) AS SELECT 1 AS x; CREATE VIEW public._rls_ok_view WITH (security_invoker=true) AS SELECT 1 AS x`);
       const { data, error } = await clients.admin!.rpc('rls_guard_violations');
       expect(error).toBeNull();
       const names = (data ?? []).map((r: { relname: string }) => r.relname);

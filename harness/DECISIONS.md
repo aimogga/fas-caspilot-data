@@ -132,3 +132,15 @@ Note: this supersedes the "weights stay open" part of D-022; the bins placeholde
 
 ### D-027 Cloudflare fix done by George (ops, #122)
 Decision: **George applies the Cloudflare fix himself; the team sends him the steps.** George's words: "Approve 4: send me the Cloudflare fix steps and I'll do it" Decided by George Mogga; relayed by George Chief of staff at 11:03 AM MT. · Date: 2026-10-13
+
+### D-028 Harness gate script and hook (process)
+Decision: **Deterministic PR rules run as code, not instructions.** `pnpm gate` (`scripts/pr-gate.mjs`) runs lint, typecheck, unit tests, the secret scan over tracked and untracked files, the D-012 count (added + deleted vs `origin/main`; lockfiles, markdown, binaries and the files in `harness/generated-files.json` are excluded and named), the 300-char line check on changed code files, and the progress.md append-only check, and prints one `step | requirement | verdict | evidence` row per rule. `scripts/pr-gate-hook.mjs` with `.claude/settings.json` runs the gate before any `git push` from a Claude Code session and blocks the push when a row fails. Harness scripts and hooks: `scripts/nightly-audit.mjs` (nightly audit and the CI secret-scan), `scripts/audit-staleness.mjs`, `scripts/test-db.mjs`, `scripts/pr-gate.mjs`, `scripts/pr-gate-hook.mjs`, `.claude/settings.json`. From George's harness prompt (2026-10-13, layer 3); George approved the plan in chat. · Date: 2026-10-13
+
+### D-029 Branch per packet, worktrees, no shared files (process)
+Decision: **One branch and one PR per packet, built in its own git worktree from `origin/main`.** `git fetch && git merge origin/main` at the start of every step; never rebase or force-push; two packets never edit the same file in the same window. `harness/progress.md` and `docs/PROGRESS_CHECKLIST.md` are the only shared files: each packet appends its entry once, last, right before its PR opens; a merge conflict there is resolved append-only (both entries kept, the branch's own last). George approved one branch per packet on 2026-10-13 (supersedes the single-branch rule for harness runs). · Date: 2026-10-13
+
+### D-030 Test fixture secrets (process)
+Decision: **Any secret-shaped fixture value in a test is the literal `not-a-secret`** (on the scanner's `PLACEHOLDERS` list). The scanner reads git-tracked files only, so a local scan must include untracked files; `pnpm gate` does. Lesson: #137 and #141 each lost a CI round to a made-up token. · Date: 2026-10-13
+
+### D-031 QA gates to pre-check (process)
+Decision: **Before a PR opens:** no changed code line over 300 chars; the PR body has `Refs F-xxx` (or `Closes #n`) and names every excluded generated file; the branch is 0 behind `main`. `pnpm gate` enforces the first and prints the others as manual rows. Source: QA verdicts on #137 and #141. · Date: 2026-10-13
