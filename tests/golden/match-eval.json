@@ -1,0 +1,16 @@
+{
+  "_about": "F-509 golden: v0-draft on tests/eval/grant-match/labels.json. Regenerate with: pnpm eval:grants --write-golden (see scripts/grant-match-eval.mjs).",
+  "config_id":"v0-draft","n":36,"threshold":60,"precision":0.6087,"recall":0.9333,"f1":0.7368,"eligibilityAccuracy":1,"confusion":{"tp":14,"fp":9,"fn":1,"tn":12},
+  "misses": [
+    {"id":"g-foundation-sparse","label":"good","score":55,"eligible":"unknown","why":"Sparse foundation entry a writer would still pursue (Utah, therapy); most checks cannot run"},
+    {"id":"p-national-heavy-match","label":"poor","score":83,"eligible":true,"why":"Hard negative: on theme and open, but a 50% match is out of reach for FAS"},
+    {"id":"p-inpatient-psychiatric","label":"poor","score":75,"eligible":true,"why":"Hard negative: mentions mental health but funds inpatient hospital beds FAS does not run"},
+    {"id":"p-tiny-award","label":"poor","score":91,"eligible":true,"why":"Hard negative: Utah and on theme, but a $5,000 ceiling is not worth a federal application"},
+    {"id":"p-floor-too-high","label":"poor","score":68,"eligible":true,"why":"Hard negative: $1.5M floor is 2.5x FAS's budget"},
+    {"id":"p-utah-wildlife","label":"poor","score":68,"eligible":true,"why":"Hard negative: Utah nonprofits eligible, but wildlife habitat is off mission"},
+    {"id":"p-national-housing","label":"poor","score":63,"eligible":true,"why":"Off mission: housing construction"},
+    {"id":"p-research-trial","label":"poor","score":70,"eligible":true,"why":"Hard negative: therapy outcomes research trial; FAS is a service provider, not a research org"},
+    {"id":"p-closes-tomorrow","label":"poor","score":73,"eligible":true,"why":"Hard negative: on theme and national, but one day to close"},
+    {"id":"p-hospital-equipment","label":"poor","score":63,"eligible":true,"why":"Off mission: imaging equipment for hospitals"}
+  ]
+}
