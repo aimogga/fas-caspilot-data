@@ -18,8 +18,9 @@ export function FreshnessWidget({ view }: { view: FreshnessView }) {
           <ul className="divide-y">
             {view.rows.map((r) => (
               <li key={r.name} data-status={r.status} className="flex min-h-11 flex-wrap items-center gap-2 py-2 text-sm lg:min-h-0">
-                <StatusChip status={r.status} />
+                <StatusChip status={r.status} />{" "}
                 <span>{r.name}{r.status === "failed" ? <span className="text-muted-foreground"> · Last run failed</span> : null}</span>
+                {" "}
                 <span className="ml-auto text-right tabular-nums text-muted-foreground">Latest {r.latestVintage}</span>
               </li>
             ))}
