@@ -60,6 +60,25 @@ for (const email of ["staff@example.test", "admin@example.test"] as const) {
   });
 }
 
+test("M1 headline card is wired to the F-304 view: title, source footer, trend table toggle (DS-07b, F-401)", async ({ page }) => {
+  await signIn(page, "staff@example.test");
+  expect((await page.goto("/dashboard"))?.status()).toBe(200);
+  const card = page.locator("[data-slot=metric-card]").filter({ has: page.locator("#card-m1-title") });
+  await expect(card.getByRole("heading", { level: 2 })).toHaveText("Days from court order to first session");
+  await expect(card.locator("[data-slot=source-footer]")).toHaveText(new RegExp(`^FAS records · ${LABEL.replace(/[()]/g, "\\$&")} · n = \\d+ · as of `));
+  await expect(card).toHaveText(/\d+ days|n<11|No closed cases this quarter/);
+  const toggle = card.getByRole("button", { name: "View as table" });
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await expect(card.locator("table th[scope=col]")).toHaveText(["Quarter", "Median days"]);
+  expect([await card.locator("table tbody tr").count(), await axe(page)]).toEqual([4, []]);
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/dashboard?county=49035");
+  await expect(card).toContainText("No cases match these filters");
+  for (const name of ["View as table", "Reset filters"]) expect((await card.getByText(name).boundingBox())!.height, name).toBeGreaterThanOrEqual(44);
+});
+
 test("public data freshness widget lists the seeded sources with text statuses (DS-07a follow-up, F-401)", async ({ page }) => {
   await signIn(page, "staff@example.test");
   expect((await page.goto("/dashboard"))?.status()).toBe(200);
