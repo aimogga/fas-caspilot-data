@@ -1,0 +1,12 @@
+HPSA Name,HPSA ID,HPSA Discipline Class,HPSA Status,HPSA Score,HPSA Designation Population,Withdrawn Date,Primary State Abbreviation,Common State County FIPS Code,County Name
+Beaver County MH,7491234001,Mental Health,Designated,18,6000,,UT,49001,Beaver
+"Tri-County MH, Southeast",7491234002,Mental Health,Designated,14,20000,,UT,49007,Carbon
+"Tri-County MH, Southeast",7491234002,Mental Health,Designated,14,20000,,UT,49015,Emery
+"Tri-County MH, Southeast",7491234002,Mental Health,Designated,14,20000,,UT,49019,Grand
+Carbon Low Income MH,7491234003,Mental Health,Designated,9,5000,,UT,49007,Carbon
+Salt Lake Low Income MH,7491234004,Mental Health,Designated,20,150000,,UT,49035,Salt Lake
+Salt Lake West MH,7491234005,Mental Health,Withdrawn,12,30000,2024-03-01,UT,49035,Salt Lake
+Weber Low Income MH,7491234006,Mental Health,Proposed For Withdrawal,7,12000,,UT,49057,Weber
+Utah County Low Income MH,7491234007,Mental Health,Designated,16,90000,,UT,49049,Utah
+Ada County MH,1691234001,Mental Health,Designated,15,50000,,ID,16001,Ada
+Daggett County PC,7491234010,Primary Care,Designated,13,1000,,UT,49009,Daggett

@@ -129,6 +129,7 @@ const PUBLIC_PATHS = new Set<string>([
   '/api/ingest/need-score',
   '/api/ingest/places',
   '/api/ingest/vetpop',
+  '/api/ingest/hpsa',
   '/ui',
   '/health',
   '/dev-error',
