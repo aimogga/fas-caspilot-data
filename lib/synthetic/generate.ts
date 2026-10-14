@@ -11,7 +11,8 @@ const WEIGHTS = [48, 28, 14, 10, 8, 5, 1, 1, 1, 1, 1, 3];
 const WSUM = WEIGHTS.reduce((a, b) => a + b, 0);
 
 export type County = { fips: string; name: string; state: 'UT'; population_latest: null };
-export const COUNTIES: County[] = '01 Beaver|03 Box Elder|05 Cache|07 Carbon|09 Daggett|11 Davis|13 Duchesne|15 Emery|17 Garfield|19 Grand|21 Iron|23 Juab|25 Kane|27 Millard|29 Morgan|31 Piute|33 Rich|35 Salt Lake|37 San Juan|39 Sanpete|41 Sevier|43 Summit|45 Tooele|47 Uintah|49 Utah|51 Wasatch|53 Washington|55 Wayne|57 Weber'
+export const COUNTIES: County[] = ('01 Beaver|03 Box Elder|05 Cache|07 Carbon|09 Daggett|11 Davis|13 Duchesne|15 Emery|17 Garfield|19 Grand|21 Iron|23 Juab|25 Kane|27 Millard|29 Morgan|'
+  + '31 Piute|33 Rich|35 Salt Lake|37 San Juan|39 Sanpete|41 Sevier|43 Summit|45 Tooele|47 Uintah|49 Utah|51 Wasatch|53 Washington|55 Wayne|57 Weber')
   .split('|')
   .map((s) => ({ fips: `49${s.slice(0, 2).padStart(3, '0')}`, name: s.slice(3), state: 'UT', population_latest: null }));
 
