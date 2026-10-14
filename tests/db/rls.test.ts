@@ -32,14 +32,14 @@ const ADMIN = '11111111-1111-1111-1111-111111111111';
 const STAFF = '22222222-2222-2222-2222-222222222222';
 const ACTORS = ['anon', 'admin', 'staff', 'board_viewer', 'other-org', 'other-admin', 'no-role', 'org-norole'] as const;
 const OPS = ['select', 'insert', 'update', 'delete'] as const;
-const PUBLIC = ['geo_county', 'source_registry', 'ingest_run', 'public_indicator', 'need_score_config', 'need_score', 'fas_service_county'] as const;
+const PUBLIC = ['geo_county', 'source_registry', 'ingest_run', 'public_indicator', 'need_score_config', 'need_score', 'fas_service_county', 'match_config'] as const;
 const FAS = ['case', 'application', 'authorization', 'provider', 'delivery_episode', 'outcome_measure', 'upload_batch', 'aggregate_submission'] as const;
 const GLOB = ['opportunity', 'opportunity_criteria', 'award_history'] as const;
 const GRW = ['match_result', 'strategy_draft', 'pipeline_status'] as const;
 const JOB = ['export_job', 'audit_log'] as const;
 const ORG_T = [...FAS, ...GRW, ...JOB] as const;
 const TABLES = [...PUBLIC, 'org', ...FAS, ...GLOB, ...GRW, ...JOB] as const;
-const ARCH = ['aggregate_submission','application','audit_log','authorization','award_history','case','delivery_episode','export_job','fas_service_county','geo_county','ingest_run','match_result',
+const ARCH = ['aggregate_submission','application','audit_log','authorization','award_history','case','delivery_episode','export_job','fas_service_county','geo_county','ingest_run','match_config','match_result',
   'need_score','need_score_config','opportunity','opportunity_criteria','org','outcome_measure','pipeline_status','provider','public_indicator','source_registry','strategy_draft','upload_batch'] as const;
 const SIGNED = new Set(['admin', 'staff', 'board_viewer', 'other-org', 'other-admin']);
 type Actor = (typeof ACTORS)[number];
@@ -48,7 +48,7 @@ type Table = (typeof TABLES)[number];
 type Rec = Record<string, unknown>;
 const TAG: Record<Table, string> = {
   geo_county: 'fips', source_registry: 'name', ingest_run: 'checksum', public_indicator: 'indicator_code',
-  need_score_config: 'version', need_score: 'geo_fips', fas_service_county: 'fips', org: 'uei', case: 'referral_source',
+  need_score_config: 'version', need_score: 'geo_fips', fas_service_county: 'fips', match_config: 'id', org: 'uei', case: 'referral_source',
   application: 'decision', authorization: 'service_type', provider: 'npi', delivery_episode: 'discharge_status',
   outcome_measure: 'measure_code', upload_batch: 'file_path', aggregate_submission: 'period',
   opportunity: 'external_id', opportunity_criteria: 'criterion', award_history: 'description',
@@ -75,6 +75,7 @@ const M: Record<Table, { s: Rec; r: (t: string) => Rec; p: Rec; u: Rec }> = {
   need_score_config: { s: { version: 'v1' }, r: (t) => ({ version: t, weights: {} }), p: { weights: { x: 1 } }, u: { weights: { uninsured: 1 } } },
   need_score: { s: { version: 'v1', geo_fips: '49035' }, r: () => ({ version: 'v1', geo_fips: '49049', score: 1, components: {} }), p: { score: 9 }, u: { score: 0 } },
   fas_service_county: { s: { fips: '49035' }, r: () => ({ fips: '49001' }), p: { added_at: '2001-01-01' }, u: { added_at: '2026-10-13' } },
+  match_config: { s: { id: 'v0-draft' }, r: (t) => ({ id: t, weights: {} }), p: { params: { x: 1 } }, u: { params: { prep_days: 30, themes_for_full_credit: 3, evidence_available: [] } } },
   org: { s: { id: ORG1 }, r: (t) => ({ name: t, ein: '00-0000099', uei: t, state: 'UT', settings: {} }), p: { uei: 'X' }, u: { uei: 'UEIFAS0001' } },
   case: { s: { id: C1 }, r: (t) => ({ org_id: ORG1, referral_source: t, court_involved: false, county_fips: '49035', household_size: 2, income_band: 'a', prior_services: [], upload_batch_id: UB1 }), p: { income_band: 'x' }, u: { income_band: 'a' } },
   application: { s: { id: A1 }, r: (t) => ({ org_id: ORG1, case_id: C1, application_date: '2024-01-01', decision: t, award_amount: 1, family_contribution: 0 }), p: { award_amount: 9 }, u: { award_amount: 1 } },
