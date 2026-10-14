@@ -35,7 +35,7 @@ export function AggregateFreshnessChip({ role }: { role: string }) {
   return (
     <div data-slot="freshness-slot">
       {navigates
-        ? <Link href="/data-freshness" data-slot="freshness-chip" data-status={chip.status} className={CHIP} aria-label={`${chip.label} — open Data freshness`}>{badge}</Link>
+        ? <Link href="/data-freshness" data-slot="freshness-chip" data-status={chip.status} className={CHIP} aria-label={`Data freshness: ${chip.label}`}>{badge}</Link>
         : <span data-slot="freshness-chip" data-status={chip.status} className={CHIP}>{badge}</span>}
     </div>
   );
