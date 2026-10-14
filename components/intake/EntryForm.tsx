@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { Stack } from "@/components/layout";
+import { FormField, Stack } from "@/components/layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { controlFor, emptyRow, hintFor } from "@/lib/intake/entry";
@@ -71,12 +71,11 @@ export function EntryForm({ counties }: { counties: County[] }) {
   return (
     <form noValidate onSubmit={onSubmit} data-slot="entry-form">
       <Stack gap={4}>
-        <div data-slot="form-field">
-          <label htmlFor="entry-entity" className="mb-2 block text-sm font-medium">What are you adding?</label>
+        <FormField label="What are you adding?" htmlFor="entry-entity">
           <select id="entry-entity" value={entity} onChange={(e) => reset(e.target.value as IntakeEntity)}>
             {INTAKE_ENTITIES.map((e) => <option key={e} value={e}>{titleCase(e)}</option>)}
           </select>
-        </div>
+        </FormField>
         {n ? <p role="alert" data-slot="entry-alert" className="text-sm font-medium text-destructive">{n === 1 ? "1 field needs" : `${n} fields need`} attention. Fix the errors shown below each field.</p> : null}
         {fields.map((f) => {
           const err = errorFor(f.key), hint = hintFor(f);
