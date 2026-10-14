@@ -4,8 +4,9 @@ import { validateRows } from './validate';
 
 type Rows = PromiseLike<{ data: Record<string, unknown>[] | null; error: { message: string } | null }>;
 type One = PromiseLike<{ data: Record<string, unknown> | null; error: { message: string } | null }>;
+type Ins = PromiseLike<{ error: { message: string } | null }> & { select(cols: string): { single(): One } };
 /** The slice of a Supabase client the handler uses, so tests can pass a fake. RLS scopes every call to the caller's org. */
-export type EntryDb = { from(table: string): { select(cols: string): { eq(col: string, v: string): Rows }; insert(row: Record<string, unknown>): { select(cols: string): { single(): One } } } };
+export type EntryDb = { from(table: string): { select(cols: string): { eq(col: string, v: string): Rows }; insert(row: Record<string, unknown>): Ins } };
 export type EntryUser = { id: string; role: string; orgId: string | null } | null;
 const UUIDISH = /^[0-9a-f-]{36}$/i;
 const fail = (status: number, error: string) => Response.json({ error }, { status });
@@ -36,7 +37,8 @@ export class EntryHttp {
     const ins = await db.from(INTAKE_SCHEMA[entity].table).insert(rowForInsert(entity, ok[0].values, user.orgId)).select('id').single();
     if (ins.error || !ins.data) return fail(500, "Couldn't save the record. Nothing was stored; try again.");
     const id = String(ins.data.id);
-    const audit = await db.from('audit_log').insert(auditRow(entity, id, user.orgId, user.id)).select('id').single();
+    // No RETURNING here: audit_log is readable by admins only, so a staff insert that also selects is rejected by RLS.
+    const audit = await db.from('audit_log').insert(auditRow(entity, id, user.orgId, user.id));
     if (audit.error) return Response.json({ error: 'The record was saved but its audit entry failed. Tell an admin.', id }, { status: 500 });
     return Response.json({ id }, { status: 201 });
   }
