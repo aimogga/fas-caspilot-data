@@ -17,6 +17,7 @@ export function legendBins(counties: CountyRow[]): string[] {
   const k = Math.max(0, ...counties.map((c) => c.binNo ?? 0));
   return Array.from({ length: k }, (_, i) => {
     const values = counties.flatMap((c) => (c.binNo === i + 1 && c.value !== null ? [c.value] : []));
+    if (values.length === 0) return `${NAMES[k]?.[i] ?? `Bin ${i + 1}`} (no values)`;
     return `${NAMES[k]?.[i] ?? `Bin ${i + 1}`} ${NeedMapQuery.signed(Math.min(...values))} to ${NeedMapQuery.signed(Math.max(...values))}`;
   });
 }
@@ -68,7 +69,7 @@ export function NeedMap({ data, fas = false, selected = null }: { data: NeedTabl
       </div>
       <figcaption data-slot="map-legend" className="flex flex-col gap-2 text-sm lg:col-span-5">
         <p className="m-0 font-medium">Need score (version {data.version}) · Placeholder bins</p>
-        <ul className="m-0 flex list-none flex-col gap-1 p-0">
+        <ul className="m-0 flex list-none flex-wrap gap-x-4 gap-y-1 p-0 lg:flex-col lg:gap-1">
           {legendBins(counties).map((text, i) => <li key={text} className="flex items-center gap-2 tabular-nums"><Swatch style={{ background: fillFor(i + 1) }} />{text}</li>)}
           <li className="flex items-center gap-2"><Swatch style={HATCH_CSS} />Not published</li>
           <li className="flex items-center gap-2"><Swatch style={{ outline: "2px solid var(--foreground)", outlineOffset: "-1px" }} />FAS county (outlined)</li>
