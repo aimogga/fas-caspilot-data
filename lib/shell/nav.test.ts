@@ -5,8 +5,8 @@ describe("DS-02 nav", () => {
   it("shows only existing routes for each role", () => {
     const groups = (role: string) => navForRole(role).groups.map((g) => g.label);
     const labels = (role: string) => navForRole(role).groups.flatMap((g) => g.items.map((i) => i.label));
-    expect(labels("staff")).toEqual(["Home", "Upload data"]);
-    expect(labels("admin")).toEqual(["Home", "Upload data", "Overview"]);
+    expect(labels("staff")).toEqual(["Home", "Upload data", "Enter data"]);
+    expect(labels("admin")).toEqual(["Home", "Upload data", "Enter data", "Overview"]);
     expect(labels("board_viewer")).toEqual(["Board dashboard"]);
     expect(groups("staff")).toEqual(["Workspace"]);
     expect(groups("admin")).toEqual(["Workspace", "Admin"]);
@@ -21,6 +21,8 @@ describe("DS-02 nav", () => {
     expect(CRUMB["/board"]).toBe("Board dashboard");
     expect(CRUMB["/staff/intake"]).toBe("Upload data");
     expect(HIDDEN_LABELS).not.toContain("Upload data");
+    expect(CRUMB["/staff/entry"]).toBe("Enter data");
+    expect(HIDDEN_LABELS).not.toContain("Enter data");
     expect(roleLabel("board_viewer")).toBe("Board · read-only");
     expect(syntheticBadgeVisible("production")).toBe(false);
     expect(syntheticBadgeVisible(undefined)).toBe(true);
@@ -43,5 +45,6 @@ describe("shell breadcrumb", () => {
     expect(crumbFor("admin", "/%61dmin", "FAS Evidence")).toBe("Admin · Overview");
     expect(crumbFor("board_viewer", "/403", "FAS Evidence")).toBe("FAS Evidence");
     expect(crumbFor("staff", "/staff/intake", "FAS Evidence")).toBe("Upload data");
+    expect(crumbFor("staff", "/staff/entry", "FAS Evidence")).toBe("Enter data");
   });
 });

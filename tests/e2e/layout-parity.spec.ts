@@ -53,7 +53,7 @@ test("existing screens use the shell Page layout", async ({ page }) => {
   await page.fill("#password", "testpass123");
   await Promise.all([page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 10000 }), page.click("button[type=submit]")]);
   for (const width of [375, 800, 1024, 1280, 1440] as const) {
-    for (const path of ["/admin", "/staff", "/staff/intake", "/board", "/403"] as const) {
+    for (const path of ["/admin", "/staff", "/staff/intake", "/staff/entry", "/board", "/403"] as const) {
       await page.setViewportSize({ width, height: 812 });
       await page.goto(path);
       await expect(page.locator("h1")).toBeVisible();
