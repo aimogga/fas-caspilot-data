@@ -38,6 +38,8 @@ describe('role-guards', () => {
     expect(isRouteAllowed('/need-map', 'staff')).toBe(true);
     expect(isRouteAllowed('/need-map', null)).toBe(false);
     expect(matchGuardedPrefix('/need-map')).toBe('/need-map');
+    expect(getAllowedRoles('/api/grants/foundation')).toEqual(['admin', 'staff']);
+    expect(isRouteAllowed('/api/grants/foundation/template', 'board_viewer')).toBe(false);
   });
   it('allowlists public routes only', () => {
     expect(isPublicRoute('/login')).toBe(true);

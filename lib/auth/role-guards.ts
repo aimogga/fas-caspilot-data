@@ -1,9 +1,9 @@
 export type UserRole = 'admin' | 'staff' | 'board_viewer';
 const ALL: UserRole[] = ['admin', 'staff', 'board_viewer'];
 const RULES: Record<string, UserRole[]> = {
-  '/login': ALL, '/': ALL, '/staff': ['admin', 'staff'], '/admin': ['admin'], '/board': ALL, '/dashboard': ['admin', 'staff'], '/need-map': ALL,
+  '/login': ALL, '/': ALL, '/staff': ['admin', 'staff'], '/admin': ['admin'], '/board': ALL, '/dashboard': ['admin', 'staff'], '/need-map': ALL, '/api/grants': ['admin', 'staff'],
 };
-const GUARDED_PREFIXES = ['/admin', '/staff', '/board', '/dashboard', '/need-map'] as const;
+const GUARDED_PREFIXES = ['/admin', '/staff', '/board', '/dashboard', '/need-map', '/api/grants'] as const;
 export type GuardedPrefix = (typeof GUARDED_PREFIXES)[number];
 const DECODE_PASSES = 8;
 const NOROLE_ALLOWED = ['/403', '/login', '/api/auth/signout'] as const;
