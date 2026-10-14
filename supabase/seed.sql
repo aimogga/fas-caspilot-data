@@ -135,6 +135,38 @@ INSERT INTO need_score (version, geo_fips, score, components)
 UPDATE need_score SET score = (SELECT score FROM need_score WHERE version = 'v2-synthetic' AND geo_fips = '49005') WHERE version = 'v2-synthetic' AND geo_fips = '49011';
 INSERT INTO need_score (version, geo_fips, score, components) VALUES ('v3-draft', '49009', 9, '{}');
 
+
+
+-- F-504: synthetic approved match config + scored open opportunities, local/CI only (fas-dev gets only the unapproved v0-draft from the migration).
+INSERT INTO match_config (id, weights, params, created_at, approved_by, approved_at) VALUES
+  ('v0-synthetic-test', '{"mission_fit":0.30,"eligibility_certainty":0.20,"evidence_readiness":0.15,"award_size_fit":0.15,"geography":0.10,"effort_vs_time":0.10}',
+   '{"prep_days":30,"themes_for_full_credit":3,"evidence_available":[]}', '2026-10-02', '11111111-1111-1111-1111-111111111111', '2026-10-02') ON CONFLICT (id) DO NOTHING;
+INSERT INTO opportunity (id, source, external_id, title, funder, close_date, award_floor, award_ceiling, eligibility, description, raw) VALUES
+  ('10101010-1010-1010-1010-101010101012', 'grants_gov', 'syn-opp-2', 'Family Therapy Access Grants (synthetic)', 'Synthetic Agency for Families', '2027-12-15', 50000, 200000,
+   '{"applicant_types":["nonprofits_non_higher_education_with_501c3"],"is_cost_sharing":false,"funding_categories":["health"]}', 'Supports community mental health therapy for court-involved families in Utah.', '{}'),
+  ('10101010-1010-1010-1010-101010101013', 'grants_gov', 'syn-opp-4', 'State Child Welfare Block Grant (synthetic)', 'Synthetic Agency for Families', '2027-10-31', 100000, 500000,
+   '{"applicant_types":["state_governments"],"is_cost_sharing":false,"funding_categories":["income_security_and_social_services"]}', 'Block grant for state child welfare agencies.', '{}');
+-- components/flags below were produced by lib/grants/score.ts (synthetic profile, computed 2026-10-02); the panel renders these stored strings.
+INSERT INTO match_result (id, org_id, opportunity_id, score, config_id, model_version, computed_at, flags, components) VALUES
+  ('40404040-4040-4040-4040-404040404051', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '10101010-1010-1010-1010-101010101012', 100, 'v0-synthetic-test', 'v0-synthetic-test', '2026-10-02T12:00:00Z',
+   '{"eligible":true,"flags":[]}', '[
+    {"key":"mission_fit","label":"Mission fit","weight":0.3,"value":1,"points":30,"max":30,"reason":"Matched 3 of 5 configured themes: therapy (description), mental health (description), court-involved families (description)","source_refs":["org.program_themes","opportunity.description"]},
+    {"key":"eligibility_certainty","label":"Eligibility certainty","weight":0.2,"value":1,"points":20,"max":20,"reason":"10 of 10 eligibility checks passed, 0 flagged, 0 could not be checked","source_refs":["eligibility.checks"]},
+    {"key":"evidence_readiness","label":"Evidence readiness","weight":0.15,"value":1,"points":15,"max":15,"reason":"The opportunity text names no outcome, cost or timeliness evidence","source_refs":["opportunity.description","match_config.params.evidence_available"]},
+    {"key":"award_size_fit","label":"Award size fit","weight":0.15,"value":1,"points":15,"max":15,"reason":"Award range $50,000–$200,000 fits a $600,000 annual budget","source_refs":["opportunity.award_floor","opportunity.award_ceiling","org.annual_budget_usd"]},
+    {"key":"geography","label":"Geography","weight":0.1,"value":1,"points":10,"max":10,"reason":"Names Utah in the opportunity text","source_refs":["opportunity.description"]},
+    {"key":"effort_vs_time","label":"Effort vs time","weight":0.1,"value":1,"points":10,"max":10,"reason":"439 days to the 2027-12-15 close date, against 30 days of typical prep","source_refs":["opportunity.close_date","match_config.params.prep_days"]}
+   ]'),
+  ('40404040-4040-4040-4040-404040404052', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '10101010-1010-1010-1010-101010101013', 0, 'v0-synthetic-test', 'v0-synthetic-test', '2026-10-02T12:00:00Z',
+   '{"eligible":false,"flags":[{"code":"applicant_type","severity":"blocker","message":"Only state governments may apply","source_ref":"opportunity.eligibility.applicant_types"}]}', '[
+    {"key":"mission_fit","label":"Mission fit","weight":0.3,"value":0.3333,"points":10,"max":30,"reason":"Matched 1 of 5 configured themes: social services (funding categories)","source_refs":["org.program_themes","opportunity.eligibility.funding_categories"]},
+    {"key":"eligibility_certainty","label":"Eligibility certainty","weight":0.2,"value":0.9,"points":18,"max":20,"reason":"9 of 10 eligibility checks passed, 1 flagged, 0 could not be checked","source_refs":["eligibility.checks","opportunity.eligibility.applicant_types"]},
+    {"key":"evidence_readiness","label":"Evidence readiness","weight":0.15,"value":1,"points":15,"max":15,"reason":"The opportunity text names no outcome, cost or timeliness evidence","source_refs":["opportunity.description","match_config.params.evidence_available"]},
+    {"key":"award_size_fit","label":"Award size fit","weight":0.15,"value":1,"points":15,"max":15,"reason":"Award range $100,000–$500,000 fits a $600,000 annual budget","source_refs":["opportunity.award_floor","opportunity.award_ceiling","org.annual_budget_usd"]},
+    {"key":"geography","label":"Geography","weight":0.1,"value":0.5,"points":5,"max":10,"reason":"National program; Utah applicants are not named","source_refs":["opportunity.description"]},
+    {"key":"effort_vs_time","label":"Effort vs time","weight":0.1,"value":1,"points":10,"max":10,"reason":"394 days to the 2027-10-31 close date, against 30 days of typical prep","source_refs":["opportunity.close_date","match_config.params.prep_days"]},
+    {"key":"blocker_cap","label":"Blocker","weight":0,"value":0,"points":0,"max":0,"reason":"Score capped at 0: Only state governments may apply","source_refs":["opportunity.eligibility.applicant_types"]}
+   ]');
 -- DS-06a2: synthetic FAS service counties (5 fips) until FAS provides the real list.
 INSERT INTO fas_service_county (fips) VALUES ('49035'), ('49049'), ('49011'), ('49057'), ('49045')
 ON CONFLICT (fips) DO NOTHING;
