@@ -5,20 +5,27 @@ describe("DS-02 nav", () => {
   it("shows only existing routes for each role", () => {
     const groups = (role: string) => navForRole(role).groups.map((g) => g.label);
     const labels = (role: string) => navForRole(role).groups.flatMap((g) => g.items.map((i) => i.label));
-    expect(labels("staff")).toEqual(["Home"]);
-    expect(labels("admin")).toEqual(["Home", "Overview"]);
-    expect(labels("board_viewer")).toEqual(["Board dashboard"]);
+    expect(labels("staff")).toEqual(["Home", "Team dashboard", "Data freshness", "Evidence packets", "Methodology"]);
+    expect(labels("admin")).toEqual(["Home", "Team dashboard", "Data freshness", "Evidence packets", "Methodology", "Overview"]);
+    expect(labels("board_viewer")).toEqual(["Board dashboard", "Methodology"]);
     expect(groups("staff")).toEqual(["Workspace"]);
     expect(groups("admin")).toEqual(["Workspace", "Admin"]);
     expect(navForRole("board_viewer").footer).toBe(BOARD_FOOTER);
     expect(navForRole("admin").footer).toBeNull();
     for (const role of ["staff", "admin", "board_viewer"]) {
-      expect(labels(role).length).toBeLessThanOrEqual(4);
+      expect(labels(role).length).toBeLessThanOrEqual(8); // Workspace grows as screen-plan §1.2 routes land; guards against a dump of every item
       for (const hidden of HIDDEN_LABELS) {
         expect(labels(role)).not.toContain(hidden);
       }
     }
     expect(CRUMB["/board"]).toBe("Board dashboard");
+    expect(CRUMB["/methodology"]).toBe("Methodology");
+    expect(CRUMB["/dashboard"]).toBe("Team dashboard");
+    expect(CRUMB["/data-freshness"]).toBe("Data freshness");
+    expect(HIDDEN_LABELS).not.toContain("Data freshness");
+    expect(CRUMB["/staff/packets"]).toBe("Evidence packets");
+    expect(HIDDEN_LABELS).not.toContain("Team dashboard");
+    expect(HIDDEN_LABELS).not.toContain("Methodology");
     expect(roleLabel("board_viewer")).toBe("Board · read-only");
     expect(syntheticBadgeVisible("production")).toBe(false);
     expect(syntheticBadgeVisible(undefined)).toBe(true);
@@ -40,5 +47,9 @@ describe("shell breadcrumb", () => {
     expect(crumbFor("board_viewer", "/board", "FAS Evidence")).toBe("Board dashboard");
     expect(crumbFor("admin", "/%61dmin", "FAS Evidence")).toBe("Admin · Overview");
     expect(crumbFor("board_viewer", "/403", "FAS Evidence")).toBe("FAS Evidence");
+    expect(crumbFor("board_viewer", "/methodology", "FAS Evidence")).toBe("Methodology");
+    expect(crumbFor("staff", "/dashboard", "FAS Evidence")).toBe("Team dashboard");
+    expect(crumbFor("admin", "/data-freshness", "FAS Evidence")).toBe("Data freshness");
+    expect(crumbFor("staff", "/staff/packets", "FAS Evidence")).toBe("Evidence packets");
   });
 });
