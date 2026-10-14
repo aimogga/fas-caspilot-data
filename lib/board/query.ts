@@ -24,7 +24,7 @@ export const BoardQuery = {
   async load(client: SupabaseClient, now: Date): Promise<BoardData> {
     const [metrics, dash] = await Promise.all([
       MetricsQuery.load(client, boardFilters(now)),
-      DashboardQuery.load(client, now).catch((e: unknown) => { console.error('[board] freshness failed', { message: e instanceof Error ? e.message : 'unknown' }); return null; }),
+      DashboardQuery.load(client, now).catch((e: unknown) => { console.error('[board] freshness failed', { message: e instanceof Error ? e.message : 'unknown', stack: e instanceof Error ? e.stack : undefined }); return null; }),
     ]);
     return { period: boardFilters(now).period, metrics, freshness: dash?.freshness ?? null, asOf: boardAsOf(metrics) };
   },
