@@ -38,14 +38,14 @@ export class NeedMapQuery {
   }
 
   /** Newest approved version only; unapproved versions never show. */
-  static approved(configs: ConfigRow[]): ConfigRow | null {
+  static approved<T extends ConfigRow>(configs: T[]): T | null {
     const ok = configs.filter((c) => c.approved_by !== null);
     ok.sort((a, b) => b.created_at.localeCompare(a.created_at));
     return ok[0] ?? null;
   }
 
   /** Keep each indicator's newest vintage only. */
-  static latest(rows: IndicatorRow[]): IndicatorRow[] {
+  static latest<T extends { indicator_code: string; vintage: string }>(rows: T[]): T[] {
     const newest = new Map<string, string>();
     for (const r of rows) {
       if (r.vintage > (newest.get(r.indicator_code) ?? '')) newest.set(r.indicator_code, r.vintage);

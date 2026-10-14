@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:db": "node scripts/test-db.mjs",
     "audit:nightly": "node scripts/nightly-audit.mjs",
+    "gate": "node scripts/pr-gate.mjs",
     "test:e2e": "playwright test",
     "seed:synthetic": "node --experimental-strip-types --no-warnings=ExperimentalWarning lib/synthetic/cli.ts"
   },
