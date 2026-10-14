@@ -13,7 +13,7 @@ describe("DS-02 nav", () => {
     expect(navForRole("board_viewer").footer).toBe(BOARD_FOOTER);
     expect(navForRole("admin").footer).toBeNull();
     for (const role of ["staff", "admin", "board_viewer"]) {
-      expect(labels(role).length).toBeLessThanOrEqual(5);
+      expect(labels(role).length).toBeLessThanOrEqual(8); // Workspace grows as screen-plan §1.2 routes land; guards against a dump of every item
       for (const hidden of HIDDEN_LABELS) {
         expect(labels(role)).not.toContain(hidden);
       }

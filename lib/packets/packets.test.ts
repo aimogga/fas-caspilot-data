@@ -16,6 +16,7 @@ const pub = {
   configs: [{ version: 'v2-synthetic', weights: { uninsured: 1 }, created_at: '2026-10-01T00:00:00Z', approved_by: 'u1' }], sources: [{ id: 's1', name: 'census-sahie', last_success_at: '2026-10-03T12:00:00Z' }],
   scores: [{ version: 'v2-synthetic', geo_fips: '49035', score: 1.5 }, { version: 'v2-synthetic', geo_fips: '49049', score: 0.5 }, { version: 'v2-synthetic', geo_fips: '49011', score: -0.5 }],
   indicators: [{ source_id: 's1', indicator_code: 'uninsured_rate', geo_fips: '49035', value: 9.1, moe: 0.4, unit: 'percent', vintage: '2023' }],
+  fas: [],
 };
 const input = (over: Partial<PacketInput> = {}): PacketInput => ({ variant: 'grant', scope: { county: '49035' }, now: NOW, period: '2024-Q3', asOf: 'Dec 2024', metrics, need: NeedMapQuery.build(pub), method: MethodologyQuery.build(pub), serviceCounties: ['Davis', 'Salt Lake'], ...over });
 const ORDER = ['County need profile', 'FAS results', 'Outcomes', 'Methodology and sources', 'Suppression note', 'Related-party disclosure'];
