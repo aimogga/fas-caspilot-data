@@ -18,6 +18,8 @@ async function saveCase(page: Page): Promise<string> {
   await page.selectOption("#entry-county_fips", "49035");
   await page.getByRole("button", { name: "Save" }).click();
   const status = page.locator("[data-slot=entry-saved]");
+  // When the save never confirms, print the form (alerts, field errors, problem line) so the failing run says why.
+  await status.waitFor({ timeout: 10_000 }).catch(async () => console.log("entry form after Save:", await page.locator("[data-slot=entry-form]").innerText()));
   await expect(status).toContainText("Saved Case");
   return (await status.getAttribute("data-id")) ?? "";
 }
