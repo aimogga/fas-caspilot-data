@@ -9,6 +9,10 @@ export const num = (x: Num): string | null => (x == null ? null : Math.round(x).
 export const days = (x: Num): string | null => (x == null ? null : `${num(x)} ${Math.round(x) === 1 ? 'day' : 'days'}`);
 export const pct = (x: Num): string | null => (x == null ? null : `${Math.round(x * 100)}%`);
 export const money = (x: Num): string | null => (x == null ? null : `$${num(x)}`);
+/** O1 mean change with its sign (`+0.5`, `−1.8`, `0.0`); null passes through. */
+export const signed = (x: Num): string | null => (x == null ? null : `${x > 0 ? '+' : x < 0 ? '−' : ''}${Math.abs(x).toFixed(1)}`);
+/** M4 band codes: `unknown` → `Unknown`, `total` → `All bands`, others as stored. */
+export const bandLabel = (band: string): string => (band === 'unknown' ? 'Unknown' : band === 'total' ? 'All bands' : band);
 /** Arrow + words, never colour alone: `↓ 4 days faster than Q2`, `↑ 2 pts lower than Q2`, `No change from Q2`; null when either side is suppressed. */
 export function delta(current: Num, prior: Num, unit: DeltaUnit, priorPeriod: string): string | null {
   if (current == null || prior == null) return null;

@@ -67,6 +67,28 @@ INSERT INTO delivery_episode (id, org_id, authorization_id, sessions_attended, n
 INSERT INTO outcome_measure (id, org_id, case_id, measure_code, baseline_score, baseline_date) VALUES
   ('c2c2c2c2-c2c2-c2c2-c2c2-c2c2c2c2c2c1', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '88888888-8888-8888-8888-888888888881', 'syn', 1, '2024-01-01'),
   ('c2c2c2c2-c2c2-c2c2-c2c2-c2c2c2c2c2c2', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '88888888-8888-8888-8888-888888888882', 'syn', 1, '2024-02-01');
+-- DS-07c (F-401, F-305, F-306): synthetic FAS rows dated in the latest complete quarter (relative to now()) so the team
+-- dashboard shows M4 complementary suppression, both M6 group rates and O1 rows. Income bands: a 12/14 (affiliated),
+-- b 11/12 (other), c 2/3 (affiliated) -> band c hidden, band b hidden to protect it, total 25/29 shown. All values synthetic.
+INSERT INTO "case" (id, org_id, referral_source, court_involved, referral_date, county_fips, household_size, income_band, prior_services, upload_batch_id)
+SELECT b.id, 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'self', false, (date_trunc('quarter', now()) - interval '56 days')::date, '49049', 3, b.band, '[]', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee1'
+FROM (VALUES ('88888888-8888-8888-8888-8888888888a1'::uuid, 'a'), ('88888888-8888-8888-8888-8888888888a2', 'b'), ('88888888-8888-8888-8888-8888888888a3', 'c')) AS b(id, band);
+INSERT INTO application (id, org_id, case_id, application_date, decision, decision_date, award_amount, family_contribution)
+SELECT a.id, 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', a.case_id, (date_trunc('quarter', now()) - interval '51 days')::date, 'approved', (date_trunc('quarter', now()) - interval '46 days')::date, 1, 0
+FROM (VALUES ('99999999-9999-9999-9999-9999999999a1'::uuid, '88888888-8888-8888-8888-8888888888a1'::uuid), ('99999999-9999-9999-9999-9999999999a2', '88888888-8888-8888-8888-8888888888a2'),
+  ('99999999-9999-9999-9999-9999999999a3', '88888888-8888-8888-8888-8888888888a3')) AS a(id, case_id);
+INSERT INTO "authorization" (id, org_id, application_id, service_type, provider_id, units, rate, total_authorized) VALUES
+  ('a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0b1', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '99999999-9999-9999-9999-9999999999a1', 'therapy', 'ffffffff-ffff-ffff-ffff-fffffffffff1', 2, 120, 240),
+  ('a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0b2', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '99999999-9999-9999-9999-9999999999a2', 'therapy', NULL, 2, 90, 180),
+  ('a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0b3', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '99999999-9999-9999-9999-9999999999a3', 'therapy', 'ffffffff-ffff-ffff-ffff-fffffffffff1', 2, 120, 240);
+INSERT INTO delivery_episode (org_id, authorization_id, first_session_date, last_session_date, sessions_attended, no_shows, discharge_status, dollars_paid)
+SELECT 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', z.id, q.last_day - 30, q.last_day, 2, 0, CASE WHEN i <= z.completed THEN 'completed' ELSE 'dropped' END, 100
+FROM (VALUES ('a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0b1'::uuid, 14, 12), ('a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0b2', 12, 11), ('a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0b3', 3, 2)) AS z(id, n, completed),
+  generate_series(1, z.n) AS i, (SELECT (date_trunc('quarter', now()) - interval '1 day')::date AS last_day) AS q;
+-- O1: 12 PHQ-9 pairs (changes -1, -2, -3, 0 repeating: mean -1.5, 9 of 12 improved) and 3 GAD-7 pairs (hidden, n < 11).
+INSERT INTO outcome_measure (org_id, case_id, measure_code, baseline_score, baseline_date, followup_score, followup_date)
+SELECT 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', ('88888888-8888-8888-8888-8888888888a' || (1 + i % 3))::uuid, m.code, 12, q.last_day - 60, 12 - (i % 4), q.last_day - 20
+FROM (VALUES ('PHQ-9', 12), ('GAD-7', 3)) AS m(code, n), generate_series(1, m.n) AS i, (SELECT (date_trunc('quarter', now()) - interval '1 day')::date AS last_day) AS q;
 INSERT INTO aggregate_submission (id, org_id, period, metric_code, value, n, notes) VALUES
   ('d3d3d3d3-d3d3-d3d3-d3d3-d3d3d3d3d3d1', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '2024-Q1', 'm1', 1, 20, 'n'),
   ('d3d3d3d3-d3d3-d3d3-d3d3-d3d3d3d3d3d2', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '2024-Q1', 'm1', 1, 20, 'n');
