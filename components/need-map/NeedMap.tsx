@@ -16,6 +16,7 @@ export function legendBins(counties: CountyRow[]): string[] {
   const k = Math.max(0, ...counties.map((c) => c.binNo ?? 0));
   return Array.from({ length: k }, (_, i) => {
     const values = counties.flatMap((c) => (c.binNo === i + 1 && c.value !== null ? [c.value] : []));
+    if (values.length === 0) return `${NAMES[k]?.[i] ?? `Bin ${i + 1}`} (no values)`;
     return `${NAMES[k]?.[i] ?? `Bin ${i + 1}`} ${NeedMapQuery.signed(Math.min(...values))} to ${NeedMapQuery.signed(Math.max(...values))}`;
   });
 }
