@@ -54,3 +54,33 @@ test("board gets a real 403 with the DS-04 card and no Data freshness nav item (
   await expect(page.locator("[data-slot=status-card] code")).toHaveText("/data-freshness");
   await expect(page.locator("[data-slot=sidebar] nav a", { hasText: "Data freshness" })).toHaveCount(0);
 });
+
+for (const [email, home, navigates] of [["staff@example.test", "/staff", true], ["admin@example.test", "/admin", true], ["board@example.test", "/board", false]] as const) {
+  test(`top-bar aggregate chip for ${email}: worst seeded status, ${navigates ? "links to" : "never links to"} /data-freshness (DS-05b, F-209)`, async ({ page }) => {
+    await signIn(page, email);
+    for (const width of [375, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(home);
+      const chip = page.locator("[data-slot=topbar-sub] [data-slot=freshness-chip]");
+      await expect(chip, `chip @ ${width}`).toBeVisible();
+      await expect(chip).toHaveAttribute("data-status", "failed");
+      await expect(chip).toHaveText(/^\W*Last run failed$/);
+      await expect(chip.locator("[aria-hidden]")).toHaveText("✕");
+      expect(await page.evaluate(() => document.documentElement.scrollWidth), `scroll @ ${width}`).toBeLessThanOrEqual(width);
+      if (width === 375) expect((await chip.boundingBox())?.height ?? 0, "44px target below 1024").toBeGreaterThanOrEqual(44);
+    }
+    const chip = page.locator("[data-slot=topbar-sub] [data-slot=freshness-chip]");
+    if (navigates) {
+      await expect(chip).toHaveAttribute("href", "/data-freshness");
+      await chip.click();
+      await page.waitForURL("**/data-freshness");
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Data freshness");
+      await expect(page.locator("[data-slot=freshness-summary]")).toContainText("Failed");
+    } else {
+      await expect(chip).not.toHaveAttribute("href", /.*/);
+      expect(await chip.evaluate((el) => el.tagName)).toBe("SPAN");
+      await chip.click();
+      expect(new URL(page.url()).pathname).toBe(home);
+    }
+  });
+}

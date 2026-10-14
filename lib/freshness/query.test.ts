@@ -18,13 +18,13 @@ describe('FreshnessPage.build (DS-05a)', () => {
     expect(view.rows[1]).toMatchObject({ paused: true, latestVintage: '2023', staleDays: 60, cadence: 'Monthly' });
     expect(view.rows[2]).toMatchObject({ lastSuccess: 'Never', latestVintage: '—', cadence: '—', owner: null, runId: null, staleDays: null });
     expect(view.rows[3]).toMatchObject({ latestVintage: '2024', runId: 'run-alpha' });
-    expect(view).toMatchObject({ aggregate: 'failed', asOf: runDateOf(1), showRun: true });
+    expect(view).toMatchObject({ aggregate: 'failed', asOf: runDateOf(1), chip: { status: 'failed', label: 'Last run failed' }, showRun: true });
   });
 
   it('hides the run column for staff, and returns an empty view with no as-of when there are no sources', () => {
     expect(FreshnessPage.build(sources, runs, indicators, NOW, 'staff').showRun).toBe(false);
-    expect(FreshnessPage.build([], [], [], NOW, 'staff')).toEqual({ rows: [], asOf: null, aggregate: null, showRun: false });
-    expect(FreshnessPage.build([src('a', null)], [], [], NOW, null)).toMatchObject({ asOf: null, aggregate: 'not_published' });
+    expect(FreshnessPage.build([], [], [], NOW, 'staff')).toEqual({ rows: [], asOf: null, aggregate: null, chip: null, showRun: false });
+    expect(FreshnessPage.build([src('a', null)], [], [], NOW, null)).toMatchObject({ asOf: null, aggregate: 'not_published', chip: { status: 'not_published', label: 'Not published' } });
   });
 });
 

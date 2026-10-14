@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CADENCE_DAYS as DASHBOARD_CADENCE_DAYS, Freshness as DashboardFreshness } from '../dashboard/freshness';
-import { aggregate, CADENCE_DAYS, Freshness, humanCadence, RANK, runDate, staleDays } from './status';
+import { aggregate, CADENCE_DAYS, Freshness, humanCadence, RANK, relativeDays, runDate, staleDays, topBarChip } from './status';
 
 const NOW = new Date('2026-10-13T12:00:00Z');
 const daysAgo = (n: number) => new Date(NOW.getTime() - n * 86_400_000).toISOString();
@@ -37,5 +37,22 @@ describe('DS-05 freshness helpers', () => {
     expect(runDate('2026-01-01T00:00:00Z')).toBe('Jan 1, 2026');
     expect(runDate(null)).toBe('Never');
     expect(runDate('not a date')).toBe('Never');
+  });
+});
+
+describe('DS-05b top-bar chip copy', () => {
+  const src = (n: number | null) => ({ last_success_at: n === null ? null : daysAgo(n) });
+  it('is hidden with no sources and follows Failed > Stale > Not published > Current', () => {
+    expect(topBarChip([], [], NOW)).toBeNull();
+    const rows = [{ status: 'current', staleDays: null }, { status: 'stale', staleDays: 60 }, { status: 'stale', staleDays: 95 }, { status: 'not_published', staleDays: null }] as const;
+    expect(topBarChip([...rows, { status: 'failed', staleDays: null }], [src(10)], NOW)).toEqual({ status: 'failed', label: 'Last run failed' });
+    expect(topBarChip(rows, [src(60), src(95), src(2)], NOW)).toEqual({ status: 'stale', label: 'Stale · 95 days' });
+    expect(topBarChip([rows[0], rows[3]], [src(2), src(null)], NOW)).toEqual({ status: 'not_published', label: 'Not published' });
+    expect(topBarChip([rows[0]], [src(2)], NOW)).toEqual({ status: 'current', label: 'Public data updated 2 days ago' });
+  });
+  it('words the Current chip by the most recent success', () => {
+    expect(topBarChip([{ status: 'current', staleDays: null }, { status: 'current', staleDays: null }], [src(9), src(1)], NOW)?.label).toBe('Public data updated 1 day ago');
+    expect(topBarChip([{ status: 'current', staleDays: null }], [src(0)], NOW)?.label).toBe('Public data updated today');
+    expect(['today', '1 day ago', '14 days ago']).toEqual([0, 1, 14].map(relativeDays));
   });
 });
