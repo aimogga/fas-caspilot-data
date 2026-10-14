@@ -29,7 +29,7 @@ export function BatchList({ batches }: { batches: BatchRow[] }) {
             {batches.map((b) => (
               <tr key={b.id} data-batch={shortId(b.id)}>
                 <td>{when.format(new Date(b.created_at))}</td><td>{b.entity ?? "—"}</td><td className="font-mono">{shortId(b.id)}</td><td className="text-right tabular-nums">{b.rows_ok ?? 0}</td>
-                <td><Badge variant={STATUS[b.status]?.[1] ?? "muted"} prefix={null}>{STATUS[b.status]?.[0] ?? b.status}</Badge></td>
+                <td><Badge variant={STATUS[b.status]?.[1] ?? "muted"} prefix={<span aria-hidden>•</span>}>{STATUS[b.status]?.[0] ?? b.status}</Badge></td>
                 <td>{b.status === "committed" ? <Button type="button" size="sm" variant="outline" disabled={busy === b.id} onClick={() => rollBack(b.id)}>Roll back<span className="sr-only"> batch {shortId(b.id)}</span></Button> : null}</td>
               </tr>
             ))}
