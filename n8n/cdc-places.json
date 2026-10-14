@@ -1,0 +1,11 @@
+{
+  "name": "cdc-places",
+  "active": false,
+  "nodes": [
+    {"parameters":{"rule":{"interval":[{"field":"cronExpression","expression":"0 15 7 1 *"}]}},"id":"places-schedule","name":"Schedule PLACES","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1.2,"position":[0,0]},
+    {"parameters":{"method":"POST","url":"={{$env.FAS_INGEST_PLACES_URL}}","sendHeaders":true,
+      "headerParameters":{"parameters":[{"name":"Authorization","value":"=Bearer {{$env.INGEST_TOKEN}}"}]}},"id":"places-http","name":"POST ingest places","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[240,0]}
+  ],
+  "connections": {"Schedule PLACES":{"main":[[{"node":"POST ingest places","type":"main","index":0}]]}},
+  "settings":{"executionOrder":"v1","timezone":"UTC"}
+}

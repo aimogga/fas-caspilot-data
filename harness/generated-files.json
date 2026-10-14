@@ -1,1 +1,8 @@
-{"files":["tests/fixtures/ut_courts/filings.xlsx"]}
+{
+  "note": "D-012: files here don't count toward the 400-line cap. Each PR that adds one lists it by name in its body; QA checks it matches its generator. Lockfiles and markdown are excluded automatically by scripts/pr-gate.mjs.",
+  "files": [
+    "supabase/config.toml",
+    "public/geo/utah-counties.json",
+    "tests/fixtures/ut_courts/filings.xlsx"
+  ]
+}
