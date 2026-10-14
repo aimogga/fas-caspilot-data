@@ -10,9 +10,15 @@ async function signIn(page: Page, email: string) {
   await Promise.all([page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 10000 }), page.click("button[type=submit]")]);
 }
 
+/** Controlled fields drop values set before React hydrates, so wait for the form's marker before filling anything. */
+async function openEntry(page: Page) {
+  await page.goto("/staff/entry");
+  await page.locator("[data-slot=entry-form][data-hydrated]").waitFor();
+}
+
 /** Fills the three required Case fields and saves; returns the new row id from the status line. */
 async function saveCase(page: Page): Promise<string> {
-  await page.goto("/staff/entry");
+  await openEntry(page);
   await page.selectOption("#entry-court_involved", "yes");
   await page.fill("#entry-referral_date", "2024-03-01");
   await page.selectOption("#entry-county_fips", "49035");
@@ -35,7 +41,7 @@ test("staff can open /staff/entry; board gets 403", async ({ page }) => {
 
 test("an empty Case shows required errors next to each field, an alert count, and saves nothing", async ({ page }) => {
   await signIn(page, "staff@example.test");
-  await page.goto("/staff/entry");
+  await openEntry(page);
   await page.getByRole("button", { name: "Save" }).click();
   await expect(page.locator("[data-slot=entry-alert]")).toHaveText(/^3 fields need attention/);
   await expect(page.locator("#entry-county_fips-error")).toHaveText("✕ County code (Utah FIPS) is required");
@@ -63,7 +69,7 @@ test("375 and 1024: no horizontal scroll, 44px targets, 16px inputs, axe clean",
   await signIn(page, "staff@example.test");
   for (const width of [375, 1024] as const) {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto("/staff/entry");
+    await openEntry(page);
     await page.getByRole("button", { name: "Save" }).click();
     await expect(page.locator("[data-slot=entry-alert]")).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth), `@ ${width}`).toBe(width);
