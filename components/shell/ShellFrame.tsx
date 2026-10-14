@@ -3,13 +3,14 @@
 import { useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, LayoutDashboard, Menu, Shield, type LucideIcon } from "lucide-react";
+import { BookOpen, House, LayoutDashboard, Menu, Shield, type LucideIcon } from "lucide-react";
+import { AggregateFreshnessChip } from "@/components/freshness/AggregateFreshnessChip";
 import { Page } from "@/components/layout";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ORGANIZATION_NAME, PRODUCT_NAME } from "@/lib/branding";
 import { crumbFor, navForRole, PREVIEW_FOOTER, type NavGroup } from "@/lib/shell/nav";
 
-const ICONS: Record<string, LucideIcon> = { "/staff": House, "/admin": Shield, "/board": LayoutDashboard };
+const ICONS: Record<string, LucideIcon> = { "/staff": House, "/admin": Shield, "/board": LayoutDashboard, "/methodology": BookOpen };
 
 export function Wordmark() {
   return (
@@ -92,7 +93,7 @@ export function ShellFrame({ role, roleLabel, name, showSynthetic, children }: {
           </div>
           <div data-slot="topbar-sub">
             <nav data-slot="crumbs" aria-label="Breadcrumb"><ol><li aria-current="page">{crumbFor(role, pathname, PRODUCT_NAME)}</li></ol></nav>
-            <div data-slot="freshness-slot" hidden />
+            <AggregateFreshnessChip role={role} />
             {showSynthetic ? <span data-slot="env-badge">Synthetic data</span> : null}
           </div>
         </header>
