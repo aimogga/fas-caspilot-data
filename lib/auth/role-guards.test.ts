@@ -57,6 +57,7 @@ describe('role-guards', () => {
     expect(isPublicRoute('/api/ingest/sahie')).toBe(true);
     expect(isPublicRoute('/api/ingest/saipe')).toBe(true);
     expect(isPublicRoute('/api/ingest/acs')).toBe(true);
+    expect(isPublicRoute('/api/ingest/ut-courts')).toBe(true);
     expect(isPublicRoute('/api/ingest/hpsa')).toBe(true);
     expect(isPublicRoute('/api/ingest/vetpop')).toBe(true);
     expect(isPublicRoute('/api/ingest/places')).toBe(true);
@@ -74,6 +75,7 @@ describe('role-guards', () => {
     expect(isPublicRoute('/api/ingest/sahie/')).toBe(false);
     expect(isPublicRoute('/api/ingest/saipe/')).toBe(false);
     expect(isPublicRoute('/api/ingest/acs/')).toBe(false);
+    expect(isPublicRoute('/api/ingest/ut-courts/')).toBe(false);
     expect(isPublicRoute('/api/ingest/hpsa/')).toBe(false);
     expect(isPublicRoute('/api/ingest/vetpop/')).toBe(false);
     expect(isPublicRoute('/api/ingest/places/')).toBe(false);
