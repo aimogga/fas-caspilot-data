@@ -39,7 +39,8 @@ const GRW = ['match_result', 'strategy_draft', 'pipeline_status'] as const;
 const JOB = ['export_job', 'audit_log'] as const;
 const ORG_T = [...FAS, ...GRW, ...JOB] as const;
 const TABLES = [...PUBLIC, 'org', ...FAS, ...GLOB, ...GRW, ...JOB] as const;
-const ARCH = ['aggregate_submission','application','audit_log','authorization','award_history','case','delivery_episode','export_job','geo_county','ingest_run','match_config','match_result','need_score','need_score_config','opportunity','opportunity_criteria','org','outcome_measure','pipeline_status','provider','public_indicator','source_registry','strategy_draft','upload_batch'] as const;
+const ARCH = ['aggregate_submission','application','audit_log','authorization','award_history','case','delivery_episode','export_job','geo_county','ingest_run','match_config','match_result',
+  'need_score','need_score_config','opportunity','opportunity_criteria','org','outcome_measure','pipeline_status','provider','public_indicator','source_registry','strategy_draft','upload_batch'] as const;
 const SIGNED = new Set(['admin', 'staff', 'board_viewer', 'other-org', 'other-admin']);
 type Actor = (typeof ACTORS)[number];
 type Op = (typeof OPS)[number];
@@ -325,7 +326,8 @@ describe('rls', () => {
   });
 
   it('org-scoped org_id is NOT NULL', () => {
-    const names = sql(`SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace JOIN pg_attribute a ON a.attrelid=c.oid WHERE n.nspname='public' AND c.relkind='r' AND a.attname='org_id' AND a.attnotnull AND NOT a.attisdropped AND c.relname IN (${[...ORG_T].map((t) => `'${t}'`).join(',')}) ORDER BY 1`).trim().split('\n');
+    const names = sql(`SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace JOIN pg_attribute a ON a.attrelid=c.oid
+      WHERE n.nspname='public' AND c.relkind='r' AND a.attname='org_id' AND a.attnotnull AND NOT a.attisdropped AND c.relname IN (${[...ORG_T].map((t) => `'${t}'`).join(',')}) ORDER BY 1`).trim().split('\n');
     expect(names).toEqual([...ORG_T].sort());
   });
 
@@ -342,7 +344,8 @@ describe('rls', () => {
   });
 
   it('ARCHITECTURE.md tables exist with RLS and a policy', async () => {
-    const names = sql(`SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind='r' AND c.relrowsecurity AND EXISTS (SELECT 1 FROM pg_policy p WHERE p.polrelid=c.oid) AND c.relname IN (${[...ARCH].map((t) => `'${t}'`).join(',')}) ORDER BY 1`).trim().split('\n');
+    const names = sql(`SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind='r' AND c.relrowsecurity
+      AND EXISTS (SELECT 1 FROM pg_policy p WHERE p.polrelid=c.oid) AND c.relname IN (${[...ARCH].map((t) => `'${t}'`).join(',')}) ORDER BY 1`).trim().split('\n');
     expect(names).toEqual([...ARCH]);
     const { data, error } = await clients.admin!.rpc('rls_guard_violations');
     expect(error).toBeNull();
@@ -351,7 +354,9 @@ describe('rls', () => {
 
   it('guard flags a public view without security_invoker', async () => {
     try {
-      sql('CREATE VIEW public._rls_guard_view AS SELECT 1 AS x; CREATE VIEW public._rls_guard_view_off WITH (security_invoker=false) AS SELECT 1 AS x; CREATE VIEW public._rls_guard_view_off2 WITH (security_invoker=off) AS SELECT 1 AS x; CREATE VIEW public._rls_guard_view_0 WITH (security_invoker=0) AS SELECT 1 AS x; CREATE VIEW public._rls_guard_view_no WITH (security_invoker=no) AS SELECT 1 AS x; CREATE VIEW public._rls_ok_view WITH (security_invoker=true) AS SELECT 1 AS x');
+      sql('CREATE VIEW public._rls_guard_view AS SELECT 1 AS x; CREATE VIEW public._rls_guard_view_off WITH (security_invoker=false) AS SELECT 1 AS x; ' +
+        'CREATE VIEW public._rls_guard_view_off2 WITH (security_invoker=off) AS SELECT 1 AS x; CREATE VIEW public._rls_guard_view_0 WITH (security_invoker=0) AS SELECT 1 AS x; ' +
+        'CREATE VIEW public._rls_guard_view_no WITH (security_invoker=no) AS SELECT 1 AS x; CREATE VIEW public._rls_ok_view WITH (security_invoker=true) AS SELECT 1 AS x');
       const { data, error } = await clients.admin!.rpc('rls_guard_violations');
       expect(error).toBeNull();
       const names = (data ?? []).map((r: { relname: string }) => r.relname);
@@ -432,7 +437,8 @@ describe('rls', () => {
   });
 
   it('anon and authenticated cannot TRUNCATE or TRIGGER public tables', () => {
-    const bad = sql(`SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace CROSS JOIN (VALUES ('anon'),('authenticated')) r(rolname) CROSS JOIN (VALUES ('TRUNCATE'),('TRIGGER')) p(priv) WHERE n.nspname='public' AND c.relkind IN ('r','p') AND has_table_privilege(r.rolname, c.oid, p.priv)`).trim();
+    const bad = sql(`SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace CROSS JOIN (VALUES ('anon'),('authenticated')) r(rolname)
+      CROSS JOIN (VALUES ('TRUNCATE'),('TRIGGER')) p(priv) WHERE n.nspname='public' AND c.relkind IN ('r','p') AND has_table_privilege(r.rolname, c.oid, p.priv)`).trim();
     expect(bad).toBe('');
   });
 });

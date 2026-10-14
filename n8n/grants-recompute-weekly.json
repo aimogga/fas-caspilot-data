@@ -2,9 +2,11 @@
   "name": "grants-recompute-weekly",
   "active": false,
   "nodes": [
-    {"parameters":{"rule":{"interval":[{"field":"cronExpression","expression":"0 9 * * 1"}]}},"id":"grants-recompute-schedule","name":"Schedule grants recompute","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1.2,"position":[0,0]},
-    {"parameters":{"method":"POST","url":"={{$env.FAS_GRANTS_RECOMPUTE_URL}}","sendHeaders":true,"headerParameters":{"parameters":[{"name":"Authorization","value":"=Bearer {{$env.INGEST_TOKEN}}"}]}},"id":"grants-recompute-http","name":"POST grants recompute","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[240,0]}
-  ],
+    {"parameters":{"rule":{"interval":[{"field":"cronExpression","expression":"0 9 * * 1"}]}},
+     "id":"grants-recompute-schedule","name":"Schedule grants recompute","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1.2,"position":[0,0]},
+    {"parameters":{"method":"POST","url":"={{$env.FAS_GRANTS_RECOMPUTE_URL}}","sendHeaders":true,"headerParameters":{"parameters":[{"name":"Authorization","value":"=Bearer {{$env.INGEST_TOKEN}}"}]}},
+     "id":"grants-recompute-http","name":"POST grants recompute","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[240,0]}
+  ]
   "connections": {"Schedule grants recompute":{"main":[[{"node":"POST grants recompute","type":"main","index":0}]]}},
   "settings":{"executionOrder":"v1","timezone":"UTC"}
 }

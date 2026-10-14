@@ -3,8 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { RecomputeHttp } from './recompute-http';
 
-const TOKEN = 'not-a-secret-token';
-const ENV = { INGEST_TOKEN: TOKEN, SUPABASE_SERVICE_ROLE_KEY: 'not-a-secret-key' };
+const TOKEN = 'not-a-secret';
+const ENV = { INGEST_TOKEN: TOKEN, SUPABASE_SERVICE_ROLE_KEY: 'dummy_secret_here' };
 const NOW = new Date('2026-10-14T09:00:00Z');
 const WEIGHTS = { mission_fit: 0.3, eligibility_certainty: 0.2, evidence_readiness: 0.15, award_size_fit: 0.15, geography: 0.1, effort_vs_time: 0.1 };
 
