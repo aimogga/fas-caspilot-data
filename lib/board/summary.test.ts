@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { DashboardMetrics } from '@/lib/dashboard/metrics-query';
 import { deltaPhrase, sentences, summarize } from './summary';
 const golden = JSON.parse(readFileSync('tests/golden/metrics.json', 'utf-8')).cases[0].expect, outcomes = JSON.parse(readFileSync('tests/golden/outcomes.json', 'utf-8'));
-const w = <T>(v: T, n: number, delta: string | null = null) => ({ ...v, n, rows: n, asOf: 'Jul 2026', delta });
+const w = <T>(v: T, n: number, delta: string | null = null) => ({ ...v, n, rows: n, viewRows: n, asOf: 'Jul 2026', delta });
 const DIGIT = /\d/;
 describe('board summary (F-402)', () => {
   it('words deltas as "the quarter before"', () => {

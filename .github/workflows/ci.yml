@@ -121,6 +121,7 @@ jobs:
           {
             printf 'NEXT_PUBLIC_SUPABASE_URL=%s\n' "$API_URL"
             printf 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=%s\n' "$ANON_KEY"
+            printf 'SUPABASE_SERVICE_ROLE_KEY=%s\n' "$SERVICE_ROLE_KEY"
           } > .env.local
 
       - name: E2E smoke
