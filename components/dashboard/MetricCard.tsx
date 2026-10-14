@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
  * Table cards (M4, M6, O1) pass `body` instead of `value`: suppression then lives in their cells. */
 export type MetricCardProps = {
   card: DashboardCard; value?: string | null; valueText?: string; stats?: string; delta?: string | null; subline?: string | null; muted?: string;
-  footer?: SourceFooterProps; trend?: ReactNode; n?: number; rows?: number; filtered?: boolean; noData?: string; error?: string; body?: ReactNode;
+  footer?: SourceFooterProps; trend?: ReactNode; n?: number; rows?: number; filtered?: boolean; noData?: string; error?: string; body?: ReactNode; href?: string;
 };
 const BIG = "text-[2rem] leading-none font-semibold tabular-nums", SMALL = "text-sm text-muted-foreground";
 /** Not available until a footer arrives; filter-no-results, no-data and suppression are decided from `rows`, `n` and `value`. */
@@ -17,7 +17,7 @@ const stateOf = (p: MetricCardProps) =>
   p.error ? "error" : !p.footer ? "not-available" : p.rows === 0 && p.filtered ? "no-match" : p.n === 0 ? "no-data" : p.body || p.value != null ? "value" : "suppressed";
 function Body({ p, state }: { p: MetricCardProps; state: ReturnType<typeof stateOf> }) {
   switch (state) {
-    case "error": return <ErrorState message="Couldn't load this number" referenceId={p.error as string} href="/dashboard" />;
+    case "error": return <ErrorState message="Couldn't load this number" referenceId={p.error as string} href={p.href ?? "/dashboard"} />;
     case "no-match": return <><p className="font-medium">No cases match these filters</p><a href="/dashboard" className={cn(buttonVariants({ variant: "outline" }), "self-start")}>Reset filters</a></>;
     case "no-data": return <p className="font-medium">{p.noData}</p>;
     case "suppressed": return <p className={BIG}><SuppressedCell /></p>;
