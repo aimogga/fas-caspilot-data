@@ -53,6 +53,7 @@ Last updated: 2026-10-13
 - Docs: checklist and progress for #81 and #82, #66 done (PR #88, squash-merged at b4ed683, 2026-10-12 22:02:49 UTC).
 - Fix: signed-in error page uses the role-shell content area (PR #90, QA PASS and DESIGN APPROVED at 2f0a13f, squash-merged at d1432ad, 2026-10-12 22:55:30 UTC, refs #65). #65 stays open; its leftovers are tracked in #91, which now includes a loading-skeleton note.
 - #77 Copilot pilot: should unblock once main is merged into it (PR #90 landed the error-page layout).
+- **DS-06a2** FAS county badge, `Show FAS counties only` (`?fas=1`) filter with empty state, synthetic `fas_service_county` seed, true minus sign: PR #147 (open; QA + design pending).
 
 ## Decisions
 

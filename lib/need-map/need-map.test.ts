@@ -14,6 +14,7 @@ const input = (over: Partial<NeedInput> = {}): NeedInput => ({
   scores: [{ version: 'v2', geo_fips: '49035', score: '1.5' }, { version: 'v2', geo_fips: '49049', score: -0.25 }, { version: 'v3', geo_fips: '49001', score: 9 }],
   indicators: [ind('49035', 50, '2023'), ind('49035', 9.2), ind('49001', null, '2024', 'not_published')],
   sources: [{ id: 's1', name: 'census-sahie', last_success_at: '2026-10-12T23:46:22Z' }, { id: 's9', name: 'unused', last_success_at: '2027-01-01T00:00:00Z' }],
+  fas: ['49035', '49049', '49011', '49057', '49045'].map((fips) => ({ fips })),
   ...over,
 });
 
@@ -39,7 +40,7 @@ describe('NeedMapQuery.build', () => {
     expect(data.rows).toHaveLength(29);
     expect(data.rows.slice(0, 2).map((r) => [r.name, r.rank, r.score, r.bin])).toEqual([
       ['Salt Lake County', '1 of 2', '+1.50', '2 of 2'],
-      ['Utah County', '2 of 2', '-0.25', '1 of 2'],
+      ['Utah County', '2 of 2', '−0.25', '1 of 2'],
     ]);
     expect(data.rows[2]).toMatchObject({ name: 'Beaver County', rank: NOT_PUBLISHED, score: NOT_PUBLISHED, status: NOT_PUBLISHED });
   });
@@ -79,6 +80,21 @@ describe('NeedMapQuery.build', () => {
     expect(empty.footer).toBe(`Public sources: ${NOT_YET} · Need score version v2 · Placeholder bins`);
   });
 
+  it('marks FAS counties, filters to them on request and keeps the statewide rank', () => {
+    expect(data.rows.filter((r) => r.fas).map((r) => r.fips).sort()).toEqual(['49011', '49035', '49045', '49049', '49057']);
+    const only = NeedMapQuery.build(input(), { fas: true });
+    expect(only.rows.map((r) => [r.fips, r.rank])).toEqual([['49035', '1 of 2'], ['49049', '2 of 2'], ['49011', NOT_PUBLISHED], ['49045', NOT_PUBLISHED], ['49057', NOT_PUBLISHED]]);
+    expect(only.hasData).toBe(true);
+    expect(NeedMapQuery.build(input({ fas: [{ fips: '00000' }] })).rows.some((r) => r.fas)).toBe(false);
+  });
+
+  it('filter on with no FAS counties configured yields no rows', () => {
+    const none = NeedMapQuery.build(input({ fas: [] }), { fas: true });
+    expect(none.rows).toEqual([]);
+    expect(none.hasData).toBe(true);
+    expect(NeedMapQuery.build(input({ fas: [] })).rows).toHaveLength(29);
+  });
+
   it('eyebrow is BOARD only for board viewers', () => {
     expect(NeedMapQuery.eyebrow('board_viewer')).toBe('BOARD');
     expect(NeedMapQuery.eyebrow('staff')).toBe('WORKSPACE');
@@ -99,7 +115,14 @@ describe('NeedTable markup', () => {
   it('wraps the table in a focusable labelled scroll region with a sticky County column', () => {
     expect(html).toMatch(/^<div role="region" tabindex="0" aria-label="County need table"[^>]*overflow-x-auto/);
     expect(html).toMatch(/<th scope="col" class="[^"]*md:sticky md:left-0[^"]*">County<\/th>/);
-    expect(html).toMatch(/<th scope="row" class="[^"]*md:sticky md:left-0[^"]*">Salt Lake County<\/th>/);
+    expect(html).toMatch(/<th scope="row" class="[^"]*md:sticky md:left-0[^"]*">Salt Lake County<span data-slot="badge"/);
+  });
+
+  it('badges each FAS county and names it in the row label', () => {
+    expect(html.match(/FAS county<\/span>/g)).toHaveLength(5);
+    expect(html).toMatch(/<tr[^>]*aria-label="Salt Lake County, rank 1 of 2, need score \+1\.50, FAS county"/);
+    expect(html).toMatch(/<tr[^>]*aria-label="Beaver County, not published"/);
+    expect(html).not.toMatch(/<tr[^>]*aria-label="Beaver County[^"]*FAS county"/);
   });
 
   it('right-aligns number headers and cells, and notes the source and date per column', () => {

@@ -1,12 +1,20 @@
 import type { ReactNode } from "react";
+import { MapPin } from "lucide-react";
 import { ResponsiveTable } from "@/components/layout";
-import type { NeedTableData } from "@/lib/need-map/query";
+import { Badge } from "@/components/ui/badge";
+import type { CountyRow, NeedTableData } from "@/lib/need-map/query";
 
 const NUM = "text-left tabular-nums md:text-right!";
 const STICKY = "bg-background md:sticky md:left-0 md:z-10";
 
 function Cell({ label, children }: { label: string; children: ReactNode }) {
   return <td className={`min-w-0 break-words py-2 pr-3 align-top ${NUM}`}><span className="text-xs text-muted-foreground md:hidden">{label}: </span>{children}</td>;
+}
+
+/** Row label: `<Name> County, rank n of N, need score ±x.xx` or `<Name> County, not published`; `, FAS county` appended for service counties. */
+function rowLabel(row: CountyRow): string {
+  const base = row.status === "Ranked" ? `${row.name}, rank ${row.rank}, need score ${row.score}` : `${row.name}, ${row.status.toLowerCase()}`;
+  return row.fas ? `${base}, FAS county` : base;
 }
 
 export function NeedTable({ data }: { data: NeedTableData }) {
@@ -28,8 +36,10 @@ export function NeedTable({ data }: { data: NeedTableData }) {
         </thead>
         <tbody>
           {data.rows.map((row) => (
-            <tr key={row.fips} data-fips={row.fips} className="border-t border-border">
-              <th scope="row" className={`py-2 pr-3 text-left font-medium ${STICKY}`}>{row.name}</th>
+            <tr key={row.fips} data-fips={row.fips} aria-label={rowLabel(row)} className="border-t border-border">
+              <th scope="row" className={`py-2 pr-3 text-left font-medium ${STICKY}`}>
+                {row.name}{row.fas ? <Badge variant="info" className="ml-2 align-middle" prefix={<MapPin aria-hidden />}>FAS county</Badge> : null}
+              </th>
               <Cell label="Rank">{row.rank}</Cell>
               <Cell label="Need score">{row.score}</Cell>
               <Cell label="Bin (placeholder)">{row.bin}</Cell>
