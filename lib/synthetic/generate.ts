@@ -4,7 +4,7 @@ export const DEFAULT_SEED = 103;
 export const DEFAULT_CASES = 200;
 export const WINDOW_START = '2024-01-01', WINDOW_END = '2025-03-31';
 export const SMALL_FIPS = ['49009', '49031', '49033', '49055', '49017'] as const;
-const REASONS = ['no_show', 'moved', 'declined', 'waitlist'] as const;
+export const REASONS = ['no_show', 'moved', 'declined', 'waitlist'] as const;
 export const MEASURES = [{ code: 'PHQ-9', max: 27 }, { code: 'GAD-7', max: 21 }, { code: 'OQ-45', max: 180 }, { code: 'YOQ', max: 240 }] as const;
 const CASE_FIPS = ['49035', '49049', '49011', '49057', '49053', '49005', '49009', '49031', '49033', '49055', '49017', '49045'];
 const WEIGHTS = [48, 28, 14, 10, 8, 5, 1, 1, 1, 1, 1, 3];
