@@ -36,8 +36,8 @@ describe("DS-01c", () => {
     expect(markup).toContain("data-slot=\"alert-title\"");
     expect(markup).toContain("Ingest failed.");
     expect(markup).toMatch(/<svg/);
-    expect(markup).not.toMatch(/Retry|<button|<a /);
-    expect(html(createElement(ErrorState, { message: "Ingest failed.", referenceId: "run_demo", href: "/ui" }))).toContain("Retry");
+    expect(markup).not.toMatch(/Try again|<button|<a /);
+    expect(html(createElement(ErrorState, { message: "Ingest failed.", referenceId: "run_demo", href: "/ui" }))).toContain("Try again");
   });
 
   it("EmptyState heading defaults to h2", () => {

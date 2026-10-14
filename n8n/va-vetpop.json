@@ -1,0 +1,11 @@
+{
+  "name": "va-vetpop",
+  "active": false,
+  "nodes": [
+    {"parameters":{"rule":{"interval":[{"field":"cronExpression","expression":"0 15 10 9 *"}]}},"id":"vetpop-schedule","name":"Schedule VetPop","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1.2,"position":[0,0]},
+    {"parameters":{"method":"POST","url":"={{$env.FAS_INGEST_VETPOP_URL}}","sendHeaders":true,
+      "headerParameters":{"parameters":[{"name":"Authorization","value":"=Bearer {{$env.INGEST_TOKEN}}"}]}},"id":"vetpop-http","name":"POST ingest vetpop","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[240,0]}
+  ],
+  "connections": {"Schedule VetPop":{"main":[[{"node":"POST ingest vetpop","type":"main","index":0}]]}},
+  "settings":{"executionOrder":"v1","timezone":"UTC"}
+}

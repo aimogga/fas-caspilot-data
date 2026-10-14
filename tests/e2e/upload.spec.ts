@@ -33,13 +33,52 @@ test("staff can open /staff/intake; board gets 403", async ({ page }) => {
   expect((await page.goto("/staff/intake"))?.status()).toBe(403);
 });
 
-test("a clean CSV previews with 0 errors and a disabled Save", async ({ page }) => {
+test("a clean CSV previews with 0 errors and an enabled Save", async ({ page }) => {
   await signIn(page, "staff@example.test");
   await uploadToPreview(page, "case-good.csv");
   await expect(page.locator("[data-slot=preview-summary]")).toHaveText("3 rows ready · 0 rows with errors");
   await expect(page.locator("td[data-error], button:has-text('Download error report')")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Save" })).toBeDisabled();
-  await expect(page.getByText("Saving arrives in the next release")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Save" })).toBeEnabled();
+  await expect(page.getByText("Save stores all 3 rows as one batch")).toBeVisible();
+});
+
+const idsCsv = (ids: string[]) => ({ name: "case-ids.csv", mimeType: "text/csv", buffer: Buffer.from(["id,court_involved,referral_date,county_fips", ...ids.map((id) => `${id},yes,2024-02-15,49035`)].join("\n")) });
+
+test("Save commits a batch, the list shows it, Roll back removes the rows", async ({ page }) => {
+  await signIn(page, "staff@example.test");
+  const ids = [crypto.randomUUID(), crypto.randomUUID()]; // fixed ids: the second commit only succeeds because the rollback removed the first batch's rows
+  const commit = async () => {
+    await page.goto("/staff/intake");
+    await page.setInputFiles("#intake-file", idsCsv(ids));
+    for (let i = 0; i < 2; i++) await page.getByRole("button", { name: "Next" }).click();
+    await expect(page.locator("[data-slot=preview-summary]")).toHaveText("2 rows ready · 0 rows with errors");
+    await page.getByRole("button", { name: "Save" }).click();
+    await expect(page.getByRole("status")).toHaveText(/^Saved 2 rows as batch [0-9a-f]{8}$/);
+    return (await page.getByRole("status").textContent())!.slice(-8);
+  };
+  const first = await commit(), row = page.locator(`tr[data-batch="${first}"]`);
+  await expect(row).toContainText("Committed");
+  await expect(row.locator("td").nth(3)).toHaveText("2");
+  page.once("dialog", (d) => d.accept());
+  await page.getByRole("button", { name: "Roll back this upload" }).click();
+  await expect(page.getByRole("heading", { level: 2, name: "Step 1 of 3: Choose file" })).toBeVisible();
+  await expect(row).toContainText("Rolled back");
+  await expect(row.getByRole("button", { name: /Roll back/ })).toHaveCount(0);
+  const second = await commit(); // same ids again: only possible because the rollback deleted the first batch's rows
+  page.once("dialog", (d) => d.accept());
+  await page.locator(`tr[data-batch="${second}"]`).getByRole("button", { name: /Roll back/ }).click();
+  await expect(page.locator(`tr[data-batch="${second}"]`)).toContainText("Rolled back");
+});
+
+test("board cannot commit or roll back (403); bad rows get 422 and nothing is saved", async ({ page }) => {
+  await signIn(page, "staff@example.test");
+  const h = ["court_involved", "referral_date", "county_fips"], bad = { entity: "case", mapping: Object.fromEntries(h.map((k) => [k, k])), headers: h, rows: [["yes", "2024-02-15", "99999"]] };
+  const res = await page.request.post("/api/intake/commit", { data: bad });
+  expect([res.status(), (await res.json()).errors[0]]).toMatchObject([422, { row: 2, column: "county_fips", code: "county" }]);
+  await page.context().clearCookies();
+  await signIn(page, "board@example.test");
+  expect((await page.request.post("/api/intake/commit", { data: { ...bad, rows: [["yes", "2024-02-15", "49035"]] } })).status()).toBe(403);
+  expect((await page.request.post("/api/intake/rollback", { data: { batchId: crypto.randomUUID() } })).status()).toBe(403);
 });
 
 test("a CSV with bad county, date order and enum shows errors and offers the report", async ({ page }) => {

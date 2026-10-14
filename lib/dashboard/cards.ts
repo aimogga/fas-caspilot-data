@@ -9,11 +9,15 @@ export const METRIC_CARDS: readonly DashboardCard[] = [
   { id: "m2", title: "Days from application to funding decision", metricName: "M2" },
   { id: "m3", title: "Approved but never started", metricName: "M3" },
   { id: "m5", title: "Cost per completed episode", metricName: "M5" },
+  { id: "m4", title: "Completion rate by income band", metricName: "M4" },
   { id: "m6", title: "Where therapy dollars went", metricName: "M6" },
   { id: "o1", title: "Outcome change", metricName: "O1" },
 ];
 
 export const M4_COLUMNS = ["Income band", "Completed", "Closed", "Rate"] as const;
+export const M6_COLUMNS = ["Provider group", "Avg rate per hour", "Dollars", "Episodes"] as const;
+export const O1_COLUMNS = ["Measure", "Mean change", "Share improved", "n"] as const;
+export const GROUP_LABELS: Record<string, string> = { affiliated: "Affiliated providers", other: "Other providers" };
 
 export const NOT_AVAILABLE = "Not available yet";
 
