@@ -32,7 +32,7 @@ export function buildXlsx(sheets: Record<string, Cell[][]>): Uint8Array {
     const rows = sheets[n].map((r, ri) => `<row r="${ri + 1}">${r.map((v, ci) => cell(v, ri, ci)).join('')}</row>`).join('');
     files[`xl/worksheets/sheet${i + 1}.xml`] = xml(`<worksheet xmlns="${OOX}/spreadsheetml/2006/main"><sheetData>${rows}</sheetData></worksheet>`);
   });
-  return zipSync(files, { level: 9 });
+  return zipSync(files, { level: 9, mtime: '2026-10-14T00:00:00Z' });
 }
 
 /** Synthetic long-format rows shaped like the AOC `All` sheet (docs/research/ut_courts.md): FY2025 + FY2026, Daggett absent in FY2025,
