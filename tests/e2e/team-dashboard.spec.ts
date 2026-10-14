@@ -79,6 +79,32 @@ test("M1 headline card is wired to the F-304 view: title, source footer, trend t
   for (const name of ["View as table", "Reset filters"]) expect((await card.getByText(name).boundingBox())!.height, name).toBeGreaterThanOrEqual(44);
 });
 
+test("M4, M6 and O1 cards against the seed: n<11 cells without a rate, complementary band, hidden-bands footer, both group rates, outcome rows (DS-07c, F-401)", async ({ page }) => {
+  await signIn(page, "staff@example.test");
+  expect((await page.goto("/dashboard"))?.status()).toBe(200);
+  const card = (id: string) => page.locator("[data-slot=metric-card]").filter({ has: page.locator(`#card-${id}-title`) });
+  const m4 = card("m4"), m6 = card("m6"), o1 = card("o1"), quarter = LABEL.replace(/[()]/g, "\\$&");
+  await expect(m4.getByRole("heading", { level: 2 })).toHaveText("Completion rate by income band");
+  await expect(m4.locator("thead th")).toHaveText(["Income band", "Completed", "Closed", "Rate"]);
+  await expect(m4.locator("tbody tr")).toHaveText([/^a.*12.*14.*86%$/, /^b.*Hidden · protects another cell$/, /^c.*n<11.*n<11.*—$/]);
+  await expect(m4.locator("tbody tr[data-suppressed]:not([data-complementary])")).not.toContainText("%");
+  await expect(m4.locator("tfoot tr")).toHaveText(/^All bands.*25.*29.*86%$/);
+  await expect(m4.locator("[data-slot=source-footer]")).toHaveText(new RegExp(`^FAS records · ${quarter} · n = 29 · as of \\w{3} \\d{4} · includes hidden bands$`));
+  await expect(m6.locator("[data-slot=m6-share]")).toHaveText("Affiliated providers 59% · Other providers 41%");
+  await expect(m6.locator("tbody tr")).toHaveText([/^Affiliated providers.*\$120.*\$1,700.*17$/, /^Other providers.*\$90.*\$1,200.*12$/]);
+  await expect(m6.locator("[data-slot=source-footer]")).toHaveText(new RegExp(`^FAS records · ${quarter} · n = 29 · as of \\w{3} \\d{4}$`));
+  await expect(o1.locator("tbody tr")).toHaveText([/^PHQ-9.*Lower is better.*−1\.5.*75%.*12$/, /^GAD-7.*Lower is better.*n<11.*n<11.*n<11/]);
+  await expect(o1.locator("tbody tr[data-measure=GAD-7]")).not.toContainText("%");
+  await expect(o1.locator("[data-slot=source-footer]")).toContainText("n = 15 · as of");
+  expect(await axe(page)).toEqual([]);
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/dashboard");
+  for (const c of [m4, m6, o1]) await expect(c.locator("[data-slot=table-stack]")).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(375);
+  await page.goto("/dashboard?county=49035");
+  for (const c of [m4, m6, o1]) await expect(c).toContainText("No cases match these filters");
+});
+
 test("public data freshness widget lists the seeded sources with text statuses (DS-07a follow-up, F-401)", async ({ page }) => {
   await signIn(page, "staff@example.test");
   expect((await page.goto("/dashboard"))?.status()).toBe(200);

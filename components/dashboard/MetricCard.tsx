@@ -5,22 +5,23 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NOT_AVAILABLE, notAvailableNote, type DashboardCard } from "@/lib/dashboard/cards";
 import { cn } from "@/lib/utils";
-/** DS-07 metric card. With only `card` it is "Not available yet"; `footer` marks a wired card and `value === null` a suppressed one. */
+/** DS-07 metric card. With only `card` it is "Not available yet"; `footer` marks a wired card and `value === null` a suppressed one.
+ * Table cards (M4, M6, O1) pass `body` instead of `value`: suppression then lives in their cells. */
 export type MetricCardProps = {
   card: DashboardCard; value?: string | null; valueText?: string; stats?: string; delta?: string | null; subline?: string | null; muted?: string;
-  footer?: SourceFooterProps; trend?: ReactNode; n?: number; rows?: number; filtered?: boolean; noData?: string; error?: string;
+  footer?: SourceFooterProps; trend?: ReactNode; n?: number; rows?: number; filtered?: boolean; noData?: string; error?: string; body?: ReactNode;
 };
 const BIG = "text-[2rem] leading-none font-semibold tabular-nums", SMALL = "text-sm text-muted-foreground";
 /** Not available until a footer arrives; filter-no-results, no-data and suppression are decided from `rows`, `n` and `value`. */
 const stateOf = (p: MetricCardProps) =>
-  p.error ? "error" : !p.footer ? "not-available" : p.rows === 0 && p.filtered ? "no-match" : p.n === 0 ? "no-data" : p.value == null ? "suppressed" : "value";
+  p.error ? "error" : !p.footer ? "not-available" : p.rows === 0 && p.filtered ? "no-match" : p.n === 0 ? "no-data" : p.body || p.value != null ? "value" : "suppressed";
 function Body({ p, state }: { p: MetricCardProps; state: ReturnType<typeof stateOf> }) {
   switch (state) {
     case "error": return <ErrorState message="Couldn't load this number" referenceId={p.error as string} href="/dashboard" />;
     case "no-match": return <><p className="font-medium">No cases match these filters</p><a href="/dashboard" className={cn(buttonVariants({ variant: "outline" }), "self-start")}>Reset filters</a></>;
     case "no-data": return <p className="font-medium">{p.noData}</p>;
     case "suppressed": return <p className={BIG}><SuppressedCell /></p>;
-    case "value": return (
+    case "value": return p.body ?? (
       <>
         <p className={BIG}>{p.valueText ? <><span aria-hidden>{p.value}</span><span className="sr-only">{p.valueText}</span></> : p.value}</p>
         {p.stats ? <p className={cn(SMALL, "tabular-nums")}>{p.stats}</p> : null}
