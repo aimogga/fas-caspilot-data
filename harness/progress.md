@@ -537,3 +537,9 @@ Did: Recorded George's 11:03 AM MT 2026-10-13 approvals verbatim (via Chief of s
 State: F-201 status stays failing; human_gate unchanged; status_note removed from feature_list (context kept here).
 Left: QA.
 Decisions: D-024, D-025, D-026, D-027.
+
+## 2026-10-14 02:00 (UTC) — Cloud Agent (P15 subagent, lead-reviewed) — F-205 HRSA mental health HPSA ingest
+Did: `packages/ingest/csv.ts` (minimal RFC 4180 parser, no dependency) and `packages/ingest/hrsa_hpsa_mh` (`hrsa-hpsa-mh`): per Utah county `mh_hpsa_designated` (1/0), `mh_hpsa_score_max` (0–26) and `mh_hpsa_designated_population` (sum across HPSAs touching the county); `Withdrawn` excluded, `Designated`/`Proposed For Withdrawal` kept; tolerant `COLUMNS` header mapper that fails closed on an unknown header; counties with no HPSA = real 0 + two `not_published`; vintage = run date (HRSA refreshes daily). `lib/ingest/hpsa-http.ts` + `POST /api/ingest/hpsa`; migration registers `hrsa-hpsa-mh` (HRSA, public domain, monthly); `n8n/hrsa-hpsa-mh.json` (inactive, monthly); fixture CSV; `tests/db/hpsa-load.test.ts` (CI).
+State: gate vs main: +380/−1 = 381, 300-char and secret scan pass; lint/typecheck/unit (407) pass; 3 mutants killed. **data.hrsa.gov blocked from the sandbox: download file name and headers unverified; QA curl in the PR body.**
+Left: QA PASS at head; confirm `DOWNLOAD_URL`; shares the `isPublicRoute` line with #160 and #161.
+Decisions: none new.
