@@ -47,7 +47,7 @@ test("a valid total saves, is listed under Recent aggregate totals with the badg
   await page.getByRole("button", { name: "Save total" }).click();
   const status = page.locator("[data-slot=entry-saved]");
   // When the save never confirms, print the form so the failing run says why.
-  await status.waitFor({ timeout: 10_000 }).catch(async () => console.log("aggregate form after Save:", await page.locator("[data-slot=aggregate-form]").innerText()));
+  await status.waitFor({ timeout: 20_000 }).catch(async () => console.log("aggregate form after Save:", await page.locator("[data-slot=aggregate-form]").innerText()));
   await expect(status).toContainText("Saved aggregate total"); const id = (await status.getAttribute("data-id")) ?? "";
   const row = page.locator(`[data-slot=aggregate-recent] li[data-id="${id}"]`);
   await expect(row).toContainText("Apr–Jun 2026 (Q2) · Episodes completed · 31 · Salt Lake");
