@@ -7,6 +7,7 @@ export const BOARD_FOOTER = "Read-only access · aggregates only";
 export const PREVIEW_FOOTER = "Synthetic data · preview";
 
 const STAFF: NavItem = { label: "Home", href: "/staff" };
+const GRANTS: NavItem = { label: "Foundation grants", href: "/staff/grants" };
 const MATCHES: NavItem = { label: "Grant matches", href: "/staff/grants/matches" };
 const ADMIN: NavItem = { label: "Overview", href: "/admin" };
 const BOARD: NavItem = { label: "Board dashboard", href: "/board" };
@@ -39,7 +40,7 @@ export const HIDDEN_LABELS = [
 export const CRUMB: Record<string, string> = {
   "/staff": "Home", "/admin": "Admin · Overview", "/board": "Board dashboard", "/methodology": "Methodology", "/dashboard": "Team dashboard",
   "/data-freshness": "Data freshness", "/staff/packets": "Evidence packets", "/staff/intake": "Upload data", "/staff/entry": "Enter data",
-  "/staff/grants/matches": "Grant matches",
+  "/staff/grants": "Foundation grants", "/staff/grants/matches": "Grant matches",
 };
 
 export const NO_ROLE_CRUMB = "Account not set up";
@@ -51,8 +52,8 @@ export function crumbFor(role: string, pathname: string, fallback: string): stri
 
 export function navForRole(role: string): { groups: NavGroup[]; footer: string | null } {
   if (role === "board_viewer") return { groups: [{ label: "Board", items: [BOARD, METHOD] }], footer: BOARD_FOOTER };
-  if (role === "staff") return { groups: [{ label: "Workspace", items: [STAFF, DASH, FRESH, PACKETS, UPLOAD, ENTRY, MATCHES, METHOD] }], footer: null };
-  if (role === "admin") return { groups: [{ label: "Workspace", items: [STAFF, DASH, FRESH, PACKETS, UPLOAD, ENTRY, MATCHES, METHOD] }, { label: "Admin", items: [ADMIN] }], footer: null };
+  if (role === "staff") return { groups: [{ label: "Workspace", items: [STAFF, DASH, FRESH, PACKETS, UPLOAD, ENTRY, GRANTS, MATCHES, METHOD] }], footer: null };
+  if (role === "admin") return { groups: [{ label: "Workspace", items: [STAFF, DASH, FRESH, PACKETS, UPLOAD, ENTRY, GRANTS, MATCHES, METHOD] }, { label: "Admin", items: [ADMIN] }], footer: null };
   return { groups: [], footer: null };
 }
 

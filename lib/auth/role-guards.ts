@@ -5,8 +5,9 @@ const RULES: Record<string, UserRole[]> = {
   '/data-freshness': ['admin', 'staff'],
   '/api/packets': ['admin', 'staff'],
   '/api/intake': ['admin', 'staff'],
+  '/api/grants': ['admin', 'staff'],
 };
-const GUARDED_PREFIXES = ['/admin', '/staff', '/board', '/dashboard', '/need-map', '/methodology', '/data-freshness', '/api/packets', '/api/intake'] as const;
+const GUARDED_PREFIXES = ['/admin', '/staff', '/board', '/dashboard', '/need-map', '/methodology', '/data-freshness', '/api/packets', '/api/intake', '/api/grants'] as const;
 export type GuardedPrefix = (typeof GUARDED_PREFIXES)[number];
 const DECODE_PASSES = 8;
 const NOROLE_ALLOWED = ['/403', '/login', '/api/auth/signout'] as const;

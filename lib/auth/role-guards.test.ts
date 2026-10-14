@@ -47,6 +47,8 @@ describe('role-guards', () => {
     expect(matchGuardedPrefix('/data-freshness')).toBe('/data-freshness');
     expect([...(['board_viewer', 'staff', 'admin'] as const), null].map((r) => isRouteAllowed('/api/packets/export', r))).toEqual([false, true, true, false]);
     expect(matchGuardedPrefix('/api/packets/export')).toBe('/api/packets');
+    expect(getAllowedRoles('/api/grants/foundation')).toEqual(['admin', 'staff']);
+    expect(isRouteAllowed('/api/grants/foundation/template', 'board_viewer')).toBe(false);
   });
   it('allowlists public routes only', () => {
     expect(isPublicRoute('/login')).toBe(true);
