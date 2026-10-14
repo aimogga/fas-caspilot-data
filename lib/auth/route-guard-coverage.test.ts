@@ -57,6 +57,7 @@ describe('route guard coverage (#79)', () => {
     expect(routes).toContain('/admin');
     expect(routes).toContain('/login');
     expect(routes).toContain('/api/health');
+    expect(routes).toContain('/data-freshness');
   });
 
   it('strips route groups and skips private folders', () => {

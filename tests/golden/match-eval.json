@@ -1,0 +1,9 @@
+{
+  "_about": "F-509 golden: v1-draft on tests/eval/grant-match/labels.json. Regenerate with: pnpm eval:grants --write-golden (see scripts/grant-match-eval.mjs).",
+  "config_id":"v1-draft","n":36,"threshold":60,"precision":0.875,"recall":0.9333,"f1":0.9032,"eligibilityAccuracy":1,"confusion":{"tp":14,"fp":2,"fn":1,"tn":19},
+  "misses": [
+    {"id":"g-foundation-sparse","label":"good","score":54,"eligible":"unknown","why":"Sparse foundation entry a writer would still pursue (Utah, therapy); most checks cannot run"},
+    {"id":"p-inpatient-psychiatric","label":"poor","score":72,"eligible":true,"why":"Hard negative: mentions mental health but funds inpatient hospital beds FAS does not run"},
+    {"id":"p-research-trial","label":"poor","score":68,"eligible":true,"why":"Hard negative: therapy outcomes research trial; FAS is a service provider, not a research org"}
+  ]
+}
