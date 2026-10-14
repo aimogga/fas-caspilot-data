@@ -12,11 +12,11 @@ const BOARD: NavItem = { label: "Board dashboard", href: "/board" };
 const METHOD: NavItem = { label: "Methodology", href: "/methodology" };
 const DASH: NavItem = { label: "Team dashboard", href: "/dashboard" };
 const PACKETS: NavItem = { label: "Evidence packets", href: "/staff/packets" };
+const FRESH: NavItem = { label: "Data freshness", href: "/data-freshness" };
 
 // Screen-plan §1.2 items whose routes do not exist yet; they stay hidden, not dead links.
 export const HIDDEN_LABELS = [
   "County need map",
-  "Data freshness",
   "Upload data",
   "Cases",
   "Aggregate totals",
@@ -34,7 +34,7 @@ export const HIDDEN_LABELS = [
   "Board packets",
 ] as const;
 
-export const CRUMB: Record<string, string> = { "/staff": "Home", "/admin": "Admin · Overview", "/board": "Board dashboard", "/methodology": "Methodology", "/dashboard": "Team dashboard", "/staff/packets": "Evidence packets" };
+export const CRUMB: Record<string, string> = { "/staff": "Home", "/admin": "Admin · Overview", "/board": "Board dashboard", "/methodology": "Methodology", "/dashboard": "Team dashboard", "/data-freshness": "Data freshness", "/staff/packets": "Evidence packets" };
 
 export const NO_ROLE_CRUMB = "Account not set up";
 
@@ -45,8 +45,8 @@ export function crumbFor(role: string, pathname: string, fallback: string): stri
 
 export function navForRole(role: string): { groups: NavGroup[]; footer: string | null } {
   if (role === "board_viewer") return { groups: [{ label: "Board", items: [BOARD, METHOD] }], footer: BOARD_FOOTER };
-  if (role === "staff") return { groups: [{ label: "Workspace", items: [STAFF, DASH, PACKETS, METHOD] }], footer: null };
-  if (role === "admin") return { groups: [{ label: "Workspace", items: [STAFF, DASH, PACKETS, METHOD] }, { label: "Admin", items: [ADMIN] }], footer: null };
+  if (role === "staff") return { groups: [{ label: "Workspace", items: [STAFF, DASH, FRESH, PACKETS, METHOD] }], footer: null };
+  if (role === "admin") return { groups: [{ label: "Workspace", items: [STAFF, DASH, FRESH, PACKETS, METHOD] }, { label: "Admin", items: [ADMIN] }], footer: null };
   return { groups: [], footer: null };
 }
 

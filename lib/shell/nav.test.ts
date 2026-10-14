@@ -5,8 +5,8 @@ describe("DS-02 nav", () => {
   it("shows only existing routes for each role", () => {
     const groups = (role: string) => navForRole(role).groups.map((g) => g.label);
     const labels = (role: string) => navForRole(role).groups.flatMap((g) => g.items.map((i) => i.label));
-    expect(labels("staff")).toEqual(["Home", "Team dashboard", "Evidence packets", "Methodology"]);
-    expect(labels("admin")).toEqual(["Home", "Team dashboard", "Evidence packets", "Methodology", "Overview"]);
+    expect(labels("staff")).toEqual(["Home", "Team dashboard", "Data freshness", "Evidence packets", "Methodology"]);
+    expect(labels("admin")).toEqual(["Home", "Team dashboard", "Data freshness", "Evidence packets", "Methodology", "Overview"]);
     expect(labels("board_viewer")).toEqual(["Board dashboard", "Methodology"]);
     expect(groups("staff")).toEqual(["Workspace"]);
     expect(groups("admin")).toEqual(["Workspace", "Admin"]);
@@ -21,6 +21,8 @@ describe("DS-02 nav", () => {
     expect(CRUMB["/board"]).toBe("Board dashboard");
     expect(CRUMB["/methodology"]).toBe("Methodology");
     expect(CRUMB["/dashboard"]).toBe("Team dashboard");
+    expect(CRUMB["/data-freshness"]).toBe("Data freshness");
+    expect(HIDDEN_LABELS).not.toContain("Data freshness");
     expect(CRUMB["/staff/packets"]).toBe("Evidence packets");
     expect(HIDDEN_LABELS).not.toContain("Team dashboard");
     expect(HIDDEN_LABELS).not.toContain("Methodology");
@@ -47,6 +49,7 @@ describe("shell breadcrumb", () => {
     expect(crumbFor("board_viewer", "/403", "FAS Evidence")).toBe("FAS Evidence");
     expect(crumbFor("board_viewer", "/methodology", "FAS Evidence")).toBe("Methodology");
     expect(crumbFor("staff", "/dashboard", "FAS Evidence")).toBe("Team dashboard");
+    expect(crumbFor("admin", "/data-freshness", "FAS Evidence")).toBe("Data freshness");
     expect(crumbFor("staff", "/staff/packets", "FAS Evidence")).toBe("Evidence packets");
   });
 });
