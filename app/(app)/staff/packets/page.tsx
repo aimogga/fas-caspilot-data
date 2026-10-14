@@ -32,7 +32,7 @@ export default async function PacketsPage({ searchParams }: { searchParams: Prom
       <form method="get" action="/staff/packets" data-slot="packet-controls" className="flex flex-wrap items-end gap-3">
         <FormField label="Variant" htmlFor="variant"><select id="variant" name="variant" defaultValue={variant} className={SELECT}>{(Object.keys(VARIANT_LABEL) as (keyof typeof VARIANT_LABEL)[]).map((v) => opt(v, VARIANT_LABEL[v]))}</select></FormField>
         <FormField label="County" htmlFor="county"><select id="county" name="county" defaultValue={scope.county ?? ALL} className={SELECT}>{[opt(ALL, "Statewide"), ...COUNTIES.map((c) => opt(c.fips, c.name))]}</select></FormField>
-        <div className="flex gap-3"><button type="submit" className={buttonVariants()}>Update</button><PrintButton label="Print / Save as PDF" /></div>
+        <div className="flex flex-wrap gap-3"><button type="submit" className={buttonVariants()}>Update</button><PrintButton label="Print / Save as PDF" /></div>
       </form>
       {packet ? <PacketView packet={packet} /> : <ErrorState message="Couldn't build the packet" referenceId={errorId ?? randomUUID()} href="/staff/packets">Something went wrong on our side. Try again.</ErrorState>}
     </Stack>
@@ -43,7 +43,7 @@ function PacketView({ packet }: { packet: Packet }) {
     <article data-slot="packet" className="flex flex-col gap-10">
       <header data-slot="packet-cover" className="flex flex-col gap-3 rounded-lg border p-6">
         <p data-slot="packet-ribbon" className="text-sm font-semibold uppercase tracking-wide text-warning">{packet.ribbon}</p>
-        <p data-slot="packet-title" className="font-serif text-2xl font-semibold">{packet.title}</p>
+        <h1 data-slot="packet-title" className="font-serif text-2xl font-semibold">{packet.title}</h1>
         <p className="text-sm text-muted-foreground">{packet.prepared} · {packet.asOf}</p>
         <ol className="list-decimal pl-5 text-sm">{packet.sections.map((s) => <li key={s.id}>{SECTION_TITLES[s.id]}</li>)}</ol>
       </header>
