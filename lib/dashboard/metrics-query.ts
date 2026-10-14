@@ -19,7 +19,8 @@ export type EpRow = {
 export type O1Row = OutcomeRow & { followup_date: string | null };
 /** A view that failed to load is `null`: its card shows the per-card error and the others stay. `Loaded` carries that error marker. */
 export type ViewRows = { m1: M1Row[] | null; m2: M2Row[] | null; m3: M3Row[] | null; eps: EpRow[] | null; o1: O1Row[] | null };
-export type Wired = { rows: number; n: number; asOf: string; delta: string | null };
+/** `rows`: view rows in the quarter, unless the engine result carries its own `rows` (M4 bands); `viewRows` is always the count. */
+export type Wired = { rows: number; viewRows: number; n: number; asOf: string; delta: string | null };
 export type Loaded<T> = (T & Wired) | { error: true };
 export type DashboardMetrics = { [K in keyof typeof compute]: Loaded<ReturnType<(typeof compute)[K]>> } & { trend: TrendPoint[]; filtered: boolean };
 /** View name, selected columns and the date column the quarter range applies to (in SQL; `anchor` buckets the same column here). */
@@ -99,7 +100,7 @@ export class MetricsQuery {
       if (!xs) return { error: true };
       const q = bucket(xs, at, f.period), cur = calc(q), latest = xs.map(at).filter((d): d is string => !!d).sort().pop();
       const d = f.compare === 'prior' ? delta(value(cur), value(calc(bucket(xs, at, prior))), unit, prior) : null;
-      return { ...cur, rows: q.length, asOf: latest ? NeedMapQuery.monthYear(latest) : 'Not available yet', delta: d };
+      return { rows: q.length, ...cur, viewRows: q.length, asOf: latest ? NeedMapQuery.monthYear(latest) : 'Not available yet', delta: d };
     };
     const trend = rows.m1 ? lastQuarters(f.period).map((period) => ({ period, median: compute.m1(bucket(rows.m1 as M1Row[], anchor.m1, period)).median })) : [];
     return {

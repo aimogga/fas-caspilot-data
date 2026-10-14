@@ -52,9 +52,9 @@ describe('MetricsQuery (DS-07b, F-401)', () => {
   it('build buckets by quarter, suppresses n < 11, words the prior-quarter delta, summarises the trend and flags a failed view', () => {
     const rows: ViewRows = { m1: [...m1Rows(12, '2026-07-01', 23), ...m1Rows(12, '2026-06-30', 27), ...m1Rows(3, '2026-01-15', 40)], m2: [], m3: [], eps: null, o1: null };
     const out = MetricsQuery.build(rows, F());
-    expect(out.m1).toEqual({ rows: 12, n: 12, median: 23, p25: 23, p75: 23, stillWaitingShare: null, asOf: 'Jul 2026', delta: '↓ 4 days faster than Q2' });
+    expect(out.m1).toEqual({ rows: 12, viewRows: 12, n: 12, median: 23, p25: 23, p75: 23, stillWaitingShare: null, asOf: 'Jul 2026', delta: '↓ 4 days faster than Q2' });
     expect(out.trend).toEqual([{ period: '2025-Q4', median: null }, { period: '2026-Q1', median: null }, { period: '2026-Q2', median: 27 }, { period: '2026-Q3', median: 23 }]);
-    expect([out.m2, out.m5, out.filtered]).toEqual([{ rows: 0, n: 0, median: null, asOf: 'Not available yet', delta: null }, { error: true }, false]);
+    expect([out.m2, out.m5, out.filtered]).toEqual([{ rows: 0, viewRows: 0, n: 0, median: null, asOf: 'Not available yet', delta: null }, { error: true }, false]);
     expect(MetricsQuery.build(rows, F({ compare: 'none' })).m1).toMatchObject({ delta: null });
     expect(MetricsQuery.build(rows, F({ period: '2026-Q1', county: '49035' }))).toMatchObject({ m1: { rows: 3, n: 3, median: null, delta: null }, filtered: true });
   });
@@ -77,7 +77,7 @@ describe('MetricsQuery (DS-07b, F-401)', () => {
       { group: 'affiliated', dollars: 1700, episodes: 17, avgRatePerUnit: 120 }, { group: 'other', dollars: 1200, episodes: 12, avgRatePerUnit: 90 }] });
     expect(compute.m6([...ep(17, 'a', 12), ...ep(3, 'b', 1, false)])).toMatchObject({ affiliatedShare: null, groups: [{ dollars: 1700, avgRatePerUnit: 120 }, { dollars: null, episodes: null, avgRatePerUnit: null }] });
     const o1 = Array.from({ length: 12 }, (_, i): O1Row => ({ measure_code: i < 11 ? 'PHQ-9' : 'GAD-7', baseline_score: 10, followup_score: i % 2 ? 6 : 10, followup_date: '2026-08-15' }));
-    expect(MetricsQuery.build({ m1: [], m2: [], m3: [], eps, o1 }, F()).o1).toMatchObject({ rows: 12, n: 12, asOf: 'Aug 2026', delta: null, measures: [
+    expect(MetricsQuery.build({ m1: [], m2: [], m3: [], eps, o1 }, F()).o1).toMatchObject({ rows: 12, viewRows: 12, n: 12, asOf: 'Aug 2026', delta: null, measures: [
       { code: 'PHQ-9', n: 11, meanChange: -1.8182, shareImproved: 0.4545, suppressed: false }, { code: 'GAD-7', n: 1, meanChange: null, shareImproved: null, suppressed: true }] });
   });
 });
