@@ -23,7 +23,7 @@ function metricProps(id: string, x: DashboardMetrics | null, f: Filters): Partia
   const fas = <T extends Wired>(m: Loaded<T> | undefined, noData: string, body: (v: T) => Partial<MetricCardProps>): Partial<MetricCardProps> => {
     if (!m) return {};
     if ("error" in m) return { error: randomUUID() };
-    return { n: m.n, rows: m.rows, filtered: x?.filtered, noData, delta: m.delta, footer: footer(m), ...body(m) };
+    return { n: m.n, rows: m.viewRows, filtered: x?.filtered, noData, delta: m.delta, footer: footer(m), ...body(m) };
   };
   switch (id) {
     case "m1": return fas(x?.m1, NO_CASES, (v) => ({
