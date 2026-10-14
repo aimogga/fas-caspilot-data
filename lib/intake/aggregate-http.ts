@@ -20,7 +20,8 @@ export class AggregateHttp {
     const ins = await db.from('aggregate_submission').insert(rowForInsert(v.ok, user.orgId, user.id)).select('id').single();
     if (ins.error || !ins.data) return fail(500, "Couldn't save the total. Nothing was stored; try again.");
     const id = String(ins.data.id);
-    const audit = await db.from('audit_log').insert(auditRow(id, user.orgId, user.id, v.ok.metric_code)).select('id').single();
+    // No RETURNING here: audit_log is readable by admins only, so a staff insert that also selects is rejected by RLS.
+    const audit = await db.from('audit_log').insert(auditRow(id, user.orgId, user.id, v.ok.metric_code));
     if (audit.error) return Response.json({ error: 'The total was saved but its audit entry failed. Tell an admin.', id }, { status: 500 });
     return Response.json({ id }, { status: 201 });
   }
