@@ -25,6 +25,7 @@ Options: xAI (Grok) API, Anthropic, OpenAI, or others, behind `lib/llm/`.
 Criteria: reliable structured (JSON) output, data-retention terms, cost, and BAA availability if anything sensitive could ever reach it (the design sends aggregates only).
 Recommendation: pick one provider for v1 after a 5-opportunity bake-off scored by QA on citation accuracy; keep the adapter so it can change.
 Decision: per recommendation: run the 5-opportunity bake-off scored by QA on citation accuracy, pick the v1 provider from its result, and keep the `lib/llm/` adapter. Decided by George in chat. · Date: 2026-10-08
+Amendment (F-508a, #222): Gemini is the v1 primary provider and OpenRouter free tier is the fallback; the 5-opportunity QA bake-off (F-508 eval) now compares the two. Free tiers may use prompts for training, which is acceptable because only public data and suppressed aggregates are ever sent; switching Gemini to a paid tier is a config change. Decided by George in chat. · Date: 2026-10-15
 
 ### D-004 PDF and Word export method
 Options: (A) print-optimized HTML route rendered to PDF with headless Chromium + a DOCX library; (B) a React PDF library; (C) a paid document API.
