@@ -115,7 +115,7 @@ export class MetricsQuery {
     return {
       m1: section(rows.m1, anchor.m1, compute.m1, (v) => v.median, 'days'), m2: section(rows.m2, anchor.m2, compute.m2, (v) => v.median, 'days'),
       m3: section(rows.m3, anchor.m3, compute.m3, (v) => v.share, 'pts'), m5: section(rows.eps, anchor.eps, compute.m5, (v) => v.costPerCompleted, 'money'),
-      m4: section(rows.eps, anchor.eps, compute.m4, () => null, 'pts'), m6: section(rows.eps, anchor.eps, compute.m6, () => null, 'pts'),
+      m4: section(rows.eps, anchor.eps, compute.m4, (v) => v.total?.rate ?? null, 'pts'), m6: section(rows.eps, anchor.eps, compute.m6, () => null, 'pts'),
       o1: section(rows.o1, anchor.o1, compute.o1, () => null, 'pts'),
       trend, trends, filtered: f.county !== ALL || f.referral !== ALL,
     };
