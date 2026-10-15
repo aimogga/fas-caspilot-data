@@ -7,7 +7,7 @@ import { assertPacket, CASE_FIELDS, EXACT_DATE, renderText } from './assert';
 import { BOM, CSV_HEADER, csvCell, csvRows, packetToCsv } from './csv';
 import { docxText, packetToDocx } from './docx';
 import { exportFilename, renderExport } from './export';
-import { buildPacket, scopeLabel, type Packet, type PacketInput } from './model';
+import { buildPacket, PICTURE_SECTION, scopeLabel, type Packet, type PacketInput } from './model';
 import { PacketQuery, parsePacketParams } from './query';
 type Rec = Record<string, unknown>;
 const s = (v: unknown) => (v == null ? null : String(v)), NOW = new Date('2024-11-01T00:00:00Z');
@@ -44,6 +44,13 @@ describe('buildPacket (F-403)', () => {
     const g = buildPacket(input({ scope: {}, need: null, method: null, metrics: null }));
     expect(g.sections[0]?.paragraphs).toEqual(['The county need score is not available yet.']);
     expect([g.sections[1]?.paragraphs, g.sections[3]?.paragraphs[0], assertPacket(g)]).toEqual([['This quarter’s numbers are not available yet.'], 'Need score methodology is not available yet.', []]);
+  });
+  it('carries the board pictures with a section for each, the quarter, and none without metrics', () => {
+    const p = buildPacket(input());
+    expect(p.period).toBe('2024-Q3');
+    expect(p.pictures.length).toBeGreaterThan(0);
+    for (const pic of p.pictures) expect(['fas-results', 'outcomes']).toContain(PICTURE_SECTION[pic.id]);
+    expect(buildPacket(input({ metrics: null })).pictures).toEqual([]);
   });
   it('assertPacket catches each injected violation on its own', () => {
     const inject = (f: (p: Packet) => void) => { const p = buildPacket(input()); f(p); return assertPacket(p).map((v) => `${v.rule}:${v.text}`); };

@@ -811,3 +811,9 @@ Did: the team dashboard now shows the last four quarters of M2, M3 and M5 as lin
 State: lint/typecheck/unit green locally; rendered at 375/1024 via a throwaway fixture route (deleted), no overflow, labels clear. `tests/e2e/visual.spec.ts` adds a dashboard test (three charts, aria-labels, footers, no overflow, axe) that CI runs. Branch `claude/visual-p9-dashboard-trends` off main (after #188 merged).
 Left: nothing for this packet. The hover layer (#191) applies to these charts once it merges.
 Decisions: none new.
+
+## 2026-10-15 03:50 (UTC) — Cloud Agent (Engineer Supervisor) — evidence packet pictures (visual-first follow-up, packet 10; Refs F-403)
+Did: the evidence packet now carries the board's pictures inside the sections they belong to: wait, completion and dollars under FAS results, the outcomes chart under Outcomes (`PICTURE_SECTION` in `lib/packets/model.ts`; `Packet` gains `pictures` from `boardPictures(metrics)` and `period`). The packet body moved from the page into `components/packets/PacketView.tsx` and renders each picture in a card with the FAS records footer (`data-slot=packet-pictures`). Print sheet: picture cards print black on white, bordered, never split across pages. DOCX and CSV are unchanged (figures only).
+State: lint/typecheck/unit green locally (packet test adds the pictures case); rendered a synthetic board packet on a throwaway route (deleted), no overflow at 375/1024. `tests/e2e/packets.spec.ts` asserts the board packet shows at least one picture, every picture has its summary, and all sit in FAS results or Outcomes; CI runs it. Branch `claude/visual-p10-packet-pictures` off main.
+Left: pictures in the DOCX export (would need chart images; the figures and table views carry the same numbers today).
+Decisions: none new.
