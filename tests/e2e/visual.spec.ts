@@ -68,7 +68,7 @@ for (const [email, path, title] of [["staff@example.test", "/staff", "Home"], ["
       for (const t of await tiles.all()) await expect(t).toHaveAttribute("data-state", /^(value|suppressed)$/);
       const shown = page.locator("[data-slot=home-tile][data-state=value]").first();
       if (await shown.count()) await expect(shown.locator("[data-slot=sparkline], [data-slot=suppressed]").first()).toBeVisible();
-      await expect(page.getByRole("link", { name: "Team dashboard" })).toBeVisible();
+      await expect(page.locator("#main").getByRole("link", { name: "Team dashboard" })).toBeVisible();
       await noOverflow(page, width);
       expect(await axe(page), `axe @ ${width}`).toEqual([]);
     }
