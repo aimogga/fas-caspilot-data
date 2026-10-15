@@ -876,3 +876,8 @@ Did: George approved the sweeps (2026-10-15). `SearchConfig` gains `assistance_l
 State: 69 grants tests green (new: sweep order and filters, windows, empty lists add nothing, dedupe merges labels; the default run now takes 6 sweeps); lint and typecheck green. Branch `f501-sweeps` stacked on `fix/grants-gov-header` (#202) until it merges.
 Left: first live run with George's key confirms the agency codes and the forecasted/close-date interaction; adjust `agencies` to sub-agency codes (ACF, SAMHSA, OJJDP) if the API accepts them.
 Decisions: none new (sweep defaults are config, changeable without a migration).
+## 2026-10-15 19:20 (UTC) — Cloud Agent (Engineer Supervisor) — Utah Courts reuse terms confirmed (F-207)
+Did: the AOC replied to Krystle Smith's 2026-10-12 request that there are no restrictions on the public filings workbook. Migration `20261015190000_f207_ut_courts_terms.sql` sets `commercial_ok = true` and records the confirmation in `source_registry.license` for `ut_courts`; `docs/DATA_SOURCES.md` row no longer says "verify"; D-038 records the exchange. The same UPDATE applied to fas-dev.
+State: no code change; migration is a single UPDATE; lint, typecheck and unit tests green. Branch `ut-courts-terms` off main.
+Left: nothing. The Utah Courts ingest can run on its schedule once the n8n workflow is activated.
+Decisions: D-038.
