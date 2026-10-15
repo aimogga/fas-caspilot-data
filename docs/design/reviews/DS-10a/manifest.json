@@ -1,0 +1,32 @@
+[
+  {
+    "id": "DS-10a",
+    "tag": "before",
+    "route": "/staff",
+    "width": 375,
+    "variant": "base",
+    "host": "fas-caspilot-data.vercel.app",
+    "sha": "5de6954",
+    "at": "2026-10-15T22:14:35.317Z"
+  },
+  {
+    "id": "DS-10a",
+    "tag": "before",
+    "route": "/staff",
+    "width": 1024,
+    "variant": "base",
+    "host": "fas-caspilot-data.vercel.app",
+    "sha": "5de6954",
+    "at": "2026-10-15T22:14:37.502Z"
+  },
+  {
+    "id": "DS-10a",
+    "tag": "before",
+    "route": "/staff",
+    "width": 1440,
+    "variant": "base",
+    "host": "fas-caspilot-data.vercel.app",
+    "sha": "5de6954",
+    "at": "2026-10-15T22:14:39.741Z"
+  }
+]
