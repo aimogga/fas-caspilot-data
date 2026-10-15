@@ -30,9 +30,9 @@ test("staff sees seeded matches by score and the How we matched panel shows only
     await expect(rows.nth(0).locator("h3")).toHaveText("Family Therapy Access Grants (synthetic)");
     await expect(rows.nth(0).locator("[data-slot=match-meta]")).toHaveText("Synthetic Agency for Families · closes Dec 15, 2027 · $50,000–$200,000");
     await expect(rows.nth(0).locator("[data-slot=fit-score]")).toHaveText("100");
-    await expect(rows.nth(0).locator("[data-slot=match-badges] [data-slot=badge]")).toHaveText(["Eligible", "Not tracked yet"]);
+    await expect(rows.nth(0).locator("[data-slot=match-badges] [data-variant]")).toHaveText(["Eligible", "Not tracked yet"]);
     await expect(rows.nth(1).locator("[data-slot=fit-score]")).toHaveText("0");
-    await expect(rows.nth(1).locator("[data-slot=match-badges] [data-slot=badge]")).toHaveText(["Not eligible", "Only state governments may apply", "Not tracked yet"]);
+    await expect(rows.nth(1).locator("[data-slot=match-badges] [data-variant]")).toHaveText(["Not eligible", "Only state governments may apply", "Not tracked yet"]);
     // D-040: the same words on hover and on focus; the capped row says why its score is 0 from the stored reason.
     const flag = rows.nth(1).locator("[data-slot=flag]").locator("xpath=ancestor::button[1]");
     await flag.hover();
