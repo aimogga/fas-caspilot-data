@@ -199,7 +199,7 @@ test("explain layer: hover, focus and Enter show the same words on a cell; Esc c
   await page.locator("thead [data-slot=explain-trigger]", { hasText: "Rank" }).hover();
   await expect(page.locator("[data-slot=hover-card-content]")).toContainText("This county's place among the counties that have a score, 1 being the highest need.");
   await panel.locator("[data-slot=source-footer] [data-slot=explain-trigger]").first().click();
-  await expect(dialog).toContainText(/Census SAHIE.*Source.*Census SAHIE.*As of.*Period \d{4}/s);
+  await expect(dialog).toContainText(/Census SAHIE.*Source.*Census SAHIE.*As of.*Period\s*\d{4}/s);
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
   const median = panel.locator("[data-slot=compare-bars] [data-slot=hint-trigger]");
