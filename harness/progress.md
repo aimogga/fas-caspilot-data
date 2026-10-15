@@ -773,3 +773,9 @@ Did: `/board` now opens with the quarter as four pictures above the metric cards
 State: lint/typecheck/unit green locally; verified at 375/1024 light and dark via a throwaway fixture route (deleted), no horizontal overflow. e2e `board-dashboard.spec.ts` unchanged (seven cards, footers, note); CI runs it.
 Left: packet 3 need-map plain-language panel; packet 4 staff home sparklines. No e2e assertion on the pictures yet (add with packet 4 under `data-slot=board-pictures`).
 Decisions: none new.
+
+## 2026-10-15 02:10 (UTC) — Cloud Agent (Engineer Supervisor) — staff home tiles + `/home` (visual-first direction, packet 4 of 4; Refs F-401)
+Did: `/staff` is now a home: four tiles (M1, M2, M3, M5) each with the suppressed number, a four-quarter `Sparkline` with its Better/Worse word, the prior-quarter delta and the FAS records footer, then the four things staff do most (Upload data, Enter data, Evidence packets, Team dashboard). `lib/staff/home.ts` (pure, 2 tests) builds the tiles from `DashboardMetrics`; `MetricsQuery` gains `trends` (four-quarter headline series for m1/m2/m3/m5) and `load` now spans four quarters for every view. `/home` (`app/(app)/home/page.tsx`) redirects each role to its own home; guarded for all roles in `lib/auth/role-guards.ts`.
+State: lint/typecheck/unit green locally; tiles checked at 375/1024 via a throwaway fixture route (deleted), no overflow. Existing e2e on `/staff` only checks the shell and 403; CI runs them. Branch `claude/visual-p4-staff-home` off main (after #185 merged).
+Left: e2e for the tiles and `/home`; packet 2's `data-slot=board-pictures` assertion. The visual-first direction (4 packets) is otherwise complete.
+Decisions: none new.
