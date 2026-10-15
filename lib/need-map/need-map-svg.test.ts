@@ -77,7 +77,7 @@ describe('NeedMap markup', () => {
     expect(out).toMatch(/<path [^>]*data-fips="49011"[^>]*data-selected="true"[^>]*aria-pressed="true"/);
     expect(out).toMatch(/<path [^>]*data-selected-outline="49011" fill="none" stroke="var\(--ring\)" stroke-width="3" pointer-events="none" aria-hidden="true"/);
     expect(out.indexOf('data-selected-outline=')).toBeGreaterThan(out.lastIndexOf('data-fas-outline='));
-    expect(out).toMatch(/<div class="order-last lg:order-none lg:col-span-5 lg:sticky lg:top-4 lg:self-start"><div[^>]*data-slot="county-panel"[^>]*>[^]*Davis County[^]*Rank 20 of 26 · Need score −0\.80[^]*<\/div><figcaption/);
+    expect(out).toMatch(/<div class="order-last lg:order-none lg:col-span-5 lg:sticky lg:top-4 lg:self-start"><div[^>]*data-slot="county-panel"[^>]*>[^]*Davis County[^]*Rank <button[^>]*>20 of 26<\/button> · Need score <button[^>]*>−0\.80<\/button>[^]*<\/div><figcaption/);
     expect(out).not.toContain(SELECT_PROMPT);
   });
 

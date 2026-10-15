@@ -10,6 +10,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
+// Target look (visual-direction.md): a serif question, then one plain sentence. The measure count is not named because the columns come from whatever sources have loaded.
+const DESCRIPTION = "Each county is ranked against the other 28 on public measures such as poverty and uninsured rates. Darker means more need. Pick a county to see why it ranks where it does.";
 
 export default async function NeedMapPage({ searchParams }: { searchParams: Promise<{ fas?: string; county?: string }> }) {
   const params = await searchParams;
@@ -27,7 +29,7 @@ export default async function NeedMapPage({ searchParams }: { searchParams: Prom
   const actions = <Cluster gap={3}><Link href="/methodology" data-slot="button" className={buttonVariants({ variant: "outline" })}>Methodology</Link><FasFilter /></Cluster>;
   return (
     <Stack gap={6}>
-      <PageHeader eyebrow={NeedMapQuery.eyebrow(role)} title="County need map" description="Relative need across Utah's 29 counties, from public data. Select a county to see its numbers and sources." actions={actions} />
+      <PageHeader eyebrow={NeedMapQuery.eyebrow(role)} title="Where is the need greatest?" description={DESCRIPTION} actions={actions} />
       {data === null ? (
         <ErrorState message="Couldn't load the need map" referenceId={randomUUID()} href="/need-map">Something went wrong loading county data. Try again.</ErrorState>
       ) : !data.hasData ? (
