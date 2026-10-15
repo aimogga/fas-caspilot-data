@@ -33,7 +33,9 @@ test("gallery sizes, axe, and screenshots", async ({ page }) => {
     return {
       minTap: Math.min(...buttons.flatMap((el) => [box(el).height, box(el).width]), ...inputs.map((el) => box(el).height), ...natives.flatMap((el) => [box(el).height, box(el).width])),
       inputPx: Math.min(...inputs.map((el) => parseFloat(getComputedStyle(el).fontSize))),
-      ok: !!label && getComputedStyle(label).display === "block" && !!inputs[0] && box(label).bottom <= box(inputs[0]).top + 1 && err?.getAttribute("aria-invalid") === "true" && err.getAttribute("aria-describedby") === "gallery-err-msg" && light && dark && ring(document.querySelector("#gallery-email") as HTMLElement),
+      ok: !!label && getComputedStyle(label).display === "block" && !!inputs[0] && box(label).bottom <= box(inputs[0]).top + 1
+        && err?.getAttribute("aria-invalid") === "true" && err.getAttribute("aria-describedby") === "gallery-err-msg"
+        && light && dark && ring(document.querySelector("#gallery-email") as HTMLElement),
       scroll: document.documentElement.scrollWidth,
       pagePad: page ? parseFloat(getComputedStyle(page).paddingLeft) : 0,
       fresh: fresh.every((t) => t.length > 0) && fresh.length === 3,
