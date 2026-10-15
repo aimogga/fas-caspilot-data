@@ -888,3 +888,9 @@ Did: George created the n8n credentials "FAS ingest token" (`hJd3gjSOX9o2ITvB`) 
 State: lint, typecheck and 224 ingest/grants tests green. All workflows stay `active: false`.
 Left: import the 12 workflows into n8n.casepilot.io via `POST /api/v1/workflows` from a session on the "vercel.app" cloud environment once its setup script is cleared (`npm install` / corepack both fail there); George activates them after a manual test run of one ingest and the digest.
 Decisions: D-039.
+
+## 2026-10-15 21:30 (UTC) — Cloud Agent (Engineer Supervisor) — Design polish programme: designer agent, design-polish skill, plan and D-040
+Did: George reviewed the v1 screen plan and mockups and asked for an expert-level polish pass with a designer agent (expensive look, visuals, plain language for non-data readers, hover explanations). Added `.claude/agents/designer.md` (one DS-xx sub-packet per run: audit → spec → implement under the cap → evidence → draft PR → stop), the `design-polish` skill with four references (the design bar as pass/fail rows, plain-language rules and the core term table, the page audit template, PR evidence), `docs/design/POLISH_PLAN.md` (foundation PRs A–D, page packets DS-10a to DS-19 in George's order) and D-040. Plugins Design and frontend-design are installed on the account; the agent invokes design-critique, ux-copy, accessibility-review and frontend-design at the named steps.
+State: markdown only (docs-only CI). PR-B (evidence tooling: gate binary fix, `pnpm shots`, `pnpm review-page`) and PR-C (DS-09 hover + explain kit) are in flight on their own branches.
+Left: merge A, B, C; probe the vercel.app environment for Playwright; before shots (PR-D) once `DESIGN_SHOTS_PASSWORD` is set there; then DS-10a and DS-11a in parallel.
+Decisions: D-040.
