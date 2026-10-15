@@ -817,3 +817,9 @@ Did: the evidence packet now carries the board's pictures inside the sections th
 State: lint/typecheck/unit green locally (packet test adds the pictures case); rendered a synthetic board packet on a throwaway route (deleted), no overflow at 375/1024. `tests/e2e/packets.spec.ts` asserts the board packet shows at least one picture, every picture has its summary, and all sit in FAS results or Outcomes; CI runs it. Branch `claude/visual-p10-packet-pictures` off main.
 Left: pictures in the DOCX export (would need chart images; the figures and table views carry the same numbers today).
 Decisions: none new.
+
+## 2026-10-15 04:05 (UTC) — Cloud Agent (Engineer Supervisor) — bar chart hover tooltip (visual-first follow-up, packet 11; Refs F-402)
+Did: every `BarChart` row shows a tooltip on hover with the label, value and note, in the same words as the line chart's crosshair (`tooltipText` from `lib/charts/hover.ts`): `Utah · 31`, `4 other counties · Hidden (n < 11)`, `Under $30k · 82% · Hidden to protect another band`. CSS only (`group-hover` on the row), so the chart stays a server component; the native `title` is dropped. Keyboards keep the table view, which carries the same words.
+State: lint/typecheck green locally; hover on the label and on the bar checked on `/ui` with Playwright (temp script deleted). `tests/e2e/gallery.spec.ts` pins five tooltips, hidden by default, the words on hover for a shown and a hidden row; CI runs it. Branch `claude/visual-p11-bar-hover` off main.
+Left: nothing for this packet.
+Decisions: none new.
