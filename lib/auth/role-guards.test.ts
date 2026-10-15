@@ -63,6 +63,7 @@ describe('role-guards', () => {
     expect(isPublicRoute('/api/ingest/usaspending')).toBe(true);
     expect(isPublicRoute('/api/ingest/grants-gov')).toBe(true);
     expect(isPublicRoute('/api/grants/recompute')).toBe(true);
+    expect(isPublicRoute('/api/grants/digest')).toBe(true);
     expect(isPublicRoute('/api/ingest/ut-courts')).toBe(true);
     expect(isPublicRoute('/api/ingest/hpsa')).toBe(true);
     expect(isPublicRoute('/api/ingest/vetpop')).toBe(true);
