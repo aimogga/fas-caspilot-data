@@ -900,3 +900,9 @@ Did: `scripts/pr-gate.mjs` exports `BINARY` and skips png/jpg/gif/webp/ico/pdf/w
 State: lint, typecheck, 759 unit tests (95 files) green; gate green. Dry run against a stub app (JSON login + page shell) with the pre-installed headless Chromium produced all 11 shots, the PDF and a correct manifest and index.html; output deleted before commit. The real app and local Supabase are not available in this cloud shell, so no shots of FAS pages are committed. Branch `design/evidence-tooling`.
 Left: the CI step that uploads `docs/design/reviews/**` as a workflow artifact (later PR); first real packet (DS-10a) run from the Cursor machine with `supabase start` + `pnpm seed:synthetic` + `pnpm dev`.
 Decisions: none new.
+
+## 2026-10-15 22:15 (UTC) — Cloud Agent (Engineer Supervisor) — Target look for Home, need map and board (design)
+Did: George picked the three artboards in his "FAS Evidence visual direction" design canvas as the target look for the Home, County need map and Board packets. Wrote them up in `docs/design/targets/visual-direction.md` (shared type steps and the eyebrow → finding sentence → picture → source line → View as table pattern; per-page layout, copy and states; rule that artboard numbers are examples and missing data ships as "Not available yet"); pointed `docs/design/POLISH_PLAN.md` and the designer agent's read order at it.
+State: markdown only.
+Left: DS-10a and DS-11a start once the DS-09 kit (#212) merges.
+Decisions: none new (applies D-040).
