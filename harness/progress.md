@@ -906,3 +906,8 @@ Did: the kit behind George's hover rule (D-040). `lib/trust/glossary.ts` (`GLOSS
 State: lint, typecheck, 755 unit tests green (new: glossary 4, explain kit 4; vitest now includes `lib/**/*.test.tsx`). Gallery e2e ran locally against `pnpm dev` with the pre-installed `/opt/pw-browsers` Chromium (Playwright's own download is blocked): 5/5 green, including the `hasTouch` tap at 375 and axe with a popover open. D-012: 388 hand-written lines. Branch `ds-09-explain-kit`.
 Left: page packets add triggers and domain terms (DS-10a onward); `ExplainLayer` for many targets (DS-11a); one shared `HATCH` (the three definitions still differ; noted in the spec); optional `shadcn add --overwrite` of the three primitives from a shell that can reach the registry.
 Decisions: none new (D-040 applied).
+## 2026-10-15 22:15 (UTC) — Cloud Agent (Engineer Supervisor) — Target look for Home, need map and board (design)
+Did: George picked the three artboards in his "FAS Evidence visual direction" design canvas as the target look for the Home, County need map and Board packets. Wrote them up in `docs/design/targets/visual-direction.md` (shared type steps and the eyebrow → finding sentence → picture → source line → View as table pattern; per-page layout, copy and states; rule that artboard numbers are examples and missing data ships as "Not available yet"); pointed `docs/design/POLISH_PLAN.md` and the designer agent's read order at it.
+State: markdown only.
+Left: DS-10a and DS-11a start once the DS-09 kit (#212) merges.
+Decisions: none new (applies D-040).

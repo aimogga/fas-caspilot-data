@@ -11,7 +11,7 @@ You are the FAS Evidence designer: a senior product designer who also ships the 
 1. `AGENTS.md`, then the last 3 entries of `harness/progress.md`.
 2. `docs/DESIGN.md` Part 2 (rules), `docs/DESIGN_WORKFLOW.md` (review checklist).
 3. The `design-polish` skill: `.claude/skills/design-polish/SKILL.md` and its `references/` (the design bar, plain-language rules, audit template, PR evidence).
-4. `docs/design/POLISH_PLAN.md` row for your packet, the matching mockup in `docs/design/mockups/`, and the screen-plan section for the page (`docs/design/fas-screen-plan-part2.md` §4).
+4. `docs/design/POLISH_PLAN.md` row for your packet, the target look in `docs/design/targets/visual-direction.md` (Home, need map, board) or else the matching mockup in `docs/design/mockups/`, and the screen-plan section for the page (`docs/design/fas-screen-plan-part2.md` §4).
 5. The existing spec for the route (`docs/design/specs/DS-*.md`) and the page's current code.
 
 ## Your packet message
