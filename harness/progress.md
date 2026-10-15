@@ -791,11 +791,12 @@ State: lint/typecheck green locally; e2e runs in CI only (no local Supabase). Br
 Left: none for the visual-first direction. Open for George unchanged: secret scanning + push protection on the public repo, config version approvals, F-505 email, F-508 LLM key.
 Decisions: none new.
 
-## 2026-10-15 02:55 (UTC) — Cloud Agent (Engineer Supervisor) — County need map in the nav (packet 6; Refs F-211)
-Did: `/need-map` was reachable only by URL. `lib/shell/nav.ts` adds `County need map` to every role's nav (Workspace after Team dashboard; Board between Board dashboard and Methodology), a breadcrumb for `/need-map`, and drops the label from `HIDDEN_LABELS`. `nav.test.ts` and `tests/e2e/shell.spec.ts` pin the new lists; Workspace stays at the 10-item cap.
-State: lint/typecheck/unit green locally; shell e2e runs in CI. Branch `claude/visual-p6-need-map-nav` off main.
-Left: nothing from this packet. Next candidates: harden the `/dev-error?kind=notfound` layout-parity flake; chart hover tooltips.
 ## 2026-10-15 03:05 (UTC) — Cloud Agent (Engineer Supervisor) — layout-parity measures a settled layout (packet 7; Refs F-104)
 Did: `tests/e2e/layout-parity.spec.ts` read page geometry once, right after the h1 appeared; on CI the first read mid-hydration measured 94/668 instead of 80/696 for `/dev-error?kind=notfound` at 800 (failed on #187's first attempt, passed on retry; logged as a known flake on 2026-10-14). `pageBox` now waits for `document.fonts.ready` and returns the geometry once two reads 150 ms apart agree (up to 6 tries). No expectation changed.
 State: lint/typecheck green locally; the spec runs in CI. Branch `claude/visual-p7-parity-stable` off main.
 Left: nothing from this packet.
+
+## 2026-10-15 02:55 (UTC) — Cloud Agent (Engineer Supervisor) — County need map in the nav (packet 6; Refs F-211)
+Did: `/need-map` was reachable only by URL. `lib/shell/nav.ts` adds `County need map` to every role's nav (Workspace after Team dashboard; Board between Board dashboard and Methodology), a breadcrumb for `/need-map`, and drops the label from `HIDDEN_LABELS`. `nav.test.ts` and `tests/e2e/shell.spec.ts` pin the new lists; Workspace stays at the 10-item cap.
+State: lint/typecheck/unit green locally; shell e2e runs in CI. Branch `claude/visual-p6-need-map-nav` off main.
+Left: nothing from this packet. Next candidates: harden the `/dev-error?kind=notfound` layout-parity flake; chart hover tooltips.
