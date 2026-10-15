@@ -936,3 +936,13 @@ Did: `/staff/grants/matches` drops the table for `ol > li[data-match]` cards (`c
 State: lint, typecheck, 771 unit tests and `pnpm gate` green locally. No Docker or preview in this shell, so `tests/e2e/match-explanation.spec.ts` (rows, meta, badges, flag hover words, tile focus words, cap reason, footer, panel, axe, scrollWidth at 375/1024) runs in CI; after shots are taken by the supervisor from the preview. Branch `ds-12a-grant-matches` off main.
 Left: DS-12b (`MatchPanel` redesign; removes the now-unused `MatchTable`). Open: no `loading.tsx` for this route (DS-14), the refresh/API-key footer line needs source-registry rows, the digest threshold could join the header.
 Decisions: none new (designer wording defaults listed in the spec).
+## 2026-10-15 22:58 (UTC) — Cloud Agent (Engineer Supervisor) — DS-11a after shots from the PR preview (design)
+Did: captured the "after" evidence for DS-11a from the `ds-11a-need-map` preview: `docs/design/reviews/DS-11a/after/need-map-{1024,1440}[-hover].png` plus manifest rows. The 1024 hover shot shows the explain card on a county's Rank cell.
+State: binary and manifest only. Branch `design/after-shots-ds-11a`. The 375 full-page shots were captured but dropped before commit: the stacked table at 375 renders about 48 700 px tall (3 MB per PNG), which is the "Ranked list" gap already recorded in `docs/design/specs/DS-11a.md`.
+Left: DS-11b must give 375 a ranked list instead of the stacked table before 375 after shots are worth committing.
+
+## 2026-10-15 23:03 (UTC) — Cloud Agent (Engineer Supervisor) — design-shots waits for the hover face (F-401)
+Did: `scripts/design-shots.mjs` now waits up to 3 s for an open hover-card, tooltip or popover face (`FACE`) after `page.hover` / `page.focus` before taking the hover and focus variants, so the explain kit's 150 ms open delay no longer yields a variant identical to the base shot.
+State: lint and the script's unit tests green; 4 lines. Branch `tooling/shots-hover-wait`.
+Left: nothing.
+Decisions: none new.
