@@ -785,12 +785,13 @@ State: lint/typecheck/unit green locally; tiles checked at 375/1024 via a throwa
 Left: e2e for the tiles and `/home`; packet 2's `data-slot=board-pictures` assertion. The visual-first direction (4 packets) is otherwise complete.
 Decisions: none new.
 
-## 2026-10-15 03:05 (UTC) — Cloud Agent (Engineer Supervisor) — layout-parity measures a settled layout (packet 7; Refs F-104)
-Did: `tests/e2e/layout-parity.spec.ts` read page geometry once, right after the h1 appeared; on CI the first read mid-hydration measured 94/668 instead of 80/696 for `/dev-error?kind=notfound` at 800 (failed on #187's first attempt, passed on retry; logged as a known flake on 2026-10-14). `pageBox` now waits for `document.fonts.ready` and returns the geometry once two reads 150 ms apart agree (up to 6 tries). No expectation changed.
-State: lint/typecheck green locally; the spec runs in CI. Branch `claude/visual-p7-parity-stable` off main.
-Left: nothing from this packet.
 ## 2026-10-15 02:40 (UTC) — Cloud Agent (Engineer Supervisor) — admin home + visual-direction e2e (packet 5; Refs F-401)
 Did: `/admin` is no longer a placeholder: the same four quarter tiles as the staff home (`HomeTiles`, `StaffHome`) under an `Overview` heading, then the places an admin checks most (Data freshness, Team dashboard, Board dashboard, County need map, Methodology). `tests/e2e/visual.spec.ts` covers the whole visual-first direction: board pictures (count 1–4, completion picture's headline in words, `aria-label`, `All bands` reference, `View as table`), the county panel in words with comparison bars for Salt Lake County, staff and admin tiles (four tiles, footers, loaded state, sparkline), and `/home` for every role plus signed out; each at 375 and 1024 with no overflow and axe 0.
 State: lint/typecheck green locally; e2e runs in CI only (no local Supabase). Branch `claude/visual-p5-admin-e2e` off the packet 4 head; merges main once #187 lands.
 Left: none for the visual-first direction. Open for George unchanged: secret scanning + push protection on the public repo, config version approvals, F-505 email, F-508 LLM key.
 Decisions: none new.
+
+## 2026-10-15 03:05 (UTC) — Cloud Agent (Engineer Supervisor) — layout-parity measures a settled layout (packet 7; Refs F-104)
+Did: `tests/e2e/layout-parity.spec.ts` read page geometry once, right after the h1 appeared; on CI the first read mid-hydration measured 94/668 instead of 80/696 for `/dev-error?kind=notfound` at 800 (failed on #187's first attempt, passed on retry; logged as a known flake on 2026-10-14). `pageBox` now waits for `document.fonts.ready` and returns the geometry once two reads 150 ms apart agree (up to 6 tries). No expectation changed.
+State: lint/typecheck green locally; the spec runs in CI. Branch `claude/visual-p7-parity-stable` off main.
+Left: nothing from this packet.
