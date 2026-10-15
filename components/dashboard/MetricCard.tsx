@@ -1,9 +1,11 @@
 import type { ReactNode } from "react";
 import { ErrorState } from "@/components/layout";
 import { SourceFooter, SuppressedCell, type SourceFooterProps } from "@/components/trust";
+import { ExplainCard } from "@/components/trust/explain";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NOT_AVAILABLE, notAvailableNote, type DashboardCard } from "@/lib/dashboard/cards";
+import { term, whyHidden } from "@/lib/trust/glossary";
 import { cn } from "@/lib/utils";
 /** DS-07 metric card. With only `card` it is "Not available yet"; `footer` marks a wired card and `value === null` a suppressed one.
  * Table cards (M4, M6, O1) pass `body` instead of `value`: suppression then lives in their cells. */
@@ -35,9 +37,11 @@ function Body({ p, state }: { p: MetricCardProps; state: ReturnType<typeof state
 }
 export function MetricCard(p: MetricCardProps) {
   const headingId = `card-${p.card.id}-title`, state = stateOf(p), live = state !== "error";
+  // DS-09: the title's Info button explains the metric, its source and as-of, and why the value is hidden when it is.
+  const hidden = state === "suppressed" ? whyHidden("suppressed") : state === "not-available" ? whyHidden("not_available") : state === "error" ? whyHidden("error") : undefined;
   return (
     <section aria-labelledby={headingId} data-slot="metric-card" data-state={state}><Card className="h-full">
-      <CardHeader><CardTitle><h2 id={headingId} className="text-base font-semibold">{p.card.title}</h2></CardTitle></CardHeader>
+      <CardHeader><CardTitle className="flex items-center gap-1"><h2 id={headingId} className="text-base font-semibold">{p.card.title}</h2><ExplainCard icon term={term(p.card.id)} source={p.footer?.source} asOf={live ? p.footer?.asOf : undefined} hidden={hidden} /></CardTitle></CardHeader>
       <CardContent className={cn("grid gap-4", p.trend && "lg:grid-cols-2")}>
         <div className="flex flex-col gap-2"><Body p={p} state={state} />{p.footer && live ? <SourceFooter {...p.footer} /> : null}</div>
         {p.trend && live ? p.trend : null}

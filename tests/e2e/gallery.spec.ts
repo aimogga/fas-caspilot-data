@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 test("gallery sizes, axe, and screenshots", async ({ page }) => {
   const ART = "/opt/cursor/artifacts";
@@ -104,4 +104,60 @@ test("gallery sizes, axe, and screenshots", async ({ page }) => {
   const box = await page.locator("[data-slot=button]").first().boundingBox();
   if (box) await page.screenshot({ path: `${ART}/gallery-focus-button.png`, clip: { x: box.x - 10, y: box.y - 10, width: box.width + 20, height: box.height + 20 } });
   await page.screenshot({ path: `${ART}/gallery-focus.png`, fullPage: true });
+});
+
+// DS-09 explain kit: pointer hover, keyboard focus and tap show the same words; Enter opens a dialog; Escape returns focus.
+const HINT = "Half of the families waited less than this, half waited more.";
+const PLAIN = "How many days a family waited between the court order and their first therapy session.";
+const FACES = "[data-slot=tooltip-content], [data-slot=hover-card-content]";
+const serious = (page: Page) => new AxeBuilder({ page }).analyze().then((r) => r.violations.filter((v) => v.impact === "serious" || v.impact === "critical"));
+for (const [slot, has, text] of [["hint-trigger", "Median", HINT], ["explain-trigger", "23 days", PLAIN]] as const) {
+  test(`${slot}: hover, focus, Enter and Escape show the same words (DS-09)`, async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/ui");
+    const trigger = page.locator(`[data-slot=${slot}]`, { hasText: has }).first();
+    await trigger.scrollIntoViewIfNeeded();
+    await trigger.hover();
+    await expect(page.locator(FACES)).toBeVisible();
+    await expect(page.locator(FACES)).toContainText(text);
+    // The faces close once the pointer settles elsewhere (the tooltip waits for a move outside its grace area).
+    await expect(async () => { await page.mouse.move(4, 4); await expect(page.locator(FACES)).toHaveCount(0); }).toPass();
+    await trigger.focus();
+    await expect(page.locator(FACES)).toBeVisible();
+    await expect(page.locator(FACES)).toContainText(text);
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("dialog")).toContainText(text);
+    await expect(page.locator(FACES)).toHaveCount(0);
+    expect(await serious(page), "axe with the popover open").toEqual([]);
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+  });
+}
+
+test("explain triggers are 44 px at 375 and the Provenance dialog lists the stored-row ids (DS-09)", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 900 });
+  await page.goto("/ui");
+  const sizes = await page.locator("[data-slot=hint-trigger]:visible, [data-slot=explain-trigger]:visible").evaluateAll((els) => els.map((el) => Math.min(el.getBoundingClientRect().width, el.getBoundingClientRect().height)));
+  expect(sizes.length).toBeGreaterThan(5);
+  expect(Math.min(...sizes)).toBeGreaterThanOrEqual(44);
+  await page.locator("[data-slot=source-footer]", { hasText: "n = 86" }).locator("[data-slot=explain-trigger]").click();
+  // Rows read label then value; textContent carries no separator between them.
+  await expect(page.getByRole("dialog")).toContainText(/FAS records.*Case records FAS uploaded.*Source.?FAS records.?As of.?Sep 2026.?Period.?Jul–Sep 2026 \(Q3\).?n.?86.?Source id.?fas_upload.?Ingest run.?run_demo.?Last success.?Oct 2026.?Vintage.?2026-Q3/);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+});
+
+test.describe("touch", () => {
+  test.use({ hasTouch: true, viewport: { width: 375, height: 900 } });
+  test("a tap opens the explain dialog with the same words; axe clean; no horizontal scroll (DS-09)", async ({ page }) => {
+    await page.goto("/ui");
+    const trigger = page.locator("[data-slot=explain-trigger]", { hasText: "23 days" });
+    await trigger.scrollIntoViewIfNeeded();
+    await trigger.tap();
+    await expect(page.getByRole("dialog")).toContainText(PLAIN);
+    expect(await serious(page), "axe with the popover open at 375").toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+    await page.locator("[data-slot=hint-trigger]", { hasText: "n<11" }).first().tap();
+    await expect(page.getByRole("dialog")).toHaveText("Fewer than 11 families, so the number is hidden to protect privacy.");
+  });
 });

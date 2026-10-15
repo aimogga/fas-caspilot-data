@@ -5,6 +5,7 @@ import { LineChart } from "@/components/charts/LineChart";
 import { Sparkline } from "@/components/charts/Sparkline";
 import { Cluster, EmptyState, ErrorState, FormField, Grid, Page, PageHeader, ResponsiveTable, Section, Skeleton, Stack } from "@/components/layout";
 import { DraftBanner, FreshnessChip, NotPublished, SourceFooter, SuppressedCell } from "@/components/trust";
+import { ExplainCard, Hint } from "@/components/trust/explain";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,8 @@ const FAMILIES = [["Utah", 31], ["Salt Lake", 22], ["Weber", 12], ["Carbon", 11]
 const QUARTERS = [["Q3 24", 34], ["Q4 24", 31], ["Q1 25", null], ["Q2 25", 27], ["Q3 25", 23]].map(([label, value]) => ({ label: label as string, value: value as number | null }));
 const FOOT = { source: "Synthetic FAS data", period: "Q3 2025", n: 86, asOf: "Oct 2026" };
 const cols = ["County", "Families", "Sessions", "Status", "Action"] as const;
+const KPI = { value: "23 days", source: "FAS records", asOf: "Sep 2026" };
+const DETAIL = { sourceId: "fas_upload", ingestRunId: "run_demo", lastSuccessAt: "Oct 2026", vintage: "2026-Q3" };
 
 export default function UiGalleryPage() {
   if (!isDevGalleryEnabled()) notFound();
@@ -81,6 +84,14 @@ export default function UiGalleryPage() {
         <Cluster gap={2}><FreshnessChip status="current" /><FreshnessChip status="stale" /><FreshnessChip status="failed" /></Cluster>
         <NotPublished reason="Fewer than 11 families" />
         <DraftBanner />
+      </Section>
+      <Section title="Explain">
+        <Cluster gap={2}>
+          <Hint text="Half of the families waited less than this, half waited more."><Badge variant="muted" prefix={<Info />}>Median</Badge></Hint>
+          <ExplainCard icon term="m1" {...KPI} />
+        </Cluster>
+        <p className="text-[2rem] leading-none font-semibold tabular-nums"><ExplainCard term="m1" {...KPI}>23 days</ExplainCard></p>
+        <SourceFooter source="FAS records" period="Jul–Sep 2026 (Q3)" n="= 86" asOf="Sep 2026" detail={DETAIL} />
       </Section>
     </Page>
   );
