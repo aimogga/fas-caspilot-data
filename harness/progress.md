@@ -835,3 +835,9 @@ Did: a correctness review over the eight PRs merged today (#188–#195) returned
 State: 731 unit tests, lint and typecheck green; hover alignment, img-role placement and the first-key behaviour checked on `/ui` with Playwright. Dashboard trend cards now carry `data-picture` like every picture card (`tests/e2e/visual.spec.ts` updated). Branch `claude/visual-p14-review-fixes` off main.
 Left: nothing for this packet.
 Decisions: none new.
+
+## 2026-10-15 05:10 (UTC) — Cloud Agent (Engineer Supervisor) — decisions from the visual-first run (packet 15; docs only)
+Did: recorded the run's rules in `harness/DECISIONS.md`: D-035 chart kit rules (interactive layers beside `role="img"`, hidden stays null and hatched, well-formed SVG for Office, edge labels and `$` units), D-036 e2e assertions follow the CI seed and the fixture-route technique, D-037 the supervisor's single-branch squash workflow with the main-merge-before-squash rule.
+State: markdown only; no code change. Branch `claude/visual-p15-decisions` off main.
+Left: nothing. The visual-first direction (#185–#196) is complete and merged; remaining items are George-gated (secret scanning and rulesets on the public repo, config version approvals, F-505 email, F-508 LLM key).
+Decisions: D-035, D-036, D-037.
