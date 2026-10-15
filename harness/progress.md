@@ -785,12 +785,13 @@ State: lint/typecheck/unit green locally; tiles checked at 375/1024 via a throwa
 Left: e2e for the tiles and `/home`; packet 2's `data-slot=board-pictures` assertion. The visual-first direction (4 packets) is otherwise complete.
 Decisions: none new.
 
-## 2026-10-15 02:55 (UTC) — Cloud Agent (Engineer Supervisor) — County need map in the nav (packet 6; Refs F-211)
-Did: `/need-map` was reachable only by URL. `lib/shell/nav.ts` adds `County need map` to every role's nav (Workspace after Team dashboard; Board between Board dashboard and Methodology), a breadcrumb for `/need-map`, and drops the label from `HIDDEN_LABELS`. `nav.test.ts` and `tests/e2e/shell.spec.ts` pin the new lists; Workspace stays at the 10-item cap.
-State: lint/typecheck/unit green locally; shell e2e runs in CI. Branch `claude/visual-p6-need-map-nav` off main.
-Left: nothing from this packet. Next candidates: harden the `/dev-error?kind=notfound` layout-parity flake; chart hover tooltips.
 ## 2026-10-15 02:40 (UTC) — Cloud Agent (Engineer Supervisor) — admin home + visual-direction e2e (packet 5; Refs F-401)
 Did: `/admin` is no longer a placeholder: the same four quarter tiles as the staff home (`HomeTiles`, `StaffHome`) under an `Overview` heading, then the places an admin checks most (Data freshness, Team dashboard, Board dashboard, County need map, Methodology). `tests/e2e/visual.spec.ts` covers the whole visual-first direction: board pictures (count 1–4, completion picture's headline in words, `aria-label`, `All bands` reference, `View as table`), the county panel in words with comparison bars for Salt Lake County, staff and admin tiles (four tiles, footers, loaded state, sparkline), and `/home` for every role plus signed out; each at 375 and 1024 with no overflow and axe 0.
 State: lint/typecheck green locally; e2e runs in CI only (no local Supabase). Branch `claude/visual-p5-admin-e2e` off the packet 4 head; merges main once #187 lands.
 Left: none for the visual-first direction. Open for George unchanged: secret scanning + push protection on the public repo, config version approvals, F-505 email, F-508 LLM key.
 Decisions: none new.
+
+## 2026-10-15 02:55 (UTC) — Cloud Agent (Engineer Supervisor) — County need map in the nav (packet 6; Refs F-211)
+Did: `/need-map` was reachable only by URL. `lib/shell/nav.ts` adds `County need map` to every role's nav (Workspace after Team dashboard; Board between Board dashboard and Methodology), a breadcrumb for `/need-map`, and drops the label from `HIDDEN_LABELS`. `nav.test.ts` and `tests/e2e/shell.spec.ts` pin the new lists; Workspace stays at the 10-item cap.
+State: lint/typecheck/unit green locally; shell e2e runs in CI. Branch `claude/visual-p6-need-map-nav` off main.
+Left: nothing from this packet. Next candidates: harden the `/dev-error?kind=notfound` layout-parity flake; chart hover tooltips.
