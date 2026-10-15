@@ -65,7 +65,7 @@ export function NeedMap({ data, fas = false, selected = null }: { data: NeedTabl
       </svg>
       {/* Panel: right column above the legend at ≥ 1024 (sticky), a card under the map and legend below (DS-06 L38-46). */}
       <div className="order-last lg:order-none lg:col-span-5 lg:sticky lg:top-4 lg:self-start">
-        <CountyPanel county={selected} columns={data.columns} version={data.version} rankedCount={counties.filter((c) => c.status === "Ranked").length} sources={data.sources} />
+        <CountyPanel county={selected} columns={data.columns} version={data.version} rankedCount={counties.filter((c) => c.status === "Ranked").length} sources={data.sources} counties={counties} />
       </div>
       <figcaption data-slot="map-legend" className="flex flex-col gap-2 text-sm lg:col-span-5">
         <p className="m-0 font-medium">Need score (version {data.version}) · Placeholder bins</p>

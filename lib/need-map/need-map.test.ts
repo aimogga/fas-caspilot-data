@@ -64,7 +64,7 @@ describe('NeedMapQuery.build', () => {
   });
 
   it('notes `<source> <vintage>` per column; the footer lists used sources once and their latest success month', () => {
-    expect(data.columns).toEqual([{ code: 'uninsured_rate', label: 'Uninsured rate', note: 'Census SAHIE 2024' }]);
+    expect(data.columns).toEqual([{ code: 'uninsured_rate', label: 'Uninsured rate', note: 'Census SAHIE 2024', unit: 'percent' }]);
     expect(data.sources).toEqual([{ code: 'uninsured_rate', name: 'Census SAHIE', vintage: '2024', asOf: 'Oct 2026' }]);
     expect(data.footer).toBe('Public sources: Census SAHIE · Need score version v2 · as of Oct 2026 · Placeholder bins');
     expect(NeedMapQuery.columnSource({ ...ind('1', 1), source_id: 'nope' }, [])).toEqual({ code: 'uninsured_rate', name: 'Unknown source', vintage: '2024', asOf: NOT_YET });

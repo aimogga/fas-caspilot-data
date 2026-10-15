@@ -1,16 +1,18 @@
 import { MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { CompareBars } from "@/components/need-map/CompareBars";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { NeedCompare } from "@/lib/need-map/compare";
 import type { Column, CountyRow } from "@/lib/need-map/query";
 
 export const SELECT_PROMPT = "Select a county on the map or in the table.";
 const NOT_PUBLISHED = "Not published";
 export type PanelSource = { code: string; name: string; vintage: string; asOf: string };
-export type CountyPanelProps = { county: CountyRow | null; columns: Column[]; version: string | null; rankedCount: number; sources: PanelSource[] };
+export type CountyPanelProps = { county: CountyRow | null; columns: Column[]; version: string | null; rankedCount: number; sources: PanelSource[]; /** All counties, for the comparison. */ counties?: CountyRow[] };
 
-/** County detail: heading, score line and one row per indicator, each with source, vintage and as-of (DS-06). */
-export function CountyPanel({ county, columns, version, rankedCount, sources }: CountyPanelProps) {
-  const title = county ? county.name : "County detail";
+/** County detail: heading, score line, the county in words and bars against the state median, then one row per indicator with source, vintage and as-of (DS-06). */
+export function CountyPanel({ county, columns, version, rankedCount, sources, counties = [] }: CountyPanelProps) {
+  const title = county ? county.name : "County detail", compare = county ? NeedCompare.rows(county, counties, columns) : [];
   return (
     <Card data-slot="county-panel" aria-labelledby="county-panel-title" role="region">
       <CardHeader>
@@ -20,7 +22,9 @@ export function CountyPanel({ county, columns, version, rankedCount, sources }: 
         {county ? <p className="text-sm text-muted-foreground tabular-nums">Rank {county.rank} · Need score {county.score}</p> : null}
         {county ? <p className="text-xs text-muted-foreground">Need score version {version ?? NOT_PUBLISHED} · {rankedCount} counties ranked</p> : null}
       </CardHeader>
-      <CardContent>
+      <CardContent className="grid gap-4">
+        {county && counties.length ? <p data-slot="county-compare" className="font-serif text-base leading-snug">{NeedCompare.sentence(county, compare)}</p> : null}
+        <CompareBars rows={compare} />
         {county ? <dl className="grid gap-3">{columns.map((c) => <Indicator key={c.code} county={county} column={c} source={sources.find((s) => s.code === c.code)} />)}</dl> : <p className="text-sm text-muted-foreground">{SELECT_PROMPT}</p>}
       </CardContent>
     </Card>

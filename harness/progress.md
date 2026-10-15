@@ -761,3 +761,9 @@ Did: merged the stacked PRs #151 #145 #147 #150 #152 #153 #148 #149 #156 #157 #1
 State: main = b868ea6; `ci` passed on it once (run 38643113984), a duplicate run on the same sha failed and is being triaged. fas-dev: 24/24 migrations applied. Evidence per PR in the supervisor's checks.md.
 Left: George: enable secret scanning + push protection (repo is public), restore push rulesets, approve match_config / need_score_config versions, F-505 email, F-508 LLM key. Known flake: layout-parity `/dev-error?kind=notfound` measures 30/315 instead of 16/343 on a first attempt (passes on retry).
 Decisions: D-033, D-034.
+
+## 2026-10-15 01:45 (UTC) — Cloud Agent (Engineer Supervisor) — need-map plain-language panel (visual-first direction, packet 3 of 4; Refs F-211)
+Did: the county panel now opens with the county in words (`NeedCompare.sentence`: `Salt Lake County has a higher uninsured rate than 20 of 28 other Utah counties, and a higher share of single-parent households than 12 of 28.`) and one comparison bar per percent indicator against the statewide median (`components/need-map/CompareBars.tsx`: shared 0–max scale, dashed median tick, words under every bar, sr text on the value). `lib/need-map/compare.ts` (pure, 4 tests): median over every county with a value, rank among the others, `above`/`near`/`below` within 0.5 pt; counts never compare. `CountyRow` gains numeric `values` and `Column` gains `unit` (`lib/need-map/query.ts`); `NeedMap` passes all counties to the panel.
+State: lint/typecheck/unit green locally; checked at 375 light and dark via a throwaway fixture route (deleted), no overflow. `map.spec.ts` panel assertions unchanged (heading, badge, rank line, indicator footers); CI runs it. Branch `claude/visual-p3-need-map` off main (branch per packet, George 2026-10-15).
+Left: packet 4 staff home sparklines + `/home`. No e2e assertion on `data-slot=county-compare` yet.
+Decisions: none new.
