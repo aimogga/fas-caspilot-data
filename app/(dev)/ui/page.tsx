@@ -69,7 +69,11 @@ export default function UiGalleryPage() {
       <Section title="Charts">
         <BarChart points={FAMILIES} noun="families" eyebrow="Families helped, by county" footer={FOOT} reference={{ value: 17, label: "Median" }} />
         <LineChart points={QUARTERS} noun="Days to first session" unit=" days" eyebrow="Wait for a first session" footer={FOOT} reference={{ value: 21, label: "Goal" }} periodHead="Quarter" />
-        <Cluster gap={4}><Sparkline points={QUARTERS} noun="Days to first session" unit=" days" goodWhen="down" /><Sparkline points={FAMILIES.slice(0, 4)} noun="Families" goodWhen="up" /><Sparkline points={[{ label: "a", value: null }, { label: "b", value: null }]} noun="Hidden" goodWhen="up" /></Cluster>
+        <Cluster gap={4}>
+          <Sparkline points={QUARTERS} noun="Days to first session" unit=" days" goodWhen="down" />
+          <Sparkline points={FAMILIES.slice(0, 4)} noun="Families" goodWhen="up" />
+          <Sparkline points={[{ label: "a", value: null }, { label: "b", value: null }]} noun="Hidden" goodWhen="up" />
+        </Cluster>
       </Section>
       <Section title="Trust">
         <SourceFooter source="ACS S0101" period="2024" n={42} asOf="2024-06" />
