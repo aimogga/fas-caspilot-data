@@ -4,6 +4,8 @@ Owner decisions (George, 2026-10-15): polish the five mockup pages first in this
 
 Every packet: spec first (`docs/design/specs/DS-<id>.md`), one branch off `origin/main`, ≤ 400 hand-written lines, shots before/after at 375/1024/1440 plus the variants named, axe 0 serious/critical, no horizontal scroll at 375, progress entry last.
 
+**Target look (George, 2026-10-15):** the three artboards in the "FAS Evidence visual direction" canvas, written up in `docs/design/targets/visual-direction.md`, are the target for DS-10 (Home), DS-11 (County need map) and DS-13 (Board). Other pages follow the v1 mockups in `docs/design/mockups/`.
+
 ## Foundation (week 1, day 1)
 | PR | Scope | Files |
 |---|---|---|
