@@ -14,7 +14,8 @@ export function LineChart({ points, noun, unit = "", eyebrow, headline, footer, 
   const known = points.map((p, i) => ({ ...p, i, v: p.value as number })).filter((p) => p.value != null), first = known[0], last = known[known.length - 1];
   const ends = (first && last && first !== last ? [first, last] : known.slice(0, 1)).map((p) => {
     const next = p === first ? known[1] : known[known.length - 2], down = next ? next.v < p.v === (p === first) : true;
-    return { ...p, below: p === first ? !down : down };
+    const slope = p === first ? !down : down, yv = y(p.v); // at the top or bottom edge the label goes inward, whatever the slope
+    return { ...p, below: yv < 20 ? true : yv > 80 ? false : slope };
   });
   return (
     <ChartFrame eyebrow={eyebrow} headline={headline ?? summary} footer={footer} table={<PointTable points={points} caption={`${noun} by period`} head={[periodHead, noun]} unit={unit} />}>
@@ -28,7 +29,8 @@ export function LineChart({ points, noun, unit = "", eyebrow, headline, footer, 
           </svg>
           {points.map((p, i) => p.value == null ? <span key={p.label} title={`${p.label}: hidden (n < 11)`} className="absolute inset-y-0 -translate-x-1/2" style={{ left: `${x(i)}%`, width: `${100 / n}%`, ...HATCH }} /> : null)}
           {known.map((p) => <span key={p.label} className="absolute size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background bg-chart-1" style={pos(x(p.i), y(p.v))} />)}
-          {ends.map((p) => <span key={`v${p.label}`} className={`absolute ml-2 whitespace-nowrap text-xs font-semibold tabular-nums ${p === last && p !== first ? "-translate-y-1/2" : p.below ? "translate-y-2" : "-mt-2 -translate-y-full"}`} style={pos(x(p.i), y(p.v))}>{fmt(p.value, unit)}</span>)}
+          {ends.map((p) => <span key={`v${p.label}`} style={pos(x(p.i), y(p.v))}
+            className={`absolute ml-2 whitespace-nowrap rounded-sm bg-background/80 px-0.5 text-xs font-semibold tabular-nums ${p === last && p !== first ? "-translate-y-1/2" : p.below ? "translate-y-2" : "-mt-2 -translate-y-full"}`}>{fmt(p.value, unit)}</span>)}
           <LineHover noun={noun} unit={unit} points={points.map((p, i) => ({ ...p, x: x(i), y: p.value == null ? null : y(p.value) }))} />
         </div>
         <span /><div className={`mr-20 flex justify-between pt-1 ${TICK}`}>{points.map((p) => <span key={p.label}>{p.label}</span>)}</div>
