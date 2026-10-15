@@ -100,6 +100,8 @@ describe('role-guards', () => {
     expect(roleHome('staff')).toBe('/staff');
     expect(roleHome('board_viewer')).toBe('/board');
     expect(roleHome(null)).toBeNull();
+    expect(['admin', 'staff', 'board_viewer'].map((r) => isRouteAllowed('/home', r as UserRole))).toEqual([true, true, true]);
+    expect([isRouteAllowed('/home', null), isRouteAllowed('/homework', 'admin')]).toEqual([false, false]);
     expect(roleHome('owner' as UserRole)).toBeNull();
   });
   it('detects a prior Supabase session cookie', () => {
