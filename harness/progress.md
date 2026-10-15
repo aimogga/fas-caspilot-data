@@ -801,3 +801,7 @@ Did: the team dashboard now shows the last four quarters of M2, M3 and M5 as lin
 State: lint/typecheck/unit green locally; rendered at 375/1024 via a throwaway fixture route (deleted), no overflow, labels clear. `tests/e2e/visual.spec.ts` adds a dashboard test (three charts, aria-labels, footers, no overflow, axe) that CI runs. Branch `claude/visual-p9-dashboard-trends` off main (after #188 merged).
 Left: nothing for this packet. The hover layer (#191) applies to these charts once it merges.
 Decisions: none new.
+## 2026-10-15 02:55 (UTC) — Cloud Agent (Engineer Supervisor) — County need map in the nav (packet 6; Refs F-211)
+Did: `/need-map` was reachable only by URL. `lib/shell/nav.ts` adds `County need map` to every role's nav (Workspace after Team dashboard; Board between Board dashboard and Methodology), a breadcrumb for `/need-map`, and drops the label from `HIDDEN_LABELS`. `nav.test.ts` and `tests/e2e/shell.spec.ts` pin the new lists; Workspace stays at the 10-item cap.
+State: lint/typecheck/unit green locally; shell e2e runs in CI. Branch `claude/visual-p6-need-map-nav` off main.
+Left: nothing from this packet. Next candidates: harden the `/dev-error?kind=notfound` layout-parity flake; chart hover tooltips.

@@ -5,9 +5,9 @@ describe("DS-02 nav", () => {
   it("shows only existing routes for each role", () => {
     const groups = (role: string) => navForRole(role).groups.map((g) => g.label);
     const labels = (role: string) => navForRole(role).groups.flatMap((g) => g.items.map((i) => i.label));
-    expect(labels("staff")).toEqual(["Home", "Team dashboard", "Data freshness", "Evidence packets", "Upload data", "Enter data", "Foundation grants", "Grant matches", "Methodology"]);
-    expect(labels("admin")).toEqual(["Home", "Team dashboard", "Data freshness", "Evidence packets", "Upload data", "Enter data", "Foundation grants", "Grant matches", "Methodology", "Overview"]);
-    expect(labels("board_viewer")).toEqual(["Board dashboard", "Methodology"]);
+    expect(labels("staff")).toEqual(["Home", "Team dashboard", "County need map", "Data freshness", "Evidence packets", "Upload data", "Enter data", "Foundation grants", "Grant matches", "Methodology"]);
+    expect(labels("admin")).toEqual(["Home", "Team dashboard", "County need map", "Data freshness", "Evidence packets", "Upload data", "Enter data", "Foundation grants", "Grant matches", "Methodology", "Overview"]);
+    expect(labels("board_viewer")).toEqual(["Board dashboard", "County need map", "Methodology"]);
     expect(groups("staff")).toEqual(["Workspace"]);
     expect(groups("admin")).toEqual(["Workspace", "Admin"]);
     expect(navForRole("board_viewer").footer).toBe(BOARD_FOOTER);
@@ -31,6 +31,8 @@ describe("DS-02 nav", () => {
     expect(HIDDEN_LABELS).not.toContain("Enter data");
     expect(HIDDEN_LABELS).not.toContain("Team dashboard");
     expect(HIDDEN_LABELS).not.toContain("Methodology");
+    expect(CRUMB["/need-map"]).toBe("County need map");
+    expect(HIDDEN_LABELS).not.toContain("County need map");
     expect(roleLabel("board_viewer")).toBe("Board · read-only");
     expect(syntheticBadgeVisible("production")).toBe(false);
     expect(syntheticBadgeVisible(undefined)).toBe(true);
