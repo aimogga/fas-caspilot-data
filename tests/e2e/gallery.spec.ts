@@ -80,6 +80,16 @@ test("gallery sizes, axe, and screenshots", async ({ page }) => {
   await expect(hover.locator("[aria-live]")).toHaveText("Q3 25 · 23 days");
   await page.keyboard.press("Escape");
   await expect(hover.locator("[data-slot=tooltip]")).toHaveCount(0);
+  // Bar chart: hovering a row shows its label, value and note; nothing shows otherwise.
+  const bars = page.locator("[data-slot=chart]").first().locator("[data-slot=tooltip]");
+  await expect(bars).toHaveCount(5);
+  await expect(bars.first()).toBeHidden();
+  await bars.first().locator("..").hover();
+  await expect(bars.first()).toBeVisible();
+  await expect(bars.first()).toHaveText("Utah · 31");
+  await bars.last().locator("..").hover();
+  await expect(bars.last()).toHaveText("4 other counties · Hidden (n < 11)");
+  await expect(bars.first()).toBeHidden();
   await page.setViewportSize({ width: 1280, height: 900 });
   await expect.poll(() => page.evaluate(() => {
     const h = (t: string) => [...document.querySelectorAll("[data-slot=button]")].find((el) => el.textContent === t)!.getBoundingClientRect().height;

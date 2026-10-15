@@ -1,12 +1,14 @@
 import { ChartFrame, HATCH, PointTable, TICK } from "@/components/charts/ChartFrame";
 import type { SourceFooterProps } from "@/components/trust";
+import { tooltipText } from "@/lib/charts/hover";
 import { barSummary, fmt, linear, type ChartPoint } from "@/lib/charts/scale";
 export type BarChartProps = {
   points: ChartPoint[]; noun: string; unit?: string; eyebrow?: string; headline?: string; footer?: SourceFooterProps; valueHead?: string;
   /** A vertical reference such as the statewide median, drawn as a labelled dashed hairline. */ reference?: { value: number; label: string };
   /** Values the axis must reach, e.g. `[100]` so every percent chart reads on the same 0–100 scale. */ include?: number[];
 };
-/** Horizontal ranked bars (one series) in plain HTML so labels stay readable at 375px. Hidden values are a hatched band with the words `Hidden (n < 11)`; the summary sentence is the `aria-label`. */
+/** Horizontal ranked bars (one series) in plain HTML so labels stay readable at 375px. Hidden values are a hatched band with the words `Hidden (n < 11)`; the summary sentence is the `aria-label`.
+ * Hovering a row shows a tooltip with the label, value and note (dataviz: per-mark hover on bars); the table view carries the same words for keyboards. */
 export function BarChart({ points, noun, unit = "", eyebrow, headline, footer, reference, valueHead, include = [] }: BarChartProps) {
   const s = linear(points.map((p) => p.value), 100, { floor: 0, include: [...include, ...(reference ? [reference.value] : [])] }), summary = barSummary(points, noun, unit);
   return (
@@ -14,9 +16,10 @@ export function BarChart({ points, noun, unit = "", eyebrow, headline, footer, r
       <div role="img" aria-label={summary} className="grid grid-cols-[minmax(5rem,9rem)_1fr] gap-x-3 gap-y-2 text-sm">
         {reference ? <><span /><span className="relative mr-14 h-5 text-xs font-semibold"><span className="absolute -translate-x-1/2 whitespace-nowrap" style={{ left: `${s.at(reference.value)}%` }}>{reference.label} {fmt(reference.value, unit)}</span></span></> : null}
         {points.map((p) => (
-          <div key={p.label} className="contents" title={`${p.label}: ${fmt(p.value, unit)}${p.note ? ` · ${p.note}` : ""}`}>
+          <div key={p.label} className="group contents">
             <span className="truncate text-right leading-5">{p.label}</span>
             <span className="relative flex h-5 items-center gap-2 pr-14">
+              <span data-slot="tooltip" className="pointer-events-none absolute bottom-full left-0 z-10 mb-1 hidden whitespace-nowrap rounded-md border border-border bg-popover px-2 py-1 text-xs text-popover-foreground shadow-sm group-hover:block">{tooltipText(p, unit)}</span>
               <span aria-hidden className="absolute inset-y-0 left-0 right-14">{s.ticks.map((t) => <span key={t} className="absolute inset-y-0 border-l border-border" style={{ left: `${s.at(t)}%` }} />)}
                 {reference ? <span className="absolute inset-y-0 border-l-2 border-dashed border-foreground" style={{ left: `${s.at(reference.value)}%` }} /> : null}</span>
               {p.value == null
