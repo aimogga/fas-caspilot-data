@@ -791,12 +791,13 @@ State: lint/typecheck green locally; e2e runs in CI only (no local Supabase). Br
 Left: none for the visual-first direction. Open for George unchanged: secret scanning + push protection on the public repo, config version approvals, F-505 email, F-508 LLM key.
 Decisions: none new.
 
+## 2026-10-15 03:05 (UTC) — Cloud Agent (Engineer Supervisor) — layout-parity measures a settled layout (packet 7; Refs F-104)
+Did: `tests/e2e/layout-parity.spec.ts` read page geometry once, right after the h1 appeared; on CI the first read mid-hydration measured 94/668 instead of 80/696 for `/dev-error?kind=notfound` at 800 (failed on #187's first attempt, passed on retry; logged as a known flake on 2026-10-14). `pageBox` now waits for `document.fonts.ready` and returns the geometry once two reads 150 ms apart agree (up to 6 tries). No expectation changed.
+State: lint/typecheck green locally; the spec runs in CI. Branch `claude/visual-p7-parity-stable` off main.
+Left: nothing from this packet.
+
 ## 2026-10-15 03:35 (UTC) — Cloud Agent (Engineer Supervisor) — team dashboard trend pictures (visual-first follow-up, packet 9; Refs F-401)
 Did: the team dashboard now shows the last four quarters of M2, M3 and M5 as line charts directly under their cards (`components/dashboard/TrendPictures.tsx`, `data-slot=dashboard-trends`), each with the FAS records footer; M1 keeps the trend in its headline card. `lib/dashboard/trends.ts` (pure, 2 tests) builds the pictures from the `trends` MetricsQuery already loads, so filters apply; a failed metric, n = 0 or an all-hidden series drops its picture. Two chart-kit fixes found while rendering: `fmt` takes `$` as a prefix unit (`$1,840`), and a line chart's end label now stays inside the plot when the point sits at the top or bottom edge (it used to collide with the headline or the axis) and gets a background so it reads over the line.
 State: lint/typecheck/unit green locally; rendered at 375/1024 via a throwaway fixture route (deleted), no overflow, labels clear. `tests/e2e/visual.spec.ts` adds a dashboard test (three charts, aria-labels, footers, no overflow, axe) that CI runs. Branch `claude/visual-p9-dashboard-trends` off main (after #188 merged).
 Left: nothing for this packet. The hover layer (#191) applies to these charts once it merges.
 Decisions: none new.
-## 2026-10-15 03:05 (UTC) — Cloud Agent (Engineer Supervisor) — layout-parity measures a settled layout (packet 7; Refs F-104)
-Did: `tests/e2e/layout-parity.spec.ts` read page geometry once, right after the h1 appeared; on CI the first read mid-hydration measured 94/668 instead of 80/696 for `/dev-error?kind=notfound` at 800 (failed on #187's first attempt, passed on retry; logged as a known flake on 2026-10-14). `pageBox` now waits for `document.fonts.ready` and returns the geometry once two reads 150 ms apart agree (up to 6 tries). No expectation changed.
-State: lint/typecheck green locally; the spec runs in CI. Branch `claude/visual-p7-parity-stable` off main.
-Left: nothing from this packet.
