@@ -947,3 +947,9 @@ Did: `components/trust/explain-layer.tsx` (one positioned `ExplainBody` card for
 State: lint, typecheck, 776 unit tests green; hand-written diff 357 lines. No local Supabase or preview here: `tests/e2e/map.spec.ts` gains the explain-layer test (hover = focus = Enter words, dialog name, Escape, arrows, Not published reason, FAS badge, header card, panel Provenance, median hint, axe and scrollWidth at 1024 and 375) for CI. Before shots: PR #214; after shots: the supervisor takes them from the preview. Branch `ds-11a-need-map` off main.
 Left: DS-11b (map hover card, stroke, rank labels, legend hints). Open: a "Ranked list" view for 375 (the stacked table is 48 000 px tall), population and "n-th highest" sentences need stored data, cells are ~38 px tall at 375 (not controls; `py-3` if QA wants 44), page footer still plain text.
 Decisions: none new (applies D-040).
+
+## 2026-10-15 23:58 (UTC) — Claude Code (cloud) — pr-gate base for stacked PRs (D-028, D-032)
+Did: `scripts/pr-gate.mjs` exports `resolveBase()`: `--base`, else `PR_GATE_BASE`, else `git config branch.<current>.gate-base` (ignored on a detached HEAD), else `origin/main`; the CLI prints `base: <ref> (<where from>)` above the rows. `scripts/pr-gate-hook.mjs` passes `process.env` to `pnpm gate` explicitly. Four unit tests in `scripts/pr-gate.test.mjs` (precedence, detached/no repo, CLI reads the env var, hook hands the env var to a stub `pnpm`). D-028 gains a dated note with the commands for a train branch.
+State: lint, typecheck, 782 unit tests green; `pnpm gate` green. Tooling only. Branch `claude/keen-knuth-r3wiq5`.
+Left: nothing. A train branch sets `git config branch.<branch>.gate-base origin/<parent>` before its first push (F-508a1 needed a manual override for this).
+Decisions: none new (note on D-028).

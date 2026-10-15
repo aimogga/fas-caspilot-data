@@ -14,7 +14,8 @@ process.stdin.on('end', () => {
     process.exit(0);
   }
   if (!/\bgit\s+push\b/.test(command)) process.exit(0);
-  const r = spawnSync('pnpm', ['gate'], { encoding: 'utf8' });
+  // The gate picks its base from PR_GATE_BASE or `git config branch.<current>.gate-base` (D-032 stacked PRs).
+  const r = spawnSync('pnpm', ['gate'], { encoding: 'utf8', env: process.env });
   if (r.status === 0) process.exit(0);
   process.stderr.write(`pr-gate blocked the push:\n${r.stdout}${r.stderr}`);
   process.exit(2);

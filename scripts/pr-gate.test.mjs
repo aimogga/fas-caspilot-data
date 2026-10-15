@@ -1,6 +1,9 @@
 import { spawnSync } from 'node:child_process';
+import { chmodSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { BINARY, MAX_LINES, countDiff, exitCode, format, loadGenerated, longLines, progressAppendOnly, run } from './pr-gate.mjs';
+import { BINARY, MAX_LINES, countDiff, exitCode, format, loadGenerated, longLines, progressAppendOnly, resolveBase, run } from './pr-gate.mjs';
 
 const numstat = (rows) => rows.map(([a, d, f]) => `${a}\t${d}\t${f}`).join('\n');
 
@@ -65,5 +68,45 @@ describe('run and CLI', () => {
     const r = spawnSync(process.execPath, ['scripts/pr-gate.mjs', '--skip-tests', '--base', 'HEAD'], { encoding: 'utf8', timeout: 60000 });
     expect(r.stdout).toContain('secret scan | ');
     expect(r.status).toBe(0);
+  });
+});
+
+describe('resolveBase (D-032 stacked PRs)', () => {
+  const git = (branch, gateBase) => (cmd) => {
+    if (cmd.startsWith('git rev-parse')) return `${branch}\n`;
+    if (cmd === `git config --get branch.${branch}.gate-base` && gateBase) return `${gateBase}\n`;
+    throw new Error('exit 1');
+  };
+
+  it('prefers --base, then PR_GATE_BASE, then the branch gate-base, then origin/main', () => {
+    const exec = git('f-508a1', 'origin/f-508a');
+    expect(resolveBase({ argv: ['--base', 'origin/x'], env: { PR_GATE_BASE: 'origin/y' }, exec })).toEqual({ base: 'origin/x', from: '--base' });
+    expect(resolveBase({ env: { PR_GATE_BASE: ' origin/y ' }, exec })).toEqual({ base: 'origin/y', from: 'PR_GATE_BASE' });
+    expect(resolveBase({ env: {}, exec })).toEqual({ base: 'origin/f-508a', from: 'git config branch.f-508a1.gate-base' });
+    expect(resolveBase({ env: { PR_GATE_BASE: '' }, exec: git('ds-10a', null) })).toEqual({ base: 'origin/main', from: 'default' });
+  });
+
+  it('ignores git config on a detached HEAD and outside a repo', () => {
+    const detached = (cmd) => (cmd.startsWith('git rev-parse') ? 'HEAD\n' : 'origin/never');
+    expect(resolveBase({ exec: detached }).base).toBe('origin/main');
+    expect(resolveBase({ exec: () => { throw new Error('not a git repository'); } }).base).toBe('origin/main');
+  });
+
+  it('CLI reads PR_GATE_BASE when --base is absent', () => {
+    const env = { ...process.env, PR_GATE_BASE: 'HEAD' };
+    const r = spawnSync(process.execPath, ['scripts/pr-gate.mjs', '--skip-tests'], { encoding: 'utf8', timeout: 60000, env });
+    expect(r.stdout.split('\n')[0]).toBe('base: HEAD (PR_GATE_BASE)');
+    expect(r.status).toBe(0);
+  });
+
+  it('the push hook hands PR_GATE_BASE to `pnpm gate`', () => {
+    const bin = mkdtempSync(join(tmpdir(), 'gate-hook-'));
+    writeFileSync(join(bin, 'pnpm'), '#!/bin/sh\necho "gate base=$PR_GATE_BASE"\nexit 1\n');
+    chmodSync(join(bin, 'pnpm'), 0o755);
+    const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, PR_GATE_BASE: 'origin/parent' };
+    const input = JSON.stringify({ tool_input: { command: ['git', 'push', 'origin', 'x'].join(' ') } });
+    const r = spawnSync(process.execPath, ['scripts/pr-gate-hook.mjs'], { input, encoding: 'utf8', env });
+    expect(r.status).toBe(2);
+    expect(r.stderr).toContain('gate base=origin/parent');
   });
 });
