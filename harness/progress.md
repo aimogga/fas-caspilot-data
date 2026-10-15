@@ -906,3 +906,9 @@ Did: George picked the three artboards in his "FAS Evidence visual direction" de
 State: markdown only.
 Left: DS-10a and DS-11a start once the DS-09 kit (#212) merges.
 Decisions: none new (applies D-040).
+
+## 2026-10-15 22:24 (UTC) — Cloud Agent (Engineer Supervisor) — Before shots of the five target pages (design)
+Did: captured the "before" evidence for DS-10a (`/staff`), DS-11a (`/need-map`), DS-12a (`/staff/grants/matches`), DS-13a (`/board`, plus the 816 px print sheet) and DS-14 (`/login`) from the production preview with `pnpm shots` on the vercel.app cloud environment: 16 PNGs at 375/1024/1440 under `docs/design/reviews/<id>/before/` with one `manifest.json` per packet, and `docs/design/reviews/index.html` rebuilt with `pnpm review-page`.
+State: binary and generated files only; gate D-012 counts 170 manifest lines. Branch `design/before-shots`.
+Left: publish the review page as the private living review artifact; packets add their "after" shots beside these.
+Decisions: none new (applies D-040).
