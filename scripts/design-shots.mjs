@@ -12,8 +12,8 @@ export const ROOT = 'docs/design/reviews';
 export const ROLES = ['staff', 'admin', 'board'];
 export const LOCAL_HOSTS = ['127.0.0.1', 'localhost'];
 export const PRINT_WIDTH = 816;
-/** The hover/focus face of the explain kit (components/trust/explain.tsx): the HoverCard or Popover body, or the Hint tooltip. */
-export const FACE = '[data-slot=explain-content]:visible, [role=tooltip]:visible';
+/** Any open face from the explain kit (components/trust/explain.tsx, explain-layer.tsx): hover card, tooltip or popover primitive, the shared body, or a role=tooltip. */
+export const FACE = ['hover-card-content', 'tooltip-content', 'popover-content', 'explain-content'].map((s) => `[data-slot=${s}]:visible`).concat('[role=tooltip]:visible').join(', ');
 const SEED_PASSWORD = 'testpass123';
 const VALUES = ['id', 'tag', 'role', 'route', 'base', 'widths', 'hover', 'focus'];
 const FLAGS = ['print', 'pdf', 'dark'];

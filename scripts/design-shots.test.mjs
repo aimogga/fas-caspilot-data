@@ -66,7 +66,8 @@ describe('waitForFace', () => {
   it('waits for the explain face or a tooltip to be visible with a 5 s cap, then settles briefly', async () => {
     const page = fakePage(true);
     await expect(waitForFace(page)).resolves.toBe(true);
-    expect(FACE).toBe('[data-slot=explain-content]:visible, [role=tooltip]:visible');
+    for (const s of ['hover-card-content', 'tooltip-content', 'popover-content', 'explain-content']) expect(FACE).toContain(`[data-slot=${s}]:visible`);
+    expect(FACE).toContain('[role=tooltip]:visible');
     expect(page.calls).toEqual([['waitForSelector', FACE, { state: 'visible', timeout: 5000 }], ['waitForTimeout', 250]]);
   });
 

@@ -119,7 +119,7 @@ describe('NeedMapQuery.load', () => {
 describe('NeedTable markup', () => {
   const html = renderToStaticMarkup(createElement(NeedTable, { data: NeedMapQuery.build(input()) }));
   it('wraps the table in a focusable labelled scroll region with a sticky County column', () => {
-    expect(html).toMatch(/^<div role="region" tabindex="0" aria-label="County need table"[^>]*overflow-x-auto/);
+    expect(html).toMatch(/^<div data-slot="explain-layer" class="relative "><div role="region" tabindex="0" aria-label="County need table"[^>]*overflow-x-auto/);
     expect(html).toMatch(/<th scope="col" class="[^"]*md:sticky md:left-0[^"]*">County<\/th>/);
     expect(html).toMatch(/<th scope="row" class="[^"]*md:sticky md:left-0[^"]*"><a [^>]*>Salt Lake County<\/a><span data-slot="badge"/);
   });
@@ -132,10 +132,13 @@ describe('NeedTable markup', () => {
   });
 
   it('right-aligns number headers and cells at every width, notes `<source> <vintage>` per column and links county names', () => {
-    expect(html).toMatch(/<th scope="col" aria-sort="ascending" class="[^"]*text-right tabular-nums">Rank<\/th>/);
-    expect(html).toMatch(/<td class="[^"]*text-right tabular-nums"><span[^>]*>Rank: <\/span>1 of 2<\/td>/);
+    expect(html).toMatch(/<th scope="col" aria-sort="ascending" class="[^"]*text-right tabular-nums"><button[^>]*data-slot="explain-trigger"[^>]*>Rank<\/button><\/th>/);
+    expect(html).toMatch(/<td tabindex="-1" data-term="rank" data-value="1 of 2" data-source="Need score version v2" class="[^"]*text-right tabular-nums"><span[^>]*>Rank: <\/span>1 of 2<\/td>/);
     expect(html).not.toContain('text-left tabular-nums');
-    expect(html).toContain('Uninsured rate<span class="block text-xs font-normal text-muted-foreground">Census SAHIE 2024</span>');
+    expect(html).toMatch(/<button[^>]*>Uninsured rate<\/button><span class="block text-xs font-normal text-muted-foreground">Census SAHIE 2024<\/span>/);
+    expect(html).toMatch(/<td tabindex="-1" data-term="ind:uninsured_rate" data-value="[^"]+" data-source="Census SAHIE 2024" data-asof="[^"]+" class=/);
+    expect(html).toMatch(/data-term="ind:uninsured_rate" data-value="Not published" data-source="Census SAHIE 2024" data-asof="[^"]+" data-hidden="The source did not publish this for this county in that release\."/);
+    expect(html).toMatch(/<span data-slot="badge"[^>]*tabindex="-1" data-term="fas_county"/);
     expect(html).toMatch(/<a [^>]*href="\?county=49035"[^>]*>Salt Lake County<\/a>/);
     const fasHtml = renderToStaticMarkup(createElement(NeedTable, { data: NeedMapQuery.build(input(), { fas: true }), fas: true }));
     expect(fasHtml).toMatch(/href="\?county=49035&amp;fas=1"/);
