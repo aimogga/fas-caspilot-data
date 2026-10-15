@@ -1,0 +1,40 @@
+# Design polish plan (DS-09 onward)
+
+Owner decisions (George, 2026-10-15): polish the five mockup pages first in this order (Home → County need map → Grant matches → Board summary + print → Login + 403), then the rest; light theme first and dark mode last; hover on everything with a number (meaning, source, as-of, why hidden; tap and focus show the same card); before/after shots at 375/1024/1440 in every PR plus one living review page; PRs merge on green CI (D-037) and George reviews afterwards. The bar and the process are rule D-040; the operating checklist is `.claude/skills/design-polish/`; the agent is `.claude/agents/designer.md`.
+
+Every packet: spec first (`docs/design/specs/DS-<id>.md`), one branch off `origin/main`, ≤ 400 hand-written lines, shots before/after at 375/1024/1440 plus the variants named, axe 0 serious/critical, no horizontal scroll at 375, progress entry last.
+
+## Foundation (week 1, day 1)
+| PR | Scope | Files |
+|---|---|---|
+| A (markdown) | `designer` agent, `design-polish` skill + references, this plan, D-040 | `.claude/agents/designer.md`, `.claude/skills/design-polish/**`, `docs/design/POLISH_PLAN.md`, `harness/DECISIONS.md` |
+| B (tooling) | Gate skips binaries in the 300-char check; `pnpm shots` (Playwright, signs in with `DESIGN_SHOTS_PASSWORD`, writes `docs/design/reviews/<id>/<tag>/…png` + manifest); `pnpm review-page` builds `docs/design/reviews/index.html` | `scripts/pr-gate.mjs`, `scripts/design-shots.mjs`, `scripts/design-review-page.mjs`, `package.json`, `harness/generated-files.json`, `docs/design/reviews/README.md` |
+| C (DS-09 kit) | tooltip / popover / hover-card primitives; `lib/trust/glossary.ts`; `components/trust/explain.tsx` (`ExplainBody`, `ExplainCard`, `Hint`, `Provenance`); wiring into `SourceFooter`, `SuppressedCell`, `FreshnessChip`, `NotPublished`, `MetricCard`, `ChartFrame`; motion rules; gallery section; unit + gallery e2e | `components/ui/{tooltip,popover,hover-card}.tsx`, `lib/trust/*`, `components/trust/*`, `app/globals.css`, `app/(dev)/ui/page.tsx`, `tests/e2e/gallery.spec.ts` |
+| D (binary) | Before shots of the five mockup routes from the production preview | `docs/design/reviews/DS-1x/before/` |
+
+## Page packets
+| Packet | Route | Scope | Main files | Extra evidence |
+|---|---|---|---|---|
+| DS-10a | `/staff`, `/admin` | Eyebrow weekday + date (America/Denver); greeting ("Good afternoon, <first name>" only when the profile has a full name); three KPI cards (M1 wait, M2 decision, M4 completion) with `ExplainCard` titles and `Hint` on deltas; freshness card two-up with quick links; fix failed-load tiles showing "— n<11" | `components/staff/HomePage.tsx`, `HomeTiles.tsx`, `lib/staff/home.ts`, new `tests/e2e/home.spec.ts`, `visual.spec.ts` | 1024-hover on a KPI |
+| DS-10b | same | To-do list from real sources (uncommitted upload batches, grant deadlines ≤ 30 days, approved-never-started cases missing a reason; counts through `suppressCount`); empty state "Nothing needs you this week"; sparkline hover via `LineHover` | `components/staff/TodoList.tsx`, `lib/staff/todo.ts`, `components/charts/Sparkline.tsx` | 1024-hover on a sparkline |
+| DS-11a | `/need-map` | `lib/need-map/terms.ts`; `components/trust/explain-layer.tsx` (one card for many targets; pointerover, focusin, click pins, Esc); `NeedTable` headers and cells, `CountyPanel` footers → `Provenance`, `CompareBars` median | `components/need-map/NeedTable.tsx`, `CountyPanel.tsx`, `CompareBars.tsx`, `components/trust/explain-layer.tsx`, `tests/e2e/map.spec.ts` | 1024-hover on a cell |
+| DS-11b | `/need-map` | `MapHover`: one card for the 29 counties (name, rank, score, band, FAS county, top driver), follows arrow-key focus, tap selects; hover stroke and pointer cursor; rank labels from 1024 where the box ≥ 24 px; legend `Hint`s | `NeedMap.tsx`, `MapSelect.tsx`, `MapHover.tsx`, `map.spec.ts` | 1440-hover, 1024-focus |
+| DS-12a | `/staff/grants/matches` | `lib/grants/terms.ts`; `MatchItem` gains award range and pipeline status; `MatchList` replaces the table: fit-score tile (`ExplainCard`), title, funder · closes · range, flag badges with glyph + `Hint`, status badge, "How we matched" toggle | `components/grants/MatchList.tsx`, `lib/grants/match-query.ts`, `match-explanation.spec.ts` | 1024-hover on a flag |
+| DS-12b | same | `MatchPanel` redesign: sticky aside ≥ 1024, inline below; per component label, points of max, bar, reason, source chips with `Hint`; eligibility checklist with pass/flagged/unclear words; award-history line only when stored; no actions until a pipeline route exists | `components/grants/MatchPanel.tsx`, `lib/grants/match-query.ts` | 1440-panel, 1024-hover |
+| DS-13a | `/board` | `quarterWords` ("July–September 2026"); H1 "How families fared, …"; eyebrow "Family Advocacy Services · Board summary"; `KpiRow` (M1 wait + prior quarter + n, M4 "65 of 92 who closed", M5 cost) with `ExplainCard`; "Data as of" block; print: Letter, 16 mm margins, popovers hidden, 11 pt body, 22 pt serif H1 | `app/(app)/board/page.tsx`, `components/board/KpiRow.tsx`, `print.css`, `board-dashboard.spec.ts` | -print |
+| DS-13b | `/board` | Sections in words ("Did families improve?", "How long families waited", "Where our therapy dollars went", "Need in the counties we serve" from `NeedMapQuery.load`), each opening with its sentence; sources paragraph; page numbers | `board/page.tsx`, `lib/board/counties.ts`, `components/board/Sources.tsx`, `print.css` | -print |
+| DS-14 | `/login`, `/403` | Login: `Hint` on "Example", `Provenance` on the sample footer, env badge `Hint`, mockup error copy, 48 px submit, spacing/type pass; 403: h1 focus on load, role sentence `Hint`, mono path; `loading.tsx` skeletons for the five main routes | `app/login/page.tsx`, `app/403/page.tsx`, `components/status/*`, `app/(app)/*/loading.tsx` | /login signed out; /403 as board |
+| DS-15a | `/dashboard` | Skeletons + `loading.tsx`; `M4Table` cells under an `ExplainLayer`; filter and pipeline `Hint`s; `TrendLine` hover | `components/dashboard/*` | 1024-hover |
+| DS-15b | `/dashboard` | M6 share bar hover with keyboard walk; O1 rows; "View as table" `Hint`; deltas in words everywhere | `components/dashboard/M6Card.tsx`, `OutcomesCard.tsx` | 1024-hover |
+| DS-16a/b | `/data-freshness`, `/methodology` | Cadence and vintage explanations, run-id `Provenance`, `loading.tsx`, summary below 1024; weights as "30 of 100 points" cards, inputs `Provenance`, z-score `Hint` | `components/freshness/*`, `components/methodology/*` | 1024-hover |
+| DS-17 | `/staff/packets` | Figure tiles under an `ExplainLayer`, select and download `Hint`s, print page numbers, `loading.tsx` | `components/packets/PacketView.tsx` | -print |
+| DS-18a/b | `/staff/intake`, `/staff/entry`, `/admin` | Wizard error cells from `title` to `Hint`; stepper and dropzone tokens; batch badges + 44 px rows; entry helper text; aggregate badge `Hint`; nav icons for all 12 links | `components/intake/*`, `components/shell/ShellFrame.tsx` | 800 rail |
+| DS-19 | all | Theme toggle in the user menu; `.dark` persisted + `prefers-color-scheme` + no-flash script; dark shots and axe for every route; chart ramp contrast | `components/shell/*`, `app/layout.tsx` | -dark everywhere |
+
+## Running a packet
+1. The supervisor launches the `designer` agent with the packet id, route, role and sub-packet (a child session on the vercel.app cloud environment when shots against the preview are needed).
+2. The agent audits, specs, implements, gathers evidence, opens a draft PR, and stops.
+3. The supervisor checks CI, preview and shots, squash-merges, republishes the review page, and starts the next packet. Packets with disjoint files run in parallel.
+
+## Order (week 1)
+Day 1: PRs A, B, C (parallel) + the environment probe; D after B. Day 2: DS-10a ∥ DS-11a. Day 3: DS-10b, DS-11b, DS-12a. Day 4: DS-12b, DS-13a. Day 5: DS-13b, DS-14. Then DS-15 → DS-19.
