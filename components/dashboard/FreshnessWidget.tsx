@@ -1,6 +1,7 @@
 import { FreshnessChip } from "@/components/trust";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { asOfNote } from "@/lib/dashboard/cards";
 import type { FreshnessRow, FreshnessView } from "@/lib/dashboard/freshness";
 
 function StatusChip({ status }: { status: FreshnessRow["status"] }) {
@@ -25,7 +26,7 @@ export function FreshnessWidget({ view }: { view: FreshnessView }) {
               </li>
             ))}
           </ul>
-          <p data-slot="source-footer" className="text-xs font-medium tracking-wide text-muted-foreground">Source registry · as of {view.asOf}</p>
+          <p data-slot="source-footer" className="text-xs font-medium tracking-wide text-muted-foreground">Source registry · {asOfNote(view.asOf)}</p>
         </CardContent>
       </Card>
     </section>

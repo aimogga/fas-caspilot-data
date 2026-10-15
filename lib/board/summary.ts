@@ -1,6 +1,6 @@
 /** F-402 plain-English board summary. Pure sentence builders over the suppressed `DashboardMetrics`: a number is only written when it is present
  * (n ≥ 11, not suppressed); a hidden count is worded `fewer than 11`; nothing is estimated or invented. */
-import { GROUP_LABELS } from '../dashboard/cards';
+import { asOfLabel, GROUP_LABELS } from '../dashboard/cards';
 import { days, money, num, pct, reasonLabel, signed } from '../dashboard/format';
 import type { DashboardMetrics, Loaded, Wired } from '../dashboard/metrics-query';
 
@@ -63,5 +63,5 @@ export const sentences = {
 export function summarize(x: DashboardMetrics | null, asOf: string): string {
   if (!x) return 'This quarter’s numbers are not available yet.';
   const parts = [sentences.m1(x.m1), sentences.m2(x.m2), sentences.m3(x.m3), sentences.m5(x.m5), sentences.m4(x.m4), sentences.m6(x.m6), sentences.o1(x.o1)].filter(Boolean);
-  return `${parts.length ? parts.join(' ') : 'This quarter’s numbers are not available yet.'} Data as of ${asOf}.`;
+  return `${parts.length ? parts.join(' ') : 'This quarter’s numbers are not available yet.'} ${asOfLabel(asOf)}.`;
 }

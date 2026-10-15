@@ -18,7 +18,7 @@ describe('pipeline widget query (DS-07a)', () => {
 
   it('is empty with only unknown statuses; picks the earliest future deadline; prefers a grants source as-of; copes with a missing opportunity', () => {
     const none = DashboardQuery.pipeline([row('watch')], [], NOW);
-    expect([none.empty, none.deadline, none.footer]).toEqual([true, 'No upcoming deadline', 'Grants.gov and foundation lists · as of Not available yet']);
+    expect([none.empty, none.deadline, none.footer]).toEqual([true, 'No upcoming deadline', 'Grants.gov and foundation lists · date not available yet']);
     const rows = [row('submitted', 'grants_gov', '2026-01-01', 'Past'), row('new', 'grants_gov', '2027-06-30', 'Later'), row('reviewing', 'grants_gov', '2026-11-05', 'Soon')];
     const sources = [{ name: 'grants-gov', last_success_at: '2026-09-15T00:00:00Z' }, { name: 'census-sahie', last_success_at: '2026-10-01T00:00:00Z' }];
     const view = DashboardQuery.pipeline(rows, sources, NOW);

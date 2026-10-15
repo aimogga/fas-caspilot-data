@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { NeedMapQuery } from '../need-map/query';
+import { asOfNote, NOT_AVAILABLE } from './cards';
 import { Freshness, type FreshnessIndicator, type FreshnessRun, type FreshnessSource, type FreshnessView } from './freshness';
 
 export const STAGES = ['New', 'Reviewing', 'Pursuing', 'Submitted', 'Awarded', 'Declined', 'Passed'] as const;
@@ -28,8 +29,8 @@ export class DashboardQuery {
     const deadline = next ? `Next deadline: ${next.title}, closes ${monthDay(next.close_date as string)}` : 'No upcoming deadline';
     const grant = sources.filter((s) => /grants|foundation/i.test(s.name) && s.last_success_at).map((s) => s.last_success_at as string).sort().pop();
     const posted = kept.map((r) => r.o?.posted_date ?? '').filter(Boolean).sort().pop();
-    const asOf = grant ? NeedMapQuery.monthYear(grant) : posted ? NeedMapQuery.monthYear(posted) : 'Not available yet';
-    const footer = `Grants.gov and foundation lists · as of ${asOf}${manualCount ? ` · includes ${manualCount} manual entries` : ''}`;
+    const asOf = grant ? NeedMapQuery.monthYear(grant) : posted ? NeedMapQuery.monthYear(posted) : NOT_AVAILABLE;
+    const footer = `Grants.gov and foundation lists · ${asOfNote(asOf)}${manualCount ? ` · includes ${manualCount} manual entries` : ''}`;
     return { stages, manualCount, deadline, footer, empty: kept.length === 0 };
   }
 

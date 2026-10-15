@@ -8,7 +8,7 @@ import { metricProps } from "@/components/dashboard/metric-props";
 import { ErrorState, Grid, PageHeader, Stack } from "@/components/layout";
 import { BoardQuery, boardFilters, type BoardData } from "@/lib/board/query";
 import { summarize } from "@/lib/board/summary";
-import { METRIC_CARDS, NOT_AVAILABLE } from "@/lib/dashboard/cards";
+import { asOfLabel, METRIC_CARDS, NOT_AVAILABLE } from "@/lib/dashboard/cards";
 import { quarterLabel } from "@/lib/dashboard/filters";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -33,7 +33,7 @@ export default async function BoardPage() {
   const card = (c: (typeof METRIC_CARDS)[number]) => <MetricCard key={c.id} card={c} {...metricProps(c.id, metrics, filters, "/board")} />;
   return (
     <Stack gap={6}>
-      <PageHeader eyebrow="BOARD" title="How FAS help is working" description={`${quarterLabel(filters.period)} · All counties · Data as of ${asOf}`} actions={<PrintButton />} />
+      <PageHeader eyebrow="BOARD" title="How FAS help is working" description={`${quarterLabel(filters.period)} · All counties · ${asOfLabel(asOf)}`} actions={<PrintButton />} />
       {data ? null : <ErrorState message="Couldn't load the board dashboard" referenceId={errorId ?? randomUUID()} href="/board">Something went wrong on our side. Try again.</ErrorState>}
       <p data-slot="board-summary" className="max-w-prose text-base leading-7">{summarize(metrics, asOf)}</p>
       <Pictures metrics={metrics} period={filters.period} />
@@ -44,7 +44,7 @@ export default async function BoardPage() {
       {o1 ? card(o1) : null}
       {data?.freshness ? <FreshnessWidget view={data.freshness} /> : null}
       <p data-slot="board-note" className="text-sm text-muted-foreground">
-        Counts under 11 are hidden to protect families&apos; privacy. Dates are shown by quarter. Data as of {asOf}. FAS Evidence.
+        Counts under 11 are hidden to protect families&apos; privacy. Dates are shown by quarter. {asOfLabel(asOf)}. FAS Evidence.
       </p>
     </Stack>
   );

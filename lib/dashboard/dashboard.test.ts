@@ -90,7 +90,7 @@ describe("DS-07a team dashboard (F-401)", () => {
   });
   it("wired cards with no rows this quarter say so and keep the source footer; the M1 trend offers View as table (DS-07b)", async () => {
     const markup = await page();
-    expect(markup).toMatch(/data-state="no-data".*No closed cases this quarter.*FAS records · \w{3}–\w{3} \d{4} \(Q[1-4]\) · n = 0 · as of Not available yet/);
+    expect(markup).toMatch(/data-state="no-data".*No closed cases this quarter.*FAS records · \w{3}–\w{3} \d{4} \(Q[1-4]\) · n = 0 · date not available yet/);
     expect(markup).toMatch(/aria-expanded="false" aria-controls="[^"]+"[^>]*>View as table/);
     expect(text(await page({ county: "bogus", referral: "court" }))).toMatch(/No cases match these filters.*Reset filters/);
     expect(markup).not.toMatch(/data-state="not-available"/);
@@ -112,7 +112,7 @@ describe("DS-07a team dashboard (F-401)", () => {
     expect(text(markup)).not.toMatch(/Export packet|Open pipeline|Upload data|See all sources/);
     expect(text(markup)).toMatch(/\w{3}\u2013\w{3} \d{4} \(Q[1-4]\) · All counties · court/);
     expect(markup).toMatch(/<form data-slot="filter-form"[^>]*action="\/dashboard" method="get".*Filters · 2/);
-    expect(text(markup)).toMatch(/Public data freshness.*No sources registered yet.*Source registry · as of Not available yet.*Grant pipeline/);
-    expect(text(markup)).toMatch(/Grant pipeline.*No opportunities in the pipeline yet.*New.*Reviewing.*Pursuing.*Submitted.*Awarded.*Declined.*Passed.*No upcoming deadline.*as of Not available yet/);
+    expect(text(markup)).toMatch(/Public data freshness.*No sources registered yet.*Source registry · date not available yet.*Grant pipeline/);
+    expect(text(markup)).toMatch(/Grant pipeline.*No opportunities in the pipeline yet.*New.*Reviewing.*Pursuing.*Submitted.*Awarded.*Declined.*Passed.*No upcoming deadline.*date not available yet/);
   });
 });

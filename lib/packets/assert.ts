@@ -1,6 +1,7 @@
 /** F-403 export assertions (pure): every rule in docs/PRIVACY_AND_COMPLIANCE.md that a packet can break becomes a check. `assertPacket` returns the
  * violations found (an empty list is the pass); nothing here reads the database. */
 import { pictureCaption } from '../charts/svg';
+import { asOfNote } from '../dashboard/cards';
 import type { Figure, Packet, PacketSection } from './model';
 
 export type Violation = { rule: 'exact-date' | 'small-cell' | 'case-field' | 'unsourced'; where: string; text: string };
@@ -15,7 +16,7 @@ const AS_OF = /^(\w{3} \d{4}|Not available yet)$/;
 
 /** Flattens the packet to the strings a reader would see, in reading order. */
 export function renderText(p: Packet): string[] {
-  const section = (s: PacketSection) => [s.title, ...s.paragraphs, ...s.figures.map((f) => `${f.label}: ${f.value} · ${f.sourceLabel} · as of ${f.asOf}`), s.source];
+  const section = (s: PacketSection) => [s.title, ...s.paragraphs, ...s.figures.map((f) => `${f.label}: ${f.value} · ${f.sourceLabel} · ${asOfNote(f.asOf)}`), s.source];
   return [p.title, p.scopeLabel, p.prepared, p.asOf, p.ribbon, ...p.sections.flatMap(section), ...p.pictures.map(pictureCaption), p.footer];
 }
 export const SMALL_CELL = 11, underCell = (s: string | undefined) => s !== undefined && Number(s) < SMALL_CELL;

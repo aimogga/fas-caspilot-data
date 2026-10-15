@@ -29,7 +29,7 @@ describe('buildPacket (F-403)', () => {
     const p = buildPacket(input()), text = renderText(p).join('\n');
     expect(p.sections.map((x) => x.title)).toEqual(ORDER);
     expect([p.title, p.prepared, p.asOf, p.ribbon, p.footer]).toEqual(['FAS Evidence packet · Grant attachment · Salt Lake County', 'Prepared Nov 2024', 'Data as of Dec 2024', 'DRAFT · for review', 'FAS Evidence · Counts under 11 are hidden · Nov 2024']);
-    expect(p.sections[0]?.paragraphs[0]).toMatch(/^Salt Lake County ranks 1 of 3 Utah counties on the FAS need score \(version v2-synthetic, score \+1\.50\)/);
+    expect(p.sections[0]?.paragraphs[0]).toMatch(/^Salt Lake County ranks 1 of 3 Utah counties with a need score \(version v2-synthetic, score \+1\.50; 3 of 29 counties scored\)/);
     expect(p.sections[0]?.figures).toEqual([{ label: 'Uninsured rate', value: '9.1% ± 0.4', kind: 'value', sourceLabel: 'Census SAHIE 2023', asOf: 'Oct 2026' }]);
     expect(p.sections[1]?.figures.find((f) => f.label.startsWith('Days from application'))).toMatchObject({ value: 'fewer than 11', asOf: 'Oct 2024', sourceLabel: 'FAS records · Jul–Sep 2024 (Q3)' });
     expect(text).toMatch(/Fewer than 11 applications were decided/);
@@ -40,7 +40,7 @@ describe('buildPacket (F-403)', () => {
   it('board packet is statewide whatever county is passed, lists service counties and the top-ranked counties, and has zero violations; a statewide grant omits the service list', () => {
     const p = buildPacket(input({ variant: 'board' }));
     expect([p.title, scopeLabel('board', { county: '49035' }), scopeLabel('grant', { county: 'nope' })]).toEqual(['FAS Evidence packet · Board packet · Statewide', 'Statewide', 'Statewide']);
-    expect(p.sections[0]?.paragraphs).toEqual(['Highest-need Utah counties on the FAS need score (version v2-synthetic): Salt Lake County (rank 1 of 3), Utah County (rank 2 of 3), Davis County (rank 3 of 3).', 'FAS service counties: Davis, Salt Lake.']);
+    expect(p.sections[0]?.paragraphs).toEqual(['Highest-need Utah counties on the FAS need score (version v2-synthetic; 3 of 29 counties scored): Salt Lake County (rank 1 of 3), Utah County (rank 2 of 3), Davis County (rank 3 of 3).', 'FAS service counties: Davis, Salt Lake.']);
     expect(assertPacket(p)).toEqual([]);
     const g = buildPacket(input({ scope: {}, need: null, method: null, metrics: null }));
     expect(g.sections[0]?.paragraphs).toEqual(['The county need score is not available yet.']);
@@ -82,7 +82,7 @@ describe('PacketQuery (F-403)', () => {
     const client = { from: (table: string) => { calls.push(table); return chain(table); } } as never;
     const p = await PacketQuery.load(client, 'grant', { county: '49035' }, new Date('2026-10-14T00:00:00Z'), { userId: 'u1', orgId: 'o1' }, 'preview');
     expect(calls).toEqual(expect.arrayContaining(['m1_court_to_first_session.county_fips=49035', 'm4_m5_m6_episodes.county_fips=49035', 'case', 'need_score_config']));
-    expect(inserts).toEqual([{ table: 'export_job', org_id: 'o1', type: 'packet-html', params: { variant: 'grant', scope: { county: '49035' }, status: 'rendered', asOf: 'Data as of Not available yet' }, suppression_applied: true, created_by: 'u1' },
+    expect(inserts).toEqual([{ table: 'export_job', org_id: 'o1', type: 'packet-html', params: { variant: 'grant', scope: { county: '49035' }, status: 'rendered', asOf: 'Data date not available yet' }, suppression_applied: true, created_by: 'u1' },
       { table: 'audit_log', org_id: 'o1', actor: 'u1', action: 'packet.render', entity: 'export_job', entity_id: 'job-1', details: expect.objectContaining({ variant: 'grant' }) }]);
     expect([p.scopeLabel, p.sections[0]?.paragraphs[0], assertPacket(p)]).toEqual(['Salt Lake County', 'The county need score is not available yet.', []]);
     inserts.length = 0;

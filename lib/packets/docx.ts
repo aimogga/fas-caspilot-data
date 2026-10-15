@@ -5,6 +5,7 @@ import { AlignmentType, Document, Footer, HeadingLevel, ImageRun, type IRunOptio
 import type { Picture } from '../board/pictures';
 import { pictureFallback } from '../charts/png';
 import { pictureCaption, pictureSvg, SVG_WIDTH, svgHeight } from '../charts/svg';
+import { asOfNote } from '../dashboard/cards';
 import { PICTURE_SECTION, type Packet } from './model';
 
 export type DocxBlock = { kind: 'title' | 'subtitle' | 'ribbon' | 'heading' | 'paragraph' | 'row' | 'picture' | 'source' | 'footer'; text: string[]; picture?: Picture };
@@ -18,7 +19,7 @@ export function docxBlocks(p: Packet): DocxBlock[] {
   const out: DocxBlock[] = [{ kind: 'ribbon', text: [p.ribbon] }, { kind: 'title', text: [p.title] }, { kind: 'subtitle', text: [`${p.prepared} · ${p.asOf}`] }];
   for (const s of p.sections) {
     out.push({ kind: 'heading', text: [s.title] }, ...s.paragraphs.map((t) => ({ kind: 'paragraph' as const, text: [t] })));
-    out.push(...s.figures.map((f) => ({ kind: 'row' as const, text: [f.label, f.value, `${f.sourceLabel} · as of ${f.asOf}`] })));
+    out.push(...s.figures.map((f) => ({ kind: 'row' as const, text: [f.label, f.value, `${f.sourceLabel} · ${asOfNote(f.asOf)}`] })));
     out.push(...p.pictures.filter((pic) => PICTURE_SECTION[pic.id] === s.id).map((pic) => ({ kind: 'picture' as const, text: [pictureCaption(pic)], picture: pic })));
     out.push({ kind: 'source', text: [s.source] });
   }

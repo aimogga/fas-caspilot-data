@@ -21,6 +21,8 @@ const download = (variant: string, county: string | undefined, format: "docx" | 
 /** F-403 part 1: print-ready evidence packet. The browser's Print → Save as PDF makes the PDF; staff/admin only (`/staff` prefix guard). */
 export default async function PacketsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const now = new Date(), { variant, scope } = parsePacketParams(await searchParams);
+  // The board packet is always statewide (scopeLabel), so the County menu only shows for the grant attachment.
+  const county = variant === "grant" ? scope.county : undefined;
   let packet: Packet | null = null, errorId: string | undefined;
   try {
     const client = await createClient(), user = client ? (await client.auth.getUser()).data.user : null;
@@ -36,10 +38,10 @@ export default async function PacketsPage({ searchParams }: { searchParams: Prom
       <PageHeader eyebrow="WORKSPACE" title="Evidence packets" description="A print-ready packet of suppressed aggregates with sources and dates. Use Print / Save as PDF to produce the file." />
       <form method="get" action="/staff/packets" data-slot="packet-controls" className="flex flex-wrap items-end gap-3">
         <FormField label="Variant" htmlFor="variant"><select id="variant" name="variant" defaultValue={variant} className={SELECT}>{(Object.keys(VARIANT_LABEL) as (keyof typeof VARIANT_LABEL)[]).map((v) => opt(v, VARIANT_LABEL[v]))}</select></FormField>
-        <FormField label="County" htmlFor="county"><select id="county" name="county" defaultValue={scope.county ?? ALL} className={SELECT}>{[opt(ALL, "Statewide"), ...COUNTIES.map((c) => opt(c.fips, c.name))]}</select></FormField>
+        {variant === "grant" ? <FormField label="County" htmlFor="county"><select id="county" name="county" defaultValue={county ?? ALL} className={SELECT}>{[opt(ALL, "Statewide"), ...COUNTIES.map((c) => opt(c.fips, c.name))]}</select></FormField> : null}
         <div className="flex flex-wrap gap-3">
           <button type="submit" className={buttonVariants()}>Update</button><PrintButton label="Print / Save as PDF" />
-          {download(variant, scope.county, "docx", "Download Word (.docx)")}{download(variant, scope.county, "csv", "Download CSV appendix")}
+          {download(variant, county, "docx", "Download Word (.docx)")}{download(variant, county, "csv", "Download CSV appendix")}
         </div>
       </form>
       {packet ? <PacketView packet={packet} /> : <ErrorState message="Couldn't build the packet" referenceId={errorId ?? randomUUID()} href="/staff/packets">Something went wrong on our side. Try again.</ErrorState>}
