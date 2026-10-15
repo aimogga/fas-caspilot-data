@@ -936,6 +936,12 @@ Did: captured the "after" evidence for DS-11a from the `ds-11a-need-map` preview
 State: binary and manifest only. Branch `design/after-shots-ds-11a`. The 375 full-page shots were captured but dropped before commit: the stacked table at 375 renders about 48 700 px tall (3 MB per PNG), which is the "Ranked list" gap already recorded in `docs/design/specs/DS-11a.md`.
 Left: DS-11b must give 375 a ranked list instead of the stacked table before 375 after shots are worth committing.
 
+## 2026-10-15 23:03 (UTC) — Cloud Agent (Engineer Supervisor) — design-shots waits for the hover face (F-401)
+Did: `scripts/design-shots.mjs` now waits up to 3 s for an open hover-card, tooltip or popover face (`FACE`) after `page.hover` / `page.focus` before taking the hover and focus variants, so the explain kit's 150 ms open delay no longer yields a variant identical to the base shot.
+State: lint and the script's unit tests green; 4 lines. Branch `tooling/shots-hover-wait`.
+Left: nothing.
+Decisions: none new.
+
 ## 2026-10-15 23:25 (UTC) — Claude Code (cloud, Engineer) — F-508a: LLM adapter, Gemini primary, OpenRouter free-tier fallback (#222)
 Did: `lib/llm/` with one server-only entry point, `generateJson({ system, prompt, schema, timeoutMs? })`, returning zod-validated `data` plus `meta { provider, model, attempts, input_tokens, output_tokens, latency_ms }`. Gemini `generateContent` first (JSON mode, `responseJsonSchema` from `z.toJSONSchema`, default `gemini-2.5-flash`); OpenRouter chat completions second (`response_format: json_object`, schema in the system message, `HTTP-Referer` and `X-Title`, default `meta-llama/llama-3.3-70b-instruct:free`). Falls back on 429, 5xx, timeout (30 s default), network error, missing key, invalid JSON or schema; Gemini 400/401/403 logged as a config error by status only. Both failing throws `LlmError` with `{ provider, status }` per attempt and nothing else. New deps `zod` and `server-only` (vitest aliases `server-only` to its empty server module). 15 unit tests with a mocked fetch. `.env.example`, the ARCHITECTURE AI row and the D-003 amendment updated.
 State: lint, typecheck, unit tests and `pnpm gate` green. No real network calls; the keys are not in this shell. Branch `f508a-llm-adapter`.
