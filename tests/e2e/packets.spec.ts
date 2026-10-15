@@ -33,6 +33,11 @@ for (const [variant, query, scope] of [["grant", "variant=grant&county=49035", "
     await expect(page.locator("[data-slot=packet-ribbon]")).toHaveText("DRAFT · for review");
     await expect(page.locator("[data-slot=packet-cover]")).toContainText(/Prepared \w{3} \d{4} · Data as of (\w{3} \d{4}|Not available yet)/);
     await expect(page.locator("[data-slot=packet-section] h2")).toHaveText(ORDER);
+    // The board's pictures sit inside FAS results and Outcomes (statewide board packet always has at least the wait picture in the seed).
+    const pictures = page.locator("[data-slot=packet-pictures] [data-picture]");
+    if (variant === "board") await expect(pictures.first()).toBeVisible();
+    for (const c of await pictures.all()) await expect(c.getByRole("img")).toHaveAttribute("aria-label", /.+/);
+    expect(await pictures.evaluateAll((els) => els.every((el) => ["fas-results", "outcomes"].includes(el.closest("[data-slot=packet-section]")?.id ?? "")))).toBe(true);
     const text = await page.locator("[data-slot=packet]").innerText();
     expect(text).not.toMatch(EXACT_DATE);
     expect(text).not.toMatch(/\$0\b|NaN|undefined|null|case_id/);

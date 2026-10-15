@@ -4,7 +4,8 @@ import { PrintButton } from "@/components/board/PrintButton";
 import { ErrorState, FormField, PageHeader, Stack } from "@/components/layout";
 import { buttonVariants } from "@/components/ui/button";
 import { ALL, type SearchParams } from "@/lib/dashboard/filters";
-import { SECTION_TITLES, VARIANT_LABEL, type Packet, type PacketSection } from "@/lib/packets/model";
+import { PacketView } from "@/components/packets/PacketView";
+import { VARIANT_LABEL, type Packet } from "@/lib/packets/model";
 import { PacketQuery, parsePacketParams } from "@/lib/packets/query";
 import { createClient } from "@/lib/supabase/server";
 import { COUNTIES } from "@/lib/synthetic/generate";
@@ -43,31 +44,5 @@ export default async function PacketsPage({ searchParams }: { searchParams: Prom
       </form>
       {packet ? <PacketView packet={packet} /> : <ErrorState message="Couldn't build the packet" referenceId={errorId ?? randomUUID()} href="/staff/packets">Something went wrong on our side. Try again.</ErrorState>}
     </Stack>
-  );
-}
-function PacketView({ packet }: { packet: Packet }) {
-  return (
-    <article data-slot="packet" className="flex flex-col gap-10">
-      <header data-slot="packet-cover" className="flex flex-col gap-3 rounded-lg border p-6">
-        <p data-slot="packet-ribbon" className="text-sm font-semibold uppercase tracking-wide text-warning">{packet.ribbon}</p>
-        <p data-slot="packet-title" className="font-serif text-2xl font-semibold">{packet.title}</p>
-        <p className="text-sm text-muted-foreground">{packet.prepared} · {packet.asOf}</p>
-        <ol className="list-decimal pl-5 text-sm">{packet.sections.map((s) => <li key={s.id}>{SECTION_TITLES[s.id]}</li>)}</ol>
-      </header>
-      {packet.sections.map((s) => <PacketSectionView key={s.id} section={s} />)}
-      <p data-slot="packet-footer" className="text-xs text-muted-foreground">{packet.footer}</p>
-    </article>
-  );
-}
-function PacketSectionView({ section: s }: { section: PacketSection }) {
-  return (
-    <section data-slot="packet-section" id={s.id} className="flex flex-col gap-4">
-      <h2 className="font-serif text-xl font-semibold">{s.title}</h2>
-      {s.paragraphs.map((t, i) => <p key={i} className="max-w-prose leading-7">{t}</p>)}
-      {s.figures.length ? <dl data-slot="packet-figures" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {s.figures.map((f, i) => <div key={i} className="rounded-md border p-3"><dt className="text-sm text-muted-foreground">{f.label}</dt><dd className="text-lg font-semibold tabular-nums">{f.value}</dd><dd className="text-xs text-muted-foreground">{f.sourceLabel} · as of {f.asOf}</dd></div>)}
-      </dl> : null}
-      <p data-slot="source-footer" className="text-xs font-medium tracking-wide text-muted-foreground">{s.source}</p>
-    </section>
   );
 }

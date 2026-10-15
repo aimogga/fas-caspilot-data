@@ -1,5 +1,6 @@
 /** F-403 part 1: evidence packet content model (pure). Every number is a `Figure` with a source label and an as-of month; dates are month/quarter
  * strings only; values hidden by F-306 read `fewer than 11` (n under 11) or `hidden` (complementary suppression). Rendering and assertions sit on top. */
+import { boardPictures, type Picture } from '../board/pictures';
 import { sentences } from '../board/summary';
 import { GROUP_LABELS, METRIC_CARDS, NOT_AVAILABLE } from '../dashboard/cards';
 import { quarterLabel } from '../dashboard/filters';
@@ -15,7 +16,12 @@ export type PacketScope = { county?: string };
 export type SectionId = 'need-profile' | 'fas-results' | 'outcomes' | 'methodology-sources' | 'suppression-note' | 'related-party';
 export type Figure = { label: string; value: string; kind: 'count' | 'value'; sourceLabel: string; asOf: string };
 export type PacketSection = { id: SectionId; title: string; paragraphs: string[]; figures: Figure[]; source: string };
-export type Packet = { variant: PacketVariant; scope: PacketScope; title: string; scopeLabel: string; prepared: string; asOf: string; ribbon: string; footer: string; sections: PacketSection[] };
+export type Packet = {
+  variant: PacketVariant; scope: PacketScope; title: string; scopeLabel: string; prepared: string; asOf: string; period: string; ribbon: string; footer: string; sections: PacketSection[];
+  /** The board's pictures (F-402), drawn inside the section each one belongs to; empty when no metric loaded. The DOCX and CSV carry the figures, not the pictures. */ pictures: Picture[];
+};
+/** Which section each picture sits in. */
+export const PICTURE_SECTION: Record<Picture['id'], SectionId> = { wait: 'fas-results', completion: 'fas-results', dollars: 'fas-results', outcomes: 'outcomes' };
 export type PacketInput = {
   variant: PacketVariant; scope: PacketScope; now: Date; period: string; asOf: string;
   metrics: DashboardMetrics | null; need: NeedTableData | null; method: MethodologyView | null; serviceCounties: string[];
@@ -85,7 +91,7 @@ export function buildPacket(x: PacketInput): Packet {
   const suppression: PacketSection = { id: 'suppression-note', title: SECTION_TITLES['suppression-note'], paragraphs: SUPPRESSION_COPY, figures: [], source: 'FAS Evidence privacy rules' };
   return {
     variant: x.variant, scope: x.scope, title: `FAS Evidence packet · ${VARIANT_LABEL[x.variant]} · ${scope}`, scopeLabel: scope, prepared: `Prepared ${prepared}`, asOf: `Data as of ${x.asOf}`,
-    ribbon: RIBBON, footer: `FAS Evidence · Counts under 11 are hidden · ${prepared}`,
-    sections: [needProfile(x), fasResults(x), outcomes(x), methodologySources(x), suppression, relatedParty(x)],
+    period: x.period, ribbon: RIBBON, footer: `FAS Evidence · Counts under 11 are hidden · ${prepared}`,
+    sections: [needProfile(x), fasResults(x), outcomes(x), methodologySources(x), suppression, relatedParty(x)], pictures: boardPictures(x.metrics),
   };
 }
