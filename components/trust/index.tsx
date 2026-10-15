@@ -1,37 +1,42 @@
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import { Hint, Provenance, type ProvenanceDetail, type SourceFooterProps } from "@/components/trust/explain";
 import { asOfNote } from "@/lib/dashboard/cards";
+import { GLOSSARY, HIDDEN_SMALL } from "@/lib/trust/glossary";
 
-export type SourceFooterProps = { source: string; period: string; n: string | number; asOf: string };
+export type { SourceFooterProps };
 
-export function SourceFooter({ source, period, n, asOf }: SourceFooterProps) {
-  return <p data-slot="source-footer" className="text-xs font-medium tracking-wide text-muted-foreground">{source} · {period} · n {n} · {asOfNote(asOf)}</p>;
+/** The visible text is unchanged (e2e footers match on it); the text itself opens the Provenance card (DS-09). */
+export function SourceFooter({ detail, ...p }: SourceFooterProps & { detail?: ProvenanceDetail }) {
+  return <p data-slot="source-footer" className="text-xs font-medium tracking-wide text-muted-foreground"><Provenance {...p} detail={detail}>{p.source} · {p.period} · n {p.n} · {asOfNote(p.asOf)}</Provenance></p>;
 }
 
 export function SuppressedCell({ count }: { count?: number }) {
   void count;
   return (
-    <span data-slot="suppressed" title="Suppressed (n < 11) to protect privacy.">
-      <span aria-hidden>— n&lt;11</span>
-      <span className="sr-only">Suppressed because the count is under 11, to protect privacy.</span>
-    </span>
+    <Hint text={HIDDEN_SMALL}>
+      <span data-slot="suppressed">
+        <span aria-hidden>— n&lt;11</span>
+        <span className="sr-only">Suppressed because the count is under 11, to protect privacy.</span>
+      </span>
+    </Hint>
   );
 }
 
 const FRESHNESS = {
-  current: { word: "Current", variant: "success", glyph: "●" },
-  stale: { word: "Stale", variant: "warning", glyph: "◐" },
-  failed: { word: "Failed", variant: "destructive", glyph: "✕" },
+  current: { word: "Current", variant: "success", glyph: "●", term: GLOSSARY.fresh_current },
+  stale: { word: "Stale", variant: "warning", glyph: "◐", term: GLOSSARY.fresh_stale },
+  failed: { word: "Failed", variant: "destructive", glyph: "✕", term: GLOSSARY.fresh_failed },
 } as const;
 
 export function FreshnessChip({ status }: { status: keyof typeof FRESHNESS }) {
-  const { word, variant, glyph } = FRESHNESS[status];
-  return <span data-slot="freshness"><Badge variant={variant} prefix={<span aria-hidden>{glyph}</span>}>{word}</Badge></span>;
+  const { word, variant, glyph, term } = FRESHNESS[status];
+  return <span data-slot="freshness"><Hint text={term.plain} className="rounded-full"><Badge variant={variant} prefix={<span aria-hidden>{glyph}</span>}>{word}</Badge></Hint></span>;
 }
 
 export function NotPublished({ reason }: { reason?: string }) {
-  return <p data-slot="not-published" className="text-sm text-muted-foreground">Not published{reason ? ` — ${reason}` : ""}</p>;
+  return <p data-slot="not-published" className="text-sm text-muted-foreground"><Hint text={GLOSSARY.not_published.plain} className="underline decoration-dotted underline-offset-4">Not published{reason ? ` — ${reason}` : ""}</Hint></p>;
 }
 
 export function DraftBanner() {
