@@ -42,9 +42,9 @@ afterEach(() => vi.restoreAllMocks()); describe('ProPublicaHttp', () => {
     const logged = JSON.stringify([log.mock.calls, sent]); expect([logged.includes('propublica_990'), logged.includes('not-a-secret'), logged.includes('dummy_secret_here')]).toEqual([true, false, false]);
   });
 });
-it('n8n workflow is inactive, quarterly, uses $env only, no literal URL', () => {
+it('n8n workflow is inactive, quarterly, calls the production URL with the n8n credential, no $env', () => {
   const text = readFileSync('n8n/propublica-quarterly.json', 'utf8');
   const wf = JSON.parse(text) as { active: boolean; nodes: { type: string; parameters: { rule?: { interval: { expression: string }[] } } }[] };
   expect([wf.active, wf.nodes[0].parameters.rule?.interval[0].expression, wf.nodes.map((n) => n.type).sort()]).toEqual([false, '0 14 3 1,4,7,10 *', ['n8n-nodes-base.httpRequest', 'n8n-nodes-base.scheduleTrigger']]);
-  expect([text.includes('$env.FAS_INGEST_PROPUBLICA_URL'), text.includes('$env.INGEST_TOKEN'), /20\d{2}|https?:\/\//.test(text)]).toEqual([true, true, false]);
+  expect([text.includes('https://fas-caspilot-data.vercel.app/api/ingest/propublica'), text.includes('"httpHeaderAuth":{"id":"hJd3gjSOX9o2ITvB","name":"FAS ingest token"}'), /20\d{2}|\$env\./.test(text)]).toEqual([true, true, false]);
 });

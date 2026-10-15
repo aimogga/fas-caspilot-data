@@ -105,15 +105,15 @@ describe('POST /api/grants/recompute results', () => {
   });
 });
 
-it('n8n grants-recompute-weekly is inactive, weekly, and reads URL and token from $env only', () => {
+it('n8n grants-recompute-weekly is inactive, weekly, calls the production URL with the n8n credential, no $env', () => {
   const text = readFileSync('n8n/grants-recompute-weekly.json', 'utf8');
   const wf = JSON.parse(text) as { active: boolean; nodes: { type: string; parameters: { rule?: { interval: { expression: string }[] } } }[] };
   expect(wf.active).toBe(false);
   expect(wf.nodes.some((n) => n.type === 'n8n-nodes-base.httpRequest')).toBe(true);
   const schedule = wf.nodes.find((n) => n.type === 'n8n-nodes-base.scheduleTrigger');
   expect(schedule?.parameters.rule?.interval[0]?.expression).toMatch(/^\d+ \d+ \* \* [0-6]$/);
-  expect(text).toContain('$env.FAS_GRANTS_RECOMPUTE_URL');
-  expect(text).toContain('Bearer {{$env.INGEST_TOKEN}}');
-  expect(text).not.toMatch(/https?:\/\//);
+  expect(text).toContain('https://fas-caspilot-data.vercel.app/api/grants/recompute');
+  expect(text).toContain('"httpHeaderAuth":{"id":"hJd3gjSOX9o2ITvB","name":"FAS ingest token"}');
+  expect(text).not.toMatch(/\$env\./);
   expect(text).not.toMatch(/Bearer [A-Za-z0-9]/);
 });

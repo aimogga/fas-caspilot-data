@@ -54,9 +54,9 @@ describe('GrantsGovHttp', () => {
     for (const s of ['not-a-secret', 'dummy_secret_here']) expect(r.logged).not.toContain(s);
   });
 });
-it('n8n workflow is inactive, weekly (keeps the key active within 30 days), uses $env only, no literal URL', () => {
+it('n8n workflow is inactive, weekly (keeps the key active within 30 days), calls the production URL with the n8n credential, no $env', () => {
   const text = readFileSync('n8n/grants-gov-weekly.json', 'utf8');
   const wf = JSON.parse(text) as { active: boolean; nodes: { type: string; parameters: { rule?: { interval: { expression: string }[] } } }[] };
   expect([wf.active, wf.nodes[0].parameters.rule?.interval[0].expression, wf.nodes.map((n) => n.type).sort()]).toEqual([false, '0 13 * * 1', ['n8n-nodes-base.httpRequest', 'n8n-nodes-base.scheduleTrigger']]);
-  expect([text.includes('$env.FAS_INGEST_GRANTS_GOV_URL'), text.includes('$env.INGEST_TOKEN'), /20\d{2}|https?:\/\//.test(text)]).toEqual([true, true, false]);
+  expect([text.includes('https://fas-caspilot-data.vercel.app/api/ingest/grants-gov'), text.includes('"httpHeaderAuth":{"id":"hJd3gjSOX9o2ITvB","name":"FAS ingest token"}'), /20\d{2}|\$env\./.test(text)]).toEqual([true, true, false]);
 });
