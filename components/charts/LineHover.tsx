@@ -17,7 +17,7 @@ export function LineHover({ points, unit, noun }: { points: HoverPoint[]; unit: 
   };
   const p = active == null ? null : points[active], flip = p != null && p.x > 60;
   return (
-    <div data-slot="line-hover" tabIndex={0} aria-label={`${noun}: use arrow keys to read each period`} aria-describedby={id} onPointerMove={onMove} onPointerLeave={() => setActive(null)}
+    <div data-slot="line-hover" role="group" tabIndex={0} aria-label={`${noun}: use arrow keys to read each period`} aria-describedby={id} onPointerMove={onMove} onPointerLeave={() => setActive(null)}
       onKeyDown={onKey} onBlur={() => setActive(null)} className="absolute inset-0 cursor-crosshair rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
       {p ? <>
         <span aria-hidden className="absolute inset-y-0 border-l border-dashed border-muted-foreground" style={{ left: `${p.x}%` }} />
