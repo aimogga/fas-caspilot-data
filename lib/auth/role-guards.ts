@@ -3,7 +3,7 @@ const ALL: UserRole[] = ['admin', 'staff', 'board_viewer'];
 const RULES: Record<string, UserRole[]> = {
   '/login': ALL, '/': ALL, '/staff': ['admin', 'staff'], '/admin': ['admin'], '/board': ALL, '/dashboard': ['admin', 'staff'], '/need-map': ALL, '/methodology': ALL, '/home': ALL,
   '/data-freshness': ['admin', 'staff'],
-  '/api/packets': ['admin', 'staff'],
+  '/api/packets': ALL,
   '/api/intake': ['admin', 'staff'],
   '/api/grants': ['admin', 'staff'],
 };
