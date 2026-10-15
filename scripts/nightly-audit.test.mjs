@@ -412,7 +412,7 @@ describe('F-601 QA mutation kills (synthetic)', () => {
   const run = async (o) => {
     let overall;
     await main({secretScan: ok, build: ok, deps: ok, harness: ok, data: async () => ({freshness: ok(), sanity: ok()}),
-      mainCi: async () => ok(), deploys: async () => ok(), grantsRls: async () => ({grants: ok(), rls: ok()}), log: () => {},
+      mainCi: async () => ok(), deploys: async () => ok(), alerts: async () => ok(), grantsRls: async () => ({grants: ok(), rls: ok()}), log: () => {},
       emit: (res) => { overall = res.overall; return {path: 'x', exitCode: 0}; }, ...o});
     return overall;
   };
