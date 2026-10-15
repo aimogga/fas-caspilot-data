@@ -28,5 +28,65 @@
     "host": "fas-caspilot-data.vercel.app",
     "sha": "5de6954",
     "at": "2026-10-15T22:14:39.741Z"
+  },
+  {
+    "id": "DS-10a",
+    "tag": "after",
+    "route": "/staff",
+    "width": 375,
+    "variant": "base",
+    "host": "fas-caspilot-data.vercel.app",
+    "sha": "6454ee9",
+    "at": "2026-10-15T22:44:52.683Z"
+  },
+  {
+    "id": "DS-10a",
+    "tag": "after",
+    "route": "/staff",
+    "width": 375,
+    "variant": "hover",
+    "host": "fas-caspilot-data.vercel.app",
+    "sha": "6454ee9",
+    "at": "2026-10-15T22:44:52.798Z"
+  },
+  {
+    "id": "DS-10a",
+    "tag": "after",
+    "route": "/staff",
+    "width": 1024,
+    "variant": "base",
+    "host": "fas-caspilot-data.vercel.app",
+    "sha": "6454ee9",
+    "at": "2026-10-15T22:44:54.344Z"
+  },
+  {
+    "id": "DS-10a",
+    "tag": "after",
+    "route": "/staff",
+    "width": 1024,
+    "variant": "hover",
+    "host": "fas-caspilot-data.vercel.app",
+    "sha": "6454ee9",
+    "at": "2026-10-15T22:44:54.456Z"
+  },
+  {
+    "id": "DS-10a",
+    "tag": "after",
+    "route": "/staff",
+    "width": 1440,
+    "variant": "base",
+    "host": "fas-caspilot-data.vercel.app",
+    "sha": "6454ee9",
+    "at": "2026-10-15T22:44:55.932Z"
+  },
+  {
+    "id": "DS-10a",
+    "tag": "after",
+    "route": "/staff",
+    "width": 1440,
+    "variant": "hover",
+    "host": "fas-caspilot-data.vercel.app",
+    "sha": "6454ee9",
+    "at": "2026-10-15T22:44:56.051Z"
   }
 ]
