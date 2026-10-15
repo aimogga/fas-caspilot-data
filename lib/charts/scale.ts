@@ -37,7 +37,12 @@ export function compact(v: number): string {
 }
 
 /** True minus sign for negatives (DESIGN rule 6), plain `toLocaleString` otherwise, with an optional unit. */
-export const fmt = (v: number | null, unit = ''): string => (v == null ? 'Hidden' : `${v < 0 ? '−' : ''}${Math.abs(v).toLocaleString('en-US')}${unit}`);
+/** `23 days`, `15%`, `$1,840` (a unit starting with `$` goes in front), `−4 days`, `Hidden`. */
+export const fmt = (v: number | null, unit = ''): string => {
+  if (v == null) return 'Hidden';
+  const pre = unit.startsWith('$') ? '$' : '';
+  return `${v < 0 ? '−' : ''}${pre}${Math.abs(v).toLocaleString('en-US')}${unit.slice(pre.length)}`;
+};
 
 /** Sentence for a ranked bar chart: `Utah has the most families (31), then Salt Lake (22) and Weber (12). 2 of 7 groups hidden.` */
 export function barSummary(points: ChartPoint[], noun: string, unit = ''): string {

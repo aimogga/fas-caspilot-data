@@ -18,7 +18,7 @@ describe('linear', () => {
 describe('formatting', () => {
   it('compacts and keeps the true minus', () => {
     expect(compact(1284)).toBe('1.3K'); expect(compact(12900)).toBe('13K'); expect(compact(4_200_000)).toBe('4.2M'); expect(compact(950)).toBe('950'); expect(compact(-2500)).toBe('−2.5K');
-    expect(fmt(-3)).toBe('−3'); expect(fmt(null)).toBe('Hidden'); expect(fmt(96, ' days')).toBe('96 days');
+    expect(fmt(-3)).toBe('−3'); expect(fmt(null)).toBe('Hidden'); expect(fmt(96, ' days')).toBe('96 days'); expect(fmt(1840, '$')).toBe('$1,840'); expect(fmt(-5, '$')).toBe('−$5');
   });
 });
 describe('summaries', () => {

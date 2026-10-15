@@ -790,3 +790,9 @@ Did: `/admin` is no longer a placeholder: the same four quarter tiles as the sta
 State: lint/typecheck green locally; e2e runs in CI only (no local Supabase). Branch `claude/visual-p5-admin-e2e` off the packet 4 head; merges main once #187 lands.
 Left: none for the visual-first direction. Open for George unchanged: secret scanning + push protection on the public repo, config version approvals, F-505 email, F-508 LLM key.
 Decisions: none new.
+
+## 2026-10-15 03:35 (UTC) — Cloud Agent (Engineer Supervisor) — team dashboard trend pictures (visual-first follow-up, packet 9; Refs F-401)
+Did: the team dashboard now shows the last four quarters of M2, M3 and M5 as line charts directly under their cards (`components/dashboard/TrendPictures.tsx`, `data-slot=dashboard-trends`), each with the FAS records footer; M1 keeps the trend in its headline card. `lib/dashboard/trends.ts` (pure, 2 tests) builds the pictures from the `trends` MetricsQuery already loads, so filters apply; a failed metric, n = 0 or an all-hidden series drops its picture. Two chart-kit fixes found while rendering: `fmt` takes `$` as a prefix unit (`$1,840`), and a line chart's end label now stays inside the plot when the point sits at the top or bottom edge (it used to collide with the headline or the axis) and gets a background so it reads over the line.
+State: lint/typecheck/unit green locally; rendered at 375/1024 via a throwaway fixture route (deleted), no overflow, labels clear. `tests/e2e/visual.spec.ts` adds a dashboard test (three charts, aria-labels, footers, no overflow, axe) that CI runs. Branch `claude/visual-p9-dashboard-trends` off main (after #188 merged).
+Left: nothing for this packet. The hover layer (#191) applies to these charts once it merges.
+Decisions: none new.

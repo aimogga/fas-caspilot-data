@@ -5,6 +5,7 @@ import { FreshnessWidget } from "@/components/dashboard/FreshnessWidget";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { metricProps } from "@/components/dashboard/metric-props";
 import { PipelineWidget } from "@/components/dashboard/PipelineWidget";
+import { TrendPictures } from "@/components/dashboard/TrendPictures";
 import { METRIC_CARDS } from "@/lib/dashboard/cards";
 import { describeFilters, parseFilters, type SearchParams } from "@/lib/dashboard/filters";
 import { MetricsQuery } from "@/lib/dashboard/metrics-query";
@@ -34,6 +35,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       {data ? null : <ErrorState message="Couldn't load the dashboard" referenceId={randomUUID()} href="/dashboard">Something went wrong on our side. Try again.</ErrorState>}
       {m1 ? card(m1) : null}
       <Grid cols={3}>{rest.slice(0, 3).map(card)}</Grid>
+      <TrendPictures metrics={metrics} period={filters.period} />
       <Grid cols={2} className="md:grid-cols-1 lg:grid-cols-2">{rest.slice(3, 5).map(card)}</Grid>
       {o1 ? card(o1) : null}
       {data ? <Grid cols={2}><FreshnessWidget view={data.freshness} /><PipelineWidget view={data.pipeline} /></Grid> : null}

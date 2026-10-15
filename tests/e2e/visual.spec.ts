@@ -85,3 +85,19 @@ test("/home sends every role to its own home; signed out it asks for sign-in", a
   await page.goto("/home");
   await expect(page).toHaveURL(/\/login\?redirect=%2Fhome$/);
 });
+
+test("team dashboard shows the last four quarters of M2, M3 and M5 as line charts with footers (F-401)", async ({ page }) => {
+  await signIn(page, "staff@example.test");
+  for (const width of [375, 1024]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/dashboard");
+    const charts = page.locator("[data-slot=dashboard-trends] [data-trend]");
+    await expect(charts).toHaveCount(3);
+    for (const c of await charts.all()) {
+      await expect(c.getByRole("img")).toHaveAttribute("aria-label", /.+/);
+      await expect(c.locator("[data-slot=source-footer]")).toContainText(/FAS records · .* · n = \d+ · as of /);
+    }
+    await noOverflow(page, width);
+    expect(await axe(page), `axe @ ${width}`).toEqual([]);
+  }
+});
