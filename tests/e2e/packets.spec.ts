@@ -58,7 +58,7 @@ for (const [variant, query, scope] of [["grant", "variant=grant&county=49035", "
 }
 
 /** F-404: DOCX + CSV appendix downloads through the signed-in context. The files land in the artifacts folder for the manual Word / Google Docs check. */
-test("staff downloads the DOCX and CSV appendix with month-only filenames; board gets 403; bad format 400 (F-404)", async ({ page }) => {
+test("staff downloads the DOCX and CSV appendix with month-only filenames; board downloads the board packet only; bad format 400 (F-404)", async ({ page }) => {
   await signIn(page, "staff@example.test");
   await page.goto("/staff/packets?variant=board&county=49035");
   const links = page.locator("[data-slot=packet-download]");
@@ -85,5 +85,11 @@ test("staff downloads the DOCX and CSV appendix with month-only filenames; board
   expect((await page.request.get("/api/packets/export?variant=grant&format=xlsx")).status()).toBe(400);
   await page.context().clearCookies();
   await signIn(page, "board@example.test");
-  expect((await page.request.get("/api/packets/export?variant=board&format=docx")).status()).toBe(403);
+  // Board viewers download the statewide board packet from their dashboard; the county grant attachment stays staff-only.
+  await page.goto("/board");
+  const boardLinks = page.locator("[data-slot=packet-download]");
+  await expect(boardLinks).toHaveText(["Download Word (.docx)", "Download CSV appendix"]);
+  const boardDocx = await page.request.get("/api/packets/export?variant=board&format=docx");
+  expect([boardDocx.status(), (await boardDocx.body()).subarray(0, 2).toString()]).toEqual([200, "PK"]);
+  expect((await page.request.get("/api/packets/export?variant=grant&county=49035&format=csv")).status()).toBe(403);
 });

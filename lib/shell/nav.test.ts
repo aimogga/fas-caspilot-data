@@ -5,11 +5,11 @@ describe("DS-02 nav", () => {
   it("shows only existing routes for each role", () => {
     const groups = (role: string) => navForRole(role).groups.map((g) => g.label);
     const labels = (role: string) => navForRole(role).groups.flatMap((g) => g.items.map((i) => i.label));
-    expect(labels("staff")).toEqual(["Home", "Team dashboard", "County need map", "Data freshness", "Evidence packets", "Upload data", "Enter data", "Foundation grants", "Grant matches", "Methodology"]);
-    expect(labels("admin")).toEqual(["Home", "Team dashboard", "County need map", "Data freshness", "Evidence packets", "Upload data", "Enter data", "Foundation grants", "Grant matches", "Methodology", "Overview"]);
+    expect(labels("staff")).toEqual(["Home", "Team dashboard", "County need map", "Data freshness", "Evidence packets", "Upload data", "Enter data", "Foundation grants", "Grant matches", "Methodology", "Board dashboard"]);
+    expect(labels("admin")).toEqual(["Home", "Team dashboard", "County need map", "Data freshness", "Evidence packets", "Upload data", "Enter data", "Foundation grants", "Grant matches", "Methodology", "Board dashboard", "Overview"]);
     expect(labels("board_viewer")).toEqual(["Board dashboard", "County need map", "Methodology"]);
-    expect(groups("staff")).toEqual(["Workspace"]);
-    expect(groups("admin")).toEqual(["Workspace", "Admin"]);
+    expect(groups("staff")).toEqual(["Workspace", "Board"]);
+    expect(groups("admin")).toEqual(["Workspace", "Board", "Admin"]);
     expect(navForRole("board_viewer").footer).toBe(BOARD_FOOTER);
     expect(navForRole("admin").footer).toBeNull();
     for (const role of ["staff", "admin", "board_viewer"]) {

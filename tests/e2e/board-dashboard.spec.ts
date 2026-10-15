@@ -52,6 +52,7 @@ test("board dashboard prints without the shell or buttons and reads at 375/1024/
   expect((await print.boundingBox())!.height).toBeGreaterThanOrEqual(44);
   await page.emulateMedia({ media: "print" });
   await expect(print).toBeHidden();
+  await expect(page.locator("[data-slot=packet-download]").first()).toBeHidden();
   await expect(page.locator("[data-slot=sidebar]")).toBeHidden();
   await expect(page.locator("[data-slot=topbar]")).toBeHidden();
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();

@@ -853,3 +853,8 @@ Did: `docs/RUNBOOK_REAL_DATA.md`: who may do what (agents never touch production
 State: markdown only; no code change. Branch `f604-runbook` off main.
 Left: George closes the section 1 gates; the team runs section 6 and attaches the evidence to the F-604 issue; the production project ref goes into DECISIONS when it exists.
 Decisions: none new (the runbook names the decision D-023 will need to be superseded by).
+## 2026-10-15 17:55 (UTC) — Cloud Agent (Engineer Supervisor) — board access: staff see the board dashboard; board downloads the board packet
+Did: George's two access decisions. Nav: staff and admin get a `Board` group with `Board dashboard` under Workspace (`lib/shell/nav.ts`; Workspace keeps its 10-item cap). Downloads: `/api/packets` is open to every role in `lib/auth/role-guards.ts`; `app/api/packets/export/route.ts` lets a board viewer download the statewide board packet only (grant attachment → 403), building and recording it with the service role as the board dashboard does, so only suppressed aggregates leave. The board dashboard header gains `Download Word (.docx)` and `Download CSV appendix` links next to Print, hidden in print.
+State: unit tests, lint and typecheck green. e2e updated: `shell.spec.ts` nav lists, `packets.spec.ts` board download (200, grant 403), `board-dashboard.spec.ts` links hidden in print. Branch `fix/board-access` off main.
+Left: nothing for this change.
+Decisions: none new (recorded in the route comment and the nav comment).
