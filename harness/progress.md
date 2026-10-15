@@ -870,3 +870,9 @@ Decisions: none new.
 Did: the Simpler.Grants.gov ingest sent the key as `X-Auth`; the current docs and OpenAPI (`ApiUserKeyAuth`) name the header `X-API-Key`, so every run with a real key would have been a 401. `GrantsGov.fetchPage` now sends `X-API-Key` (and keeps `X-Auth` for older environments); the test asserts both headers and that the key never appears in the body; `docs/DATA_SOURCES.md` names the header and where the key is created. Vercel: `SIMPLER_GRANTS_API_KEY` created as a sensitive placeholder on production and preview for George to overwrite with the real 25-character key (the ingest answers 503 "api key not configured" only when the variable is absent, so until he pastes it the run would fail as 401; the n8n workflow is still inactive).
 State: unit tests, lint and typecheck green. Branch `fix/grants-gov-header` off main.
 Left: George pastes the key in Vercel; first live run through `/api/ingest/grants-gov` once the n8n workflow is activated (D-014).
+
+## 2026-10-15 19:20 (UTC) — Cloud Agent (Engineer Supervisor) — Utah Courts reuse terms confirmed (F-207)
+Did: the AOC replied to Krystle Smith's 2026-10-12 request that there are no restrictions on the public filings workbook. Migration `20261015190000_f207_ut_courts_terms.sql` sets `commercial_ok = true` and records the confirmation in `source_registry.license` for `ut_courts`; `docs/DATA_SOURCES.md` row no longer says "verify"; D-038 records the exchange. The same UPDATE applied to fas-dev.
+State: no code change; migration is a single UPDATE; lint, typecheck and unit tests green. Branch `ut-courts-terms` off main.
+Left: nothing. The Utah Courts ingest can run on its schedule once the n8n workflow is activated.
+Decisions: D-038.
