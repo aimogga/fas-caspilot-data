@@ -1,3 +1,4 @@
+import type { ChartPoint } from '../charts/scale';
 /** DS-07 "Metric cards" formatters. A suppressed value (null) passes through as null so the caller renders `SuppressedCell`. */
 type Num = number | null | undefined;
 export type DeltaUnit = 'days' | 'pts' | 'money'; export type TrendPoint = { period: string; median: number | null };
@@ -5,6 +6,9 @@ export type DeltaUnit = 'days' | 'pts' | 'money'; export type TrendPoint = { per
 export const REASONS: Record<string, string> = { moved: 'Moved away', declined: 'Declined services', waitlist: 'Waitlisted', unknown: 'Unknown' };
 export const reasonLabel = (code: string): string => REASONS[code] ?? code;
 export const quarterShort = (period: string): string => period.replace(/^\d{4}-/, '');
+/** Chart points from a four-quarter series: `Q3 ’26` labels, percent shares in whole points, hidden stays null. */
+export const quarterPoints = (series: { period: string; value: number | null }[], unit: string): ChartPoint[] =>
+  series.map((t) => ({ label: `${quarterShort(t.period)} ’${t.period.slice(2, 4)}`, value: t.value == null ? null : unit === '%' ? Math.round(t.value * 100) : t.value }));
 export const num = (x: Num): string | null => (x == null ? null : Math.round(x).toLocaleString('en-US'));
 export const days = (x: Num): string | null => (x == null ? null : `${num(x)} ${Math.round(x) === 1 ? 'day' : 'days'}`);
 export const pct = (x: Num): string | null => (x == null ? null : `${Math.round(x * 100)}%`);

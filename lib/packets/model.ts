@@ -18,7 +18,7 @@ export type Figure = { label: string; value: string; kind: 'count' | 'value'; so
 export type PacketSection = { id: SectionId; title: string; paragraphs: string[]; figures: Figure[]; source: string };
 export type Packet = {
   variant: PacketVariant; scope: PacketScope; title: string; scopeLabel: string; prepared: string; asOf: string; period: string; ribbon: string; footer: string; sections: PacketSection[];
-  /** The board's pictures (F-402), drawn inside the section each one belongs to; empty when no metric loaded. The DOCX and CSV carry the figures, not the pictures. */ pictures: Picture[];
+  /** The board's pictures (F-402), drawn inside the section each one belongs to on the page and in the DOCX (SVG + caption); empty when no metric loaded. The CSV carries figures only. */ pictures: Picture[];
 };
 /** Which section each picture sits in. */
 export const PICTURE_SECTION: Record<Picture['id'], SectionId> = { wait: 'fas-results', completion: 'fas-results', dollars: 'fas-results', outcomes: 'outcomes' };

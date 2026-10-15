@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { nearestIndex, stepIndex, tooltipText } from './hover';
+import { nearestIndex, startIndex, stepIndex, tooltipText } from './hover';
 describe('chart hover helpers', () => {
   it('snaps an x position to the nearest of n evenly spread points, clamped to the plot', () => {
     expect([nearestIndex(0, 4), nearestIndex(16, 4), nearestIndex(17, 4), nearestIndex(50, 4), nearestIndex(100, 4)]).toEqual([0, 0, 1, 2, 3]);
@@ -13,5 +13,7 @@ describe('chart hover helpers', () => {
   it('moves the active point with arrow, Home and End keys and ignores the rest', () => {
     expect([stepIndex(1, 'ArrowRight', 4), stepIndex(3, 'ArrowRight', 4), stepIndex(1, 'ArrowLeft', 4), stepIndex(0, 'ArrowLeft', 4)]).toEqual([2, 3, 0, 0]);
     expect([stepIndex(2, 'Home', 4), stepIndex(0, 'End', 4), stepIndex(2, 'Enter', 4)]).toEqual([0, 3, 2]);
+    // nothing active: the first ArrowRight lands on the first point, the first ArrowLeft on the last
+    expect([stepIndex(startIndex(null, 'ArrowRight', 4), 'ArrowRight', 4), stepIndex(startIndex(null, 'ArrowLeft', 4), 'ArrowLeft', 4), startIndex(2, 'ArrowLeft', 4)]).toEqual([0, 3, 2]);
   });
 });

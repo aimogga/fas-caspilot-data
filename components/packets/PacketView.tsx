@@ -1,9 +1,5 @@
-import { BarChart } from "@/components/charts/BarChart";
-import { LineChart } from "@/components/charts/LineChart";
-import { Grid } from "@/components/layout";
-import { Card, CardContent } from "@/components/ui/card";
+import { PictureCards } from "@/components/charts/PictureCards";
 import type { Picture } from "@/lib/board/pictures";
-import { quarterLabel } from "@/lib/dashboard/filters";
 import { PICTURE_SECTION, SECTION_TITLES, type Packet, type PacketSection } from "@/lib/packets/model";
 /** F-403 packet body: cover, the six sections with their figure tiles, and the board's pictures (F-402) inside the FAS results and Outcomes sections. */
 export function PacketView({ packet }: { packet: Packet }) {
@@ -28,13 +24,7 @@ function PacketSectionView({ section: s, pictures, period }: { section: PacketSe
       {s.figures.length ? <dl data-slot="packet-figures" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {s.figures.map((f, i) => <div key={i} className="rounded-md border p-3"><dt className="text-sm text-muted-foreground">{f.label}</dt><dd className="text-lg font-semibold tabular-nums">{f.value}</dd><dd className="text-xs text-muted-foreground">{f.sourceLabel} · as of {f.asOf}</dd></div>)}
       </dl> : null}
-      {pictures.length ? <div data-slot="packet-pictures"><Grid cols={2}>
-          {pictures.map(({ id, kind, n, asOf, ...p }) => (
-            <Card key={id} data-picture={id} className="h-full">
-              <CardContent>{kind === "line" ? <LineChart {...p} footer={{ source: "FAS records", period: quarterLabel(period), n: `= ${n}`, asOf }} periodHead="Quarter" /> : <BarChart {...p} footer={{ source: "FAS records", period: quarterLabel(period), n: `= ${n}`, asOf }} />}</CardContent>
-            </Card>
-          ))}
-      </Grid></div> : null}
+      {pictures.length ? <div data-slot="packet-pictures"><PictureCards pictures={pictures} period={period} /></div> : null}
       <p data-slot="source-footer" className="text-xs font-medium tracking-wide text-muted-foreground">{s.source}</p>
     </section>
   );

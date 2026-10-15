@@ -1,5 +1,6 @@
-/** F-404 DOCX export (pure): the packet model rendered with `docx`. Every string comes from `Packet` through `docxBlocks`, never recomputed, so
- * `assertPacket` on the model and the assertion-style checks over `docxText` cover the same text. Letter, 1-inch margins, built-in fonts only. */
+/** F-404 DOCX export (pure): the packet model rendered with `docx`. Every string comes from `Packet` through `docxBlocks` (picture captions via
+ * `pictureCaption`, which `renderText` lists too), never recomputed, so `assertPacket` on the model and the checks over `docxText` cover the same text.
+ * Letter, 1-inch margins, built-in fonts only; pictures are SVG with a PNG fallback. */
 import { AlignmentType, Document, Footer, HeadingLevel, ImageRun, type IRunOptions, Packer, Paragraph, Table, TableCell, TableRow, TextRun, WidthType } from 'docx';
 import type { Picture } from '../board/pictures';
 import { pictureFallback } from '../charts/png';
