@@ -55,6 +55,8 @@ describe('MetricsQuery (DS-07b, F-401)', () => {
     expect(out.m1).toEqual({ rows: 12, viewRows: 12, n: 12, median: 23, p25: 23, p75: 23, stillWaitingShare: null, asOf: 'Jul 2026', delta: '↓ 4 days faster than Q2' });
     expect(out.trend).toEqual([{ period: '2025-Q4', median: null }, { period: '2026-Q1', median: null }, { period: '2026-Q2', median: 27 }, { period: '2026-Q3', median: 23 }]);
     expect([out.m2, out.m5, out.filtered]).toEqual([{ rows: 0, viewRows: 0, n: 0, median: null, asOf: 'Not available yet', delta: null }, { error: true }, false]);
+    expect(out.trends.m1.map((t) => t.value)).toEqual([null, null, 27, 23]);
+    expect([out.trends.m2.map((t) => t.value), out.trends.m3.length, out.trends.m5]).toEqual([[null, null, null, null], 4, []]);
     expect(MetricsQuery.build(rows, F({ compare: 'none' })).m1).toMatchObject({ delta: null });
     expect(MetricsQuery.build(rows, F({ period: '2026-Q1', county: '49035' }))).toMatchObject({ m1: { rows: 3, n: 3, median: null, delta: null }, filtered: true });
   });

@@ -22,7 +22,10 @@ export type ViewRows = { m1: M1Row[] | null; m2: M2Row[] | null; m3: M3Row[] | n
 /** `rows`: view rows in the quarter, unless the engine result carries its own `rows` (M4 bands); `viewRows` is always the count. */
 export type Wired = { rows: number; viewRows: number; n: number; asOf: string; delta: string | null };
 export type Loaded<T> = (T & Wired) | { error: true };
-export type DashboardMetrics = { [K in keyof typeof compute]: Loaded<ReturnType<(typeof compute)[K]>> } & { trend: TrendPoint[]; filtered: boolean };
+/** Four-quarter series of one headline value per metric (`null` when hidden or absent), for sparklines. */
+export type TrendValue = { period: string; value: number | null };
+export type Trends = Record<'m1' | 'm2' | 'm3' | 'm5', TrendValue[]>;
+export type DashboardMetrics = { [K in keyof typeof compute]: Loaded<ReturnType<(typeof compute)[K]>> } & { trend: TrendPoint[]; trends: Trends; filtered: boolean };
 /** View name, selected columns and the date column the quarter range applies to (in SQL; `anchor` buckets the same column here). */
 const VIEWS = {
   m1: ['m1_court_to_first_session', 'case_id,court_order_date,first_session_date', 'court_order_date'],
@@ -103,23 +106,29 @@ export class MetricsQuery {
       return { rows: q.length, ...cur, viewRows: q.length, asOf: latest ? NeedMapQuery.monthYear(latest) : 'Not available yet', delta: d };
     };
     const trend = rows.m1 ? lastQuarters(f.period).map((period) => ({ period, median: compute.m1(bucket(rows.m1 as M1Row[], anchor.m1, period)).median })) : [];
+    const series = <R>(xs: R[] | null, at: (r: R) => string | null, value: (q: R[]) => number | null): TrendValue[] =>
+      xs ? lastQuarters(f.period).map((period) => ({ period, value: value(bucket(xs, at, period)) })) : [];
+    const trends: Trends = {
+      m1: trend.map((t) => ({ period: t.period, value: t.median })), m2: series(rows.m2, anchor.m2, (q) => compute.m2(q).median),
+      m3: series(rows.m3, anchor.m3, (q) => compute.m3(q).share), m5: series(rows.eps, anchor.eps, (q) => compute.m5(q).costPerCompleted),
+    };
     return {
       m1: section(rows.m1, anchor.m1, compute.m1, (v) => v.median, 'days'), m2: section(rows.m2, anchor.m2, compute.m2, (v) => v.median, 'days'),
       m3: section(rows.m3, anchor.m3, compute.m3, (v) => v.share, 'pts'), m5: section(rows.eps, anchor.eps, compute.m5, (v) => v.costPerCompleted, 'money'),
       m4: section(rows.eps, anchor.eps, compute.m4, () => null, 'pts'), m6: section(rows.eps, anchor.eps, compute.m6, () => null, 'pts'),
       o1: section(rows.o1, anchor.o1, compute.o1, () => null, 'pts'),
-      trend, filtered: f.county !== ALL || f.referral !== ALL,
+      trend, trends, filtered: f.county !== ALL || f.referral !== ALL,
     };
   }
-  /** County/referral and the date range go to SQL. M1 spans the four trend quarters; the others add the prior quarter only when comparing. */
+  /** County/referral and the date range go to SQL. Every view spans the four trend quarters (sparklines); `build` buckets the current and prior quarter from them. */
   static async load(client: SupabaseClient, f: Filters): Promise<DashboardMetrics> {
-    const to = quarterRange(f.period).to, from = quarterRange(f.compare === 'prior' ? priorQuarter(f.period) : f.period).from;
+    const to = quarterRange(f.period).to, from = quarterRange(lastQuarters(f.period)[0] as string).from;
     const read = async <R>(key: keyof typeof VIEWS): Promise<R[] | null> => {
       const [view, cols, dateCol] = VIEWS[key];
       try {
         const filtered = f.county !== ALL || f.referral !== ALL, table = key === 'o1', col = (c: string) => (table ? `case.${c}` : c);
         let q = client.from(view).select(table && filtered ? `${cols},case!inner(county_fips,referral_source)` : cols)
-          .gte(dateCol, key === 'm1' ? quarterRange(lastQuarters(f.period)[0] as string).from : from).lte(dateCol, to);
+          .gte(dateCol, from).lte(dateCol, to);
         if (f.county !== ALL) q = q.eq(col('county_fips'), f.county);
         if (f.referral !== ALL) q = q.eq(col('referral_source'), f.referral);
         const { data, error } = await q;
