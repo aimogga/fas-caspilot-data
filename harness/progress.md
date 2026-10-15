@@ -942,11 +942,6 @@ State: lint and the script's unit tests green; 4 lines. Branch `tooling/shots-ho
 Left: nothing.
 Decisions: none new.
 
-## 2026-10-15 23:35 (UTC) — Cloud Agent (Engineer Supervisor) — DS-12a after shots from the PR preview (design)
-Did: captured the "after" evidence for DS-12a from the `ds-12a-grant-matches` preview: `docs/design/reviews/DS-12a/after/staff-grants-matches-{1024,1440}[-hover].png` plus manifest rows. The hover shots show a flag badge's plain-words tooltip.
-State: binary and manifest only. Branch `design/after-shots-ds-12a`. The 375 full-page shots were dropped before commit: the card list renders about 35 000 px tall at phone width (69 opportunities, every card expanded in height), which DS-12b should address with a compact row and a "show more".
-Left: nothing beyond DS-12b.
-Decisions: none new.
 ## 2026-10-15 22:50 (UTC) — Designer agent (DS-11a) — County need map: one explain card for the table, panel provenance, H1 in words
 Did: `components/trust/explain-layer.tsx` (one positioned `ExplainBody` card for every descendant carrying `data-term`/`data-value`/`data-source`/`data-asof`/`data-hidden`: pointerover and focusin show it, click or Enter pins a `role="dialog"`, Escape closes and returns focus, arrows walk the targets, a polite live region reads the same sentence; pure helpers in `lib/trust/layer.ts`). `lib/need-map/terms.ts`: plain words for the status column and the 15 indicator codes (`ind:<code>`), `needTerm` fallback titled with the column label, margin of error in words, and the data attributes a rank/score/band/status/indicator cell carries. `NeedTable` is wrapped in the layer: header `ExplainCard`s, every cell a target (`tabIndex -1`, not a Tab stop), the FAS badge too, "Bin" → "Band (placeholder)". `CountyPanel`: rank and score `ExplainCard`s, indicator labels explain themselves with value, source + release and as-of, `± x` gets a `Hint`, footers are `Provenance`. `CompareBars`: the median legend item is no longer `aria-hidden` and carries a `Hint`; the tick's native `title` is gone. `/need-map` H1 is "Where is the need greatest?" with the target's one-sentence description (measure count not stated). Spec `docs/design/specs/DS-11a.md` with the audit.
 State: lint, typecheck, 776 unit tests green; hand-written diff 357 lines. No local Supabase or preview here: `tests/e2e/map.spec.ts` gains the explain-layer test (hover = focus = Enter words, dialog name, Escape, arrows, Not published reason, FAS badge, header card, panel Provenance, median hint, axe and scrollWidth at 1024 and 375) for CI. Before shots: PR #214; after shots: the supervisor takes them from the preview. Branch `ds-11a-need-map` off main.
@@ -958,3 +953,9 @@ Did: `/staff/grants/matches` drops the table for `ol > li[data-match]` cards (`c
 State: lint, typecheck, 771 unit tests and `pnpm gate` green locally. No Docker or preview in this shell, so `tests/e2e/match-explanation.spec.ts` (rows, meta, badges, flag hover words, tile focus words, cap reason, footer, panel, axe, scrollWidth at 375/1024) runs in CI; after shots are taken by the supervisor from the preview. Branch `ds-12a-grant-matches` off main.
 Left: DS-12b (`MatchPanel` redesign; removes the now-unused `MatchTable`). Open: no `loading.tsx` for this route (DS-14), the refresh/API-key footer line needs source-registry rows, the digest threshold could join the header.
 Decisions: none new (designer wording defaults listed in the spec).
+
+## 2026-10-15 23:35 (UTC) — Cloud Agent (Engineer Supervisor) — DS-12a after shots from the PR preview (design)
+Did: captured the "after" evidence for DS-12a from the `ds-12a-grant-matches` preview: `docs/design/reviews/DS-12a/after/staff-grants-matches-{1024,1440}[-hover].png` plus manifest rows. The hover shots show a flag badge's plain-words tooltip.
+State: binary and manifest only. Branch `design/after-shots-ds-12a`. The 375 full-page shots were dropped before commit: the card list renders about 35 000 px tall at phone width (69 opportunities, every card expanded in height), which DS-12b should address with a compact row and a "show more".
+Left: nothing beyond DS-12b.
+Decisions: none new.
