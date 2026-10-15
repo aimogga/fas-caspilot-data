@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import "@/components/board/print.css";
+import { Pictures } from "@/components/board/Pictures";
 import { PrintButton } from "@/components/board/PrintButton";
 import { FreshnessWidget } from "@/components/dashboard/FreshnessWidget";
 import { MetricCard } from "@/components/dashboard/MetricCard";
@@ -13,7 +14,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
 export const dynamic = "force-dynamic";
-/** F-402 board dashboard: one screen, plain language, the same suppressed aggregates as the team dashboard, print-friendly, as-of on every number. */
+/** F-402 board dashboard: one screen, plain language, the quarter as four pictures first, the same suppressed aggregates as the team dashboard, print-friendly, as-of on every number. */
 export default async function BoardPage() {
   const now = new Date(), filters = boardFilters(now);
   let data: BoardData | null = null;
@@ -35,6 +36,8 @@ export default async function BoardPage() {
       <PageHeader eyebrow="BOARD" title="How FAS help is working" description={`${quarterLabel(filters.period)} · All counties · Data as of ${asOf}`} actions={<PrintButton />} />
       {data ? null : <ErrorState message="Couldn't load the board dashboard" referenceId={errorId ?? randomUUID()} href="/board">Something went wrong on our side. Try again.</ErrorState>}
       <p data-slot="board-summary" className="max-w-prose text-base leading-7">{summarize(metrics, asOf)}</p>
+      <Pictures metrics={metrics} period={filters.period} />
+      <h2 className="font-serif text-xl font-semibold">The numbers behind the pictures</h2>
       {m1 ? card(m1) : null}
       <Grid cols={3}>{rest.slice(0, 3).map(card)}</Grid>
       <Grid cols={2} className="md:grid-cols-1 lg:grid-cols-2">{rest.slice(3, 5).map(card)}</Grid>
