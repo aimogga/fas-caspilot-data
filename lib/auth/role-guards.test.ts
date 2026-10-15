@@ -60,6 +60,7 @@ describe('role-guards', () => {
     expect(isPublicRoute('/api/ingest/saipe')).toBe(true);
     expect(isPublicRoute('/api/ingest/acs')).toBe(true);
     expect(isPublicRoute('/api/ingest/propublica')).toBe(true);
+    expect(isPublicRoute('/api/ingest/winner-profiles')).toBe(true); // bearer INGEST_TOKEN in the handler
     expect(isPublicRoute('/api/ingest/usaspending')).toBe(true);
     expect(isPublicRoute('/api/ingest/grants-gov')).toBe(true);
     expect(isPublicRoute('/api/grants/recompute')).toBe(true);
