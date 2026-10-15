@@ -9,6 +9,8 @@ import { checkSecretScanTree, secretsOnlyExit } from './nightly-audit.mjs';
 
 export const MAX_LINES = 400;
 export const MAX_LINE_LENGTH = 300;
+/** Committed screenshots, PDFs, fonts and workbooks are never read as text (a PNG row is not a 300-char line). */
+export const BINARY = /\.(png|jpe?g|gif|webp|ico|pdf|woff2?|xlsx|zip)$/i;
 const LOCKFILES = ['pnpm-lock.yaml', 'package-lock.json', 'yarn.lock'];
 
 export function loadGenerated(read = readFileSync, path = 'harness/generated-files.json') {
@@ -37,11 +39,11 @@ export function countDiff(numstat, generated = []) {
   return out;
 }
 
-/** QA rejects code lines over 300 chars (#141 lost a round to one). Markdown is exempt. */
+/** QA rejects code lines over 300 chars (#141 lost a round to one). Markdown and binaries are exempt. */
 export function longLines(files, max = MAX_LINE_LENGTH, generated = []) {
   const hits = [];
   for (const [path, text] of Object.entries(files)) {
-    if (path.endsWith('.md') || generated.includes(path)) continue;
+    if (path.endsWith('.md') || BINARY.test(path) || generated.includes(path)) continue;
     String(text).split('\n').forEach((l, i) => {
       if (l.length > max) hits.push(`${path}:${i + 1} (${l.length})`);
     });
@@ -66,7 +68,7 @@ function gitFiles(exec) {
 }
 
 function changedFiles(exec, base) {
-  const names = exec(`git diff --name-only --diff-filter=AM ${base}...HEAD`, { encoding: 'utf-8' }).trim().split('\n').filter(Boolean);
+  const names = exec(`git diff --name-only --diff-filter=AM ${base}...HEAD`, { encoding: 'utf-8' }).trim().split('\n').filter((n) => n && !BINARY.test(n));
   return Object.fromEntries(names.map((n) => [n, readFileSync(n, 'utf-8')]));
 }
 
