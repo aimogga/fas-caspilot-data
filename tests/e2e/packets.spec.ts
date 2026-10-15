@@ -31,7 +31,7 @@ for (const [variant, query, scope] of [["grant", "variant=grant&county=49035", "
     await expect(page.locator("[data-slot=sidebar] nav a[aria-current=page]")).toHaveText("Evidence packets");
     await expect(page.locator("[data-slot=packet-title]")).toHaveText(`FAS Evidence packet · ${variant === "grant" ? "Grant attachment" : "Board packet"} · ${scope}`);
     await expect(page.locator("[data-slot=packet-ribbon]")).toHaveText("DRAFT · for review");
-    await expect(page.locator("[data-slot=packet-cover]")).toContainText(/Prepared \w{3} \d{4} · Data as of (\w{3} \d{4}|Not available yet)/);
+    await expect(page.locator("[data-slot=packet-cover]")).toContainText(/Prepared \w{3} \d{4} · Data (as of \w{3} \d{4}|date not available yet)/);
     await expect(page.locator("[data-slot=packet-section] h2")).toHaveText(ORDER);
     // The board's pictures sit inside FAS results and Outcomes (statewide board packet always has at least the wait picture in the seed).
     const pictures = page.locator("[data-slot=packet-pictures] [data-picture]");
@@ -63,7 +63,8 @@ test("staff downloads the DOCX and CSV appendix with month-only filenames; board
   await page.goto("/staff/packets?variant=board&county=49035");
   const links = page.locator("[data-slot=packet-download]");
   await expect(links).toHaveText(["Download Word (.docx)", "Download CSV appendix"]);
-  await expect(links.first()).toHaveAttribute("href", "/api/packets/export?variant=board&county=49035&format=docx");
+  // The board packet is statewide, so its links carry no county even when the URL names one.
+  await expect(links.first()).toHaveAttribute("href", "/api/packets/export?variant=board&county=&format=docx");
   await page.emulateMedia({ media: "print" });
   await expect(links.first()).toBeHidden();
   const docx = await page.request.get("/api/packets/export?variant=board&format=docx");
