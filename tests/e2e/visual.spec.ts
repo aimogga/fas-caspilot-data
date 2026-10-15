@@ -91,7 +91,7 @@ test("team dashboard shows the last four quarters of M2, M3 and M5 as line chart
   for (const width of [375, 1024]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/dashboard");
-    const charts = page.locator("[data-slot=dashboard-trends] [data-trend]");
+    const charts = page.locator("[data-slot=dashboard-trends] [data-picture]");
     // The seed carries four quarters for some metrics only; a metric with n = 0 or every quarter hidden has no picture by design.
     await expect(charts.first()).toBeVisible();
     expect(await charts.count(), "at most M2, M3 and M5").toBeLessThanOrEqual(3);
