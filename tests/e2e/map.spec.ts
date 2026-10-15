@@ -23,7 +23,7 @@ for (const [email, eyebrow] of [["staff@example.test", "WORKSPACE"], ["admin@exa
       await page.setViewportSize({ width, height: 900 });
       const res = await page.goto("/need-map");
       expect(res?.status()).toBe(200);
-      await expect(page.getByRole("heading", { level: 1 })).toHaveText("County need map");
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Where is the need greatest?");
       await expect(page.locator("[data-slot=page-header] p").first()).toHaveText(eyebrow);
       await expect(page.locator("tbody tr")).toHaveCount(29);
       await expect(page.getByText("Need score not computed yet")).toHaveCount(0);
@@ -157,4 +157,54 @@ test("county selection: click or ?county= selects, panel copy, table link, arrow
   await expect(page).toHaveURL(/\/need-map$/);
   await expect(panel).toContainText("Select a county on the map or in the table.");
   await expect(page.locator("path[aria-pressed='true']")).toHaveCount(0);
+});
+
+// DS-11a: one explain card for every table cell (pointer, focus, Enter pins a dialog, Escape closes, arrows walk), header cards, panel provenance, median hint.
+test("explain layer: hover, focus and Enter show the same words on a cell; Esc closes; headers, panel footers and the median tick explain themselves", async ({ page }) => {
+  await signIn(page, "staff@example.test");
+  const card = page.locator("[data-slot=explain-layer-card]"), panel = page.locator("[data-slot=county-panel]"), dialog = page.getByRole("dialog");
+  const cell = page.locator("tr[data-fips='49005'] td[data-term='rank']");
+  for (const width of [1024, 375]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/need-map?county=49035");
+    await expect(card).toHaveCount(0);
+    await cell.hover();
+    await expect(card).toContainText(/^Rank.*20 of 26.*Need score version/s);
+    await expect(card).not.toHaveAttribute("role", "dialog");
+    const words = await card.innerText();
+    await page.mouse.move(0, 0);
+    await expect(card).toHaveCount(0);
+    await cell.focus();
+    expect(await card.innerText()).toBe(words);
+    await page.keyboard.press("Enter");
+    await expect(card).toHaveAttribute("role", "dialog");
+    expect(await dialog.innerText()).toBe(words);
+    await expect(dialog).toHaveAccessibleName("Rank");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+    const violations = (await new AxeBuilder({ page }).analyze()).violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+    expect(violations).toEqual([]);
+    await page.keyboard.press("Escape");
+    await expect(card).toHaveCount(0);
+    await expect(cell).toBeFocused();
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator("tr[data-fips='49005'] td[data-term='need_score']")).toBeFocused();
+    await expect(card).toContainText("County need score");
+    await page.locator("tr[data-fips='49009'] td[data-term='rank']").hover();
+    await expect(card).toContainText("The source did not publish this for this county in that release.");
+    await page.locator("tr[data-fips='49035'] [data-slot=badge][data-term='fas_county']").hover();
+    await expect(card).toContainText("A county where FAS currently funds therapy.");
+    await page.mouse.move(0, 0);
+  }
+  await page.setViewportSize({ width: 1024, height: 900 });
+  await page.locator("thead [data-slot=explain-trigger]", { hasText: "Rank" }).hover();
+  await expect(page.locator("[data-slot=hover-card-content]")).toContainText("This county's place among the counties that have a score, 1 being the highest need.");
+  await panel.locator("[data-slot=source-footer] [data-slot=explain-trigger]").first().click();
+  await expect(dialog).toContainText(/Census SAHIE.*Source.*Census SAHIE.*As of.*Period\s*\d{4}/s);
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+  const median = panel.locator("[data-slot=compare-bars] [data-slot=hint-trigger]");
+  if (await median.count()) {
+    await median.hover();
+    await expect(page.locator("[data-slot=tooltip-content]")).toContainText("The middle Utah county for this measure");
+  }
 });
