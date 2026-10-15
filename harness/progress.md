@@ -924,3 +924,20 @@ Did: Spec `docs/design/specs/DS-10a.md` (audit filled from the PR #214 before sh
 State: lint, typecheck, 769 unit tests and `pnpm gate` green (D-012: 396). No Docker or Supabase in this shell: e2e runs in CI; after shots are taken by the supervisor from the preview. Branch `ds-10a-home`.
 Left: DS-10b (to-do list from real sources, sparkline hover via `LineHover`, the families-by-month chart once a monthly series exists). Open: no `full_name` in the seed, so previews greet without a name; M4 has no four-quarter trend, so no sparkline on that card.
 Decisions: none new (applies D-040).
+
+## 2026-10-15 22:55 (UTC) — Cloud Agent (Engineer Supervisor) — DS-10a after shots from the PR preview (design)
+Did: captured the "after" evidence for DS-10a from the `ds-10a-home` preview (Vercel Authentication is off on the project by George's decision, so previews are reachable): `docs/design/reviews/DS-10a/after/staff-{375,1024,1440}[-hover].png` plus six manifest rows. The 1024 hover shot shows the M1 explain card open with the plain-words definition, source and as-of.
+State: binary and manifest only. Branch `design/after-shots-ds-10a`.
+Left: `scripts/design-shots.mjs` screenshots right after `page.hover`, before the 150 ms HoverCard delay; the hover variants here were retaken with a wait for `[data-slot=explain-content]`. Fix the script in a small tooling PR. DS-10b first items from these shots: source names shown as codes in the Public sources card, "Latest —" unexplained, summary sentence should sit under the greeting before the actions at 375.
+Decisions: none new.
+
+## 2026-10-15 22:58 (UTC) — Cloud Agent (Engineer Supervisor) — DS-11a after shots from the PR preview (design)
+Did: captured the "after" evidence for DS-11a from the `ds-11a-need-map` preview: `docs/design/reviews/DS-11a/after/need-map-{1024,1440}[-hover].png` plus manifest rows. The 1024 hover shot shows the explain card on a county's Rank cell.
+State: binary and manifest only. Branch `design/after-shots-ds-11a`. The 375 full-page shots were captured but dropped before commit: the stacked table at 375 renders about 48 700 px tall (3 MB per PNG), which is the "Ranked list" gap already recorded in `docs/design/specs/DS-11a.md`.
+Left: DS-11b must give 375 a ranked list instead of the stacked table before 375 after shots are worth committing.
+
+## 2026-10-15 23:03 (UTC) — Cloud Agent (Engineer Supervisor) — design-shots waits for the hover face (F-401)
+Did: `scripts/design-shots.mjs` now waits up to 3 s for an open hover-card, tooltip or popover face (`FACE`) after `page.hover` / `page.focus` before taking the hover and focus variants, so the explain kit's 150 ms open delay no longer yields a variant identical to the base shot.
+State: lint and the script's unit tests green; 4 lines. Branch `tooling/shots-hover-wait`.
+Left: nothing.
+Decisions: none new.

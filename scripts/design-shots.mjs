@@ -14,6 +14,8 @@ export const LOCAL_HOSTS = ['127.0.0.1', 'localhost'];
 export const PRINT_WIDTH = 816;
 const SEED_PASSWORD = 'testpass123';
 const VALUES = ['id', 'tag', 'role', 'route', 'base', 'widths', 'hover', 'focus'];
+/** Any open hover, tooltip or popover face from the explain kit. */
+export const FACE = '[data-slot=hover-card-content], [data-slot=tooltip-content], [data-slot=popover-content]';
 const FLAGS = ['print', 'pdf', 'dark'];
 
 /** `--key value` pairs and `--flag` switches into options; every check lives here so main() only runs. */
@@ -77,6 +79,8 @@ async function capture(browser, state, o, width, variants, save) {
       await page.mouse.move(0, 0);
       await page.focus(o.focus);
     }
+    // The explain kit opens its hover and focus faces after a short delay; wait for one before the shot.
+    if (variant === 'hover' || variant === 'focus') await page.waitForSelector(FACE, { state: 'visible', timeout: 3_000 }).catch(() => null);
     if (variant === 'print') await page.emulateMedia({ media: 'print' });
     if (variant === 'dark') await page.evaluate(() => document.documentElement.classList.add('dark'));
     const file = await save(page, width, variant);
