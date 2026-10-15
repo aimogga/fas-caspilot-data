@@ -134,6 +134,7 @@ const PUBLIC_PATHS = new Set<string>([
   '/api/ingest/hpsa',
   '/api/ingest/ut-courts',
   '/api/grants/recompute',
+  '/api/grants/digest',
   '/api/ingest/grants-gov',
   '/api/ingest/usaspending',
   '/api/ingest/propublica',
