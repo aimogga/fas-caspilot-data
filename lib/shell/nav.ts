@@ -52,8 +52,10 @@ export function crumbFor(role: string, pathname: string, fallback: string): stri
 
 export function navForRole(role: string): { groups: NavGroup[]; footer: string | null } {
   if (role === "board_viewer") return { groups: [{ label: "Board", items: [BOARD, MAP, METHOD] }], footer: BOARD_FOOTER };
-  if (role === "staff") return { groups: [{ label: "Workspace", items: [STAFF, DASH, MAP, FRESH, PACKETS, UPLOAD, ENTRY, GRANTS, MATCHES, METHOD] }], footer: null };
-  if (role === "admin") return { groups: [{ label: "Workspace", items: [STAFF, DASH, MAP, FRESH, PACKETS, UPLOAD, ENTRY, GRANTS, MATCHES, METHOD] }, { label: "Admin", items: [ADMIN] }], footer: null };
+  // George (2026-10-15): staff and admin reach the board dashboard from the nav, in its own group so Workspace keeps its cap.
+  const WORKSPACE: NavGroup = { label: "Workspace", items: [STAFF, DASH, MAP, FRESH, PACKETS, UPLOAD, ENTRY, GRANTS, MATCHES, METHOD] };
+  if (role === "staff") return { groups: [WORKSPACE, { label: "Board", items: [BOARD] }], footer: null };
+  if (role === "admin") return { groups: [WORKSPACE, { label: "Board", items: [BOARD] }, { label: "Admin", items: [ADMIN] }], footer: null };
   return { groups: [], footer: null };
 }
 
