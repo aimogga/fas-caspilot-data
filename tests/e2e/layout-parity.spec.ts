@@ -19,8 +19,20 @@ const SHELL: Record<number, { left: number; width: number; container?: number }>
   1440: { left: 288, width: 1120, container: 1184 },
 };
 
+/** Geometry once two reads 150 ms apart agree: a first read mid-hydration (fonts, the sheet nav settling at the md edge) measured 94/668 instead of 80/696 at 800. */
 async function pageBox(page: Page) {
   await expect(page.locator("h1")).toBeVisible();
+  await page.evaluate(() => document.fonts.ready);
+  let last = await readBox(page);
+  for (let i = 0; i < 6; i++) {
+    await page.waitForTimeout(150);
+    const next = await readBox(page);
+    if (JSON.stringify(next) === JSON.stringify(last)) return next;
+    last = next;
+  }
+  return last;
+}
+function readBox(page: Page) {
   return page.evaluate(() => {
     const h1 = document.querySelector("h1");
     const el = document.querySelector("[data-slot=page]");
