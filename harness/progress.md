@@ -941,3 +941,9 @@ Did: `scripts/design-shots.mjs` now waits up to 3 s for an open hover-card, tool
 State: lint and the script's unit tests green; 4 lines. Branch `tooling/shots-hover-wait`.
 Left: nothing.
 Decisions: none new.
+
+## 2026-10-15 23:35 (UTC) — Cloud Agent (Engineer Supervisor) — DS-12a after shots from the PR preview (design)
+Did: captured the "after" evidence for DS-12a from the `ds-12a-grant-matches` preview: `docs/design/reviews/DS-12a/after/staff-grants-matches-{1024,1440}[-hover].png` plus manifest rows. The hover shots show a flag badge's plain-words tooltip.
+State: binary and manifest only. Branch `design/after-shots-ds-12a`. The 375 full-page shots were dropped before commit: the card list renders about 35 000 px tall at phone width (69 opportunities, every card expanded in height), which DS-12b should address with a compact row and a "show more".
+Left: nothing beyond DS-12b.
+Decisions: none new.
