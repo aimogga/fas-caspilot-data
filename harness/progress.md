@@ -860,13 +860,14 @@ State: markdown only; no code change. Branch `f604-runbook` off main.
 Left: George closes the section 1 gates; the team runs section 6 and attaches the evidence to the F-604 issue; the production project ref goes into DECISIONS when it exists.
 Decisions: none new (the runbook names the decision D-023 will need to be superseded by).
 
-## 2026-10-15 19:20 (UTC) — Cloud Agent (Engineer Supervisor) — Utah Courts reuse terms confirmed (F-207)
-Did: the AOC replied to Krystle Smith's 2026-10-12 request that there are no restrictions on the public filings workbook. Migration `20261015190000_f207_ut_courts_terms.sql` sets `commercial_ok = true` and records the confirmation in `source_registry.license` for `ut_courts`; `docs/DATA_SOURCES.md` row no longer says "verify"; D-038 records the exchange. The same UPDATE applied to fas-dev.
-State: no code change; migration is a single UPDATE; lint, typecheck and unit tests green. Branch `ut-courts-terms` off main.
-Left: nothing. The Utah Courts ingest can run on its schedule once the n8n workflow is activated.
-Decisions: D-038.
 ## 2026-10-15 18:30 (UTC) — Cloud Agent (Engineer Supervisor) — F-505 weekly grant digest (render + n8n, inactive)
 Did: `lib/grants/digest.ts` (pure): `digestThreshold` (`params.digest_threshold` → `eval_threshold` → 60, the GRANT_MATCHING digest threshold), `sinceDate`, `selectNew` (open, score ≥ threshold, posted inside the window or, with no posted date, first scored inside it; best score first) and `buildDigest` (subject, plain text, escaped HTML, rows; titles, funders, close dates and fit scores only, never FAS client data). `lib/grants/digest-http.ts` + `GET /api/grants/digest?org_id=&days=`: bearer `INGEST_TOKEN` via `SahieHttp.tokenOk` (401), `days` 1–90 (400 otherwise), service-role client, one digest per org from stored `match_result` rows for the approved `match_config` (`reason: 'no approved config'` otherwise), generic 500 with env values redacted. `n8n/grants-digest-weekly.json`: inactive, Mondays 09:30 UTC, GET the digest, split per org, IF `count > 0`, `emailSend` from/to `$env.FAS_DIGEST_FROM` / `$env.FAS_DIGEST_TO` with the rendered subject/html/text. `isPublicRoute` gains `/api/grants/digest` on its own line.
 State: 29 new unit tests (`digest.test.ts`, `digest-http.test.ts`: thresholds, window, selection, rendering/escaping, 401/400/500, no-config path, stored-row path, n8n JSON shape with no literal URL, token or address). Lint and typecheck green. Branch `f505-grant-digest` off main.
 Left: George-gated (george-before-send): set `FAS_GRANTS_DIGEST_URL`, `INGEST_TOKEN`, `FAS_DIGEST_FROM`, `FAS_DIGEST_TO` and an SMTP credential in n8n, then import and activate the workflow. The app never sends email.
 Decisions: none new.
+
+## 2026-10-15 19:20 (UTC) — Cloud Agent (Engineer Supervisor) — Utah Courts reuse terms confirmed (F-207)
+Did: the AOC replied to Krystle Smith's 2026-10-12 request that there are no restrictions on the public filings workbook. Migration `20261015190000_f207_ut_courts_terms.sql` sets `commercial_ok = true` and records the confirmation in `source_registry.license` for `ut_courts`; `docs/DATA_SOURCES.md` row no longer says "verify"; D-038 records the exchange. The same UPDATE applied to fas-dev.
+State: no code change; migration is a single UPDATE; lint, typecheck and unit tests green. Branch `ut-courts-terms` off main.
+Left: nothing. The Utah Courts ingest can run on its schedule once the n8n workflow is activated.
+Decisions: D-038.
