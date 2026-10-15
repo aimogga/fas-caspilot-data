@@ -930,3 +930,8 @@ Did: captured the "after" evidence for DS-10a from the `ds-10a-home` preview (Ve
 State: binary and manifest only. Branch `design/after-shots-ds-10a`.
 Left: `scripts/design-shots.mjs` screenshots right after `page.hover`, before the 150 ms HoverCard delay; the hover variants here were retaken with a wait for `[data-slot=explain-content]`. Fix the script in a small tooling PR. DS-10b first items from these shots: source names shown as codes in the Public sources card, "Latest —" unexplained, summary sentence should sit under the greeting before the actions at 375.
 Decisions: none new.
+
+## 2026-10-15 22:58 (UTC) — Cloud Agent (Engineer Supervisor) — DS-11a after shots from the PR preview (design)
+Did: captured the "after" evidence for DS-11a from the `ds-11a-need-map` preview: `docs/design/reviews/DS-11a/after/need-map-{1024,1440}[-hover].png` plus manifest rows. The 1024 hover shot shows the explain card on a county's Rank cell.
+State: binary and manifest only. Branch `design/after-shots-ds-11a`. The 375 full-page shots were captured but dropped before commit: the stacked table at 375 renders about 48 700 px tall (3 MB per PNG), which is the "Ranked list" gap already recorded in `docs/design/specs/DS-11a.md`.
+Left: DS-11b must give 375 a ranked list instead of the stacked table before 375 after shots are worth committing.
