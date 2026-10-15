@@ -778,3 +778,9 @@ Decisions: none new.
 Did: the county panel now opens with the county in words (`NeedCompare.sentence`: `Salt Lake County has a higher uninsured rate than 20 of 28 other Utah counties, and a higher share of single-parent households than 12 of 28.`) and one comparison bar per percent indicator against the statewide median (`components/need-map/CompareBars.tsx`: shared 0–max scale, dashed median tick, words under every bar, sr text on the value). `lib/need-map/compare.ts` (pure, 4 tests): median over every county with a value, rank among the others, `above`/`near`/`below` within 0.5 pt; counts never compare. `CountyRow` gains numeric `values` and `Column` gains `unit` (`lib/need-map/query.ts`); `NeedMap` passes all counties to the panel.
 State: lint/typecheck/unit green locally; checked at 375 light and dark via a throwaway fixture route (deleted), no overflow. `map.spec.ts` panel assertions unchanged (heading, badge, rank line, indicator footers); CI runs it. Branch `claude/visual-p3-need-map` off main (branch per packet, George 2026-10-15).
 Left: packet 4 staff home sparklines + `/home`. No e2e assertion on `data-slot=county-compare` yet.
+
+## 2026-10-15 02:55 (UTC) — Cloud Agent (Engineer Supervisor) — County need map in the nav (packet 6; Refs F-211)
+Did: `/need-map` was reachable only by URL. `lib/shell/nav.ts` adds `County need map` to every role's nav (Workspace after Team dashboard; Board between Board dashboard and Methodology), a breadcrumb for `/need-map`, and drops the label from `HIDDEN_LABELS`. `nav.test.ts` and `tests/e2e/shell.spec.ts` pin the new lists; Workspace stays at the 10-item cap.
+State: lint/typecheck/unit green locally; shell e2e runs in CI. Branch `claude/visual-p6-need-map-nav` off main.
+Left: nothing from this packet. Next candidates: harden the `/dev-error?kind=notfound` layout-parity flake; chart hover tooltips.
+Decisions: none new.
