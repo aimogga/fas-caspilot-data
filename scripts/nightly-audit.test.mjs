@@ -129,7 +129,8 @@ describe('checkProgressLog', () => {
 });
 describe('parseAgentsCommands', () => {
   it('parses pnpm scripts, skips builtins and non-pnpm', () => {
-    expect(parseAgentsCommands(`## Commands\n> Phase 1 finalizes these.\n\`\`\`\npnpm install\npnpm dev\npnpm lint\npnpm typecheck\npnpm test\npnpm test:db\npnpm test:e2e\npnpm seed:synthetic\nsupabase start\n\`\`\``)).toEqual(['dev', 'lint', 'typecheck', 'test', 'test:db', 'test:e2e', 'seed:synthetic']);
+    expect(parseAgentsCommands(`## Commands\n> Phase 1 finalizes these.\n\`\`\`\npnpm install\npnpm dev\npnpm lint\npnpm typecheck\npnpm test\npnpm test:db\npnpm test:e2e\npnpm seed:synthetic\nsupabase start\n\`\`\``))
+      .toEqual(['dev', 'lint', 'typecheck', 'test', 'test:db', 'test:e2e', 'seed:synthetic']);
   });
   it('returns empty when no fence', () => expect(parseAgentsCommands('## Commands\nNo code')).toEqual([]));
   it('stops at next heading', () => expect(parseAgentsCommands('## Commands\ntext\n## Other\n```\npnpm dev\n```')).toEqual([]));
@@ -196,7 +197,8 @@ describe('parseAudit', () => {
     expect(parseAudit(JSON.stringify({advisories: {1: a}, metadata: {vulnerabilities: {high: 1}}}), {ignores: [GHSA_IG], today: '2026-10-09'})).toMatchObject({status: 'RED', ignored: [], finding: '0 critical, 1 high'});
   });
   it('second braces GHSA is counted', () => {
-    const r = parseAudit(JSON.stringify({advisories: {a: {severity: 'high', module_name: 'braces', github_advisory_id: GHSA_IG.id}, b: {severity: 'high', module_name: 'braces', github_advisory_id: 'GHSA-xxxx-yyyy-zzzz'}}, metadata: {vulnerabilities: {high: 2}}}), {ignores: [GHSA_IG], today: '2026-10-09'});
+    const r = parseAudit(JSON.stringify({advisories: {a: {severity: 'high', module_name: 'braces', github_advisory_id: GHSA_IG.id}, b: {severity: 'high', module_name: 'braces', github_advisory_id: 'GHSA-xxxx-yyyy-zzzz'}}, metadata: {vulnerabilities: {high: 2}}}),
+      {ignores: [GHSA_IG], today: '2026-10-09'});
     expect(r).toMatchObject({status: 'RED', finding: '0 critical, 1 high'});
     expect(r.ignored).toHaveLength(1);
   });
