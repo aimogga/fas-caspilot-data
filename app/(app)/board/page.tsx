@@ -6,6 +6,7 @@ import { FreshnessWidget } from "@/components/dashboard/FreshnessWidget";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { metricProps } from "@/components/dashboard/metric-props";
 import { ErrorState, Grid, PageHeader, Stack } from "@/components/layout";
+import { buttonVariants } from "@/components/ui/button";
 import { BoardQuery, boardFilters, type BoardData } from "@/lib/board/query";
 import { summarize } from "@/lib/board/summary";
 import { asOfLabel, METRIC_CARDS, NOT_AVAILABLE } from "@/lib/dashboard/cards";
@@ -14,6 +15,10 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
 export const dynamic = "force-dynamic";
+/** Board members download the statewide board packet (George, 2026-10-15); the links sit in the header actions, hidden in print. */
+const download = (format: "docx" | "csv", label: string) => (
+  <a key={format} data-slot="packet-download" className={buttonVariants({ variant: "outline" })} href={`/api/packets/export?variant=board&format=${format}`}>{label}</a>
+);
 /** F-402 board dashboard: one screen, plain language, the quarter as four pictures first, the same suppressed aggregates as the team dashboard, print-friendly, as-of on every number. */
 export default async function BoardPage() {
   const now = new Date(), filters = boardFilters(now);
@@ -33,7 +38,7 @@ export default async function BoardPage() {
   const card = (c: (typeof METRIC_CARDS)[number]) => <MetricCard key={c.id} card={c} {...metricProps(c.id, metrics, filters, "/board")} />;
   return (
     <Stack gap={6}>
-      <PageHeader eyebrow="BOARD" title="How FAS help is working" description={`${quarterLabel(filters.period)} · All counties · ${asOfLabel(asOf)}`} actions={<PrintButton />} />
+      <PageHeader eyebrow="BOARD" title="How FAS help is working" description={`${quarterLabel(filters.period)} · All counties · ${asOfLabel(asOf)}`} actions={<div className="flex flex-wrap gap-3"><PrintButton />{download("docx", "Download Word (.docx)")}{download("csv", "Download CSV appendix")}</div>} />
       {data ? null : <ErrorState message="Couldn't load the board dashboard" referenceId={errorId ?? randomUUID()} href="/board">Something went wrong on our side. Try again.</ErrorState>}
       <p data-slot="board-summary" className="max-w-prose text-base leading-7">{summarize(metrics, asOf)}</p>
       <Pictures metrics={metrics} period={filters.period} />
