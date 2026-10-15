@@ -918,3 +918,9 @@ Did: captured the "before" evidence for DS-10a (`/staff`), DS-11a (`/need-map`),
 State: binary and generated files only; gate D-012 counts 170 manifest lines. Branch `design/before-shots`.
 Left: publish the review page as the private living review artifact; packets add their "after" shots beside these.
 Decisions: none new (applies D-040).
+
+## 2026-10-15 23:03 (UTC) — Cloud Agent (Engineer Supervisor) — design-shots waits for the hover face (F-401)
+Did: `scripts/design-shots.mjs` now waits up to 3 s for an open hover-card, tooltip or popover face (`FACE`) after `page.hover` / `page.focus` before taking the hover and focus variants, so the explain kit's 150 ms open delay no longer yields a variant identical to the base shot.
+State: lint and the script's unit tests green; 4 lines. Branch `tooling/shots-hover-wait`.
+Left: nothing.
+Decisions: none new.
