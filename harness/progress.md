@@ -853,3 +853,9 @@ Did: George's two access decisions. Nav: staff and admin get a `Board` group wit
 State: unit tests, lint and typecheck green. e2e updated: `shell.spec.ts` nav lists, `packets.spec.ts` board download (200, grant 403), `board-dashboard.spec.ts` links hidden in print. Branch `fix/board-access` off main.
 Left: nothing for this change.
 Decisions: none new (recorded in the route comment and the nav comment).
+
+## 2026-10-15 18:45 (UTC) — Cloud Agent (Engineer Supervisor) — F-604 real-data onboarding runbook (docs only)
+Did: `docs/RUNBOOK_REAL_DATA.md`: who may do what (agents never touch production or a real file), the Phase 6 gates George closes first (legal opinion and BAAs, paid plans, F-602 clean, production Supabase project separate from fas-dev, dry run passed, retention decided), what the load consists of (the app's own intake paths only: `/staff/intake` CSV with template, mapping, preview, save and roll back; manual entry; aggregate totals; five entities in dependency order; fields never collected), production setup (migrations with the CLI, no seed, reference rows from migrations, real accounts, production-only Vercel variables, n8n copies, public data loaded first, empty-app smoke), file preparation on George's machine, the real load step by step with the evidence to record (batch IDs and counts, never values), the dry run on synthetic data with the existing fixtures and tests as proof, and the after-load rules (agents out, previews synthetic, deletion by batch rollback, incident path).
+State: markdown only; no code change. Branch `f604-runbook` off main.
+Left: George closes the section 1 gates; the team runs section 6 and attaches the evidence to the F-604 issue; the production project ref goes into DECISIONS when it exists.
+Decisions: none new (the runbook names the decision D-023 will need to be superseded by).
