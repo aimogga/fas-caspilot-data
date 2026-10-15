@@ -33,7 +33,9 @@ test("gallery sizes, axe, and screenshots", async ({ page }) => {
     return {
       minTap: Math.min(...buttons.flatMap((el) => [box(el).height, box(el).width]), ...inputs.map((el) => box(el).height), ...natives.flatMap((el) => [box(el).height, box(el).width])),
       inputPx: Math.min(...inputs.map((el) => parseFloat(getComputedStyle(el).fontSize))),
-      ok: !!label && getComputedStyle(label).display === "block" && !!inputs[0] && box(label).bottom <= box(inputs[0]).top + 1 && err?.getAttribute("aria-invalid") === "true" && err.getAttribute("aria-describedby") === "gallery-err-msg" && light && dark && ring(document.querySelector("#gallery-email") as HTMLElement),
+      ok: !!label && getComputedStyle(label).display === "block" && !!inputs[0] && box(label).bottom <= box(inputs[0]).top + 1
+        && err?.getAttribute("aria-invalid") === "true" && err.getAttribute("aria-describedby") === "gallery-err-msg"
+        && light && dark && ring(document.querySelector("#gallery-email") as HTMLElement),
       scroll: document.documentElement.scrollWidth,
       pagePad: page ? parseFloat(getComputedStyle(page).paddingLeft) : 0,
       fresh: fresh.every((t) => t.length > 0) && fresh.length === 3,
@@ -62,6 +64,22 @@ test("gallery sizes, axe, and screenshots", async ({ page }) => {
   await page.setViewportSize({ width: 1024, height: 900 });
   await expect.poll(padLeft, { message: `page padding @ 1024` }).toEqual({ pad: 32, left: 32 });
   await page.screenshot({ path: `${ART}/gallery-1024.png`, fullPage: true });
+  // Line chart hover layer: the pointer snaps to the nearest period, arrow keys walk the points, the words are in the tooltip.
+  const hover = page.locator("[data-slot=line-hover]");
+  await hover.scrollIntoViewIfNeeded();
+  const hb = (await hover.boundingBox())!;
+  await page.mouse.move(hb.x + hb.width * 0.4, hb.y + hb.height / 2);
+  await expect(hover.locator("[data-slot=tooltip]")).toHaveText("Q1 25 · Hidden (n < 11)");
+  await page.mouse.move(hb.x + hb.width - 1, hb.y + hb.height / 2); // the last pixel inside the layer
+  await expect(hover.locator("[data-slot=tooltip]")).toHaveText("Q3 25 · 23 days");
+  const tb = (await hover.locator("[data-slot=tooltip]").boundingBox())!;
+  expect(tb.x + tb.width, "tooltip flips inside the plot at the right edge").toBeLessThanOrEqual(hb.x + hb.width + 1);
+  await hover.focus();
+  await page.keyboard.press("End");
+  await expect(hover.locator("[data-slot=tooltip]")).toHaveText("Q3 25 · 23 days");
+  await expect(hover.locator("[aria-live]")).toHaveText("Q3 25 · 23 days");
+  await page.keyboard.press("Escape");
+  await expect(hover.locator("[data-slot=tooltip]")).toHaveCount(0);
   await page.setViewportSize({ width: 1280, height: 900 });
   await expect.poll(() => page.evaluate(() => {
     const h = (t: string) => [...document.querySelectorAll("[data-slot=button]")].find((el) => el.textContent === t)!.getBoundingClientRect().height;
