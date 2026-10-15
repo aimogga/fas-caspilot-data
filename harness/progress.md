@@ -784,3 +784,9 @@ Did: `/staff` is now a home: four tiles (M1, M2, M3, M5) each with the suppresse
 State: lint/typecheck/unit green locally; tiles checked at 375/1024 via a throwaway fixture route (deleted), no overflow. Existing e2e on `/staff` only checks the shell and 403; CI runs them. Branch `claude/visual-p4-staff-home` off main (after #185 merged).
 Left: e2e for the tiles and `/home`; packet 2's `data-slot=board-pictures` assertion. The visual-first direction (4 packets) is otherwise complete.
 Decisions: none new.
+
+## 2026-10-15 02:40 (UTC) — Cloud Agent (Engineer Supervisor) — admin home + visual-direction e2e (packet 5; Refs F-401)
+Did: `/admin` is no longer a placeholder: the same four quarter tiles as the staff home (`HomeTiles`, `StaffHome`) under an `Overview` heading, then the places an admin checks most (Data freshness, Team dashboard, Board dashboard, County need map, Methodology). `tests/e2e/visual.spec.ts` covers the whole visual-first direction: board pictures (count 1–4, completion picture's headline in words, `aria-label`, `All bands` reference, `View as table`), the county panel in words with comparison bars for Salt Lake County, staff and admin tiles (four tiles, footers, loaded state, sparkline), and `/home` for every role plus signed out; each at 375 and 1024 with no overflow and axe 0.
+State: lint/typecheck green locally; e2e runs in CI only (no local Supabase). Branch `claude/visual-p5-admin-e2e` off the packet 4 head; merges main once #187 lands.
+Left: none for the visual-first direction. Open for George unchanged: secret scanning + push protection on the public repo, config version approvals, F-505 email, F-508 LLM key.
+Decisions: none new.
