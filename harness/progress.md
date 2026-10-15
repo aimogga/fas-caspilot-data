@@ -784,3 +784,9 @@ Did: `/staff` is now a home: four tiles (M1, M2, M3, M5) each with the suppresse
 State: lint/typecheck/unit green locally; tiles checked at 375/1024 via a throwaway fixture route (deleted), no overflow. Existing e2e on `/staff` only checks the shell and 403; CI runs them. Branch `claude/visual-p4-staff-home` off main (after #185 merged).
 Left: e2e for the tiles and `/home`; packet 2's `data-slot=board-pictures` assertion. The visual-first direction (4 packets) is otherwise complete.
 Decisions: none new.
+
+## 2026-10-15 03:20 (UTC) — Cloud Agent (Engineer Supervisor) — line chart hover layer (visual-first follow-up, packet 8; Refs F-402)
+Did: every `LineChart` now has a crosshair and tooltip (`components/charts/LineHover.tsx`, the chart kit's only client component): the pointer snaps to the nearest period, the tooltip reads `Q1 25 · Hidden (n < 11)` or `Q3 25 · 23 days` plus the point's note, flips inside the plot near the right edge, and a ring marks the hovered point. The layer is focusable: arrow keys, Home and End walk the periods, Escape clears, and an `aria-live` region reads the same words. `lib/charts/hover.ts` (pure, 3 tests): `nearestIndex`, `tooltipText`, `stepIndex`. Native `title` dropped from the dots (the layer carries the words). Bars keep their inline values and `title`, so no bar tooltip.
+State: lint/typecheck/unit green locally; hover, flip, keys and the 375 fit checked on `/ui` with Playwright (temp script deleted; screenshots in the session scratchpad). `tests/e2e/gallery.spec.ts` pins the hover text, the edge flip, End and Escape; CI runs it. Branch `claude/visual-p8-chart-hover` off main.
+Left: nothing for this packet. Sparklines stay static (they sit in tiles that link onward).
+Decisions: none new.
