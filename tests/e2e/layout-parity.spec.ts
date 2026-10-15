@@ -151,8 +151,8 @@ test("placeholder subtitle left edge equals the h1 left edge", async ({ page }) 
       await page.goto(path);
       await expect(page.locator("h1")).toBeVisible();
       const edges = await page.evaluate(() => {
-        const h1 = document.querySelector("[data-slot=page-header] h1");
-        const sub = document.querySelector("[data-slot=page-header] > p:not([class])");
+        const header = document.querySelector("[data-slot=page-header]"), h1 = header?.querySelector("h1");
+        const sub = header?.querySelector(":scope > p:not([class])") ?? header?.nextElementSibling;
         return { h1: h1?.getBoundingClientRect().left ?? -1, sub: sub?.getBoundingClientRect().left ?? -2 };
       });
       expect(Math.abs(edges.sub - edges.h1), `${path} @ ${width}`).toBeLessThanOrEqual(1);
