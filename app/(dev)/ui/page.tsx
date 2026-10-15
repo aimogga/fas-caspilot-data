@@ -1,5 +1,8 @@
 import { CircleAlert, CircleCheck, Inbox, Info, TriangleAlert } from "lucide-react";
 import { notFound } from "next/navigation";
+import { BarChart } from "@/components/charts/BarChart";
+import { LineChart } from "@/components/charts/LineChart";
+import { Sparkline } from "@/components/charts/Sparkline";
 import { Cluster, EmptyState, ErrorState, FormField, Grid, Page, PageHeader, ResponsiveTable, Section, Skeleton, Stack } from "@/components/layout";
 import { DraftBanner, FreshnessChip, NotPublished, SourceFooter, SuppressedCell } from "@/components/trust";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -13,6 +16,9 @@ import { isDevGalleryEnabled } from "@/lib/dev-gallery";
 
 const VARIANTS = ["default", "secondary", "outline", "ghost", "destructive", "link"] as const;
 const ALERTS = [["destructive", CircleAlert, "Upload failed"], ["warning", TriangleAlert, "Deadline soon"], ["info", Info, "New grant match"]] as const;
+const FAMILIES = [["Utah", 31], ["Salt Lake", 22], ["Weber", 12], ["Carbon", 11], ["4 other counties", null]].map(([label, value]) => ({ label: label as string, value: value as number | null }));
+const QUARTERS = [["Q3 24", 34], ["Q4 24", 31], ["Q1 25", null], ["Q2 25", 27], ["Q3 25", 23]].map(([label, value]) => ({ label: label as string, value: value as number | null }));
+const FOOT = { source: "Synthetic FAS data", period: "Q3 2025", n: 86, asOf: "Oct 2026" };
 const cols = ["County", "Families", "Sessions", "Status", "Action"] as const;
 
 export default function UiGalleryPage() {
@@ -59,6 +65,11 @@ export default function UiGalleryPage() {
             <tbody><tr><td>Utah</td><td>24</td><td>120</td><td>Current</td><td><button type="button">View</button></td></tr></tbody>
           </ResponsiveTable>
         </Card>
+      </Section>
+      <Section title="Charts">
+        <BarChart points={FAMILIES} noun="families" eyebrow="Families helped, by county" footer={FOOT} reference={{ value: 17, label: "Median" }} />
+        <LineChart points={QUARTERS} noun="Days to first session" unit=" days" eyebrow="Wait for a first session" footer={FOOT} reference={{ value: 21, label: "Goal" }} periodHead="Quarter" />
+        <Cluster gap={4}><Sparkline points={QUARTERS} noun="Days to first session" unit=" days" goodWhen="down" /><Sparkline points={FAMILIES.slice(0, 4)} noun="Families" goodWhen="up" /><Sparkline points={[{ label: "a", value: null }, { label: "b", value: null }]} noun="Hidden" goodWhen="up" /></Cluster>
       </Section>
       <Section title="Trust">
         <SourceFooter source="ACS S0101" period="2024" n={42} asOf="2024-06" />
