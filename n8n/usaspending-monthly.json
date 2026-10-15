@@ -1,10 +1,15 @@
 {
-  "name": "usaspending-monthly", "active": false,
+  "name": "usaspending-monthly",
+  "active": false,
   "nodes": [
-    {"parameters":{"rule":{"interval":[{"field":"cronExpression","expression":"0 14 2 * *"}]}},"id":"usaspending-schedule","name":"Schedule USAspending","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1.2,"position":[0,0]},
-    {"parameters":{"method":"POST","url":"={{$env.FAS_INGEST_USASPENDING_URL}}","sendHeaders":true,"headerParameters":{"parameters":[{"name":"Authorization","value":"=Bearer {{$env.INGEST_TOKEN}}"}]}},
-      "id":"usaspending-http","name":"POST ingest usaspending","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[240,0]}
+    {"parameters":{"rule":{"interval":[{"field":"cronExpression","expression":"0 14 2 * *"}]}},
+     "id":"usaspending-schedule","name":"Schedule USAspending","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1.2,"position":[0,0]},
+    {"parameters":{"method":"POST","url":"https://fas-caspilot-data.vercel.app/api/ingest/usaspending","authentication":"predefinedCredentialType","nodeCredentialType":"httpHeaderAuth"},
+     "id":"usaspending-http","name":"POST ingest usaspending","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[240,0],
+     "credentials":{"httpHeaderAuth":{"id":"hJd3gjSOX9o2ITvB","name":"FAS ingest token"}}}
   ],
-  "connections": {"Schedule USAspending":{"main":[[{"node":"POST ingest usaspending","type":"main","index":0}]]}},
-  "settings":{"executionOrder":"v1","timezone":"UTC"}
+  "connections": {
+    "Schedule USAspending":{"main":[[{"node":"POST ingest usaspending","type":"main","index":0}]]}
+  },
+  "settings": {"executionOrder":"v1","timezone":"UTC"}
 }

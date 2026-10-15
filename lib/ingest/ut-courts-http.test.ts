@@ -54,12 +54,12 @@ describe('UtCourtsHttp', () => {
   });
 });
 
-it('n8n workflow is inactive, uses $env only and has no hardcoded year or URL', () => {
+it('n8n workflow is inactive, calls the production URL with the n8n credential, no $env or hardcoded year', () => {
   const text = readFileSync('n8n/ut-courts-annual.json', 'utf8');
   const wf = JSON.parse(text) as { active: boolean; nodes: { type: string }[] };
   expect(wf.active).toBe(false);
   expect(wf.nodes.map((n) => n.type)).toEqual(['n8n-nodes-base.scheduleTrigger', 'n8n-nodes-base.httpRequest']);
-  expect(text).toContain('$env.FAS_INGEST_UT_COURTS_URL');
-  expect(text).toContain('$env.INGEST_TOKEN');
-  expect(text).not.toMatch(/20\d{2}|https?:\/\//);
+  expect(text).toContain('https://fas-caspilot-data.vercel.app/api/ingest/ut-courts');
+  expect(text).toContain('"httpHeaderAuth":{"id":"hJd3gjSOX9o2ITvB","name":"FAS ingest token"}');
+  expect(text).not.toMatch(/20\d{2}|\$env\./);
 });

@@ -67,11 +67,11 @@ describe('PlacesHttp', () => {
   });
 });
 
-it('n8n workflow is inactive, yearly in January, uses $env only and has no hardcoded year', () => {
+it('n8n workflow is inactive, yearly in January, calls the production URL with the n8n credential, no $env or hardcoded year', () => {
   const text = readFileSync('n8n/cdc-places.json', 'utf8');
   const wf = JSON.parse(text) as { active: boolean; nodes: { type: string }[] };
   expect(wf.active).toBe(false);
   expect(wf.nodes.map((n) => n.type).sort()).toEqual(['n8n-nodes-base.httpRequest', 'n8n-nodes-base.scheduleTrigger']);
-  for (const s of ['$env.FAS_INGEST_PLACES_URL', '$env.INGEST_TOKEN', '"0 15 7 1 *"']) expect(text).toContain(s);
-  expect(text).not.toMatch(/20\d{2}|https?:\/\//);
+  for (const s of ['https://fas-caspilot-data.vercel.app/api/ingest/places', '"httpHeaderAuth":{"id":"hJd3gjSOX9o2ITvB","name":"FAS ingest token"}', '"0 15 7 1 *"']) expect(text).toContain(s);
+  expect(text).not.toMatch(/20\d{2}|\$env\./);
 });

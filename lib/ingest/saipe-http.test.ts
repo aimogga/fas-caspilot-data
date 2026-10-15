@@ -118,13 +118,13 @@ describe('SaipeHttp', () => {
   });
 });
 
-it('n8n workflow is inactive, uses $env only and has no hardcoded year', () => {
+it('n8n workflow is inactive, calls the production URL with the n8n credential, no $env or hardcoded year', () => {
   const text = readFileSync('n8n/census-saipe.json', 'utf8');
   const wf = JSON.parse(text) as { active: boolean; nodes: { type: string }[] };
   expect(wf.active).toBe(false);
   expect(wf.nodes.some((n) => n.type === 'n8n-nodes-base.scheduleTrigger')).toBe(true);
   expect(wf.nodes.some((n) => n.type === 'n8n-nodes-base.httpRequest')).toBe(true);
-  expect(text).toContain('$env.FAS_INGEST_SAIPE_URL');
-  expect(text).toContain('$env.INGEST_TOKEN');
-  expect(text).not.toMatch(/20\d{2}|https?:\/\//);
+  expect(text).toContain('https://fas-caspilot-data.vercel.app/api/ingest/saipe');
+  expect(text).toContain('"httpHeaderAuth":{"id":"hJd3gjSOX9o2ITvB","name":"FAS ingest token"}');
+  expect(text).not.toMatch(/20\d{2}|\$env\./);
 });

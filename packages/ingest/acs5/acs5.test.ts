@@ -102,7 +102,7 @@ it('n8n workflow inactive; CensusTable validates shape', () => {
   expect(wf.active).toBe(false);
   expect(wf.nodes.some((n) => n.type === 'n8n-nodes-base.scheduleTrigger')).toBe(true);
   expect(wf.nodes.some((n) => n.type === 'n8n-nodes-base.httpRequest')).toBe(true);
-  expect(text).toContain('$env.FAS_INGEST_ACS_URL');
+  expect(text).toContain('https://fas-caspilot-data.vercel.app/api/ingest/acs');
   expect(text).not.toMatch(/20\d{2}/);
   expect(() => CensusTable.parse({})).toThrow(/census table/);
   expect(() => CensusTable.parse([['a'], [1, 2]])).toThrow(/width/);

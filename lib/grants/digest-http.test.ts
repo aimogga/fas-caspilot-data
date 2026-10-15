@@ -88,18 +88,19 @@ describe('GET /api/grants/digest results', () => {
   });
 });
 
-it('n8n grants-digest-weekly is inactive, weekly, emails only when count > 0, and reads every address, URL and token from $env', () => {
+it('n8n grants-digest-weekly is inactive, weekly, emails only when count > 0, sends from and to the FAS mailbox via the n8n SMTP credential, no $env', () => {
   const text = readFileSync('n8n/grants-digest-weekly.json', 'utf8');
   const wf = JSON.parse(text) as { active: boolean; nodes: { type: string; parameters: { rule?: { interval: { expression: string }[] }; fromEmail?: string; toEmail?: string } }[]; connections: Record<string, { main: unknown[][] }> };
   expect(wf.active).toBe(false);
   expect(wf.nodes.map((n) => n.type)).toEqual(['n8n-nodes-base.scheduleTrigger', 'n8n-nodes-base.httpRequest', 'n8n-nodes-base.splitOut', 'n8n-nodes-base.if', 'n8n-nodes-base.emailSend']);
   expect(wf.nodes[0]?.parameters.rule?.interval[0]?.expression).toMatch(/^\d+ \d+ \* \* [0-6]$/);
   const email = wf.nodes[4]?.parameters;
-  expect([email?.fromEmail, email?.toEmail]).toEqual(['={{$env.FAS_DIGEST_FROM}}', '={{$env.FAS_DIGEST_TO}}']);
+  expect([email?.fromEmail, email?.toEmail]).toEqual(['george@casepilot.io', 'george@casepilot.io']);
+  expect(text).toContain('"smtp":{"id":"Cm0vSkudxS23Diz1","name":"FAS digest mail"}');
   expect(wf.connections['Any new matches?']?.main).toEqual([[{ node: 'Send digest email', type: 'main', index: 0 }], []]);
-  expect(text).toContain('$env.FAS_GRANTS_DIGEST_URL');
-  expect(text).toContain('Bearer {{$env.INGEST_TOKEN}}');
-  expect(text).not.toMatch(/https?:\/\//);
+  expect(text).toContain('https://fas-caspilot-data.vercel.app/api/grants/digest');
+  expect(text).toContain('"httpHeaderAuth":{"id":"hJd3gjSOX9o2ITvB","name":"FAS ingest token"}');
+  expect(text).not.toMatch(/\$env\./);
   expect(text).not.toMatch(/Bearer [A-Za-z0-9]/);
-  expect(text).not.toMatch(/@[a-z0-9-]+\.[a-z]{2,}/i);
+  expect(text.match(/[\w.]+@[a-z0-9-]+\.[a-z]{2,}/gi)).toEqual(['george@casepilot.io', 'george@casepilot.io']);
 });

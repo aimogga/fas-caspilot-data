@@ -2,10 +2,14 @@
   "name": "grants-gov-weekly",
   "active": false,
   "nodes": [
-    {"parameters":{"rule":{"interval":[{"field":"cronExpression","expression":"0 13 * * 1"}]}},"id":"grants-gov-schedule","name":"Schedule Grants.gov","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1.2,"position":[0,0]},
-    {"parameters":{"method":"POST","url":"={{$env.FAS_INGEST_GRANTS_GOV_URL}}","sendHeaders":true,"headerParameters":{"parameters":[{"name":"Authorization","value":"=Bearer {{$env.INGEST_TOKEN}}"}]}},
-      "id":"grants-gov-http","name":"POST ingest grants-gov","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[240,0]}
+    {"parameters":{"rule":{"interval":[{"field":"cronExpression","expression":"0 13 * * 1"}]}},
+     "id":"grants-gov-schedule","name":"Schedule Grants.gov","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1.2,"position":[0,0]},
+    {"parameters":{"method":"POST","url":"https://fas-caspilot-data.vercel.app/api/ingest/grants-gov","authentication":"predefinedCredentialType","nodeCredentialType":"httpHeaderAuth"},
+     "id":"grants-gov-http","name":"POST ingest grants-gov","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[240,0],
+     "credentials":{"httpHeaderAuth":{"id":"hJd3gjSOX9o2ITvB","name":"FAS ingest token"}}}
   ],
-  "connections": {"Schedule Grants.gov":{"main":[[{"node":"POST ingest grants-gov","type":"main","index":0}]]}},
-  "settings":{"executionOrder":"v1","timezone":"UTC"}
+  "connections": {
+    "Schedule Grants.gov":{"main":[[{"node":"POST ingest grants-gov","type":"main","index":0}]]}
+  },
+  "settings": {"executionOrder":"v1","timezone":"UTC"}
 }

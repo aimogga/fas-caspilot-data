@@ -882,3 +882,9 @@ Did: George approved the sweeps (2026-10-15). `SearchConfig` gains `assistance_l
 State: 69 grants tests green (new: sweep order and filters, windows, empty lists add nothing, dedupe merges labels; the default run now takes 6 sweeps); lint and typecheck green. Branch `f501-sweeps` stacked on `fix/grants-gov-header` (#202) until it merges.
 Left: first live run with George's key confirms the agency codes and the forecasted/close-date interaction; adjust `agencies` to sub-agency codes (ACF, SAMHSA, OJJDP) if the API accepts them.
 Decisions: none new (sweep defaults are config, changeable without a migration).
+
+## 2026-10-15 19:55 (UTC) — Cloud Agent (Engineer Supervisor) — n8n workflows: production URLs + n8n credentials (ops)
+Did: George created the n8n credentials "FAS ingest token" (`hJd3gjSOX9o2ITvB`) and "FAS digest mail" (`Cm0vSkudxS23Diz1`, george@casepilot.io). All 12 scheduled workflows in `n8n/` now call `https://fas-caspilot-data.vercel.app/api/...` with `authentication: predefinedCredentialType` / `httpHeaderAuth` on the ingest-token credential instead of `={{$env.FAS_*_URL}}` + `Bearer {{$env.INGEST_TOKEN}}` (n8n Cloud has no `$env`); the digest email node sends from/to george@casepilot.io via the SMTP credential. Node lines are split so no line passes 300 chars. 13 workflow unit tests now assert the production path, the credential reference and no `$env`. `ingest-failure-alert.json` untouched. D-039 recorded.
+State: lint, typecheck and 224 ingest/grants tests green. All workflows stay `active: false`.
+Left: import the 12 workflows into n8n.casepilot.io via `POST /api/v1/workflows` from a session on the "vercel.app" cloud environment once its setup script is cleared (`npm install` / corepack both fail there); George activates them after a manual test run of one ingest and the digest.
+Decisions: D-039.
