@@ -918,3 +918,9 @@ Did: captured the "before" evidence for DS-10a (`/staff`), DS-11a (`/need-map`),
 State: binary and generated files only; gate D-012 counts 170 manifest lines. Branch `design/before-shots`.
 Left: publish the review page as the private living review artifact; packets add their "after" shots beside these.
 Decisions: none new (applies D-040).
+
+## 2026-10-15 22:55 (UTC) — Cloud Agent (Engineer Supervisor) — DS-10a after shots from the PR preview (design)
+Did: captured the "after" evidence for DS-10a from the `ds-10a-home` preview (Vercel Authentication is off on the project by George's decision, so previews are reachable): `docs/design/reviews/DS-10a/after/staff-{375,1024,1440}[-hover].png` plus six manifest rows. The 1024 hover shot shows the M1 explain card open with the plain-words definition, source and as-of.
+State: binary and manifest only. Branch `design/after-shots-ds-10a`.
+Left: `scripts/design-shots.mjs` screenshots right after `page.hover`, before the 150 ms HoverCard delay; the hover variants here were retaken with a wait for `[data-slot=explain-content]`. Fix the script in a small tooling PR. DS-10b first items from these shots: source names shown as codes in the Public sources card, "Latest —" unexplained, summary sentence should sit under the greeting before the actions at 375.
+Decisions: none new.
