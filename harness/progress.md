@@ -941,3 +941,8 @@ Did: `components/trust/explain-layer.tsx` (one positioned `ExplainBody` card for
 State: lint, typecheck, 776 unit tests green; hand-written diff 357 lines. No local Supabase or preview here: `tests/e2e/map.spec.ts` gains the explain-layer test (hover = focus = Enter words, dialog name, Escape, arrows, Not published reason, FAS badge, header card, panel Provenance, median hint, axe and scrollWidth at 1024 and 375) for CI. Before shots: PR #214; after shots: the supervisor takes them from the preview. Branch `ds-11a-need-map` off main.
 Left: DS-11b (map hover card, stroke, rank labels, legend hints). Open: a "Ranked list" view for 375 (the stacked table is 48 000 px tall), population and "n-th highest" sentences need stored data, cells are ~38 px tall at 375 (not controls; `py-3` if QA wants 44), page footer still plain text.
 Decisions: none new (applies D-040).
+## 2026-10-15 23:03 (UTC) — Cloud Agent (Engineer Supervisor) — design-shots waits for the hover face (F-401)
+Did: `scripts/design-shots.mjs` now waits up to 3 s for an open hover-card, tooltip or popover face (`FACE`) after `page.hover` / `page.focus` before taking the hover and focus variants, so the explain kit's 150 ms open delay no longer yields a variant identical to the base shot.
+State: lint and the script's unit tests green; 4 lines. Branch `tooling/shots-hover-wait`.
+Left: nothing.
+Decisions: none new.
