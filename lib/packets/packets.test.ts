@@ -5,6 +5,7 @@ import { MethodologyQuery } from '@/lib/methodology/query';
 import { NeedMapQuery } from '@/lib/need-map/query';
 import { assertPacket, CASE_FIELDS, EXACT_DATE, renderText } from './assert';
 import { BOM, CSV_HEADER, csvCell, csvRows, packetToCsv } from './csv';
+import { pictureCaption } from '@/lib/charts/svg';
 import { docxText, packetToDocx } from './docx';
 import { exportFilename, renderExport } from './export';
 import { buildPacket, PICTURE_SECTION, scopeLabel, type Packet, type PacketInput } from './model';
@@ -101,7 +102,12 @@ describe('DOCX and CSV exports (F-404)', () => {
     }
     const bad = buildPacket(input()); bad.sections[1]?.paragraphs.push('Court order dated 2024-07-01 for case_id 12 (3 of 14).');
     expect(scan(docxText(bad))).toEqual(['2024-07-01', 'case_id', '(3 of 14)']);
-    const bytes = await packetToDocx(buildPacket(input()));
+    const pictured = buildPacket(input()), captions = docxText(pictured);
+    expect(pictured.pictures.length).toBeGreaterThan(0);
+    for (const pic of pictured.pictures) expect(captions).toContain(pictureCaption(pic));
+    const bytes = await packetToDocx(pictured);
+    const zipNames = Buffer.from(bytes).toString('latin1');
+    expect(zipNames).toMatch(/word\/media\/[^"]*\.svg/); expect(zipNames).toMatch(/word\/media\/[^"]*\.png/);
     expect([bytes[0], bytes[1], bytes.length > 4000]).toEqual([0x50, 0x4b, true]);
   });
   it('CSV: BOM + header, one row per figure, suppressed figures carry fewer_than_11 / hidden with an empty value, RFC 4180 quoting, no exact dates', () => {
