@@ -23,7 +23,8 @@ test("role nav, mobile sheet, and shell screenshots", async ({ page }) => {
     await page.goto(path);
     await expect(page.locator("[data-slot=sidebar] nav a")).toHaveText([...labels]);
     for (const name of HIDDEN_LABELS) {
-      await expect(page.getByRole("link", { name, exact: true })).toHaveCount(0);
+      // Hidden labels are nav items; a page body may link the same place (the admin overview links the need map).
+      await expect(page.locator("[data-slot=sidebar] nav").getByRole("link", { name, exact: true })).toHaveCount(0);
     }
     await expect(page.locator("[data-slot=crumbs]")).toHaveText(crumb);
     await expect(page.locator("[data-slot=user-role]")).toHaveText(role);
