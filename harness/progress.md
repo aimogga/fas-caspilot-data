@@ -865,3 +865,8 @@ Did: `lib/grants/digest.ts` (pure): `digestThreshold` (`params.digest_threshold`
 State: 29 new unit tests (`digest.test.ts`, `digest-http.test.ts`: thresholds, window, selection, rendering/escaping, 401/400/500, no-config path, stored-row path, n8n JSON shape with no literal URL, token or address). Lint and typecheck green. Branch `f505-grant-digest` off main.
 Left: George-gated (george-before-send): set `FAS_GRANTS_DIGEST_URL`, `INGEST_TOKEN`, `FAS_DIGEST_FROM`, `FAS_DIGEST_TO` and an SMTP credential in n8n, then import and activate the workflow. The app never sends email.
 Decisions: none new.
+
+## 2026-10-15 19:05 (UTC) — Cloud Agent (Engineer Supervisor) — Grants.gov key header fix (F-501)
+Did: the Simpler.Grants.gov ingest sent the key as `X-Auth`; the current docs and OpenAPI (`ApiUserKeyAuth`) name the header `X-API-Key`, so every run with a real key would have been a 401. `GrantsGov.fetchPage` now sends `X-API-Key` (and keeps `X-Auth` for older environments); the test asserts both headers and that the key never appears in the body; `docs/DATA_SOURCES.md` names the header and where the key is created. Vercel: `SIMPLER_GRANTS_API_KEY` created as a sensitive placeholder on production and preview for George to overwrite with the real 25-character key (the ingest answers 503 "api key not configured" only when the variable is absent, so until he pastes it the run would fail as 401; the n8n workflow is still inactive).
+State: unit tests, lint and typecheck green. Branch `fix/grants-gov-header` off main.
+Left: George pastes the key in Vercel; first live run through `/api/ingest/grants-gov` once the n8n workflow is activated (D-014).

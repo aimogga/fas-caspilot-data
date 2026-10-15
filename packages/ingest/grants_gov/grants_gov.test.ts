@@ -35,7 +35,7 @@ describe('unit: Grants.gov parser with hand-written (UNVERIFIED) v1 fixture', ()
     expect(body.pagination).toEqual(expect.objectContaining({ page_offset: 2, page_size: 50 }));
     expect(() => GrantsGov.searchBody(DEFAULT_CONFIG, 'x', 0)).toThrow(/page/);
   });
-  it('search takes the limiter once per request, sends the key only in X-Auth, pages until a short page, fails closed upstream', async () => {
+  it('search takes the limiter once per request, sends the key only in the X-API-Key and X-Auth headers, pages until a short page, fails closed upstream', async () => {
     const calls: { url: string; headers: Record<string, string>; body: { query: string; pagination: { page_offset: number } } }[] = [];
     const full = [0, 1].map((i) => ({ opportunity_id: `o${i}`, opportunity_title: `t${i}` }));
     const httpFetch: typeof fetch = async (url, init) => {
@@ -47,7 +47,7 @@ describe('unit: Grants.gov parser with hand-written (UNVERIFIED) v1 fixture', ()
     const rows = await GrantsGov.search(cfg, 'not-a-secret', async () => { takes++; }, httpFetch);
     expect([rows.map((r) => r.external_id), takes, calls.length]).toEqual([['o0', 'o1'], 4, 4]);
     expect(calls.map((c) => `${c.body.query}:${c.body.pagination.page_offset}`)).toEqual(['a:1', 'a:2', 'b:1', 'b:2']);
-    expect([calls[0].url, calls[0].headers['X-Auth']]).toEqual(['https://api.simpler.grants.gov/v1/opportunities/search', 'not-a-secret']);
+    expect([calls[0].url, calls[0].headers['X-API-Key'], calls[0].headers['X-Auth']]).toEqual(['https://api.simpler.grants.gov/v1/opportunities/search', 'not-a-secret', 'not-a-secret']);
     expect(JSON.stringify(calls[0].body)).not.toContain('not-a-secret');
     await expect(GrantsGov.search(cfg, 'k', async () => {}, async () => new Response('x', { status: 429 }))).rejects.toThrow('Grants.gov search failed: 429');
     await expect(GrantsGov.search(cfg, 'k', async () => {}, async () => new Response('{"nope":1}'))).rejects.toThrow(/data array/);

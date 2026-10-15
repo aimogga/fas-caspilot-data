@@ -36,9 +36,10 @@ export class GrantsGov {
       pagination: { page_offset: page, page_size: Math.min(config.page_size, 50), sort_order: [{ order_by: 'relevancy', sort_direction: 'descending' }] },
     };
   }
-  /** One POST /opportunities/search; the key travels only in the X-Auth header and never in errors. */
+  /** One POST /opportunities/search. The key travels only in headers, never in errors: `X-API-Key` is the documented header
+   * (wiki.simpler.grants.gov/product/api, OpenAPI `ApiUserKeyAuth`); `X-Auth` is kept for the older environments. */
   static async fetchPage(body: Raw, apiKey: string, httpFetch: typeof fetch = fetch): Promise<unknown> {
-    const init = { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Auth': apiKey }, body: JSON.stringify(body) };
+    const init = { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey, 'X-Auth': apiKey }, body: JSON.stringify(body) };
     const res = await httpFetch(`${GrantsGov.API}/opportunities/search`, init);
     if (!res.ok) throw new Error(`Grants.gov search failed: ${res.status}`);
     return res.json();
