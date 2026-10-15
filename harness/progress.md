@@ -859,3 +859,9 @@ Did: `docs/RUNBOOK_REAL_DATA.md`: who may do what (agents never touch production
 State: markdown only; no code change. Branch `f604-runbook` off main.
 Left: George closes the section 1 gates; the team runs section 6 and attaches the evidence to the F-604 issue; the production project ref goes into DECISIONS when it exists.
 Decisions: none new (the runbook names the decision D-023 will need to be superseded by).
+
+## 2026-10-15 19:05 (UTC) — Cloud Agent (Engineer Supervisor) — Grants.gov key header fix (F-501)
+Did: the Simpler.Grants.gov ingest sent the key as `X-Auth`; the current docs and OpenAPI (`ApiUserKeyAuth`) name the header `X-API-Key`, so every run with a real key would have been a 401. `GrantsGov.fetchPage` now sends `X-API-Key` (and keeps `X-Auth` for older environments); the test asserts both headers and that the key never appears in the body; `docs/DATA_SOURCES.md` names the header and where the key is created. Vercel: `SIMPLER_GRANTS_API_KEY` created as a sensitive placeholder on production and preview for George to overwrite with the real 25-character key (the ingest answers 503 "api key not configured" only when the variable is absent, so until he pastes it the run would fail as 401; the n8n workflow is still inactive).
+State: unit tests, lint and typecheck green. Branch `fix/grants-gov-header` off main.
+Left: George pastes the key in Vercel; first live run through `/api/ingest/grants-gov` once the n8n workflow is activated (D-014).
+Decisions: none new.
