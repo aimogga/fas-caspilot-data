@@ -9,7 +9,14 @@ export const FIELDS = {
   eligibility: ['applicant_eligibility_description', 'eligibility_description'], categories: ['funding_categories', 'funding_category'], description: ['summary_description', 'description'],
 } as const;
 type Raw = Record<string, unknown>;
-export type SearchConfig = { themes: string[]; applicant_types: string[]; opportunity_status: string[]; page_size: number };
+/** Sweeps: one search per `themes` entry (keyword), one over `assistance_listings` (program numbers), one over `funding_categories`
+ * scoped to `agencies` (agency codes). `closes_after_days` / `posted_within_days` add relative date windows (API `*_relative` days).
+ * Every sweep keeps the applicant-type and status filters. */
+export type SearchConfig = {
+  themes: string[]; applicant_types: string[]; opportunity_status: string[]; page_size: number;
+  assistance_listings?: string[]; funding_categories?: string[]; agencies?: string[]; closes_after_days?: number; posted_within_days?: number;
+};
+export type Sweep = { kind: 'theme' | 'listing' | 'category'; label: string; query?: string; filters: Raw };
 export type Eligibility = { applicant_types: string[]; applicant_eligibility_description: string | null; funding_categories: string[] };
 export type OpportunityRow = {
   source: 'grants_gov'; external_id: string; title: string; funder: string | null; assistance_listing: string | null;
@@ -17,9 +24,15 @@ export type OpportunityRow = {
   eligibility: Eligibility; description: string | null; raw: Raw;
 };
 
-/** Default themes and filters for FAS (George confirms; see progress.md Decisions). */
+/** Default themes and filters for FAS (George confirmed the sweeps on 2026-10-15). Assistance Listings: 93.104 children's mental health,
+ * 93.243 SAMHSA behavioral health, 93.556 Promoting Safe and Stable Families, 93.590 community-based child abuse prevention,
+ * 93.670 child abuse and neglect discretionary, 16.540 juvenile justice (OJJDP), 16.575 crime victim assistance. Agency codes are the
+ * API's top-level codes (UNVERIFIED like the rest of this module; an unknown code returns no rows, never a different program). */
 export const DEFAULT_CONFIG: SearchConfig = { themes: ['family therapy', 'behavioral health', 'court-involved youth', 'child welfare mental health'],
-  applicant_types: ['nonprofits_non_higher_education_with_501c3'], opportunity_status: ['posted', 'forecasted'], page_size: 50 };
+  applicant_types: ['nonprofits_non_higher_education_with_501c3'], opportunity_status: ['posted', 'forecasted'], page_size: 50,
+  assistance_listings: ['93.104', '93.243', '93.556', '93.590', '93.670', '16.540', '16.575'],
+  funding_categories: ['health', 'income_security_and_social_services', 'law_justice_and_legal_services'], agencies: ['HHS', 'USDOJ'],
+  closes_after_days: 0 };
 const str = (v: unknown): string | null => (typeof v === 'string' && v.trim() ? v.trim() : typeof v === 'number' ? String(v) : null);
 const date = (v: unknown): string | null => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v) ? v.slice(0, 10) : null);
 const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : null);
@@ -29,12 +42,30 @@ export class GrantsGov {
   static readonly SOURCE_NAME = 'grants_gov';
   static readonly API = 'https://api.simpler.grants.gov/v1';
   static readonly MAX_PAGES = 4;
-  static searchBody(config: SearchConfig, theme: string, page = 1): Raw {
+  /** Filters shared by every sweep: applicant type, status, and the optional relative date windows (days from today). */
+  static baseFilters(config: SearchConfig): Raw {
+    const f: Raw = { opportunity_status: { one_of: config.opportunity_status }, applicant_type: { one_of: config.applicant_types } };
+    if (config.closes_after_days !== undefined) f.close_date = { start_date_relative: config.closes_after_days };
+    if (config.posted_within_days !== undefined) f.post_date = { start_date_relative: -Math.abs(config.posted_within_days) };
+    return f;
+  }
+  /** The sweeps a config asks for, in run order; empty lists add no sweep. */
+  static sweeps(config: SearchConfig): Sweep[] {
+    const base = GrantsGov.baseFilters(config), out: Sweep[] = config.themes.map((t) => ({ kind: 'theme', label: `theme:${t}`, query: t, filters: base }));
+    if (config.assistance_listings?.length) out.push({ kind: 'listing', label: `listing:${config.assistance_listings.join(',')}`, filters: { ...base, assistance_listing_number: { one_of: config.assistance_listings } } });
+    if (config.funding_categories?.length) {
+      const filters: Raw = { ...base, funding_category: { one_of: config.funding_categories } };
+      if (config.agencies?.length) filters.agency = { one_of: config.agencies };
+      out.push({ kind: 'category', label: `category:${config.funding_categories.join(',')}${config.agencies?.length ? `@${config.agencies.join(',')}` : ''}`, filters });
+    }
+    return out;
+  }
+  static searchBody(config: SearchConfig, sweep: Sweep | string, page = 1): Raw {
     if (!Number.isInteger(page) || page < 1) throw new Error('page must be >= 1');
-    return { query: theme,
-      filters: { opportunity_status: { one_of: config.opportunity_status }, applicant_type: { one_of: config.applicant_types } },
-      pagination: { page_offset: page, page_size: Math.min(config.page_size, 50), sort_order: [{ order_by: 'relevancy', sort_direction: 'descending' }] },
-    };
+    const s: Sweep = typeof sweep === 'string' ? { kind: 'theme', label: `theme:${sweep}`, query: sweep, filters: GrantsGov.baseFilters(config) } : sweep;
+    const sort = s.query ? [{ order_by: 'relevancy', sort_direction: 'descending' }] : [{ order_by: 'post_date', sort_direction: 'descending' }];
+    return { ...(s.query ? { query: s.query } : {}), filters: s.filters,
+      pagination: { page_offset: page, page_size: Math.min(config.page_size, 50), sort_order: sort } };
   }
   /** One POST /opportunities/search. The key travels only in headers, never in errors: `X-API-Key` is the documented header
    * (wiki.simpler.grants.gov/product/api, OpenAPI `ApiUserKeyAuth`); `X-Auth` is kept for the older environments. */
@@ -63,24 +94,30 @@ export class GrantsGov {
         description: str(pick(FIELDS.description)), raw: o };
     });
   }
-  /** First occurrence per external_id wins (themes overlap). */
+  /** First occurrence per external_id wins (sweeps overlap); `raw.fas_sweeps` lists every sweep label that found the row. */
   static dedupe(rows: OpportunityRow[]): OpportunityRow[] {
-    const seen = new Set<string>();
-    return rows.filter((r) => !seen.has(r.external_id) && seen.add(r.external_id));
+    const byId = new Map<string, OpportunityRow>();
+    for (const r of rows) {
+      const found = list(r.raw.fas_sweeps), kept = byId.get(r.external_id);
+      if (!kept) byId.set(r.external_id, { ...r, raw: { ...r.raw, fas_sweeps: found } });
+      else kept.raw.fas_sweeps = [...new Set([...list(kept.raw.fas_sweeps), ...found])];
+    }
+    return [...byId.values()];
   }
   /** Stable over the stored columns (not `raw`, which carries volatile API metadata). */
   static checksum(rows: OpportunityRow[]): string {
     const sorted = [...rows].sort((a, b) => a.external_id.localeCompare(b.external_id)).map((r) => ({ ...r, raw: undefined }));
     return createHash('sha256').update(JSON.stringify(sorted)).digest('hex');
   }
-  /** Every theme, up to MAX_PAGES pages each, one `take()` per request; a theme stops at a short page. */
+  /** Every sweep, up to MAX_PAGES pages each, one `take()` per request; a sweep stops at a short page. */
   static async search(config: SearchConfig, apiKey: string, take: () => Promise<void>, httpFetch: typeof fetch = fetch): Promise<OpportunityRow[]> {
     const rows: OpportunityRow[] = [];
-    for (const theme of config.themes) {
+    for (const sweep of GrantsGov.sweeps(config)) {
       for (let page = 1; page <= GrantsGov.MAX_PAGES; page++) {
         await take();
-        const got = GrantsGov.parse(await GrantsGov.fetchPage(GrantsGov.searchBody(config, theme, page), apiKey, httpFetch));
-        if (rows.push(...got) && got.length < Math.min(config.page_size, 50)) break;
+        const got = GrantsGov.parse(await GrantsGov.fetchPage(GrantsGov.searchBody(config, sweep, page), apiKey, httpFetch));
+        rows.push(...got.map((r) => ({ ...r, raw: { ...r.raw, fas_sweeps: [sweep.label] } })));
+        if (got.length < Math.min(config.page_size, 50)) break;
       }
     }
     return GrantsGov.dedupe(rows);

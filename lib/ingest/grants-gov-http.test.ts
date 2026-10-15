@@ -34,7 +34,7 @@ describe('GrantsGovHttp', () => {
     const limiter = { take: async () => { takes.push(1); } } as unknown as RateLimiter;
     const httpFetch: typeof fetch = async () => new Response(JSON.stringify(fixture), { status: 200 });
     const res = await GrantsGovHttp.run({ env: { SIMPLER_GRANTS_API_KEY: 'not-a-secret' }, httpFetch, client, load: spy.load, limiter });
-    expect([res.rowsLoaded, takes.length, spy.calls[0].name]).toEqual([2, 4, 'grants_gov']); // 4 default themes, one (short) page each
+    expect([res.rowsLoaded, takes.length, spy.calls[0].name]).toEqual([2, 6, 'grants_gov']); // 4 theme + listing + category sweeps, one (short) page each
     expect(spy.calls[0].checksum).toBe(GrantsGov.checksum(spy.calls[0].rows));
     expect(spy.calls[0].rows.map((r) => r.external_id)).toEqual(['11111111-1111-4111-8111-111111111111', '22222222-2222-4222-8222-222222222222']);
   });
