@@ -10,8 +10,11 @@ export type IndicatorRow = { source_id: string; indicator_code: string; geo_fips
 export type SourceRow = { id: string; name: string; last_success_at: string | null };
 export type NeedInput = { configs: ConfigRow[]; scores: ScoreRow[]; indicators: IndicatorRow[]; sources: SourceRow[]; fas: FasRow[] };
 export type BuildOptions = { fas?: boolean };
-export type CountyRow = { fips: string; name: string; fas: boolean; rank: string; score: string; bin: string; status: string; cells: Record<string, string>; value: number | null; binNo: number | null };
-export type Column = { code: string; label: string; note: string };
+export type CountyRow = {
+  fips: string; name: string; fas: boolean; rank: string; score: string; bin: string; status: string; cells: Record<string, string>; value: number | null; binNo: number | null;
+  /** Numeric indicator values behind `cells` (null when not loaded or not published), for comparisons. */ values: Record<string, number | null>;
+};
+export type Column = { code: string; label: string; note: string; unit: string | null };
 export type ColumnSource = { code: string; name: string; vintage: string; asOf: string };
 /** `rows` honours the FAS filter; `counties` is always all 29 (the map greys non-FAS counties instead of dropping them). */
 export type NeedTableData = { version: string | null; hasData: boolean; columns: Column[]; sources: ColumnSource[]; rows: CountyRow[]; counties: CountyRow[]; footer: string };
@@ -107,7 +110,7 @@ export class NeedMapQuery {
     const indicators = NeedMapQuery.latest(input.indicators);
     const codes = [...new Set(indicators.map((i) => i.indicator_code))].sort();
     const sources = codes.map((code) => NeedMapQuery.columnSource(indicators.find((i) => i.indicator_code === code) as IndicatorRow, input.sources));
-    const columns = sources.map((s) => ({ code: s.code, label: NeedMapQuery.label(s.code), note: `${s.name} ${s.vintage}` }));
+    const columns = sources.map((s) => ({ code: s.code, label: NeedMapQuery.label(s.code), note: `${s.name} ${s.vintage}`, unit: indicators.find((i) => i.indicator_code === s.code)?.unit ?? null }));
     const latest = input.sources.filter((s) => indicators.some((i) => i.source_id === s.id)).map((s) => s.last_success_at ?? '').sort().at(-1) || null;
     const scored = COUNTIES.map((c) => {
       const hit = input.scores.find((s) => s.version === version && s.geo_fips === c.fips);
@@ -119,8 +122,10 @@ export class NeedMapQuery {
     const counties = COUNTIES.map((c, i) => {
       const score = scored[i]?.score ?? null;
       const missing = version === null ? NOT_YET : NOT_PUBLISHED;
-      const cells = Object.fromEntries(codes.map((code) => [code, NeedMapQuery.cell(indicators.find((r) => r.indicator_code === code && r.geo_fips === c.fips))]));
-      return { fips: c.fips, name: `${c.name} County`, fas: fas.has(c.fips), cells, status: score === null ? missing : 'Ranked',
+      const rowsFor = codes.map((code) => [code, indicators.find((r) => r.indicator_code === code && r.geo_fips === c.fips)] as const);
+      const cells = Object.fromEntries(rowsFor.map(([code, r]) => [code, NeedMapQuery.cell(r)]));
+      const values = Object.fromEntries(rowsFor.map(([code, r]) => [code, r && r.value !== null && r.unit !== 'not_published' ? Number(r.value) : null]));
+      return { fips: c.fips, name: `${c.name} County`, fas: fas.has(c.fips), cells, values, status: score === null ? missing : 'Ranked',
         rank: ranks.has(c.fips) ? `${ranks.get(c.fips)} of ${ranks.size}` : missing,
         score: score === null ? missing : NeedMapQuery.signed(score),
         bin: bins.has(c.fips) ? `${bins.get(c.fips)} of ${binMax}` : missing,
