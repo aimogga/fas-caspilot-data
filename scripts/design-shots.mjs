@@ -12,6 +12,8 @@ export const ROOT = 'docs/design/reviews';
 export const ROLES = ['staff', 'admin', 'board'];
 export const LOCAL_HOSTS = ['127.0.0.1', 'localhost'];
 export const PRINT_WIDTH = 816;
+/** The hover/focus face of the explain kit (components/trust/explain.tsx): the HoverCard or Popover body, or the Hint tooltip. */
+export const FACE = '[data-slot=explain-content]:visible, [role=tooltip]:visible';
 const SEED_PASSWORD = 'testpass123';
 const VALUES = ['id', 'tag', 'role', 'route', 'base', 'widths', 'hover', 'focus'];
 const FLAGS = ['print', 'pdf', 'dark'];
@@ -59,11 +61,18 @@ export function passwordFor(host, env = process.env) {
   throw new Error(`DESIGN_SHOTS_PASSWORD is not set and ${host} is not a local host`);
 }
 
+/** After a hover or focus, wait for the face (HoverCard openDelay 150 ms, Tooltip delay) and let it settle; a plain element with no face gets a short fixed wait instead. Never throws. */
+export async function waitForFace(page, { timeout = 5_000, settle = 250, fallback = 500 } = {}) {
+  const shown = await page.waitForSelector(FACE, { state: 'visible', timeout }).then(() => true, () => false);
+  await page.waitForTimeout(shown ? settle : fallback);
+  return shown;
+}
+
 function readManifest(file) {
   return existsSync(file) ? JSON.parse(readFileSync(file, 'utf-8')) : [];
 }
 
-/** One signed-in context per width: load the route once, wait for the page shell and fonts, then save each variant in order. */
+/** One signed-in context per width: load the route once, wait for the page shell and fonts, then save each variant in order (hover and focus wait for the face first). */
 async function capture(browser, state, o, width, variants, save) {
   const context = await browser.newContext({ storageState: state, reducedMotion: 'reduce', viewport: { width, height: 900 } });
   context.setDefaultTimeout(90_000);
@@ -72,10 +81,14 @@ async function capture(browser, state, o, width, variants, save) {
   await page.waitForSelector('[data-slot=page]');
   await page.evaluate(() => document.fonts.ready.then(() => true));
   for (const variant of variants) {
-    if (variant === 'hover') await page.hover(o.hover);
+    if (variant === 'hover') {
+      await page.hover(o.hover);
+      await waitForFace(page);
+    }
     if (variant === 'focus') {
       await page.mouse.move(0, 0);
       await page.focus(o.focus);
+      await waitForFace(page);
     }
     if (variant === 'print') await page.emulateMedia({ media: 'print' });
     if (variant === 'dark') await page.evaluate(() => document.documentElement.classList.add('dark'));

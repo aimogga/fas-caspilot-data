@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LOCAL_HOSTS, emailFor, fileName, main, parseArgs, passwordFor, slug } from './design-shots.mjs';
+import { FACE, LOCAL_HOSTS, emailFor, fileName, main, parseArgs, passwordFor, slug, waitForFace } from './design-shots.mjs';
 
 const base = ['--id', 'DS-10a', '--tag', 'before', '--role', 'staff', '--route', '/staff'];
 
@@ -43,6 +43,40 @@ describe('emailFor', () => {
   it('maps every role to its synthetic seed account and rejects anything else', () => {
     expect(['staff', 'admin', 'board'].map(emailFor)).toEqual(['staff@example.test', 'admin@example.test', 'board@example.test']);
     expect(() => emailFor('root')).toThrow('unknown role root');
+  });
+});
+
+describe('waitForFace', () => {
+  /** A page stub: waitForSelector resolves or rejects (a Playwright timeout), waitForTimeout records the ms it was asked for. */
+  const fakePage = (faceAppears) => {
+    const calls = [];
+    return {
+      calls,
+      waitForSelector: (selector, opts) => {
+        calls.push(['waitForSelector', selector, opts]);
+        return faceAppears ? Promise.resolve({}) : Promise.reject(new Error('Timeout 5000ms exceeded'));
+      },
+      waitForTimeout: (ms) => {
+        calls.push(['waitForTimeout', ms]);
+        return Promise.resolve();
+      },
+    };
+  };
+
+  it('waits for the explain face or a tooltip to be visible with a 5 s cap, then settles briefly', async () => {
+    const page = fakePage(true);
+    await expect(waitForFace(page)).resolves.toBe(true);
+    expect(FACE).toBe('[data-slot=explain-content]:visible, [role=tooltip]:visible');
+    expect(page.calls).toEqual([['waitForSelector', FACE, { state: 'visible', timeout: 5000 }], ['waitForTimeout', 250]]);
+  });
+
+  it('falls back to a short fixed wait, without throwing, when the hovered element opens no face', async () => {
+    const page = fakePage(false);
+    await expect(waitForFace(page)).resolves.toBe(false);
+    expect(page.calls[1]).toEqual(['waitForTimeout', 500]);
+    const custom = fakePage(false);
+    await waitForFace(custom, { timeout: 1000, fallback: 50 });
+    expect(custom.calls).toEqual([['waitForSelector', FACE, { state: 'visible', timeout: 1000 }], ['waitForTimeout', 50]]);
   });
 });
 

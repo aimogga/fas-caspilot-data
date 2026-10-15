@@ -918,3 +918,9 @@ Did: captured the "before" evidence for DS-10a (`/staff`), DS-11a (`/need-map`),
 State: binary and generated files only; gate D-012 counts 170 manifest lines. Branch `design/before-shots`.
 Left: publish the review page as the private living review artifact; packets add their "after" shots beside these.
 Decisions: none new (applies D-040).
+
+## 2026-10-15 22:55 (UTC) — Cloud Agent (Engineer) — design-shots: hover and focus shots wait for the explain face (fix)
+Did: `scripts/design-shots.mjs` took the hover and focus PNGs right after `page.hover` / `page.focus`, before the Radix HoverCard (`openDelay` 150 ms) or Hint tooltip had opened, so DS-10a's `staff-*-hover.png` were byte-identical to the base shots. New exported `waitForFace(page, { timeout 5 s, settle 250 ms, fallback 500 ms })` waits for `FACE` = `[data-slot=explain-content]:visible, [role=tooltip]:visible`, settles briefly when it shows, and falls back to the fixed wait (never throws) when the hovered element opens no face; both the hover and focus branches call it. Two unit tests with a page stub cover the shown and fallback paths and the selector/timeout arguments.
+State: lint, typecheck, 769 unit tests (97 files) green. Probe against a stub page with the pre-installed Chromium: a plain element falls back in ~500 ms, an explain trigger resolves once the face is visible. `docs/design/reviews/**` untouched.
+Left: re-run `pnpm shots --tag after --hover "[data-slot=home-tile] [data-slot=explain-trigger]"` for DS-10a so the hover shots differ from the base.
+Decisions: none new.
