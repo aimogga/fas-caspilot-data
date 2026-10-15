@@ -35,10 +35,11 @@ export default async function BoardPage() {
   }
   const asOf = data?.asOf ?? NOT_AVAILABLE, metrics = data?.metrics ?? null;
   const [m1, ...rest] = METRIC_CARDS, o1 = METRIC_CARDS.find((c) => c.id === "o1");
+  const actions = <div className="flex flex-wrap gap-3"><PrintButton />{download("docx", "Download Word (.docx)")}{download("csv", "Download CSV appendix")}</div>;
   const card = (c: (typeof METRIC_CARDS)[number]) => <MetricCard key={c.id} card={c} {...metricProps(c.id, metrics, filters, "/board")} />;
   return (
     <Stack gap={6}>
-      <PageHeader eyebrow="BOARD" title="How FAS help is working" description={`${quarterLabel(filters.period)} · All counties · ${asOfLabel(asOf)}`} actions={<div className="flex flex-wrap gap-3"><PrintButton />{download("docx", "Download Word (.docx)")}{download("csv", "Download CSV appendix")}</div>} />
+      <PageHeader eyebrow="BOARD" title="How FAS help is working" description={`${quarterLabel(filters.period)} · All counties · ${asOfLabel(asOf)}`} actions={actions} />
       {data ? null : <ErrorState message="Couldn't load the board dashboard" referenceId={errorId ?? randomUUID()} href="/board">Something went wrong on our side. Try again.</ErrorState>}
       <p data-slot="board-summary" className="max-w-prose text-base leading-7">{summarize(metrics, asOf)}</p>
       <Pictures metrics={metrics} period={filters.period} />
