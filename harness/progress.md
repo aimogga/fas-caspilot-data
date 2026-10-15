@@ -859,3 +859,9 @@ Did: `docs/RUNBOOK_REAL_DATA.md`: who may do what (agents never touch production
 State: markdown only; no code change. Branch `f604-runbook` off main.
 Left: George closes the section 1 gates; the team runs section 6 and attaches the evidence to the F-604 issue; the production project ref goes into DECISIONS when it exists.
 Decisions: none new (the runbook names the decision D-023 will need to be superseded by).
+
+## 2026-10-15 19:20 (UTC) — Cloud Agent (Engineer Supervisor) — Utah Courts reuse terms confirmed (F-207)
+Did: the AOC replied to Krystle Smith's 2026-10-12 request that there are no restrictions on the public filings workbook. Migration `20261015190000_f207_ut_courts_terms.sql` sets `commercial_ok = true` and records the confirmation in `source_registry.license` for `ut_courts`; `docs/DATA_SOURCES.md` row no longer says "verify"; D-038 records the exchange. The same UPDATE applied to fas-dev.
+State: no code change; migration is a single UPDATE; lint, typecheck and unit tests green. Branch `ut-courts-terms` off main.
+Left: nothing. The Utah Courts ingest can run on its schedule once the n8n workflow is activated.
+Decisions: D-038.
