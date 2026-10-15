@@ -35,7 +35,8 @@ export default async function BoardPage() {
   }
   const asOf = data?.asOf ?? NOT_AVAILABLE, metrics = data?.metrics ?? null;
   const [m1, ...rest] = METRIC_CARDS, o1 = METRIC_CARDS.find((c) => c.id === "o1");
-  const actions = <div className="flex flex-wrap gap-3"><PrintButton />{download("docx", "Download Word (.docx)")}{download("csv", "Download CSV appendix")}</div>;
+  // Direct children of the header's actions slot: globals.css gives each the tap minimum and the row/column layout.
+  const actions = <><PrintButton />{download("docx", "Download Word (.docx)")}{download("csv", "Download CSV appendix")}</>;
   const card = (c: (typeof METRIC_CARDS)[number]) => <MetricCard key={c.id} card={c} {...metricProps(c.id, metrics, filters, "/board")} />;
   return (
     <Stack gap={6}>
