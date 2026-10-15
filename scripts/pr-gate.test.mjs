@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { describe, expect, it } from 'vitest';
-import { MAX_LINES, countDiff, exitCode, format, loadGenerated, longLines, progressAppendOnly, run } from './pr-gate.mjs';
+import { BINARY, MAX_LINES, countDiff, exitCode, format, loadGenerated, longLines, progressAppendOnly, run } from './pr-gate.mjs';
 
 const numstat = (rows) => rows.map(([a, d, f]) => `${a}\t${d}\t${f}`).join('\n');
 
@@ -24,6 +24,13 @@ describe('longLines', () => {
     const long = 'x'.repeat(301);
     expect(longLines({ 'lib/a.ts': `ok\n${long}`, 'docs/b.md': long, 'lib/c.ts': 'y'.repeat(300) })).toEqual(['lib/a.ts:2 (301)']);
     expect(longLines({ 'public/geo/x.json': long }, 300, ['public/geo/x.json'])).toEqual([]);
+  });
+
+  it('skips binary paths such as committed PNG screenshots, but still checks code beside them', () => {
+    const row = 'x'.repeat(400);
+    expect(['a.png', 'b.JPG', 'c.jpeg', 'd.pdf', 'e.woff2', 'f.xlsx', 'g.zip'].every((f) => BINARY.test(f))).toBe(true);
+    expect(longLines({ 'docs/design/reviews/DS-10a/after/staff-375.png': row })).toEqual([]);
+    expect(longLines({ 'docs/design/reviews/DS-10a/notes.ts': row })).toEqual(['docs/design/reviews/DS-10a/notes.ts:1 (400)']);
   });
 });
 

@@ -12,6 +12,8 @@
     "test:db": "node scripts/test-db.mjs",
     "audit:nightly": "node scripts/nightly-audit.mjs",
     "gate": "node scripts/pr-gate.mjs",
+    "shots": "node scripts/design-shots.mjs",
+    "review-page": "node scripts/design-review-page.mjs",
     "test:e2e": "playwright test",
     "seed:synthetic": "node --experimental-strip-types --no-warnings=ExperimentalWarning lib/synthetic/cli.ts",
     "eval:grants": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/grant-match-eval.mjs"
