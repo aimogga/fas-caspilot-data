@@ -51,23 +51,21 @@ test("county panel opens in words with comparison bars against the state median 
   }
 });
 
-for (const [email, path, title] of [["staff@example.test", "/staff", "Home"], ["admin@example.test", "/admin", "Overview"]] as const) {
-  test(`${path} shows four tiles with sparklines, footers and the quick links (F-401)`, async ({ page }) => {
+for (const [email, path] of [["staff@example.test", "/staff"], ["admin@example.test", "/admin"]] as const) {
+  test(`${path} greets, shows three KPI cards with footers and the quick links (F-401, DS-10a)`, async ({ page }) => {
     await signIn(page, email);
     for (const width of [375, 1024]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto(path);
-      await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^Good (morning|afternoon|evening)/);
       const tiles = page.locator("[data-slot=home-tile]");
-      await expect(tiles).toHaveCount(4);
+      await expect(tiles).toHaveCount(3);
       for (const t of await tiles.all()) {
         await expect(t.locator("h2")).toHaveText(/.+/);
         await expect(t.locator("[data-slot=source-footer]")).toContainText(/FAS records · .* · n = \d+ · (as of |date not available yet)/);
       }
-      // Every tile loaded (a value, or a suppressed cell under 11); a shown value comes with its sparkline when any quarter is known.
-      for (const t of await tiles.all()) await expect(t).toHaveAttribute("data-state", /^(value|suppressed)$/);
-      const shown = page.locator("[data-slot=home-tile][data-state=value]").first();
-      if (await shown.count()) await expect(shown.locator("[data-slot=sparkline], [data-slot=suppressed]").first()).toBeVisible();
+      // Every card loaded: a value, a hatch for 1 ≤ n < 11, or the n = 0 words; never an error or "not available" against the seed.
+      for (const t of await tiles.all()) await expect(t).toHaveAttribute("data-state", /^(value|suppressed|no-data)$/);
       await expect(page.locator("#main").getByRole("link", { name: "Team dashboard" })).toBeVisible();
       await noOverflow(page, width);
       expect(await axe(page), `axe @ ${width}`).toEqual([]);
