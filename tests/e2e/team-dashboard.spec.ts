@@ -68,7 +68,7 @@ test("M1 headline card is wired to the F-304 view: title, source footer, trend t
   expect((await page.goto("/dashboard"))?.status()).toBe(200);
   const card = page.locator("[data-slot=metric-card]").filter({ has: page.locator("#card-m1-title") });
   await expect(card.getByRole("heading", { level: 2 })).toHaveText("Days from court order to first session");
-  await expect(card.locator("[data-slot=source-footer]")).toHaveText(new RegExp(`^FAS records · ${LABEL.replace(/[()]/g, "\\$&")} · n = \\d+ · as of `));
+  await expect(card.locator("[data-slot=source-footer]")).toHaveText(new RegExp(`^FAS records · ${LABEL.replace(/[()]/g, "\\$&")} · n = \\d+ · (as of |date not available yet)`));
   await expect(card).toHaveText(/\d+ days|n<11|No closed cases this quarter/);
   const toggle = card.getByRole("button", { name: "View as table" });
   await expect(toggle).toHaveAttribute("aria-expanded", "false");
@@ -120,6 +120,6 @@ test("public data freshness widget lists the seeded sources with text statuses (
   // The widget lists only the MAX_ROWS worst sources, so once more sources are registered a current census-sahie may not be listed at all.
   const sahie = rows.filter({ hasText: "census-sahie" });
   if (await sahie.count()) await expect(sahie).toHaveText(/^\W*(Current|Stale|Not published)\s*census-sahie\s*Latest 2023$/);
-  await expect(widget.locator("[data-slot=source-footer]")).toHaveText(/^Source registry · as of (Not available yet|\w{3} \d{4})$/);
+  await expect(widget.locator("[data-slot=source-footer]")).toHaveText(/^Source registry · (date not available yet|as of \w{3} \d{4})$/);
   await expect(page.getByRole("link", { name: "See all sources" })).toHaveCount(0);
 });

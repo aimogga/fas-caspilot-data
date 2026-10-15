@@ -83,7 +83,7 @@ describe('NeedMapQuery.build', () => {
   it('reports no data when nothing is loaded', () => {
     const empty = NeedMapQuery.build(input({ scores: [], indicators: [] }));
     expect(empty.hasData).toBe(false);
-    expect(empty.footer).toBe(`Public sources: ${NOT_YET} · Need score version v2 · as of ${NOT_YET} · Placeholder bins`);
+    expect(empty.footer).toBe(`Public sources: ${NOT_YET} · Need score version v2 · date not available yet · Placeholder bins`);
   });
 
   it('marks FAS counties, filters to them on request and keeps the statewide rank', () => {

@@ -38,6 +38,6 @@ describe('board summary (F-402)', () => {
     expect(summarize(null, 'Not available yet')).toBe('This quarter’s numbers are not available yet.');
     const x = { m1: { error: true }, m2: w({ median: 7 }, 20), m3: { error: true }, m4: { error: true }, m5: { error: true }, m6: { error: true }, o1: { error: true }, trend: [], filtered: false } as unknown as DashboardMetrics;
     expect(summarize(x, 'Jul 2026')).toBe('Funding decisions took a median of 7 days from application. Data as of Jul 2026.');
-    expect(summarize({ ...x, m2: { error: true } }, 'Not available yet')).toBe('This quarter’s numbers are not available yet. Data as of Not available yet.');
+    expect(summarize({ ...x, m2: { error: true } }, 'Not available yet')).toBe('This quarter’s numbers are not available yet. Data date not available yet.');
   });
 });

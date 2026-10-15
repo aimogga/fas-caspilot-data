@@ -20,6 +20,10 @@ export const O1_COLUMNS = ["Measure", "Mean change", "Share improved", "n"] as c
 export const GROUP_LABELS: Record<string, string> = { affiliated: "Affiliated providers", other: "Other providers" };
 
 export const NOT_AVAILABLE = "Not available yet";
+/** `Data as of Jul 2026`, or `Data date not available yet` when no row carries a date (never "as of Not available yet"). */
+export const asOfLabel = (asOf: string): string => (asOf === NOT_AVAILABLE ? "Data date not available yet" : `Data as of ${asOf}`);
+/** Footer fragment: `as of Jul 2026`, or `date not available yet`. */
+export const asOfNote = (asOf: string): string => (asOf === NOT_AVAILABLE ? "date not available yet" : `as of ${asOf}`);
 
 export function notAvailableNote(metricName: string): string {
   return `This number appears when ${metricName} is set up.`;

@@ -46,8 +46,8 @@ export class MethodologyQuery {
     const names = [...new Set(inputs.map((r) => r.source).filter((s) => s !== '—'))];
     const loads = input.sources.map((s) => s.last_success_at ?? '').filter(Boolean).sort();
     const synthetic = approved.version.includes('synthetic') || syntheticBadgeVisible(env);
-    const asOf = loads.length ? NeedMapQuery.monthYear(loads[loads.length - 1] as string) : NOT_YET;
-    const footer = `Public sources: ${names.join(', ') || NOT_YET} · Need score version ${approved.version} · as of ${asOf}${synthetic ? ' · Synthetic data' : ''}`;
+    const asOf = loads.length ? `as of ${NeedMapQuery.monthYear(loads[loads.length - 1] as string)}` : 'date not available yet';
+    const footer = `Public sources: ${names.join(', ') || NOT_YET} · Need score version ${approved.version} · ${asOf}${synthetic ? ' · Synthetic data' : ''}`;
     const mismatch = Math.abs(sum - 1) < 0.001 || Math.abs(sum - 100) < 0.001 ? null : `Weights in this version do not sum to 1 (sum = ${sum}).`;
     const notPublished = missing > 0 ? `${missing} of ${COUNTIES.length} counties are Not published for this version.` : null;
     const singleInput = keys.length === 1 && approved.version.includes('synthetic');

@@ -62,7 +62,7 @@ for (const [email, path, title] of [["staff@example.test", "/staff", "Home"], ["
       await expect(tiles).toHaveCount(4);
       for (const t of await tiles.all()) {
         await expect(t.locator("h2")).toHaveText(/.+/);
-        await expect(t.locator("[data-slot=source-footer]")).toContainText(/FAS records · .* · n = \d+ · as of /);
+        await expect(t.locator("[data-slot=source-footer]")).toContainText(/FAS records · .* · n = \d+ · (as of |date not available yet)/);
       }
       // Every tile loaded (a value, or a suppressed cell under 11); a shown value comes with its sparkline when any quarter is known.
       for (const t of await tiles.all()) await expect(t).toHaveAttribute("data-state", /^(value|suppressed)$/);
@@ -97,7 +97,7 @@ test("team dashboard shows the last four quarters of M2, M3 and M5 as line chart
     expect(await charts.count(), "at most M2, M3 and M5").toBeLessThanOrEqual(3);
     for (const c of await charts.all()) {
       await expect(c.getByRole("img")).toHaveAttribute("aria-label", /.+/);
-      await expect(c.locator("[data-slot=source-footer]")).toContainText(/FAS records · .* · n = \d+ · as of /);
+      await expect(c.locator("[data-slot=source-footer]")).toContainText(/FAS records · .* · n = \d+ · (as of |date not available yet)/);
     }
     await noOverflow(page, width);
     expect(await axe(page), `axe @ ${width}`).toEqual([]);

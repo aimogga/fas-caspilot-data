@@ -18,7 +18,7 @@ for (const email of ["board@example.test", "staff@example.test", "admin@example.
     await page.setViewportSize({ width: 1024, height: 900 });
     expect((await page.goto("/board"))?.status()).toBe(200);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("How FAS help is working");
-    await expect(page.locator("[data-slot=page-header] > p:not([class])")).toHaveText(new RegExp(`^${LABEL.replace(/[()]/g, "\\$&")} · All counties · Data as of (\\w{3} \\d{4}|Not available yet)$`));
+    await expect(page.locator("[data-slot=page-header] > p:not([class])")).toHaveText(new RegExp(`^${LABEL.replace(/[()]/g, "\\$&")} · All counties · Data (as of \\w{3} \\d{4}|date not available yet)$`));
     await expect(page.locator("[data-slot=crumbs]")).toHaveText("Board dashboard");
     const summary = page.locator("[data-slot=board-summary]");
     // Seed (DS-07c): GAD-7 has 3 follow-ups → worded "fewer than 11"; M4 total 25 of 29 is shown; the paragraph ends with its as-of date.
@@ -28,10 +28,10 @@ for (const email of ["board@example.test", "staff@example.test", "admin@example.
     await expect(summary).not.toContainText(/\$0|NaN|undefined|null/);
     const cards = page.locator("[data-slot=metric-card]");
     await expect(cards).toHaveCount(7);
-    for (const c of await cards.all()) await expect(c.locator("[data-slot=source-footer]")).toContainText(/FAS records · .* · n = \d+ · as of /);
+    for (const c of await cards.all()) await expect(c.locator("[data-slot=source-footer]")).toContainText(/FAS records · .* · n = \d+ · (as of |date not available yet)/);
     await expect(page.locator("[data-slot=metric-card] tbody tr[data-suppressed]:not([data-complementary])").first()).not.toContainText("%");
     await expect(page.getByRole("heading", { level: 2, name: "Public data freshness" })).toBeVisible();
-    await expect(page.locator("[data-slot=board-note]")).toHaveText(/^Counts under 11 are hidden to protect families' privacy\. Dates are shown by quarter\. Data as of (\w{3} \d{4}|Not available yet)\. FAS Evidence\.$/);
+    await expect(page.locator("[data-slot=board-note]")).toHaveText(/^Counts under 11 are hidden to protect families' privacy\. Dates are shown by quarter\. Data (as of \w{3} \d{4}|date not available yet)\. FAS Evidence\.$/);
     await expect(page.locator("[data-slot=filter-bar]")).toHaveCount(0);
     expect(await axe(page)).toEqual([]);
   });

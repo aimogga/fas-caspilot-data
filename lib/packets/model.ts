@@ -2,7 +2,7 @@
  * strings only; values hidden by F-306 read `fewer than 11` (n under 11) or `hidden` (complementary suppression). Rendering and assertions sit on top. */
 import { boardPictures, type Picture } from '../board/pictures';
 import { sentences } from '../board/summary';
-import { GROUP_LABELS, METRIC_CARDS, NOT_AVAILABLE } from '../dashboard/cards';
+import { asOfLabel, asOfNote, GROUP_LABELS, METRIC_CARDS, NOT_AVAILABLE } from '../dashboard/cards';
 import { quarterLabel } from '../dashboard/filters';
 import { days, money, pct, signed } from '../dashboard/format';
 import type { DashboardMetrics, Loaded, Wired } from '../dashboard/metrics-query';
@@ -46,16 +46,18 @@ const title = (id: string) => METRIC_CARDS.find((c) => c.id === id)?.title ?? id
 /** Need indicators from the need-map column note `Census SAHIE 2023 · as of Oct 2026`. */
 const splitNote = (note: string): [string, string] => { const [src, asOf] = note.split(' · as of '); return [src ?? note, asOf ?? NOT_AVAILABLE]; };
 export function needProfile(x: PacketInput): PacketSection {
-  const fas = `FAS records · as of ${x.asOf}`, rows = x.need?.rows ?? [], src = x.need?.footer ?? NOT_AVAILABLE, county = x.variant === 'grant' ? countyName(x.scope.county) : null;
+  const fas = `FAS records · ${asOfNote(x.asOf)}`, rows = x.need?.rows ?? [], src = x.need?.footer ?? NOT_AVAILABLE, county = x.variant === 'grant' ? countyName(x.scope.county) : null;
+  // `rank` is `14 of 26`: the denominator is the number of counties with a score for this version, not Utah's 29 counties, so say so.
+  const scored = rows.filter((r) => r.status === 'Ranked').length, total = x.need?.counties.length ?? COUNTIES.length, coverage = `${scored} of ${total} counties scored`;
   const row = county ? rows.find((r) => r.name === county) : undefined;
   if (county && row) {
     // DS-06b keeps the as-of month in `sources` (the column note is `<source> <vintage>`); older notes with ` · as of ` still parse.
     const figures = (x.need?.columns ?? []).map((c) => { const [s, a] = splitNote(c.note); return fig(c.label, row.cells[c.code] ?? NOT_AVAILABLE, x.need?.sources?.find((q) => q.code === c.code)?.asOf ?? a, s); });
-    const rank = row.status === 'Ranked' ? `ranks ${row.rank} Utah counties on the FAS need score (version ${x.need?.version}, score ${row.score})` : `has no published need score (${row.status})`;
+    const rank = row.status === 'Ranked' ? `ranks ${row.rank} Utah counties with a need score (version ${x.need?.version}, score ${row.score}; ${coverage})` : `has no published need score (${row.status})`;
     return { id: 'need-profile', title: SECTION_TITLES['need-profile'], paragraphs: [`${county} ${rank}. Public indicators for the county are listed below with their source and vintage.`], figures, source: src };
   }
   const top = rows.filter((r) => r.status === 'Ranked').slice(0, 5).map((r) => `${r.name} (rank ${r.rank})`);
-  const paragraphs = [top.length ? `Highest-need Utah counties on the FAS need score (version ${x.need?.version}): ${top.join(', ')}.` : 'The county need score is not available yet.'];
+  const paragraphs = [top.length ? `Highest-need Utah counties on the FAS need score (version ${x.need?.version}; ${coverage}): ${top.join(', ')}.` : 'The county need score is not available yet.'];
   if (x.variant === 'board') paragraphs.push(x.serviceCounties.length ? `FAS service counties: ${x.serviceCounties.join(', ')}.` : 'FAS service counties are not available yet.');
   return { id: 'need-profile', title: SECTION_TITLES['need-profile'], paragraphs, figures: x.variant === 'board' ? [fig('Service counties', x.serviceCounties.join(', ') || NOT_AVAILABLE, x.asOf, 'FAS records')] : [], source: top.length ? src : fas };
 }
@@ -65,32 +67,32 @@ export function fasResults(x: PacketInput): PacketSection {
   w('m1', m?.m1, (v) => days(v.median)); w('m2', m?.m2, (v) => days(v.median)); w('m3', m?.m3, (v) => pct(v.share)); w('m5', m?.m5, (v) => money(v.costPerCompleted));
   w('m4', m?.m4, (v) => pct(v.total?.rate)); w('m6', m?.m6, (v) => pct(v.affiliatedShare));
   const paragraphs = [sentences.m1(m?.m1), sentences.m2(m?.m2), sentences.m3(m?.m3), sentences.m5(m?.m5), sentences.m4(m?.m4), sentences.m6(m?.m6)].filter((s): s is string => !!s);
-  return { id: 'fas-results', title: SECTION_TITLES['fas-results'], paragraphs: paragraphs.length ? paragraphs : ['This quarter’s numbers are not available yet.'], figures: f, source: `${src} · as of ${x.asOf}` };
+  return { id: 'fas-results', title: SECTION_TITLES['fas-results'], paragraphs: paragraphs.length ? paragraphs : ['This quarter’s numbers are not available yet.'], figures: f, source: `${src} · ${asOfNote(x.asOf)}` };
 }
 export function outcomes(x: PacketInput): PacketSection {
   const o = x.metrics?.o1, src = `FAS records · ${quarterLabel(x.period)}`;
   const figures = ok(o) ? o.measures.filter((m) => m.n > 0).flatMap((m) => [fig(`${m.code} mean change`, shown(signed(m.meanChange), m.n), o.asOf, src), fig(`${m.code} share improved`, shown(pct(m.shareImproved), m.n), o.asOf, src)]) : [];
-  return { id: 'outcomes', title: SECTION_TITLES.outcomes, paragraphs: [sentences.o1(o) ?? 'Outcome measures are not available yet.', 'Lower scores are better on every active instrument; change is follow-up minus baseline.'], figures, source: `${src} · as of ${x.asOf}` };
+  return { id: 'outcomes', title: SECTION_TITLES.outcomes, paragraphs: [sentences.o1(o) ?? 'Outcome measures are not available yet.', 'Lower scores are better on every active instrument; change is follow-up minus baseline.'], figures, source: `${src} · ${asOfNote(x.asOf)}` };
 }
 export function methodologySources(x: PacketInput): PacketSection {
   const v = x.method, period = quarterLabel(x.period);
   const figures = v ? v.weights.map((w) => { const i = v.inputs.find((r) => r.key === w.key); return fig(w.label, `weight ${w.weight} (${w.share})`, i?.asOf ?? NOT_AVAILABLE, `${i?.source ?? NOT_AVAILABLE} ${i?.vintage ?? ''}`.trim()); }) : [];
   const paragraphs = [v ? `Need score version ${v.version}, approved ${v.approvedLabel}: a weighted score of the public inputs below (weights sum to ${v.sum}).${v.synthetic ? ' Synthetic placeholder weights are in use.' : ''}` : 'Need score methodology is not available yet.',
     `FAS results cover ${period} and compare to the quarter before. Metric definitions follow the FAS Evidence methodology (M1–M6, O1); suppression follows the rule in the suppression note.`,
-    `Sources: ${v ? v.inputs.map((i) => `${i.source} (${i.vintage}, as of ${i.asOf})`).join('; ') : NOT_AVAILABLE}; FAS records (as of ${x.asOf}).`];
-  return { id: 'methodology-sources', title: SECTION_TITLES['methodology-sources'], paragraphs, figures, source: v?.footer ?? `FAS records · as of ${x.asOf}` };
+    `Sources: ${v ? v.inputs.map((i) => `${i.source} (${i.vintage}, ${asOfNote(i.asOf)})`).join('; ') : NOT_AVAILABLE}; FAS records (${asOfNote(x.asOf)}).`];
+  return { id: 'methodology-sources', title: SECTION_TITLES['methodology-sources'], paragraphs, figures, source: v?.footer ?? `FAS records · ${asOfNote(x.asOf)}` };
 }
 export function relatedParty(x: PacketInput): PacketSection {
   const m = x.metrics?.m6, src = `FAS records · ${quarterLabel(x.period)}`, rate = (g: string) => (ok(m) ? m.groups.find((r) => r.group === g)?.avgRatePerUnit : null);
   const figures = ok(m) ? [fig('Share of dollars to affiliated providers', shown(pct(m.affiliatedShare), m.n), m.asOf, src),
     ...(['affiliated', 'other'] as const).map((g) => fig(`${GROUP_LABELS[g]} average rate per hour`, shown(money(rate(g)), m.n), m.asOf, src))] : [];
-  return { id: 'related-party', title: SECTION_TITLES['related-party'], paragraphs: [RELATED_PARTY_COPY, sentences.m6(m) ?? 'The split of therapy dollars is not available yet.'], figures, source: `${src} · as of ${x.asOf}` };
+  return { id: 'related-party', title: SECTION_TITLES['related-party'], paragraphs: [RELATED_PARTY_COPY, sentences.m6(m) ?? 'The split of therapy dollars is not available yet.'], figures, source: `${src} · ${asOfNote(x.asOf)}` };
 }
 export function buildPacket(x: PacketInput): Packet {
   const prepared = NeedMapQuery.monthYear(x.now.toISOString()), scope = scopeLabel(x.variant, x.scope);
   const suppression: PacketSection = { id: 'suppression-note', title: SECTION_TITLES['suppression-note'], paragraphs: SUPPRESSION_COPY, figures: [], source: 'FAS Evidence privacy rules' };
   return {
-    variant: x.variant, scope: x.scope, title: `FAS Evidence packet · ${VARIANT_LABEL[x.variant]} · ${scope}`, scopeLabel: scope, prepared: `Prepared ${prepared}`, asOf: `Data as of ${x.asOf}`,
+    variant: x.variant, scope: x.scope, title: `FAS Evidence packet · ${VARIANT_LABEL[x.variant]} · ${scope}`, scopeLabel: scope, prepared: `Prepared ${prepared}`, asOf: asOfLabel(x.asOf),
     period: x.period, ribbon: RIBBON, footer: `FAS Evidence · Counts under 11 are hidden · ${prepared}`,
     sections: [needProfile(x), fasResults(x), outcomes(x), methodologySources(x), suppression, relatedParty(x)], pictures: boardPictures(x.metrics),
   };

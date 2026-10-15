@@ -1,11 +1,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import { asOfNote } from "@/lib/dashboard/cards";
 
 export type SourceFooterProps = { source: string; period: string; n: string | number; asOf: string };
 
 export function SourceFooter({ source, period, n, asOf }: SourceFooterProps) {
-  return <p data-slot="source-footer" className="text-xs font-medium tracking-wide text-muted-foreground">{source} · {period} · n {n} · as of {asOf}</p>;
+  return <p data-slot="source-footer" className="text-xs font-medium tracking-wide text-muted-foreground">{source} · {period} · n {n} · {asOfNote(asOf)}</p>;
 }
 
 export function SuppressedCell({ count }: { count?: number }) {
