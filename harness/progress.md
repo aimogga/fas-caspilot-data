@@ -1048,6 +1048,13 @@ Left: `app/(app)/data-freshness/loading.tsx` once `PageSkeleton` (#262) is on ma
 Decisions: none new (designer defaults listed in the spec: chip word stays `Current`; the run cell uses the `ExplainCard` face because `Provenance` has no started/finished rows and the kit is read-only).
 
 ---
+## 2026-10-16 02:25 (UTC) — Cloud Agent (Engineer Supervisor) — DS-13b after shots and DS-14 login before shots (design)
+Did: captured the DS-13b "after" evidence from the `ds-13b-board-sections` preview: `docs/design/reviews/DS-13b/after/board-{375,1024,1440}[-hover].png` (hover on a county rank cell in section 4), the Letter print sheet `board-816-print.png` and the four-page `board-816-print.pdf`, with manifest rows. Retook the DS-14 "before" shots of `/login` signed out (`docs/design/reviews/DS-14/before/login-{375,1024,1440}.png`): the first set had followed the sign-in redirect and showed `/board`; manifest rows updated.
+State: binary and manifest only. Branch `design/after-shots-day4`. The 375 board shot is about 4 900 px (kept). Seen on the print PDF: the fixed footer repeats "Page N of 4" at the bottom of each page as intended; in the full-page PNG the fixed footer renders mid-page, which is a screenshot artefact, not a layout fault.
+Left: DS-12b, DS-14 and DS-15a/16a after shots once those packets merge.
+Decisions: none new.
+
+---
 
 ## 2026-10-16 00:20 (UTC) — Cloud Agent (Engineer) — F-508b FAS knowledge store: org_knowledge, RLS, citable reads (F-508)
 Did: migration `20261016015500_f508b_org_knowledge.sql`: `org_knowledge` (category and status CHECKs, body ≤ 8,000, `version`, server stamps for version/created_by/approved_by/timestamps) and `org_knowledge_version` (one immutable snapshot per version, written only by a SECURITY DEFINER trigger). RLS forced, deny by default: admin select/insert/update in own org, staff select approved rows in own org (both tables), board/anon/no-role nothing, no delete for anyone (REVOKE DELETE too). DB backstop CHECKs: SSN/email patterns; numbers in outcome/budget need source + as_of. `lib/knowledge/guard.ts` (`checkKnowledgeText`, `checkKnowledge`: SSN, DOB, phone, email, street address incl. Utah grid, case/docket numbers, empty, length, needs_source; names the rule, never echoes text) and `lib/knowledge/store.ts` (`listApproved`, `resolveCitation` against the approved snapshot, `sourceRef`/`parseSourceRef` for `org_knowledge:<id>@v<n>`, guarded `saveKnowledge` for insert/edit/archive). Four fictional "Bluebird Family Fund" rows in `lib/synthetic/knowledge.ts`, appended to `pnpm seed:synthetic` (`ON CONFLICT DO NOTHING`).
