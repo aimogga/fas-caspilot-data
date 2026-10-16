@@ -1,0 +1,24 @@
+/* F-403 evidence packet print sheet (DS-17): Letter, black on white, no shell or controls, one section per page. The DS-13b page-number pattern is copied here, not imported from the board sheet. */
+@media print {
+  /* Engines with margin boxes print "Page n of N"; Chromium ignores @bottom-center, so the fixed packet footer below repeats on every sheet instead. */
+  @page { size: letter; margin: 16mm 16mm 20mm; @bottom-center { content: "Page " counter(page) " of " counter(pages); font-size: 9pt; } }
+  [data-slot=packet-footer] { position: fixed; bottom: 0; left: 0; right: 0; font-size: 9pt; text-align: center; }
+  [data-slot=sidebar], [data-slot=topbar], [data-slot=skip], [data-slot=actions], [data-slot=print-button], [data-slot=sheet-content], [data-slot=packet-controls], button { display: none !important; }
+  /* The explain faces never print; their words live on the tiles and in the section source lines. */
+  [data-slot=popover-content], [data-slot=hover-card-content], [data-slot=tooltip-content], [data-slot=explain-layer-card] { display: none !important; }
+  [data-slot=explain-trigger], [data-slot=hint-trigger] { display: inline !important; min-height: 0; text-decoration: none; }
+  html, body, [data-slot=column], [data-slot=page], [data-slot=packet-cover], [data-slot=packet-figure], [data-slot=packet-pictures] [data-slot=card] { background: #fff !important; }
+  body, body * { color: #000 !important; }
+  [data-slot=column] > [data-slot=page] { max-width: none; padding: 0; font-size: 11pt; }
+  [data-slot=page-header] { display: flex; flex-direction: column; gap: 6pt; }
+  [data-slot=page-header] h1 { font-size: 22pt; font-family: var(--font-serif); }
+  [data-slot=packet-cover] { min-height: 40vh; border-color: #000; box-shadow: none; }
+  [data-slot=packet-section] { break-before: page; page-break-before: always; border-color: #000; }
+  [data-slot=packet-section] > h2 { font-size: 15pt; font-family: var(--font-serif); }
+  [data-slot=packet-figures] { display: block !important; }
+  [data-slot=packet-figure] { break-inside: avoid; page-break-inside: avoid; border: 1px solid #000; box-shadow: none; margin-bottom: 6pt; }
+  [data-slot=packet-pictures] [data-slot=grid] { display: block !important; }
+  [data-slot=packet-pictures] [data-slot=card] { break-inside: avoid; page-break-inside: avoid; border: 1px solid #000; box-shadow: none; margin-bottom: 8pt; }
+  [data-slot=suppressed] { background: none; border: 1px dashed #000; }
+  a[href] { text-decoration: none; }
+}
