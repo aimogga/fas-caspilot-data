@@ -1,3 +1,5 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { generateJson, LlmError } from './index';
@@ -145,5 +147,39 @@ describe('generateJson (F-508a)', () => {
       { provider: 'openrouter', status: 'missing_key' },
     ]);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('forceProvider (F-508i, eval only)', () => {
+  it('is refused without LLM_EVAL=1, before any call', async () => {
+    await expect(generateJson(input, { forceProvider: 'openrouter' })).rejects.toThrow(/eval-only/);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('is refused inside the Next server even with LLM_EVAL=1', async () => {
+    vi.stubEnv('LLM_EVAL', '1');
+    vi.stubEnv('NEXT_RUNTIME', 'nodejs');
+    await expect(generateJson(input, { forceProvider: 'gemini' })).rejects.toThrow(/eval-only/);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('under LLM_EVAL=1 calls only the forced provider and never falls back', async () => {
+    vi.stubEnv('LLM_EVAL', '1');
+    vi.stubEnv('NEXT_RUNTIME', '');
+    fetchMock.mockResolvedValueOnce(json({}, 429));
+    await expect(generateJson(input, { forceProvider: 'gemini' })).rejects.toMatchObject({ attempts: [{ provider: 'gemini', status: 429 }] });
+    fetchMock.mockResolvedValueOnce(openrouter(JSON.stringify(good)));
+    expect((await generateJson(input, { forceProvider: 'openrouter' })).meta.provider).toBe('openrouter');
+    expect(urls()).toHaveLength(2);
+  });
+
+  it('a request path cannot set it: a forceProvider key in the input is ignored and the app never names it', async () => {
+    vi.stubEnv('LLM_EVAL', '1');
+    const body = { ...input, forceProvider: 'openrouter' } as typeof input; // as if a JSON body were spread into the input
+    fetchMock.mockResolvedValueOnce(json({}, 503)).mockResolvedValueOnce(openrouter(JSON.stringify(good)));
+    expect((await generateJson(body)).meta).toMatchObject({ provider: 'openrouter', attempts: 2 }); // normal fallback order
+    const files = (dir: string): string[] => readdirSync(dir, { withFileTypes: true })
+      .flatMap((e) => (e.isDirectory() ? files(join(dir, e.name)) : /\.tsx?$/.test(e.name) ? [join(dir, e.name)] : []));
+    expect(files('app').filter((f) => /forceProvider|LLM_EVAL/.test(readFileSync(f, 'utf8')))).toEqual([]);
   });
 });

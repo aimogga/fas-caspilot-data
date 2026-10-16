@@ -29,20 +29,26 @@ export class LlmError extends Error {
 
 export type GenerateJsonInput<T extends z.ZodType> = { system: string; prompt: string; schema: T; timeoutMs?: number };
 
+/** Eval-only (F-508i): `forceProvider` calls one provider with no fallback. Allowed only under `LLM_EVAL=1` and outside the Next
+ * server (route handlers run with `NEXT_RUNTIME` set). It is a separate argument, so a request body spread into `input` cannot set it. */
+export type EvalOptions = { forceProvider?: Provider };
+
 export const DEFAULT_TIMEOUT_MS = 30_000;
 /** Gemini answers these when the key, model or request is wrong: retrying Gemini cannot help. */
 const CONFIG_STATUSES = new Set([400, 401, 403]);
 
 type Step = { provider: Provider; key: string | undefined; call: (key: string, req: ProviderRequest) => Promise<ProviderResult> };
 
-export async function generateJson<T extends z.ZodType>(input: GenerateJsonInput<T>): Promise<{ data: z.infer<T>; meta: LlmMeta }> {
+export async function generateJson<T extends z.ZodType>(input: GenerateJsonInput<T>, opts: EvalOptions = {}): Promise<{ data: z.infer<T>; meta: LlmMeta }> {
+  const force = opts.forceProvider;
+  if (force && (process.env.LLM_EVAL !== '1' || process.env.NEXT_RUNTIME)) throw new Error('forceProvider is eval-only: set LLM_EVAL=1 and run outside the app');
   const started = Date.now();
   const jsonSchema = z.toJSONSchema(input.schema) as Record<string, unknown>;
   delete jsonSchema.$schema; // Gemini's response schema takes the body only
-  const steps: Step[] = [
+  const steps: Step[] = ([
     { provider: 'gemini', key: process.env.GEMINI_API_KEY, call: callGemini },
     { provider: 'openrouter', key: process.env.OPENROUTER_API_KEY, call: callOpenRouter },
-  ];
+  ] as Step[]).filter((s) => !force || s.provider === force);
   const failed: LlmAttempt[] = [];
   let calls = 0;
   for (const step of steps) {

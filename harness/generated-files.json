@@ -4,6 +4,7 @@
     "supabase/config.toml",
     "public/geo/utah-counties.json",
     "tests/fixtures/ut_courts/filings.xlsx",
-    "docs/design/reviews/index.html"
+    "docs/design/reviews/index.html",
+    "tests/eval/llm/opportunities.json"
   ]
 }
