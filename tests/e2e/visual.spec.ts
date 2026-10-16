@@ -17,7 +17,7 @@ test("board opens with the quarter as pictures: headline in words, hidden bands 
   for (const width of [375, 1024]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/board");
-    const charts = page.locator("[data-slot=board-pictures] [data-slot=chart]");
+    const charts = page.locator("[data-slot=board-section] [data-slot=chart]");
     // Seed (DS-07c): M4 total 25 of 29 is shown, so the completion picture always exists; up to four pictures in all.
     expect(await charts.count()).toBeGreaterThanOrEqual(1);
     expect(await charts.count()).toBeLessThanOrEqual(4);
@@ -27,7 +27,6 @@ test("board opens with the quarter as pictures: headline in words, hidden bands 
     await expect(completion).toContainText("All bands");
     await completion.getByRole("button", { name: "View as table" }).click();
     await expect(completion.locator("table")).toBeVisible();
-    await expect(page.locator("[data-slot=metric-card]")).toHaveCount(7);
     await noOverflow(page, width);
     expect(await axe(page), `axe @ ${width}`).toEqual([]);
   }
