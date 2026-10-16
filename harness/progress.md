@@ -1029,3 +1029,9 @@ Left: nothing in DS-12. Open: the seed's F-504 opportunities carry no `assistanc
 Decisions: none new (designer wording defaults in the spec).
 
 ---
+
+## 2026-10-16 00:08 (UTC) — Claude Code (cloud, Engineer) — pr-gate: stacked branches gate against their parent (D-028, D-032)
+Did: `scripts/pr-gate.mjs` exports `resolveBase`: `--base` wins, else `git config branch.<current>.gateBase` (e.g. `git config branch.f508e-strategy-engine.gateBase origin/f508a-llm-adapter`), else `origin/main`; a configured base must be an `origin/*` branch, so it is always a pushed parent. The CLI prints `gate base: <ref>` first. The push hook (`scripts/pr-gate-hook.mjs`, unchanged) runs `pnpm gate`, so a stacked branch's push is now gated as D-032 already measures it (D-012 against the parent, progress.md append-only against the parent). Found when the F-508e stacked branches were blocked by a count that included #223. 3 new unit tests; `resolveBase` calls git with an argument list (`execFileSync`), never a shell string, after CodeRabbit flagged branch-name interpolation.
+State: lint, typecheck, unit tests and `pnpm gate` green. Branch `tooling/gate-stacked-base` off main. CI still gates PRs against the PR base sha.
+Left: nothing.
+Decisions: none new (implements D-032 for the hook). Entry added after merge (#239 merged without it to stop progress.md conflicts with main).
