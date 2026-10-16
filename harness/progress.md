@@ -1162,3 +1162,10 @@ Decisions: none new; no token added or changed (designer defaults in the spec: `
 **Next:** none planned in the design lane; George reviews the page and anything he dislikes becomes the next packet.
 
 ---
+
+---
+## 2026-10-16 (UTC) — Claude Code (design planning) — Plan for DS-20 (need map declutter) and DS-21 (sidebar sections with tabs)
+Did: audited `/need-map` rendered locally from main with 13 synthetic indicators at 1440 and 375 (18-column table with sideways scroll, 2–3 line cells repeating nouns and margins, a source note under every header, a 1,100 px county panel with a source line per measure, the legend pushed below the panel, 5,660 px at 375). Wrote `docs/design/PLAN_DS-20_DS-21.md`: DS-20a layout and legend, DS-20b county panel, DS-20c table (5 scored rates by default, "All measures" switch, one-line cells); DS-21 cuts Workspace from 10 links to 5 sections (Home, Insights, Data, Grants, Evidence packets) with link tabs to the existing routes, so no auth or route changes.
+State: plan only, no code. Docs-only diff.
+Left: George's four answers at the end of the plan; then specs and PRs in the order listed there.
+Decisions: none new (proposed only).
