@@ -13,16 +13,6 @@
     "id": "DS-10b",
     "tag": "after",
     "route": "/staff",
-    "width": 375,
-    "variant": "hover",
-    "host": "fas-caspilot-data-git-ds-10b-home-todo-aimoggas-projects.vercel.app",
-    "sha": "17521a7",
-    "at": "2026-10-16T00:21:28.753Z"
-  },
-  {
-    "id": "DS-10b",
-    "tag": "after",
-    "route": "/staff",
     "width": 1024,
     "variant": "base",
     "host": "fas-caspilot-data-git-ds-10b-home-todo-aimoggas-projects.vercel.app",
