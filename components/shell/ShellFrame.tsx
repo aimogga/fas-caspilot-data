@@ -3,15 +3,17 @@
 import { useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, House, LayoutDashboard, Menu, Shield, type LucideIcon } from "lucide-react";
+import { Menu } from "lucide-react";
 import { AggregateFreshnessChip } from "@/components/freshness/AggregateFreshnessChip";
 import type { TopBarChip } from "@/lib/freshness/status";
 import { Page } from "@/components/layout";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ORGANIZATION_NAME, PRODUCT_NAME } from "@/lib/branding";
-import { crumbFor, navForRole, PREVIEW_FOOTER, type NavGroup } from "@/lib/shell/nav";
-
-const ICONS: Record<string, LucideIcon> = { "/staff": House, "/admin": Shield, "/board": LayoutDashboard, "/methodology": BookOpen };
+import { crumbFor, navActive, navForRole, PREVIEW_FOOTER, type NavGroup } from "@/lib/shell/nav";
+import { sectionFor } from "@/lib/shell/sections";
+import { NAV_ICONS } from "./nav-icons";
+import { SectionTabs } from "./SectionTabs";
+import { ThemeMenu } from "./ThemeMenu";
 
 export function Wordmark() {
   return (
@@ -24,15 +26,15 @@ export function Wordmark() {
   );
 }
 
-function NavLinks({ groups, pathname, onNavigate }: { groups: NavGroup[]; pathname: string; onNavigate?: () => void }) {
+function NavLinks({ groups, role, pathname, onNavigate }: { groups: NavGroup[]; role: string; pathname: string; onNavigate?: () => void }) {
   return groups.map((group) => (
     <div key={group.label} data-slot="nav-group">
       <p data-rail="hide">{group.label}</p>
       {group.items.map((item) => {
-        const Icon = ICONS[item.href] ?? House;
+        const Icon = NAV_ICONS[item.href] ?? Menu; // every href has a glyph (unit-tested); the fallback only guards a future route
         return (
-          <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined} aria-label={item.label} onClick={onNavigate}>
-            <Icon aria-hidden /><span data-rail="hide">{item.label}</span>
+          <Link key={item.href} href={item.href} aria-current={navActive(role, item, pathname) ? "page" : undefined} aria-label={item.label} onClick={onNavigate}>
+            <Icon aria-hidden className="size-4 shrink-0" /><span data-rail="hide">{item.label}</span>
           </Link>
         );
       })}
@@ -43,6 +45,7 @@ function NavLinks({ groups, pathname, onNavigate }: { groups: NavGroup[]; pathna
 export function ShellFrame({ role, roleLabel, name, showSynthetic, freshnessChip = null, children }: { role: string; roleLabel: string; name: string; showSynthetic: boolean; freshnessChip?: TopBarChip | null; children: ReactNode }) {
   const pathname = usePathname();
   const { groups, footer } = navForRole(role);
+  const here = sectionFor(pathname, role);
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLButtonElement>(null);
   const closeSheet = () => {
@@ -54,7 +57,7 @@ export function ShellFrame({ role, roleLabel, name, showSynthetic, freshnessChip
       <a href="#main" data-slot="skip">Skip to content</a>
       <aside data-slot="sidebar">
         <div data-slot="brand-block"><Wordmark /><p data-slot="org" data-rail="hide">{ORGANIZATION_NAME}</p></div>
-        <nav aria-label="Primary"><NavLinks groups={groups} pathname={pathname} /></nav>
+        <nav aria-label="Primary"><NavLinks groups={groups} role={role} pathname={pathname} /></nav>
         {footer || showSynthetic ? <p data-slot={footer ? "board-footer" : "preview-footer"} data-rail="hide">{footer ?? PREVIEW_FOOTER}</p> : null}
       </aside>
       <div data-slot="column">
@@ -82,14 +85,14 @@ export function ShellFrame({ role, roleLabel, name, showSynthetic, freshnessChip
                   <Wordmark />
                   <p data-slot="org">{ORGANIZATION_NAME}</p>
                 </SheetHeader>
-                <nav aria-label="Primary"><NavLinks groups={groups} pathname={pathname} onNavigate={closeSheet} /></nav>
+                <nav aria-label="Primary"><NavLinks groups={groups} role={role} pathname={pathname} onNavigate={closeSheet} /></nav>
                 {footer || showSynthetic ? <p data-slot={footer ? "board-footer" : "preview-footer"}>{footer ?? PREVIEW_FOOTER}</p> : null}
               </SheetContent>
             </Sheet>
             <div data-slot="topbar-brand"><Wordmark /></div>
             <details data-slot="user-menu">
               <summary aria-label="Account menu"><span data-slot="avatar" aria-hidden>{name.slice(0, 1).toUpperCase()}</span><span data-slot="user-name">{name}<small data-slot="user-role">{roleLabel}</small></span></summary>
-              <div><p>{name}</p><p data-slot="role-label">{roleLabel}</p><form action="/api/auth/signout" method="post"><button type="submit">Sign out</button></form></div>
+              <div><p>{name}</p><p data-slot="role-label">{roleLabel}</p><ThemeMenu /><form action="/api/auth/signout" method="post"><button type="submit">Sign out</button></form></div>
             </details>
           </div>
           <div data-slot="topbar-sub">
@@ -98,7 +101,10 @@ export function ShellFrame({ role, roleLabel, name, showSynthetic, freshnessChip
             {showSynthetic ? <span data-slot="env-badge">Synthetic data</span> : null}
           </div>
         </header>
-        <Page id="main">{children}</Page>
+        <Page id="main">
+          {here ? <SectionTabs section={here.section} current={here.tab.href} /> : null}
+          {children}
+        </Page>
       </div>
     </div>
   );

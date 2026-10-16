@@ -38,7 +38,7 @@ test("county panel opens in words with comparison bars against the state median 
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/need-map?county=49035");
     const panel = page.locator("[data-slot=county-panel]");
-    await expect(panel.getByRole("heading")).toContainText("Salt Lake County");
+    await expect(panel.getByRole("heading", { level: 2 })).toContainText("Salt Lake County");
     await expect(panel.locator("[data-slot=county-compare]")).toContainText(/^Salt Lake County has a higher .+ than \d+ of \d+ other Utah counties|^No rate indicators are published/);
     const bars = panel.locator("[data-slot=compare-bars] li[data-where]");
     if (await bars.count()) {
