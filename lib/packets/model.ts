@@ -18,6 +18,7 @@ export type Figure = { label: string; value: string; kind: 'count' | 'value'; so
 export type PacketSection = { id: SectionId; title: string; paragraphs: string[]; figures: Figure[]; source: string };
 export type Packet = {
   variant: PacketVariant; scope: PacketScope; title: string; scopeLabel: string; prepared: string; asOf: string; period: string; ribbon: string; footer: string; sections: PacketSection[];
+  /** Running page header on every DOCX page (F-508h application export); packets leave it unset. */ header?: string;
   /** The board's pictures (F-402), drawn inside the section each one belongs to on the page and in the DOCX (SVG + caption); empty when no metric loaded. The CSV carries figures only. */ pictures: Picture[];
 };
 /** Which section each picture sits in. */
