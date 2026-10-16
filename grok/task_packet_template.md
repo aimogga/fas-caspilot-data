@@ -13,7 +13,7 @@ phase: 0
 goal: ""                           # one sentence, outcome not activity
 context_files:                     # read these before starting, in this order
   - AGENTS.md
-  - harness/progress.md            # last 3 entries
+  - harness/progress/              # 3 newest files (D-041)
   - docs/PRD.md#<section>
 inputs: ""                         # data, fixtures, prior PRs
 acceptance_criteria:               # copied from feature_list.json, never weakened
@@ -31,7 +31,7 @@ plugins_allowed: []                # only items marked "Use" in harness/PLUGIN_I
 done_means:
   - PR open with template filled
   - CI green
-  - progress.md entry added
+  - harness/progress/ entry file added
   - QA packet created for feature_id
 escalate_if:
   - tests fail after 2 honest attempts
