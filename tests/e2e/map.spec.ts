@@ -105,7 +105,7 @@ test("map: 29 county paths above the table, legend copy, FAS outlines, hatch; li
       expect(svg?.height ?? 0).toBeLessThanOrEqual(640);
       expect(svg?.width ?? 0).toBeLessThanOrEqual(width === 375 ? 343 : 696);
       // The map sits above the county rows: the table from 768, the ranked list below it (DS-11b).
-      expect(svg?.y ?? 0).toBeLessThan((await page.locator(width >= 768 ? "tbody" : "[data-slot=ranked-list] ol").boundingBox())?.y ?? 0);
+      expect(svg?.y ?? 0).toBeLessThan((await page.locator(width >= 768 ? "[data-slot=need-table] tbody" : "[data-slot=ranked-list] ol").boundingBox())?.y ?? 0);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
       const violations = (await new AxeBuilder({ page }).analyze()).violations.filter((v) => v.impact === "serious" || v.impact === "critical");
       expect(violations).toEqual([]);

@@ -1052,6 +1052,10 @@ Decisions: none new (designer defaults listed in the spec: chip word stays `Curr
 Did: captured from the merged previews `docs/design/reviews/DS-12b/after/staff-grants-matches-{375,1024,1440}[-hover].png` plus a 1440 `-panel` shot with the "How we matched" aside open, and `docs/design/reviews/DS-15a/after/dashboard-{375,1024,1440}[-hover].png` (hover on an M4 completed cell). Before shots from production main for the next packets: `DS-15a/before/dashboard-*`, `DS-16a/before/data-freshness-*` and `DS-14/before/403-from-%2Fstaff-*` (as board). Manifest rows for each.
 State: binary and manifest only. Branch `design/after-shots-day5`. The 1440 panel shot shows four of the six parts (viewport capture); the 375 full-page shot has the whole panel. 375 shots stay under 10 000 px.
 Left: DS-14 after shots (`/login` signed out, `/403` as board) and DS-16a after shots once #262 and #266 merge; DS-16b before/after once #271 merges.
+## 2026-10-16 02:25 (UTC) — Cloud Agent (Engineer Supervisor) — DS-13b after shots and DS-14 login before shots (design)
+Did: captured the DS-13b "after" evidence from the `ds-13b-board-sections` preview: `docs/design/reviews/DS-13b/after/board-{375,1024,1440}[-hover].png` (hover on a county rank cell in section 4), the Letter print sheet `board-816-print.png` and the four-page `board-816-print.pdf`, with manifest rows. Retook the DS-14 "before" shots of `/login` signed out (`docs/design/reviews/DS-14/before/login-{375,1024,1440}.png`): the first set had followed the sign-in redirect and showed `/board`; manifest rows updated.
+State: binary and manifest only. Branch `design/after-shots-day4`. The 375 board shot is about 4 900 px (kept). Seen on the print PDF: the fixed footer repeats "Page N of 4" at the bottom of each page as intended; in the full-page PNG the fixed footer renders mid-page, which is a screenshot artefact, not a layout fault.
+Left: DS-12b, DS-14 and DS-15a/16a after shots once those packets merge.
 Decisions: none new.
 
 ---
