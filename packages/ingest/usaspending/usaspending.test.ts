@@ -44,4 +44,12 @@ describe('unit: USAspending parser with hand-written (UNVERIFIED) v2 fixture', (
     await expect(UsaSpending.search(cfg, async () => {}, async () => new Response('x', { status: 429 }))).rejects.toThrow('USAspending search failed: 429');
     await expect(UsaSpending.search(cfg, async () => {}, async () => new Response('{"detail":"nope"}'))).rejects.toThrow(/results array/);
   });
+  it('F-506c award detail (VERIFIED live fixtures): full description, period of performance, agency codes, FAIN; fails closed without an id', () => {
+    const [doj, hhs] = ['doj', 'hhs'].map((f) => UsaSpending.parseDetail(JSON.parse(readFileSync(`tests/fixtures/usaspending/award-detail-${f}.json`, 'utf8'))));
+    expect(doj).toEqual({ external_id: 'ASST_NON_15POVC22GG00810ASSI_015', fain: '15POVC22GG00810ASSI', period_start: '2021-10-01', period_end: '2025-09-30', agency: 'DOJ', sub_agency: 'OJP',
+      description: expect.stringMatching(/^THIS APPLICANT WILL PROVIDE FUNDS FROM THE CRIME VICTIMS FUND/), source_url: 'https://api.usaspending.gov/api/v2/awards/ASST_NON_15POVC22GG00810ASSI_015/' });
+    expect([hhs.agency, hhs.sub_agency, hhs.period_start, hhs.period_end, hhs.description!.length > 500]).toEqual(['HHS', 'SAMHSA', '2024-09-30', '2027-09-29', true]);
+    expect(() => UsaSpending.parseDetail({ detail: 'Not found' })).toThrow('USAspending detail: unknown shape keys detail');
+    expect(UsaSpending.parseDetail({ generated_unique_award_id: 'A B' })).toEqual(expect.objectContaining({ description: null, period_start: null, agency: null, source_url: `${UsaSpending.DETAIL_API}A%20B/` }));
+  });
 });
