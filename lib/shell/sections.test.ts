@@ -4,7 +4,7 @@ import { SECTIONS, sectionFor, sectionsForRole } from "./sections";
 describe("DS-21 sections", () => {
   it("groups the ten workspace pages into three sections in George's order, keeping every existing URL", () => {
     expect(SECTIONS.map((s) => [s.label, s.tabs.map((t) => `${t.label} ${t.href}`)])).toEqual([
-      ["Insights", ["Team dashboard /dashboard", "County need map /need-map"]],
+      ["Insights", ["County need map /need-map", "Team dashboard /dashboard"]],
       ["Data", ["Upload /staff/intake", "Enter by hand /staff/entry", "Freshness /data-freshness", "Methodology /methodology"]],
       ["Grants", ["Foundation grants /staff/grants", "Matches /staff/grants/matches"]],
     ]);
