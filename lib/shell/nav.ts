@@ -18,6 +18,7 @@ const DASH: NavItem = { label: "Team dashboard", href: "/dashboard" };
 const PACKETS: NavItem = { label: "Evidence packets", href: "/staff/packets" };
 const FRESH: NavItem = { label: "Data freshness", href: "/data-freshness" };
 const MAP: NavItem = { label: "County need map", href: "/need-map" };
+const KNOW: NavItem = { label: "FAS knowledge", href: "/admin/knowledge" };
 
 // Screen-plan §1.2 items whose routes do not exist yet; they stay hidden, not dead links.
 export const HIDDEN_LABELS = [
@@ -41,6 +42,7 @@ export const CRUMB: Record<string, string> = {
   "/staff": "Home", "/admin": "Admin · Overview", "/board": "Board dashboard", "/methodology": "Methodology", "/dashboard": "Team dashboard",
   "/data-freshness": "Data freshness", "/staff/packets": "Evidence packets", "/staff/intake": "Upload data", "/staff/entry": "Enter data",
   "/staff/grants": "Foundation grants", "/staff/grants/matches": "Grant matches", "/need-map": "County need map",
+  "/admin/knowledge": "Admin · FAS knowledge",
 };
 
 export const NO_ROLE_CRUMB = "Account not set up";
@@ -55,7 +57,7 @@ export function navForRole(role: string): { groups: NavGroup[]; footer: string |
   // George (2026-10-15): staff and admin reach the board dashboard from the nav, in its own group so Workspace keeps its cap.
   const WORKSPACE: NavGroup = { label: "Workspace", items: [STAFF, DASH, MAP, FRESH, PACKETS, UPLOAD, ENTRY, GRANTS, MATCHES, METHOD] };
   if (role === "staff") return { groups: [WORKSPACE, { label: "Board", items: [BOARD] }], footer: null };
-  if (role === "admin") return { groups: [WORKSPACE, { label: "Board", items: [BOARD] }, { label: "Admin", items: [ADMIN] }], footer: null };
+  if (role === "admin") return { groups: [WORKSPACE, { label: "Board", items: [BOARD] }, { label: "Admin", items: [ADMIN, KNOW] }], footer: null };
   return { groups: [], footer: null };
 }
 
