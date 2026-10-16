@@ -356,10 +356,11 @@ for (const [width, height] of [[1440, 900], [1024, 768]]) {
     const legend = page.locator("[data-slot=map-legend]");
     const max = await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight);
     expect(max).toBeGreaterThan(400);
-    await scrollTo(page, 300);
+    // Start far enough down that the map has reached its pinned spot (the heading above it wraps to more lines at 1024), then it must not move; the spot is the 4.5rem offset.
+    await scrollTo(page, 800);
     const stuck = (await MAP(page).boundingBox())?.y ?? -1;
-    expect(stuck).toBeGreaterThan(0);
-    for (let y = 300; y <= max + 300; y += 300) {
+    expect(Math.abs(stuck - 72)).toBeLessThanOrEqual(2);
+    for (let y = 800; y <= max + 300; y += 300) {
       await scrollTo(page, Math.min(y, max));
       const box = await MAP(page).boundingBox(), caption = await legend.boundingBox();
       expect(Math.abs((box?.y ?? -99) - stuck)).toBeLessThanOrEqual(2);
