@@ -31,16 +31,17 @@ for (const [email, eyebrow] of [["staff@example.test", "WORKSPACE"], ["admin@exa
       await expect(page.getByRole("region", { name: "County need table" })).toBeVisible({ visible: width >= 768 });
       await expect(page.locator("[data-slot=ranked-list]")).toBeVisible({ visible: width < 768 });
       const rows = page.locator("tbody tr");
-      await expect(rows.nth(0)).toContainText(/Rich County.*1 of 26.*\+1\.40.*5 of 5.*Ranked/);
-      await expect(rows.nth(1)).toContainText(/San Juan County.*2 of 26/);
-      await expect(page.locator("tr[data-fips='49005']")).toContainText(/20 of 26.*−0\.80.*1 of 5/);
-      await expect(page.locator("tr[data-fips='49011']")).toContainText(/20 of 26.*−0\.80.*1 of 5/);
+      // DS-20c: Key measures by default (the seed loads no scored rate, so County, Rank of N and Need score); the rank cell is the number alone.
+      await expect(page.locator("[data-slot=need-table] thead th")).toHaveText(["County", /^Rank of\s26$/, "Need score"]);
+      for (const [i, rank, score] of [[0, "1", "+1.40"], [1, "2", "+1.30"]] as const) await expect(rows.nth(i).locator("td")).toHaveText([rank, score]);
+      await expect(page.locator("tr[data-fips='49005'] td")).toHaveText(["20", "−0.80"]);
+      await expect(page.locator("tr[data-fips='49011'] td")).toHaveText(["20", "−0.80"]);
       await expect(page.getByRole("switch", { name: "Show FAS counties only" })).toHaveAttribute("aria-checked", "false");
       await expect(page.locator("tbody tr [data-slot=badge]")).toHaveCount(5);
       await expect(page.locator("tr[data-fips='49005'] [data-slot=badge]")).toHaveCount(0);
       await expect(page.locator("tr[data-fips='49005']")).toHaveAttribute("aria-label", "Cache County, rank 20 of 26, need score −0.80");
       await expect(page.locator("tr[data-fips='49009']")).toHaveAttribute("aria-label", "Daggett County, not published");
-      await expect(rows.nth(25)).toContainText(/Morgan County.*26 of 26/);
+      await expect(rows.nth(25).locator("td").first()).toHaveText("26");
       for (const [i, name] of ["Daggett", "Piute", "Wayne"].entries()) {
         await expect(rows.nth(26 + i)).toContainText(new RegExp(`${name} County.*Not published.*Not published`));
       }
@@ -70,8 +71,8 @@ test("board: FAS county badges, and the switch filters to seeded FAS counties vi
     await expect(toggle).toHaveAttribute("aria-checked", "true");
     await expect(page.locator("tbody tr")).toHaveCount(5);
     await expect(page.locator("tbody tr [data-slot=badge]")).toHaveCount(5);
-    await expect(page.locator("tbody tr").nth(0)).toContainText(/Tooele County.*FAS county.*4 of 26.*\+1\.10/);
-    await expect(page.locator("tr[data-fips='49011']")).toContainText(/Davis County.*FAS county.*20 of 26.*−0\.80/);
+    await expect(page.locator("tbody tr").nth(0)).toContainText(/Tooele County.*FAS county.*4\s*\+1\.10/);
+    await expect(page.locator("tr[data-fips='49011']")).toContainText(/Davis County.*FAS county.*20\s*−0\.80/);
     await expect(page.getByText("No FAS counties set")).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
     const violations = (await new AxeBuilder({ page }).analyze()).violations.filter((v) => v.impact === "serious" || v.impact === "critical");
@@ -306,13 +307,42 @@ test.describe("touch", () => {
   });
 });
 
-test("1024: the table sits in a bordered box that scrolls sideways; the ranked list is hidden", async ({ page }) => {
-  await signIn(page, "board@example.test");
-  await page.setViewportSize({ width: 1024, height: 900 });
-  await page.goto("/need-map");
-  await expect(page.locator("[data-slot=ranked-list]")).toBeHidden();
-  const box = page.locator("[data-slot=need-table]");
-  // Whether it actually overflows depends on how many indicator columns are loaded; the box is what the fix guarantees.
-  expect(await box.evaluate((el) => [getComputedStyle(el).overflowX, getComputedStyle(el).borderTopWidth])).toEqual(["auto", "1px"]);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(1024);
+// DS-20c: Key measures by default fit the content column; All measures scroll sideways in a fixed order; the switch keeps the filter and the pick; the selected row is marked.
+test("county table: Key | All switch, no sideways scroll in Key at 1024 and 1440, selected row marked, sticky header", async ({ page }) => {
+  await signIn(page, "staff@example.test");
+  const box = page.getByRole("region", { name: "County need table" }), view = page.getByRole("navigation", { name: "Columns to show" });
+  const [key, all] = [view.getByRole("link", { name: "Key measures" }), view.getByRole("link", { name: "All measures" })];
+  for (const width of [1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/need-map?county=49011");
+    await expect(page.getByRole("heading", { level: 2, name: "All 29 counties" })).toBeVisible();
+    await expect(key).toHaveAttribute("aria-current", "true");
+    await expect(box.locator("thead th")).toHaveCount(3);
+    await expect(box.locator("thead")).not.toContainText(/Status|placeholder/);
+    expect(await box.evaluate((el) => [el.scrollWidth <= el.clientWidth, getComputedStyle(el).overflowX, getComputedStyle(el).borderTopWidth])).toEqual([true, "visible", "1px"]);
+    await expect(page.locator("tbody tr[aria-current='true']")).toHaveCount(1);
+    await expect(page.locator("tr[data-fips='49011']")).toHaveAttribute("data-selected", "true");
+    // The header row sticks under the 56 px top bar once the page scrolls into the table.
+    await page.evaluate(() => window.scrollBy(0, 1600));
+    await expect.poll(async () => Math.abs(((await box.locator("thead th").first().boundingBox())?.y ?? 0) - 56)).toBeLessThanOrEqual(2);
+    await all.click();
+    await expect(page).toHaveURL(/\/need-map\?county=49011&cols=all$/);
+    await expect(all).toHaveAttribute("aria-current", "true");
+    await expect(box.locator("thead th")).toHaveText(["County", /^Rank of\s26$/, "Need score", "Uninsured"]);
+    expect(await box.evaluate((el) => getComputedStyle(el).overflowX)).toBe("auto");
+    await expect(page.locator("[data-slot=need-table-sources]")).toHaveText(/^Sources: Census SAHIE \d{4}\./);
+    await expect(page.locator("tr[data-fips='49011']")).toHaveAttribute("aria-current", "true");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+    const violations = (await new AxeBuilder({ page }).analyze()).violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+    expect(violations).toEqual([]);
+  }
+  await page.goto("/need-map?fas=1&county=49035&cols=all");
+  await expect(page.getByRole("heading", { level: 2, name: "All 5 FAS counties" })).toBeVisible();
+  await expect(key).toHaveAttribute("href", "/need-map?county=49035&fas=1");
+  await page.locator("tr[data-fips='49049'] a").click();
+  await expect(page).toHaveURL(/\?county=49049&fas=1&cols=all$/);
+  await key.click();
+  await expect(page).toHaveURL(/\/need-map\?county=49049&fas=1$/);
+  await page.setViewportSize({ width: 800, height: 900 });
+  for (const link of [key, all]) expect((await link.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
 });
