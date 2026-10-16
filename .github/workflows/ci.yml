@@ -127,3 +127,14 @@ jobs:
       - name: E2E smoke
         if: steps.scope.outputs.docs_only != 'true'
         run: pnpm test:e2e
+
+      - name: Upload e2e screenshots
+        if: always() && steps.scope.outputs.docs_only != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots
+          path: |
+            test-results/**/*.png
+            /opt/cursor/artifacts/**/*.png
+          if-no-files-found: ignore
+          retention-days: 14
