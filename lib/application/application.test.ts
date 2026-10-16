@@ -79,8 +79,7 @@ describe('application writer (F-508g)', () => {
     expect((gen.mock.calls[1] as unknown as [{ prompt: string }])[0].prompt).toContain('s1 (Need for the project): 60 words is over the 50-word limit');
     if (r.status !== 'DRAFT') throw new Error('expected DRAFT');
     expect(r.sections.map((s) => s.status)).toEqual(['needs_edit', 'ok', 'ok']);
-    expect(r.validation_report).toMatchObject({ ok: false, needs_edit: ['s1'], rounds: { s1: 2, s2: 1 } });
-    expect(r.model_meta).toMatchObject({ calls: 2, retried: true });
+    expect(r).toMatchObject({ validation_report: { ok: false, needs_edit: ['s1'], rounds: { s1: 2, s2: 1 } }, model_meta: { calls: 2, retried: true } });
   });
 
   it('a fixed retry clears the section; an uncited number and copied abstract text are caught', async () => {
@@ -89,8 +88,7 @@ describe('application writer (F-508g)', () => {
     const r = await writeSections(strategy, snapshot, mockGen(all({ s2: 'We served 900 families.', s3: ABSTRACT }), all({ s2: 'We served 900 families.', s3: ABSTRACT })));
     if (r.status !== 'DRAFT') throw new Error('expected DRAFT');
     expect(r.sections[1]!.reasons).toEqual(['900 has no matching cited value']);
-    expect(r.sections[2]!.reasons[0]).toMatch(/copies 12\+ words from award_history:/);
-    expect(r.model_meta.calls).toBeLessThanOrEqual(4);
+    expect([r.sections[2]!.reasons[0], r.model_meta.calls]).toEqual([expect.stringMatching(/copies 12\+ words from award_history:/), 2]);
   });
 
   it('refuses a strategy that is not approved and reuses the stored snapshot as is', () => {
