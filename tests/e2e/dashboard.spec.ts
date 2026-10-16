@@ -12,6 +12,9 @@ async function signIn(page: Page) {
 const axe = (page: Page) => new AxeBuilder({ page }).analyze().then((r) => r.violations.filter((v) => v.impact === "serious" || v.impact === "critical"));
 const PRIVACY = "Fewer than 11 families, so the number is hidden to protect privacy.";
 const COMPLEMENTARY = "Hidden so the smaller group next to it cannot be worked out from the total.";
+// The first pointer action on a page can land before the client components hydrate (dev server on CI), so the first hover re-tries until its face appears.
+const hoverUntil = (target: ReturnType<Page["locator"]>, face: ReturnType<Page["locator"]>) =>
+  expect(async () => { await target.hover(); await expect(face).toBeVisible({ timeout: 1500 }); }).toPass({ timeout: 30_000 });
 
 test("AC2: M4 cells share one explain layer; hover, focus and Enter show the same words; hidden cells say why; Escape returns focus; arrows walk cells", async ({ page }) => {
   await signIn(page);
@@ -21,7 +24,7 @@ test("AC2: M4 cells share one explain layer; hover, focus and Enter show the sam
   const card = m4.locator("[data-slot=explain-layer-card]"), cell = m4.locator("tbody tr").first().locator("td[data-term=m4_completed]");
   await expect(m4.locator("[data-slot=explain-layer]")).toHaveCount(1);
   await expect(card).toHaveCount(0);
-  await cell.hover();
+  await hoverUntil(cell, card);
   // The card's rows read `Value · Source · As of` with the date alone (`Sep 2026`), so no "as of" words are expected here.
   await expect(card).toContainText(/^Completed.*12 in the a band.*FAS records.*\w{3} \d{4}/s);
   const words = await card.innerText();
@@ -57,7 +60,7 @@ test("AC3: filter labels, pipeline stages and the manual badge carry hints that 
   const tip = page.locator("[data-slot=tooltip-content]").first();
   // Same pattern as home.spec: hover, read, then focus the same trigger and expect the same string; the pointer leaves afterwards.
   const same = async (trigger: ReturnType<Page["locator"]>, pattern: RegExp) => {
-    await trigger.hover();
+    await hoverUntil(trigger, tip);
     await expect(tip).toHaveText(pattern);
     const hovered = await tip.textContent();
     await trigger.focus();
@@ -88,7 +91,10 @@ test("AC4: the M1 trend has a hover layer: pointer and arrow keys read the quart
   const layer = m1.locator("[data-slot=line-hover]"), tooltip = layer.locator("[data-slot=tooltip]"), live = layer.locator("[aria-live=polite]");
   await expect(layer).toHaveAttribute("aria-label", /^Days from court order to first session: use arrow keys/);
   const box = (await layer.boundingBox())!;
-  await page.mouse.move(box.x + box.width - 2, box.y + box.height / 2);
+  await expect(async () => {
+    await page.mouse.move(box.x + box.width - 2, box.y + box.height / 2);
+    await expect(tooltip).toBeVisible({ timeout: 1500 });
+  }).toPass({ timeout: 30_000 });
   await expect(tooltip).toHaveText(/^Q[1-4] ’\d{2} · (\d+ days|Hidden \(n < 11\))$/);
   await expect(live).toHaveText(await tooltip.innerText());
   await page.mouse.move(0, 0);
@@ -110,7 +116,7 @@ test("AC5 + AC6: deltas are an arrow plus words with a hint naming the prior qua
   const deltas = page.locator("[data-slot=delta]");
   for (const d of await deltas.all()) {
     await expect(d).toHaveText(/^(↑|↓) .+ (faster|slower|higher|lower) than Q[1-4]$|^No change from Q[1-4]$/);
-    await d.locator("[data-slot=hint-trigger]").hover();
+    await hoverUntil(d.locator("[data-slot=hint-trigger]"), page.locator("[data-slot=tooltip-content]").first());
     await expect(page.locator("[data-slot=tooltip-content]").first()).toHaveText(/than \w{3}–\w{3} \d{4} \(Q[1-4]\)\. Lower is better for this number\.$|^No change from .*Lower is better for this number\.$/);
     await page.mouse.move(0, 0);
   }
