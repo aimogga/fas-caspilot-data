@@ -983,3 +983,10 @@ Did: `components/grants/MatchPanel.tsx` rewritten: eyebrow, serif opportunity ti
 State: lint, typecheck, 794 unit tests green. No Docker or preview in this shell: `tests/e2e/match-explanation.spec.ts` (badges in words, flag card rows, focus on the panel heading, panel placement at 375 vs 1024, six parts with source chips, ten checks, cap note, Close returns focus, no column paths, axe, scrollWidth) runs in CI. Before shots: `docs/design/reviews/DS-12a/after/`; after shots: the supervisor from the preview. Branch `ds-12b-match-panel` off main.
 Left: nothing in DS-12. Open: the seed's F-504 opportunities carry no `assistance_listing`, so the award line never shows on previews; pipeline actions wait for a pipeline route; filters and the digest-threshold header line are a later packet.
 Decisions: none new (designer wording defaults in the spec).
+## 2026-10-16 00:55 (UTC) — Cloud Agent (Engineer Supervisor) — DS-10b, DS-11b and DS-13a after shots from the PR previews (design)
+Did: captured the "after" evidence for three Day-3 packets from their Vercel previews: `docs/design/reviews/DS-10b/after/staff-{375,1024,1440}[-hover].png` (hover on a "Needs you" badge and a KPI sparkline), `docs/design/reviews/DS-11b/after/need-map-{375,1024,1440}[-hover|-focus].png` (the county card on pointer over and on arrow-key focus, Davis County), and `docs/design/reviews/DS-13a/after/board-{375,1024,1440}[-hover].png` plus the Letter print sheet `board-816-print.png` and `board-816-print.pdf`; manifest rows for each.
+State: binary and manifest only. Branch `design/after-shots-day3` (merges `design/after-shots-ds-10b`, `-ds-13a`, `-ds-11b`). The DS-10b 375 hover shot was dropped because it was identical to the base shot (no pointer at phone width). DS-11b 375 shots are kept: the ranked list brings the page down to about 3 500 px.
+Left: DS-12b and DS-13b after shots once those packets merge. Seen on the previews, to carry into packets: the DS-11b hover card overlaps the legend at 1440; the synthetic seed leaves "Needs you" empty and the board M1 KPI at n = 0.
+Decisions: none new.
+
+---
