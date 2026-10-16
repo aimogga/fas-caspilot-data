@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
-/** DS-10a staff and admin home: dated greeting, one sentence, three explained KPI cards, public sources beside the quick links. */
+/** DS-10a/b staff and admin home: dated greeting, one sentence, three explained KPI cards, the "Needs you" list, public sources in words beside the quick links. */
 test.setTimeout(120_000);
 async function signIn(page: Page, email: string) {
   await page.goto("/login");
@@ -49,10 +49,32 @@ for (const [email, path, primary, heading] of [["staff@example.test", "/staff", 
         expect(hovered).toMatch(/\(Q[1-4]\)\. (Lower|Higher) is better for this number\.$/);
         await page.keyboard.press("Escape");
       }
-      // AC5: public sources with a status word per row, then the freshness link; quick links beside it.
+      // DS-10b AC1: "Needs you" lists only stored items (badge with a hint, title, sub-line, one link) or says nothing needs you; never a bare count or a 0.
+      const todo = page.locator("[data-slot=needs-you]");
+      await expect(todo.getByRole("heading", { level: 2 })).toHaveText(/^Needs you( · \d+ items?)?$/);
+      await expect(todo).toHaveAttribute("data-state", /^(items|empty)$/);
+      const rows = todo.locator("[data-slot=todo-row]");
+      if ((await todo.getAttribute("data-state")) === "empty") await expect(todo).toContainText("Nothing needs you this week");
+      else expect(await rows.count()).toBeGreaterThan(0);
+      for (const row of await rows.all()) {
+        await expect(row).toHaveAttribute("data-kind", /^(upload|deadline|reason)$/);
+        await expect(row.locator("[data-slot=hint-trigger] [data-slot=badge]")).toHaveText(/^(Fix rows|Unfinished|Due (today|tomorrow|in \d+ days)|Missing)$/);
+        await expect(row.locator("p").first()).not.toHaveText(/\b0 (rows|families)\b/);
+        await expect(row.getByRole("link")).toHaveCount(1);
+      }
+      // DS-10b AC3: at 375 the summary sentence comes before the two action buttons, as on the artboard.
+      expect(await page.locator("[data-slot=page-header]").evaluate((h) => {
+        const summary = h.querySelector("[data-slot=home-summary]"), actions = h.querySelector("[data-slot=actions]");
+        return summary && actions ? Boolean(summary.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING) : false;
+      }), `summary before actions @ ${width}`).toBe(true);
+      // AC5 + DS-10b AC2: public sources in words (never a registry code), the vintage column in words with a hint, a status word per row, then the freshness link.
       const sources = page.locator("[data-slot=public-sources]");
       await expect(sources.getByRole("heading", { level: 2 })).toHaveText("Public sources");
-      for (const row of await sources.locator("li").all()) await expect(row.locator("[data-slot=badge]")).toHaveText(/Current|Stale|Failed|Not published/);
+      for (const row of await sources.locator("li").all()) {
+        await expect(row.locator("span").first()).not.toHaveText(/^[a-z0-9]+[-_][a-z0-9_-]+$/);
+        await expect(row.locator("[data-slot=vintage] [data-slot=hint-trigger]")).toHaveText(/^(Latest .+|No load yet)$/);
+        await expect(row.locator("[data-slot=badge]")).toHaveText(/Current|Stale|Failed|Not published/);
+      }
       await expect(sources.getByRole("link", { name: "Open data freshness" })).toBeVisible();
       await expect(page.getByRole("heading", { level: 2, name: heading })).toBeVisible();
       // AC6: no overflow, 44 px controls below 1024, axe clean.
