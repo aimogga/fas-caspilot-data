@@ -93,8 +93,8 @@ test("DS-23: the Σ badge says what an aggregate is on hover, on focus and on ta
   const trigger = page.locator("[data-slot=aggregate-notice] [data-slot=hint-trigger]"), tip = page.locator("[data-slot=tooltip-content]", { hasText: BADGE }).first();
   await expect(trigger).toHaveAccessibleName("Aggregate submission");
   await hoverUntil(trigger, tip);
-  await page.mouse.move(0, 0);
-  await expect(tip).toHaveCount(0);
+  // The tooltip closes once the pointer settles outside its grace area (same as gallery.spec DS-09).
+  await expect(async () => { await page.mouse.move(4, 4); await expect(tip).toHaveCount(0, { timeout: 1000 }); }).toPass();
   await trigger.focus();
   await expect(tip).toBeVisible();
   await trigger.blur();
