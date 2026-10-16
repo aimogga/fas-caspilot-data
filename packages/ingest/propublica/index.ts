@@ -6,11 +6,12 @@ import { createHash } from 'node:crypto';
 export const FIELDS = {
   ein: ['ein', 'strein'], name: ['name', 'sort_name'], city: ['city'], state: ['state'], ntee: ['ntee_code', 'raw_ntee_code'], subsection: ['subseccd', 'subsection_code'],
   score: ['score'], taxPrd: ['tax_prd'], taxYear: ['tax_prd_yr'], formType: ['formtype'], revenue: ['totrevenue'], expenses: ['totfuncexpns'], assets: ['totassetsend'], pdf: ['pdf_url'],
+  ruling: ['ruling_date', 'ruling'], contributions: ['totcntrbgfts'], programExpenses: ['totprgmsrvcexpns', 'progsrvcexpns'], // F-506b; UNVERIFIED like the rest; null when absent
 } as const;
 type Raw = Record<string, unknown>; export type CapacityBand = 'small' | 'medium' | 'large' | 'unknown';
 export type FunderCandidate = { ein: string; name: string; city: string | null; state: string | null; ntee_code: string | null; subsection: number | null; score: number | null };
-export type Filing = { tax_year: number; tax_prd: string; form_type: '990' | '990EZ' | '990PF'; total_revenue: number | null; total_expenses: number | null; total_assets: number | null; pdf_url: string | null; raw: Raw };
-export type FunderProfile = Omit<FunderCandidate, 'score'> & { filings: Filing[]; data_years: number[]; grantmaking_capacity_band: CapacityBand; gaps: string[] };
+export type Filing = { tax_year: number; tax_prd: string; form_type: '990' | '990EZ' | '990PF'; total_revenue: number | null; total_expenses: number | null; total_assets: number | null; contributions: number | null; program_expenses: number | null; pdf_url: string | null; raw: Raw };
+export type FunderProfile = Omit<FunderCandidate, 'score'> & { ruling_year: number | null; filings: Filing[]; data_years: number[]; grantmaking_capacity_band: CapacityBand; gaps: string[] };
 export type FoundationRow = { source: 'irs_990pf'; external_id: string; funder: string; recipient: null; recipient_state: string | null; amount: null; fiscal_year: number; assistance_listing: null; description: string; raw: Raw };
 /** By latest total expenses: small < $1M, medium $1M–$10M, large >= $10M. Thresholds are a first guess for George. */
 export const BANDS: [number, CapacityBand][] = [[10_000_000, 'large'], [1_000_000, 'medium'], [0, 'small']];
@@ -56,12 +57,13 @@ export class ProPublica {
     const filings = (Array.isArray(root.filings_with_data) ? root.filings_with_data : []).map((f): Filing | null => {
       const r = obj(f), tax_year = num(pick(r, FIELDS.taxYear)), form_type = FORM[num(pick(r, FIELDS.formType)) ?? -1];
       return tax_year && form_type ? { tax_year, tax_prd: str(pick(r, FIELDS.taxPrd)) ?? String(tax_year), form_type, total_revenue: num(pick(r, FIELDS.revenue)), total_expenses: num(pick(r, FIELDS.expenses)),
-        total_assets: num(pick(r, FIELDS.assets)), pdf_url: str(pick(r, FIELDS.pdf)), raw: r } : null;
+        total_assets: num(pick(r, FIELDS.assets)), contributions: num(pick(r, FIELDS.contributions)), program_expenses: num(pick(r, FIELDS.programExpenses)), pdf_url: str(pick(r, FIELDS.pdf)), raw: r } : null;
     }).filter((f): f is Filing => f !== null).sort((a, b) => b.tax_year - a.tax_year).slice(0, ProPublica.KEEP_FILINGS);
     const pf = filings.filter((f) => f.form_type === '990PF'), data_years = pf.map((f) => f.tax_year), latest = filings[0];
     const gaps = [GAP_NO_GRANTEES, pf.length ? `Latest 990-PF data year on ProPublica is ${data_years[0]}; later years are not yet extracted.` : 'No 990-PF filings with extracted data: not a private foundation, or ProPublica has PDFs only.'];
+    const ruling = str(pick(o, FIELDS.ruling))?.match(/^\d{4}/)?.[0];
     return { ein, name, city: str(pick(o, FIELDS.city)), state: str(pick(o, FIELDS.state))?.toUpperCase() ?? null, ntee_code: str(pick(o, FIELDS.ntee)), subsection: num(pick(o, FIELDS.subsection)),
-      filings, data_years, grantmaking_capacity_band: capacityBand(latest?.total_expenses ?? null), gaps };
+      ruling_year: ruling ? Number(ruling) : null, filings, data_years, grantmaking_capacity_band: capacityBand(latest?.total_expenses ?? null), gaps };
   }
   /** One award_history row per 990-PF filing year; `recipient`/`amount` are null: the API gives no grant-level detail (GAP_NO_GRANTEES). */ static toAwardHistoryRows(p: FunderProfile): FoundationRow[] {
     return p.filings.filter((f) => f.form_type === '990PF').map((f) => ({ source: 'irs_990pf', external_id: `propublica:${p.ein}:${f.tax_prd}`, funder: p.name, recipient: null, recipient_state: p.state,
