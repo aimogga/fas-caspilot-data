@@ -25,7 +25,8 @@ const SOURCE_NAMES: Record<string, string> = {
   'hrsa-hpsa-mh': 'HRSA mental-health shortage areas', 'va-vetpop': 'VA veteran population', 'propublica_990': 'ProPublica nonprofit filings',
   grants_gov: 'Grants.gov', usaspending: 'USAspending federal awards', ut_courts: 'Utah State Courts',
 };
-export const sourceName = (code: string): string => SOURCE_NAMES[code] ?? code;
+/** Plain words for a source code; an unmapped code is still shown as words (`example-failed-source` → `Example failed source`). */
+export const sourceName = (code: string): string => SOURCE_NAMES[code] ?? code.replace(/[-_]+/g, ' ').replace(/^./, (c) => c.toUpperCase());
 /** The vintage column in words: `Latest 2024` with what a vintage is, or `No load yet` when nothing from the source has been stored. */
 export const vintageWords = (vintage: string): { text: string; hint: string } =>
   vintage && vintage !== '—'

@@ -44,7 +44,7 @@ describe('StaffHome (DS-10a)', () => {
   });
   it('names public sources in words, never a registry code, and explains the vintage column or its absence (DS-10b)', () => {
     expect(['cdc-places', 'propublica_990', 'hrsa-hpsa-mh', 'va-vetpop', 'census-acs', 'example-monthly-source'].map(sourceName))
-      .toEqual(['CDC PLACES', 'ProPublica nonprofit filings', 'HRSA mental-health shortage areas', 'VA veteran population', 'Census American Community Survey', 'example-monthly-source']);
+      .toEqual(['CDC PLACES', 'ProPublica nonprofit filings', 'HRSA mental-health shortage areas', 'VA veteran population', 'Census American Community Survey', 'Example monthly source']);
     expect(vintageWords('2024')).toMatchObject({ text: 'Latest 2024' });
     expect([vintageWords('—').text, vintageWords('').text, vintageWords('—').hint]).toEqual(['No load yet', 'No load yet', expect.stringContaining('first successful run')]);
   });
