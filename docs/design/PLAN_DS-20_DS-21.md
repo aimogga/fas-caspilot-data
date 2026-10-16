@@ -2,7 +2,7 @@
 
 Asked by George, 2026-10-16: "polish the county map page, fix the cluttered, hard-to-read data at the bottom of the map; make it easy to see, read and understand." Follow-up: "organize the pages better; the many data pages in the sidebar could be one page with tabs."
 
-Status: **plan only, no code yet.** Open questions at the end need George's answer before DS-20c and DS-21a start.
+Status: **plan decided, no code yet.** George asked the designer to make the four open calls using standard UI/UX practice (2026-10-16); they are recorded under "Design decisions" at the end. All four packets are unblocked.
 
 ---
 
@@ -44,7 +44,7 @@ None of this is a data problem: every number is right and traceable. It is a **h
 ### DS-20b — County panel
 - Header: county name, FAS badge, then one big line: **"3rd highest need of 29 · Highest need band"**, then the existing plain-English sentence.
 - **Key measures:** the 5 scored rates as the existing bars against the state median (`CompareBars`), one line each: label · value · "higher than 22 of 28".
-- **All measures (13)** in a closed `<details>` disclosure, **grouped by source** (Health coverage — Census SAHIE 2023 · as of Oct 2026; Poverty — Census SAIPE 2023; Households and population — Census ACS 5-year 2023). Value only; `±` margin stays as a hover `Hint`. One source line per group, not per row. This still meets DESIGN need-map rule 5 ("each with source and as-of") because every measure sits under its source heading (confirm, question 3).
+- **All measures (13)** in a closed `<details>` disclosure, **grouped by source** (Health coverage — Census SAHIE 2023 · as of Oct 2026; Poverty — Census SAIPE 2023; Households and population — Census ACS 5-year 2023). Value only; `±` margin stays as a hover `Hint`. One source line per group, not per row. This still meets DESIGN need-map rule 5 ("each with source and as-of") because every measure sits under its source heading (decision 3).
 - Expected panel height: ~450 px closed (from ~1,100).
 - Files: `CountyPanel.tsx`, `CompareBars.tsx`, `lib/need-map/compare.ts`, new pure `lib/need-map/groups.ts` (topic/source grouping + fixed measure order), `county-panel.test.ts`.
 
@@ -102,11 +102,20 @@ Moving routes to `/data/upload` etc. More churn (role-guard lists, redirects, ev
 ## Order
 1. DS-21a and DS-20a in parallel (disjoint files).
 2. DS-20b.
-3. DS-20c (after question 2 is answered).
+3. DS-20c.
 Each: spec in `docs/design/specs/`, branch off `main`, draft PR with shots, merge on green CI and QA PASS (D-013, D-037).
 
-## Questions for George
-1. **Section names:** "Insights", "Data", "Grants" OK? Should Methodology sit under Data (how numbers are made) or Insights?
-2. **Table default:** show the 5 key rates by default with an "All measures" switch (recommended), or keep all columns and only tighten formatting?
-3. **Panel sources:** OK to show the source and as-of once per group of measures instead of under every measure? (DESIGN need-map rule 5 says "each with source and as-of"; grouping keeps that true but changes how it reads.)
-4. **Table placement:** keep the table visible under the map (recommended), or collapse it behind "Show all 29 counties as a table"?
+## Design decisions (made 2026-10-16, at George's request)
+
+| # | Question | Decision | Why (the practice behind it) |
+|---|---|---|---|
+| 1 | Section names; where Methodology goes | **Home · Insights · Data · Grants · Evidence packets.** Methodology goes under **Data**, as the last tab: Upload · Enter by hand · Freshness · Methodology. | Name each section by what the user is there to do, in one plain word, and keep the sidebar to 5–7 items so people can take it in at a glance (Hick's law). "Data" holds everything about where the numbers come from: putting data in, how current it is, and how it is calculated. That makes "Insights" purely the place to read results. Board viewers keep their direct Methodology link. |
+| 2 | Table default | **Key measures by default** (the 5 rates that make up the need score), with a **Key measures \| All measures** switch that is kept in the URL (`?cols=all`). | Show the most important things first and let people open the rest when they need it (progressive disclosure). Default to what drives the decision. The 5 scored rates are what explain a county's rank. The counts are reference figures, and they stay one click away. Keeping the switch in the URL makes it survive a reload, a shared link and the back button. |
+| 3 | Panel sources | **Show the source and "as of" date once per group** (group heading), not under every measure. Each measure's hover card still shows its own source, year, as-of date and margin of error. | Say it once: when every row repeats the same text, the eye has to skip it 13 times. A group heading shows which measures share a source (proximity) and is honest because each group has exactly one source. The DESIGN need-map rule 5 still holds: each measure is shown with its source and as-of date, now at the group level. |
+| 4 | Table placement | **Keep the table visible under the map**, in the Key measures view, with the heading "All 29 counties". No collapse. | Do not hide the accessible alternative to a chart: the table is how keyboard and screen-reader users, and anyone comparing exact numbers, read the map. Once it is trimmed to 9 one-line columns it is no longer clutter, and hiding it would only cost a click. |
+
+### House rules these decisions add (apply to every later data page)
+1. **One line per cell.** Numbers do not wrap. Units go in the column header, not in each cell.
+2. **Say it once.** Sources, versions and "placeholder" notes appear once per section, never once per row.
+3. **Default to the score's inputs.** A ranked view opens on the measures that make up the rank. Everything else sits behind a switch kept in the URL.
+4. **A sidebar link names a task, not a page.** When pages serve one task, they become tabs on one section, and the URLs do not change.

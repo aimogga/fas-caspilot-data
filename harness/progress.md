@@ -1169,3 +1169,9 @@ Did: audited `/need-map` rendered locally from main with 13 synthetic indicators
 State: plan only, no code. Docs-only diff.
 Left: George's four answers at the end of the plan; then specs and PRs in the order listed there.
 Decisions: none new (proposed only).
+
+---
+## 2026-10-16 (UTC) — Claude Code (design planning) — DS-20/DS-21 open questions decided
+Did: at George's request, made the four open calls in `docs/design/PLAN_DS-20_DS-21.md` with the reason for each: sections Home · Insights · Data · Grants · Evidence packets (Methodology is the last Data tab); the need-map table opens on the 5 scored rates with a Key | All switch in `?cols=all`; the panel shows the source once per group; the table stays visible under the map. Added four house rules for later data pages.
+State: plan decided, no code. All four packets unblocked: DS-21a ∥ DS-20a, then DS-20b, then DS-20c.
+Decisions: the four above, recorded in the plan (designer defaults George delegated; no acceptance criterion changed).
