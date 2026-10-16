@@ -32,3 +32,9 @@ export function trendSummary(points: TrendPoint[]): string {
   const [a, b] = [num(known[0]), num(known[known.length - 1])], span = `over ${points.length} quarters`;
   return a === b ? `Median unchanged at ${a} days ${span}` : `Median ${Number(b) < Number(a) ? 'fell' : 'rose'} from ${a} to ${b} days ${span}`;
 }
+const MONTH_WORDS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+/** DS-13a: `2026-Q3` → `July–September 2026` (en dash), the quarter as a board member would say it. Invalid input is returned unchanged. */
+export function quarterWords(period: string): string {
+  const m = /^(\d{4})-Q([1-4])$/.exec(period);
+  return m ? `${MONTH_WORDS[(Number(m[2]) - 1) * 3]}–${MONTH_WORDS[Number(m[2]) * 3 - 1]} ${m[1]}` : period;
+}
