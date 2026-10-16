@@ -6,8 +6,8 @@
     "width": 375,
     "variant": "base",
     "host": "fas-caspilot-data.vercel.app",
-    "sha": "5de6954",
-    "at": "2026-10-15T22:15:12.640Z"
+    "sha": "7570021",
+    "at": "2026-10-16T01:32:58.639Z"
   },
   {
     "id": "DS-14",
@@ -16,8 +16,8 @@
     "width": 1024,
     "variant": "base",
     "host": "fas-caspilot-data.vercel.app",
-    "sha": "5de6954",
-    "at": "2026-10-15T22:15:14.352Z"
+    "sha": "7570021",
+    "at": "2026-10-16T01:32:58.639Z"
   },
   {
     "id": "DS-14",
@@ -26,7 +26,7 @@
     "width": 1440,
     "variant": "base",
     "host": "fas-caspilot-data.vercel.app",
-    "sha": "5de6954",
-    "at": "2026-10-15T22:15:16.140Z"
+    "sha": "7570021",
+    "at": "2026-10-16T01:32:58.639Z"
   }
 ]

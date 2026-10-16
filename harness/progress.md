@@ -1015,4 +1015,15 @@ State: lint, typecheck, unit tests (new: words 4; query updated) and `pnpm gate`
 Left: `app/(app)/data-freshness/loading.tsx` once `PageSkeleton` (#262) is on main; `weekly` has no D-021 day count (engineering); the admin run link waits for a run route. DS-16b (`/methodology`) runs separately.
 Decisions: none new (designer defaults listed in the spec: chip word stays `Current`; the run cell uses the `ExplainCard` face because `Provenance` has no started/finished rows and the kit is read-only).
 
+## 2026-10-15 23:55 (UTC) — Claude Code (cloud, Engineer) — F-508a1: OpenRouter free-tier guard (#227)
+Did: `lib/llm/guard.ts`: `isFreeModel` (`:free` suffix), `QuotaStore` (`reserve(provider, now)`), `MemoryQuotaStore` (fixed per-minute and per-UTC-day windows, limits from `OPENROUTER_RPM_LIMIT`/`OPENROUTER_DAILY_LIMIT`, defaults 18 and 45), `cooldownMs` (Retry-After seconds or HTTP date, then X-RateLimit-Reset epoch ms or s, else 60 s) and `OpenRouterGuard` (`admit(model)` → null or `paid_model_refused` / `openrouter_cooldown` / `openrouter_disabled_today` / `openrouter_quota_exhausted`; `recordFailure` sets the 429 cooldown and the 402 day-off). `generateJson(input, { guard? })` asks the guard before the one OpenRouter attempt and records its failure; skips land in `LlmError.attempts` as the status word. `callOpenRouter` also refuses a non-`:free` model before `fetch` (second lock) and passes the two rate-limit headers on `ProviderHttpError`. `.env.example` and the D-003 amendment updated.
+State: lint, typecheck, unit tests and `pnpm gate` green; 10 new guard tests with a mocked fetch and an injected clock. Branch `f508a1-openrouter-guard`, stacked on `f508a-llm-adapter` (PR #223).
+Left: the in-memory counters are per server instance, so on Vercel the real ceiling is caps × warm instances until the durable Postgres `QuotaStore` (#224) lands; the $0 key credit limit still blocks paid usage. Retarget this PR to main when #223 merges.
+Decisions: none new (D-003 amendment wording points at #227).
+## 2026-10-16 02:25 (UTC) — Cloud Agent (Engineer Supervisor) — DS-13b after shots and DS-14 login before shots (design)
+Did: captured the DS-13b "after" evidence from the `ds-13b-board-sections` preview: `docs/design/reviews/DS-13b/after/board-{375,1024,1440}[-hover].png` (hover on a county rank cell in section 4), the Letter print sheet `board-816-print.png` and the four-page `board-816-print.pdf`, with manifest rows. Retook the DS-14 "before" shots of `/login` signed out (`docs/design/reviews/DS-14/before/login-{375,1024,1440}.png`): the first set had followed the sign-in redirect and showed `/board`; manifest rows updated.
+State: binary and manifest only. Branch `design/after-shots-day4`. The 375 board shot is about 4 900 px (kept). Seen on the print PDF: the fixed footer repeats "Page N of 4" at the bottom of each page as intended; in the full-page PNG the fixed footer renders mid-page, which is a screenshot artefact, not a layout fault.
+Left: DS-12b, DS-14 and DS-15a/16a after shots once those packets merge.
+Decisions: none new.
+
 ---
