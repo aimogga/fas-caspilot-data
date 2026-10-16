@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Source_Serif_4 } from "next/font/google";
 import type { ReactNode } from "react";
 import { PRODUCT_NAME } from "@/lib/branding";
+import { THEME_BOOT_SCRIPT } from "@/lib/shell/theme";
 import "./globals.css";
 
 const inter = Inter({
@@ -33,7 +34,9 @@ const fontVariables = `${inter.variable} ${sourceSerif.variable} ${jetbrainsMono
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={fontVariables}>
+    // suppressHydrationWarning: the boot script below adds `.dark` and `color-scheme` to <html> before React hydrates (DS-19).
+    <html lang="en" className={fontVariables} suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} /></head>
       <body>{children}</body>
     </html>
   );

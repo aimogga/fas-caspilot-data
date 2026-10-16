@@ -87,7 +87,7 @@ for (const [email, admin] of [["staff@example.test", false], ["admin@example.tes
 test("board gets a real 403 with the DS-04 card and no Data freshness nav item (DS-05a)", async ({ page }) => {
   await signIn(page, "board@example.test");
   expect((await page.goto("/data-freshness"))?.status()).toBe(403);
-  await expect(page.locator("[data-slot=status-card]")).toContainText(/Error 403 · No permission.*You don't have access to this page.*Board · read-only/s);
+  await expect(page.locator("[data-slot=status-card]")).toContainText(/Error 403 · No permission.*You don't have access to this page.*Board member/s);
   await expect(page.locator("[data-slot=status-card] code")).toHaveText("/data-freshness");
   await expect(page.locator("[data-slot=sidebar] nav a", { hasText: "Data freshness" })).toHaveCount(0);
 });

@@ -105,7 +105,7 @@ test("map: 29 county paths above the table, legend copy, FAS outlines, hatch; li
       expect(svg?.height ?? 0).toBeLessThanOrEqual(640);
       expect(svg?.width ?? 0).toBeLessThanOrEqual(width === 375 ? 343 : 696);
       // The map sits above the county rows: the table from 768, the ranked list below it (DS-11b).
-      expect(svg?.y ?? 0).toBeLessThan((await page.locator(width >= 768 ? "tbody" : "[data-slot=ranked-list] ol").boundingBox())?.y ?? 0);
+      expect(svg?.y ?? 0).toBeLessThan((await page.locator(width >= 768 ? "[data-slot=need-table] tbody" : "[data-slot=ranked-list] ol").boundingBox())?.y ?? 0);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
       const violations = (await new AxeBuilder({ page }).analyze()).violations.filter((v) => v.impact === "serious" || v.impact === "critical");
       expect(violations).toEqual([]);
@@ -148,9 +148,12 @@ test("county selection: click or ?county= selects, panel copy, table link, arrow
   await expect(page).toHaveURL(/\?county=49049&fas=1$/);
   await expect(heading).toContainText("Utah County");
   await page.goto("/need-map?county=49035");
-  await page.locator("path[data-fips='49035']").focus();
-  await page.keyboard.press("ArrowRight");
-  await expect(page.locator("path[data-fips='49043']")).toBeFocused();
+  // The page streams in behind a skeleton (DS-14); retry until the map's key handler is hydrated and the arrow moves focus.
+  await expect(async () => {
+    await page.locator("path[data-fips='49035']").focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator("path[data-fips='49043']")).toBeFocused({ timeout: 1000 });
+  }).toPass({ timeout: 15_000 });
   await page.keyboard.press("ArrowDown");
   await expect(page.locator("path[data-fips='49051']")).toBeFocused();
   await page.keyboard.press("Enter");
