@@ -4,7 +4,7 @@ You are working in the repo for FAS Evidence, a free tool built for **Family Adv
 
 ## Read order (every session)
 1. This file.
-2. `harness/progress.md` — the last 3 entries.
+2. The 3 newest entries in `harness/progress/` (`ls harness/progress | tail -3`; filenames sort by time). Fewer than 3 there? Top up from the end of `harness/progress.md` (frozen history, D-041).
 3. Your task packet (GitHub Issue labeled `packet`) and its `context_files`.
 4. Only the docs your packet names: `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/DATA_SOURCES.md`, `docs/GRANT_MATCHING.md`, `docs/PRIVACY_AND_COMPLIANCE.md`.
 5. For any UI work: `docs/DESIGN.md` (design brief: tokens, components, and design rules).
@@ -43,7 +43,7 @@ n8n/                 exported n8n workflow JSON (schedules + alerts)
 scripts/             nightly audit, staleness check, test:db runner
 tests/               db/, e2e/, fixtures/, golden/
 docs/                specs (read-only for engineers unless your packet says otherwise)
-harness/             plan, feature list, progress, decisions, audits
+harness/             plan, feature list, decisions, audits; progress/ (one file per entry, D-041)
 ```
 Not in the repo yet: `lib/metrics/` (metrics and suppression helpers, F-304/F-306), `lib/grants/` (Phase 5), `supabase/functions/`.
 
@@ -58,7 +58,7 @@ Not in the repo yet: `lib/metrics/` (metrics and suppression helpers, F-304/F-30
 8. **Don't edit** `harness/feature_list.json` statuses (QA only) or acceptance criteria (George only).
 
 ## Definition of done
-Tests for every acceptance criterion · smoke check green · app starts · no secrets or real data in the diff · hand-written diff ≤ 400 lines (`max_diff_lines`; lockfiles and generated files don't count but are listed by name in the PR body, D-012) · `harness/progress.md` entry appended · PR opened with the template · QA packet requested.
+Tests for every acceptance criterion · smoke check green · app starts · no secrets or real data in the diff · hand-written diff ≤ 400 lines (`max_diff_lines`; lockfiles and generated files don't count but are listed by name in the PR body, D-012) · one new progress entry file `harness/progress/<YYYY-MM-DDTHHMMZ>-<branch>.md` (UTC time from `date -u +%Y-%m-%dT%H%MZ`, `/` in the branch → `-`; never edit another entry or `harness/progress.md`; `pnpm gate` checks, D-041) · PR opened with the template · QA packet requested.
 
 ## Merge and release
 - George does not review or merge PRs. The Engineer Supervisor squash-merges and deletes the branch once QA posts PASS on every acceptance criterion, with evidence, at the PR's current head sha; if the head moves, QA re-checks first (D-013).
@@ -66,7 +66,7 @@ Tests for every acceptance criterion · smoke check green · app starts · no se
 - Still gated on George (`human_gate: george`): real FAS data, outbound email, acceptance-criteria changes. Money or plan decisions go to George through Chief of staff (D-014).
 
 ## Ending a session cleanly
-Commit working code only. If you must stop mid-feature, leave the code compiling, write exactly what's left in `progress.md`, and say so in your return report.
+Commit working code only. If you must stop mid-feature, leave the code compiling, write exactly what's left in your progress entry file, and say so in your return report.
 
 ## Cursor Cloud specific instructions
 - The machine is defined by `.cursor/environment.json`. `install` runs `.cursor/install.sh` (Docker, Supabase CLI 2.120.0, `pnpm install --frozen-lockfile`). `start` runs `.cursor/start.sh` (dockerd, `supabase start`, `pnpm dev`).

@@ -43,7 +43,7 @@
    - **D-013:** who merges; QA PASS on every acceptance criterion at the current head.
    - **D-014:** after QA PASS and a working preview, production deploys and migrations may proceed without George.
    - **BLOCKED — needs George:** money or plan decisions (through Chief of staff), real FAS data, outbound email, and any acceptance-criteria change. Mark the PR BLOCKED, and do not merge until George decides.
-7. **After merge.** Append to `harness/progress.md`, mark the spec "Shipped @ <merge sha>", and start the next spec in order.
+7. **After merge.** Add a `harness/progress/` entry file (D-041), mark the spec "Shipped @ <merge sha>", and start the next spec in order.
 
 ## Design-review checklist
 - [ ] Matches the spec scope; nothing extra. Hand-written diff ≤ 400 lines.

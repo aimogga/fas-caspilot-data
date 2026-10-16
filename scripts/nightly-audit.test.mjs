@@ -5,8 +5,10 @@ import {
   generateReport,
   matchSecretLine,
   checkProgressLog,
+  readProgressLog,
   parseAgentsCommands,
   parseAudit,
+  checkBuild,
   checkSecretScan,
   checkSecretScanTree,
   scanFileContents,
@@ -125,6 +127,14 @@ describe('checkProgressLog', () => {
   it('finds documented PRs and flags missing', () => {
     expect(checkProgressLog(['Fix (#3)', 'Merge pull request #4 from'], 'PR #3\nPR #4')).toEqual({found: ['3', '4'], missing: []});
     expect(checkProgressLog(['Add (#5)'], 'PR #3')).toEqual({found: [], missing: ['5']});
+  });
+});
+describe('readProgressLog (D-041)', () => {
+  it('joins the frozen progress.md with each entry file in filename order', () => {
+    const files = {'harness/progress.md': 'PR #1', 'd/2026-10-16T0400Z-b.md': 'PR #3', 'd/2026-10-16T0358Z-a.md': 'PR #2'};
+    const log = readProgressLog('d', (p) => p === 'd' || p in files, (p) => files[p], () => ['2026-10-16T0400Z-b.md', 'x.txt', '2026-10-16T0358Z-a.md']);
+    expect(log).toBe('PR #1\nPR #2\nPR #3');
+    expect(checkProgressLog(['Add (#3)'], log).missing).toEqual([]);
   });
 });
 describe('parseAgentsCommands', () => {
@@ -564,5 +574,25 @@ describe('ingest alerts (F-201, synthetic)', () => {
       alerts: async () => ({status: 'YELLOW', findings: ['syn'], details: []}),
       emit: (res) => { overall = res.overall; return {path: 'x', exitCode: 0}; }});
     expect(overall).toBe('YELLOW');
+  });
+});
+
+describe('checkBuild', () => {
+  it('GREEN when every command passes', () => {
+    expect(checkBuild(() => '')).toEqual({status: 'GREEN', findings: [], details: ['lint passed', 'typecheck passed', 'test passed']});
+  });
+  it('names the failing test file and assertion, not the whole log', () => {
+    const run = (cmd) => {
+      if (cmd !== 'pnpm test') return '';
+      throw Object.assign(new Error('Command failed'), {status: 1, stdout: Buffer.from(' ✓ lib/a.test.ts\n × b fails 3ms\n FAIL  lib/b.test.ts > b fails\nAssertionError: expected 1 to be 2\n'), stderr: ''});
+    };
+    const r = checkBuild(run);
+    expect(r.status).toBe('RED');
+    expect(r.findings).toEqual(['test failed']);
+    expect(r.details).toEqual(['lint passed', 'typecheck passed', 'test: × b fails 3ms', 'test: FAIL  lib/b.test.ts > b fails', 'test: AssertionError: expected 1 to be 2']);
+  });
+  it('reports a timeout or kill signal', () => {
+    const run = (cmd) => { if (cmd === 'pnpm test') throw Object.assign(new Error('spawnSync /bin/sh ETIMEDOUT'), {code: 'ETIMEDOUT', signal: 'SIGTERM', stdout: '', stderr: ''}); return ''; };
+    expect(checkBuild(run).details).toContain('test: exit ? ETIMEDOUT SIGTERM');
   });
 });

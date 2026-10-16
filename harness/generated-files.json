@@ -11,6 +11,7 @@
     "tests/fixtures/ojp_awards/award-ovc-published.html",
     "tests/fixtures/ojp_awards/award-ojjdp-published.html",
     "tests/fixtures/ojp_awards/award-no-abstract.html",
-    "tests/fixtures/ojp_awards/award-broken-layout.html"
+    "tests/fixtures/ojp_awards/award-broken-layout.html",
+    "docs/design/reviews/DS-19/manifest.json"
   ]
 }
