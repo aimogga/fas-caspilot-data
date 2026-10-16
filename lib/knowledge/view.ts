@@ -4,10 +4,8 @@ import { CATEGORIES, type Category, checkKnowledge, checkKnowledgeText, type Gua
 import type { KnowledgeRow, Status } from './store';
 
 export const STATUSES = ['draft', 'approved', 'archived'] as const satisfies readonly Status[];
-export const CATEGORY_LABEL: Record<Category, string> = {
-  mission: 'Mission', program: 'Programs', service_model: 'How services work', staffing: 'Staffing', budget: 'Budget',
-  eligibility: 'Eligibility facts', outcome: 'Outcomes', boilerplate: 'Standard paragraphs', other: 'Other',
-};
+export const CATEGORY_LABEL: Record<Category, string> = { mission: 'Mission', program: 'Programs', service_model: 'How services work', staffing: 'Staffing', budget: 'Budget',
+  eligibility: 'Eligibility facts', outcome: 'Outcomes', boilerplate: 'Standard paragraphs', other: 'Other' };
 export const STATUS_WORDS: Record<Status, { label: string; hint: string }> = {
   draft: { label: 'Draft', hint: 'Draft: not yet approved, so the grant writer cannot quote it.' },
   approved: { label: 'Approved', hint: 'Approved: the grant writer may quote this text and cite this version.' },
