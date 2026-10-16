@@ -1101,5 +1101,10 @@ Did: `/staff/entry` header in words (eyebrow `Enter data`, H1 `Add one record at
 State: lint, typecheck, 866 unit tests green; e2e runs in CI (no Supabase here). Branch `ds-18b-entry-admin-nav` off main 0de2ff2. Shots: supervisor, from production and the preview, plus the 800 rail.
 Left: wiring the Σ badge `Hint` and the recent-totals `ExplainLayer` into `components/intake/AggregateForm.tsx` (DS-18a owns `components/intake/**` this week; `components/trust/index.tsx` is kit-only) and its own `HINT` words; a two-to-three-line follow-up (DS-18c) once DS-18a merges, builders and tests already here. The `County code (Utah FIPS)` label is an F-302 schema string shared with the upload mapper (Open question 2).
 Decisions: none new (designer defaults in the spec: nav e2e in a new file because #251/#252 edit `shell.spec.ts`; admin H1 stays the DS-10a greeting; glyph choices listed).
+## 2026-10-16 04:55 (UTC) — Cloud Agent (Engineer Supervisor) — DS-16b and DS-17 after shots; DS-17, DS-18a and DS-18b before shots (design)
+Did: from production main 923caad: `docs/design/reviews/DS-16b/after/methodology-{375,1024,1440}[-hover].png` (hover on a weight card label). Before shots for the open packets: `DS-17/before/staff-packets-*`, `DS-18a/before/staff-intake-*`, `DS-18b/before/staff-entry-*` and `admin-*` plus the 800 px nav rail `staff-entry-800.png`. After #274 landed: `DS-17/after/staff-packets-{375,1024,1440}[-hover].png` (hover on a figure tile), the Letter print sheet `staff-packets-816-print.png` and `.pdf`. Manifest rows for each.
+State: binary and manifest only. Branch `design/after-shots-day7`. All 375 shots under 10 000 px.
+Left: DS-15b, DS-18a and DS-18b after shots once #273, #276 and #277 are on production.
+Decisions: none new.
 
 ---
