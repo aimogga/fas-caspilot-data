@@ -1015,3 +1015,10 @@ Did: `lib/llm/guard.ts`: `isFreeModel` (`:free` suffix), `QuotaStore` (`reserve(
 State: lint, typecheck, unit tests and `pnpm gate` green; 10 new guard tests with a mocked fetch and an injected clock. Branch `f508a1-openrouter-guard`, stacked on `f508a-llm-adapter` (PR #223).
 Left: the in-memory counters are per server instance, so on Vercel the real ceiling is caps × warm instances until the durable Postgres `QuotaStore` (#224) lands; the $0 key credit limit still blocks paid usage. Retarget this PR to main when #223 merges.
 Decisions: none new (D-003 amendment wording points at #227).
+## 2026-10-16 02:25 (UTC) — Cloud Agent (Engineer Supervisor) — DS-13b after shots and DS-14 login before shots (design)
+Did: captured the DS-13b "after" evidence from the `ds-13b-board-sections` preview: `docs/design/reviews/DS-13b/after/board-{375,1024,1440}[-hover].png` (hover on a county rank cell in section 4), the Letter print sheet `board-816-print.png` and the four-page `board-816-print.pdf`, with manifest rows. Retook the DS-14 "before" shots of `/login` signed out (`docs/design/reviews/DS-14/before/login-{375,1024,1440}.png`): the first set had followed the sign-in redirect and showed `/board`; manifest rows updated.
+State: binary and manifest only. Branch `design/after-shots-day4`. The 375 board shot is about 4 900 px (kept). Seen on the print PDF: the fixed footer repeats "Page N of 4" at the bottom of each page as intended; in the full-page PNG the fixed footer renders mid-page, which is a screenshot artefact, not a layout fault.
+Left: DS-12b, DS-14 and DS-15a/16a after shots once those packets merge.
+Decisions: none new.
+
+---
