@@ -2,7 +2,7 @@
 
 Asked by George, 2026-10-16: "polish the county map page, fix the cluttered, hard-to-read data at the bottom of the map; make it easy to see, read and understand." Follow-up: "organize the pages better; the many data pages in the sidebar could be one page with tabs."
 
-Status: **plan decided, no code yet.** George asked the designer to make the four open calls using standard UI/UX practice (2026-10-16); they are recorded under "Design decisions" at the end. All four packets are unblocked.
+Status: **shipped (2026-10-16).** DS-20a (legend and "Highest need"), DS-20b (county panel) and DS-21a/b (sidebar sections; County need map is the first Insights tab) merged as planned. DS-20c (the trimmed table) was replaced by DS-22 at George's request: the page shows one county at a time, chosen on the map or from a "Choose a county" menu, and the table and ranked list are no longer rendered. DS-23 added the selected-county highlight and a map that follows the scroll. Left for later: delete the now-unused table code, and decide whether the county menu should also appear above the map on phones.
 
 ---
 
