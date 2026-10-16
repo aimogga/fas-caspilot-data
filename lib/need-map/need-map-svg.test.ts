@@ -1,12 +1,13 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { SELECT_PROMPT } from '@/components/need-map/CountyPanel';
+import { TOP_PROMPT } from '@/components/need-map/CountyPanel';
 import { NeedMap, summary } from '@/components/need-map/NeedMap';
 import { RankedList } from '@/components/need-map/RankedList';
 import { COUNTIES } from '../synthetic/generate';
 import { NeedBins } from './bins';
 import { NeedMapQuery, type NeedInput } from './query';
+import { LEGEND_NOTE } from './words';
 
 const UNPUBLISHED = ['49009', '49031', '49055'];
 /** Seed-shaped scores (supabase/seed.sql): 26 scored, Davis tied with Cache, 3 not published, 5 FAS counties. */
@@ -21,6 +22,7 @@ const input: NeedInput = {
 const data = NeedMapQuery.build(input);
 const html = renderToStaticMarkup(createElement(NeedMap, { data }));
 const count = (text: string, re: RegExp) => (text.match(re) ?? []).length;
+const svgOf = (markup: string) => markup.slice(markup.indexOf('<svg'), markup.indexOf('</svg>'));
 /** DS-06 L52: `--chart-1` at these steps for bins 1–5. */
 const RAMP = [15, 35, 55, 75, 100];
 const scored = (scores: number[]) => NeedBins.assign(scores.map((score, i) => ({ fips: `f${i}`, score })));
@@ -51,39 +53,43 @@ describe('NeedMap markup', () => {
 
   it('outlines the 5 FAS counties in a second pass above the fills', () => {
     expect(count(html, /<path [^>]*data-fas-outline="49\d{3}"[^>]*stroke="var\(--foreground\)" stroke-width="2"[^>]*aria-hidden="true"/g)).toBe(5);
-    expect(html.indexOf('data-fas-outline=')).toBeGreaterThan(html.lastIndexOf('data-fips='));
+    expect(svgOf(html).indexOf('data-fas-outline=')).toBeGreaterThan(svgOf(html).lastIndexOf('data-fips='));
   });
 
-  it('prints the legend copy exactly, with numeric bin ranges, and the map summary', () => {
-    expect(html).toMatch(/<figcaption data-slot="map-legend"[^>]*><p[^>]*>Need score \(version v2-synthetic\) · Placeholder bins<\/p><ul/);
-    // DS-11b: the legend is in words, one Hint per line (band range and count, why hatched, what an FAS county is).
-    expect(count(html, /<li[^>]*><button [^>]*data-slot="hint-trigger"[^>]*><span aria-hidden="true"[^>]*><\/span>(Lowest|Lower|Middle|Higher|Highest)( need)? · \d+ counties<\/button>/g)).toBe(5);
-    for (const text of ['Not published · 3 counties', 'FAS county (outlined)', 'Placeholder bins (5 equal-count groups) until need-score weights are set.', 'Relative ranking, not absolute need.']) {
-      expect(html).toContain(`${text}</`);
-    }
+  it('DS-20a: the legend is one strip directly under the map, in the same figure, with one placeholder note', () => {
+    expect(html).toMatch(/<figure [^>]*lg:col-span-7"><p id="need-map-summary"[^]*<\/svg><figcaption data-slot="map-legend"[^>]*><p[^>]*>Need score, version v2-synthetic<\/p>/);
+    // Five swatches from lower to higher need; each is a Hint named with its band and count (the range and count are in the hint).
+    const ramp = html.slice(html.indexOf('data-slot="legend-ramp"'), html.indexOf('</div>', html.indexOf('data-slot="legend-ramp"')));
+    expect([...ramp.matchAll(/<button [^>]*aria-label="([^"]+)" data-slot="hint-trigger"[^>]*><span aria-hidden="true"[^>]*><\/span><\/button>/g)].map((m) => m[1])).toEqual(
+      ['Lowest need · 7 counties', 'Lower need · 4 counties', 'Middle · 5 counties', 'Higher need · 5 counties', 'Highest need · 5 counties']);
+    expect(ramp).toMatch(/<\/ul><span aria-hidden="true">Lower need<\/span><span aria-hidden="true"[^>]*>Higher need<\/span>$/);
+    for (const text of ['Not published · 3 counties', 'FAS county (outlined)', LEGEND_NOTE]) expect(html).toContain(`${text}</`);
+    expect(count(html, /placeholder/gi)).toBe(1);
+    expect(html).not.toContain('Relative ranking, not absolute need.');
     expect(summary(data.counties)).toBe('Highest need: Rich County, San Juan County, Sevier County. Lowest need: Morgan County, Kane County, Iron County. 3 counties not published.');
     expect(html).toMatch(/<svg [^>]*role="group" aria-label="Utah county need map" aria-describedby="need-map-summary"/);
   });
 
   it('prints rank labels where the county box is at least 24 px each way from 1024, hidden below; the hover card wrapper and hover stroke are there', () => {
     expect(count(html, /<text [^>]*class="hidden font-medium tabular-nums lg:block lg:text-xl min-\[1440px\]:text-base">\d+<\/text>/g)).toBe(26);
-    expect(html).toMatch(/^<div data-slot="map-hover" class="relative"><figure/);
+    expect(html).toMatch(/^<div data-slot="map-hover" class="relative"><div data-slot="need-map" class="grid [^"]*lg:grid-cols-12[^"]*"><figure/);
     expect(count(html, /<path [^>]*class="cursor-pointer hover:stroke-2 hover:stroke-foreground focus-visible:outline-2 focus-visible:outline-ring"/g)).toBe(29);
     expect(html).not.toContain('data-slot="map-hover-card"');
     expect(html).toMatch(/<text [^>]*fill="var\(--primary-foreground\)"[^>]*>1<\/text>/);
   });
 
-  it('selected county: aria-pressed, a 3 px --ring outline above the FAS outlines, and the panel in the legend column', () => {
-    expect(html).toContain(SELECT_PROMPT);
+  it('selected county: aria-pressed, a 3 px --ring outline above the FAS outlines, and the panel alone in the right column', () => {
+    expect(html).toContain(TOP_PROMPT);
     expect(html).not.toContain('data-selected-outline=');
     const selected = data.counties.find((c) => c.fips === '49011') ?? null;
     const out = renderToStaticMarkup(createElement(NeedMap, { data, selected }));
     expect(count(out, /aria-pressed="true"/g)).toBe(1);
     expect(out).toMatch(/<path [^>]*data-fips="49011"[^>]*data-selected="true"[^>]*aria-pressed="true"/);
     expect(out).toMatch(/<path [^>]*data-selected-outline="49011" fill="none" stroke="var\(--ring\)" stroke-width="3" pointer-events="none" aria-hidden="true"/);
-    expect(out.indexOf('data-selected-outline=')).toBeGreaterThan(out.lastIndexOf('data-fas-outline='));
-    expect(out).toMatch(/<div class="order-last lg:order-none lg:col-span-5 lg:sticky lg:top-4 lg:self-start"><div[^>]*data-slot="county-panel"[^>]*>[^]*Davis County[^]*Rank <button[^>]*>20 of 26<\/button> · Need score <button[^>]*>−0\.80<\/button>[^]*<\/div><figcaption/);
-    expect(out).not.toContain(SELECT_PROMPT);
+    expect(svgOf(out).indexOf('data-selected-outline=')).toBeGreaterThan(svgOf(out).lastIndexOf('data-fas-outline='));
+    expect(out).toMatch(/<\/figcaption><\/figure><div class="lg:col-span-5 lg:sticky lg:top-4 lg:self-start"><div[^>]*data-slot="county-panel"[^>]*>[^]*Davis County[^]*<\/div><\/div><\/div>$/);
+    expect(out).toMatch(/<button[^>]*>20th highest need<\/button> of 26 counties scored · Lowest need band[^]*Need score <button[^>]*>−0\.80<\/button>/);
+    expect(out).not.toContain(TOP_PROMPT);
   });
 
   it('?fas=1 greys non-FAS counties to --muted but keeps them focusable and labelled', () => {
