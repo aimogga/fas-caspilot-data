@@ -346,6 +346,13 @@ for (const [width, height] of [[1440, 900], [1024, 768]]) {
     await page.setViewportSize({ width, height });
     await page.goto("/need-map?county=49035");
     await openAllMeasures(page);
+    // The seed has few measures, so the panel may be short: give the panel's column enough height to scroll, as a county with every measure open would.
+    await page.evaluate(() => {
+      const spacer = document.createElement("div");
+      spacer.style.height = "1400px";
+      spacer.setAttribute("aria-hidden", "true");
+      document.querySelector("[data-slot=county-panel]")?.parentElement?.appendChild(spacer);
+    });
     const legend = page.locator("[data-slot=map-legend]");
     const max = await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight);
     expect(max).toBeGreaterThan(400);
