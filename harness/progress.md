@@ -1134,3 +1134,21 @@ Left: nothing in DS-19 (the whole packet fit in a). Open: the shots script adds 
 Decisions: none new; no token added or changed (designer defaults in the spec: `aria-pressed` rows rather than a radiogroup; only `light`/`dark` stored, Match device removes the key; print kept light by script because undoing the `.dark` tokens in CSS would restate every value in a kit-only file).
 
 ---
+## 2026-10-16 06:50 (UTC) — Cloud Agent (Engineer Supervisor) — map.spec arrow-key step waits for hydration (fix)
+
+**Did:** `tests/e2e/map.spec.ts` county arrow-key step now retries focus + ArrowRight until focus moves (`toPass`, 15 s). The need-map page streams behind DS-14's skeleton, so the first key press could land before the map's key handler hydrated; the step flaked on #276 and #218 (three attempts each time, passed on re-run).
+
+**Evidence:** `pnpm gate` green; e2e runs in CI.
+
+**Next:** none; test-only change.
+
+---
+## 2026-10-16 07:00 (UTC) — Cloud Agent (Engineer Supervisor) — Day-8b after shots for DS-18b (design)
+
+**Did:** merged #218 (design-shots e2e fix, 45c7f8c) and #281 (Day-8 shots, 1beb6c0). Took "after" shots against the production deployment of f403333 for DS-18b: `/staff/entry` (staff) and `/admin` (admin) at 375/800/1024/1440. No hover shot: the entry form's helper sentences are visible text, not a hover face.
+
+**Evidence:** `docs/design/reviews/DS-18b/after/*`; review page republished (v12).
+
+**Next:** DS-19 dark mode (#282) and the map arrow-key test fix (#283) on CI; dark shots on every route after DS-19 merges.
+
+---
