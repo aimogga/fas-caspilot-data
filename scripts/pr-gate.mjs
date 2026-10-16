@@ -2,7 +2,7 @@
 // pr-gate (D-028): the deterministic PR checks QA applies, as a script instead of an instruction.
 // Usage: node scripts/pr-gate.mjs [--base origin/main] [--skip-tests]   (pnpm gate)
 // Rows print as `step | requirement | verdict | evidence`; exit 1 when any row fails.
-import { execSync, spawnSync } from 'node:child_process';
+import { execFileSync, execSync, spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { checkSecretScanTree, secretsOnlyExit } from './nightly-audit.mjs';
@@ -124,15 +124,18 @@ export function exitCode(rows) {
   return rows.some((r) => r.verdict === 'fail') ? 1 : 0;
 }
 
+const gitArgs = (args) => execFileSync('git', args, { encoding: 'utf-8' });
+
 /** D-032: a stacked branch is gated against its parent. `--base` wins; else `git config branch.<current>.gateBase` (set by the
- * engineer, e.g. `origin/f508a-llm-adapter`); else `origin/main`. Only `origin/*` refs are accepted, so the base is always a pushed branch. */
-export function resolveBase(argv = process.argv, exec = execSync) {
+ * engineer, e.g. `origin/f508a-llm-adapter`); else `origin/main`. Only `origin/*` refs are accepted, so the base is always a pushed branch.
+ * `git` takes an argument list, never a shell string: a branch name may contain `;` or `$(…)`. */
+export function resolveBase(argv = process.argv, git = gitArgs) {
   const i = argv.indexOf('--base');
   if (i !== -1) return argv[i + 1];
   let configured = '';
   try {
-    const branch = exec('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).trim();
-    configured = exec(`git config --get branch.${branch}.gateBase`, { encoding: 'utf-8' }).trim();
+    const branch = git(['rev-parse', '--abbrev-ref', 'HEAD']).trim();
+    configured = git(['config', '--get', `branch.${branch}.gateBase`]).trim();
   } catch {
     return 'origin/main';
   }

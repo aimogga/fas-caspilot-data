@@ -69,8 +69,9 @@ describe('run and CLI', () => {
 });
 
 describe('resolveBase (D-032 stacked branches)', () => {
-  const git = (branch, configured) => (cmd) => {
-    if (cmd.startsWith('git rev-parse')) return `${branch}\n`;
+  const git = (branch, configured) => (args) => {
+    expect(Array.isArray(args)).toBe(true);
+    if (args[0] === 'rev-parse') return `${branch}\n`;
     if (configured === undefined) throw new Error('exit 1');
     return `${configured}\n`;
   };
@@ -83,5 +84,11 @@ describe('resolveBase (D-032 stacked branches)', () => {
   it('refuses a configured base that is not an origin/* branch', () => {
     expect(() => resolveBase(['node', 'gate'], git('child', 'HEAD'))).toThrow(/origin\/\*/);
     expect(() => resolveBase(['node', 'gate'], git('child', 'origin/x;rm -rf .'))).toThrow(/origin\/\*/);
+  });
+  it('passes the branch name to git as one argument, never through a shell', () => {
+    const calls = [];
+    const git = (args) => (calls.push(args), args[0] === 'rev-parse' ? 'feature;id;#\n' : 'origin/p\n');
+    expect(resolveBase(['node', 'gate'], git)).toBe('origin/p');
+    expect(calls[1]).toEqual(['config', '--get', 'branch.feature;id;#.gateBase']);
   });
 });
