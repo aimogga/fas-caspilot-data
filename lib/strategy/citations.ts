@@ -34,7 +34,7 @@ export function numbersIn(text: string): number[] {
 }
 
 /** A written number matches a stored value at its own rounding (or 0.5%); rates also match as percents. */
-const matches = (n: number, facts: Fact[]) => facts.some((f) => Object.values(f.values).some((v) => v !== null &&
+export const matches = (n: number, facts: Fact[]) => facts.some((f) => Object.values(f.values).some((v) => v !== null &&
   [v, v * 100].some((c) => Math.abs(n - c) <= Math.max(0.005 * Math.abs(c), 0.5 * (Number.isInteger(n) ? 1 : 0.1)))));
 
 /** 12+ consecutive words shared with a stored award description or abstract. */
@@ -53,15 +53,17 @@ export function copyHits(texts: { path: string; text: string }[], abstracts: Sna
   return hits;
 }
 
+/** The cited fact, or why it does not count: not in the snapshot, no registered resolver for its kind, or the resolver refuses it. */
+export function resolveFact(byId: Map<string, Fact>, id: string): Fact | string {
+  const f = byId.get(id), [kind = '', ...rest] = id.split(':'), r = RESOLVERS.get(kind);
+  if (!f) return `${id} is not in the snapshot`;
+  if (!r) return `no resolver for ${kind}`;
+  return r(rest.join(':'), f) ? f : `${id} does not resolve`;
+}
+
 /** Pure citation validator: every number in fas_position, evidence claims and suggested_ask must match a value of a cited fact that is in the snapshot and resolves. */
 export function validateDraft(d: StrategyDraft, s: Snapshot): CitationReport {
-  const byId = new Map(s.facts.map((f) => [f.citation_id, f]));
-  const resolve = (id: string): Fact | string => {
-    const f = byId.get(id), [kind = '', ...rest] = id.split(':'), r = RESOLVERS.get(kind);
-    if (!f) return `${id} is not in the snapshot`;
-    if (!r) return `no resolver for ${kind}`;
-    return r(rest.join(':'), f) ? f : `${id} does not resolve`;
-  };
+  const byId = new Map(s.facts.map((f) => [f.citation_id, f])), resolve = (id: string) => resolveFact(byId, id);
   const check = (path: string, text: string, ids: string[], numbers = numbersIn(text)): ClaimCheck => {
     const got = ids.map(resolve), facts = got.filter((g): g is Fact => typeof g !== 'string');
     const problems = [...got.filter((g): g is string => typeof g === 'string'), ...numbers.filter((n) => !matches(n, facts)).map((n) => `${n} has no matching cited value`)];
