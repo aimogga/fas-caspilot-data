@@ -1,0 +1,311 @@
+{
+ "_about": "F-508i bake-off fixture. Opportunity text is public (source_url, fetched_at); ids are uuid5 of the key. Criteria are copied from the public synopsis or page, never a scoring rubric we have not read. `synthetic` holds made-up aggregates in lib/strategy SnapshotInput shape; no real FAS data. Snapshots are built by assembleSnapshot in lib/strategy/bakeoff.ts.",
+ "opportunities": [
+  {
+   "key": "O-OJJDP-2026-172752",
+   "kind": "federal",
+   "source": "grants_gov",
+   "source_id": "364056",
+   "source_url": "https://www.grants.gov/search-results-detail/364056",
+   "api_url": "https://api.grants.gov/v1/api/fetchOpportunity",
+   "fetched_at": "2026-10-16",
+   "opportunity": {
+    "id": "d6b4c3bf-c43c-5c3a-878e-1e6ab01e99be",
+    "title": "OJJDP FY 2026 Strategies to Support Children Exposed to Violence",
+    "funder": "Office of Juvenile Justice Delinquency Prevention",
+    "description": "This is a notice of funding opportunity (NOFO) for the OJJDP FY 2026 Strategies to Support Children Exposed to Violence. This opportunity will support the implementation of violent crime reduction strategies focused on violent juvenile offenders and improving communities' ability to help children exposed to violence in their homes, schools, and communities. Through this program the incidence and impact of violence will be reduced by strengthening local efforts to address victimization of children exposed to violence and mitigate the risk of adverse long-term effects and negative outcomes associated with children's exposure to violence.",
+    "award_floor": null,
+    "award_ceiling": 815000,
+    "close_date": "2026-11-16"
+   },
+   "criteria": [
+    {
+     "id": "3d7d5ba7-17a7-545a-ab30-fc49ce3c1465",
+     "criterion": "Program purpose (from the posted synopsis)",
+     "weight_points": null,
+     "text": "This is a notice of funding opportunity (NOFO) for the OJJDP FY 2026 Strategies to Support Children Exposed to Violence."
+    },
+    {
+     "id": "f1732b05-796b-5c19-9c90-c451630d046a",
+     "criterion": "Applicant eligibility",
+     "weight_points": null,
+     "text": "Nonprofits having 501(c)(3) status are listed as eligible applicants. Units of local government"
+    }
+   ],
+   "status": "posted"
+  },
+  {
+   "key": "HRSA-27-021",
+   "kind": "federal",
+   "source": "grants_gov",
+   "source_id": "363512",
+   "source_url": "https://www.grants.gov/search-results-detail/363512",
+   "api_url": "https://api.grants.gov/v1/api/fetchOpportunity",
+   "fetched_at": "2026-10-16",
+   "opportunity": {
+    "id": "0ac929fd-23f7-5277-8162-8c4e43537845",
+    "title": "Infant-Toddler Court Program\u2013State Awards",
+    "funder": "Health Resources and Services Administration",
+    "description": "The Infant-Toddler Court Program (ITCP) State Awards allow states and communities to support and expand use of enhanced child welfare practices in communities across the country that bring together courts, social services, and families to improve the safety, healthy development, and nurturing relationships of families with young children involved with child welfare. The ITCP State Awards support implementation of the evidence-based ITC approach in targeted communities. Awardees ensure successful implementation and expansion by spreading lessons learned to local teams in the state, tracking program outcomes, and training local ITC teams.",
+    "award_floor": 700000,
+    "award_ceiling": 700000,
+    "close_date": "2027-04-21"
+   },
+   "criteria": [
+    {
+     "id": "232a4e6d-c232-5b28-a4e8-ba6ee197f792",
+     "criterion": "Program purpose (from the posted synopsis)",
+     "weight_points": null,
+     "text": "The Infant-Toddler Court Program (ITCP) State Awards allow states and communities to support and expand use of enhanced child welfare practices in communities across the country that bring together courts, social services, and families to improve the safety, healthy development, and nurturing relati"
+    },
+    {
+     "id": "349c4866-1dc1-5531-a4aa-621baa3ecb02",
+     "criterion": "Applicant eligibility",
+     "weight_points": null,
+     "text": "Nonprofits having 501(c)(3) status are listed as eligible applicants. Any domestic public or private entity, including an Indian tribe or tribal organization (as those terms are defined at 25 U.S.C. 5304) (formerly cited as 25 U.S.C. 450b)) is eligible to apply. See 42 CFR \u00a7 51a.3(a). Domestic faith-based and community-based organizations are also eligible to apply."
+    }
+   ],
+   "status": "forecasted"
+  },
+  {
+   "key": "HRSA-27-043",
+   "kind": "federal",
+   "source": "grants_gov",
+   "source_id": "363687",
+   "source_url": "https://www.grants.gov/search-results-detail/363687",
+   "api_url": "https://api.grants.gov/v1/api/fetchOpportunity",
+   "fetched_at": "2026-10-16",
+   "opportunity": {
+    "id": "29496b50-a6c9-5895-a01b-71c9c6094a3c",
+    "title": "Rural Communities Opioid Response Program - Child and Adolescent Behavioral Health",
+    "funder": "Health Resources and Services Administration",
+    "description": "The RCORP-Child and Adolescent Behavioral Health Program provides funding to rural communities to establish and expand behavioral health care services, including mental health and substance use disorder for rural children and adolescents.",
+    "award_floor": null,
+    "award_ceiling": 1000000,
+    "close_date": "2027-03-23"
+   },
+   "criteria": [
+    {
+     "id": "0e0eb56b-5fb5-5f5e-a4aa-075333404aa8",
+     "criterion": "Program purpose (from the posted synopsis)",
+     "weight_points": null,
+     "text": "The RCORP-Child and Adolescent Behavioral Health Program provides funding to rural communities to establish and expand behavioral health care services, including mental health and substance use disorder for rural children and adolescents."
+    },
+    {
+     "id": "f90761c2-ebae-54f5-a843-c0b0ba6408b9",
+     "criterion": "Applicant eligibility",
+     "weight_points": null,
+     "text": "Nonprofits having 501(c)(3) status are listed as eligible applicants. You can apply if you are a domestic public or private, non-profit or for-profit entity. \"Domestic\" means the 50 states, the District of Columbia, the Commonwealth of Puerto Rico, the Northern Mariana Islands, American Samoa, Guam, the U.S."
+    }
+   ],
+   "status": "forecasted"
+  },
+  {
+   "key": "UOVC-VOCA",
+   "kind": "utah",
+   "source": "state",
+   "source_id": "uovc-voca",
+   "source_url": "https://crimevictim.utah.gov/providers/grants-program/voca/",
+   "fetched_at": "2026-10-16",
+   "note": "Open Grant Opportunities page (https://crimevictim.utah.gov/providers/grant-funding-opportunities/open-grant-opportunities/) says the funding opportunity is closed and the next application period is anticipated to open in January 2027; amounts are not published.",
+   "opportunity": {
+    "id": "9b868d6d-e784-5390-9b3c-b063a47921be",
+    "title": "Victims of Crime Act (VOCA) Victim Assistance subgrants",
+    "funder": "Utah Office for Victims of Crime",
+    "description": "In Utah, VOCA funding supports organizations that provide direct services to victims of crime, including counseling or referrals to counseling services, crisis and emotional support, advocacy, and help applying for victim compensation. Crime types served include domestic or family violence and child abuse or neglect.",
+    "award_floor": null,
+    "award_ceiling": null,
+    "close_date": null
+   },
+   "criteria": [
+    {
+     "id": "2f6c2f7f-28f9-5eec-acaa-aee6366d128b",
+     "criterion": "Who can apply",
+     "weight_points": null,
+     "text": "State and local government agencies, private nonprofit organizations, and Native American Tribes may apply. Programs must provide direct services to victims of crime and offer the same services to victims of federal crimes as they do to all other victims."
+    },
+    {
+     "id": "48ffedc2-ed94-5071-8b74-27615ead3541",
+     "criterion": "Program eligibility requirements",
+     "weight_points": null,
+     "text": "A history of providing effective, cost-efficient services to victims of crime; direct services at no cost; help applying for crime victim compensation; required matching funds and financial support from non-federal sources; accurate program and financial records."
+    },
+    {
+     "id": "af442e7f-b200-5bbf-83aa-849f6dee3351",
+     "criterion": "Community support and collaboration",
+     "weight_points": null,
+     "text": "Applicants should demonstrate community support and collaboration with other agencies serving crime victims."
+    }
+   ]
+  },
+  {
+   "key": "SORENSON-LEGACY",
+   "kind": "foundation",
+   "source": "foundation",
+   "source_id": "sorenson-legacy-foundation",
+   "source_url": "https://sorensonlegacyfoundation.org/apply",
+   "fetched_at": "2026-10-16",
+   "note": "Quarterly review deadlines Dec 1, Mar 1, Jun 1 and Sep 1; close_date is the next one after the fetch date. Amounts are not published.",
+   "opportunity": {
+    "id": "2da45c13-471b-5ba0-b991-4c364dfa8e21",
+    "title": "Sorenson Legacy Foundation community grants",
+    "funder": "Sorenson Legacy Foundation",
+    "description": "The foundation focuses its efforts in Utah and supports endeavors in education, innovation, health care and community, with a focus on causes and organizations that have impact on the Utah community.",
+    "award_floor": null,
+    "award_ceiling": null,
+    "close_date": "2026-12-01"
+   },
+   "criteria": [
+    {
+     "id": "7ed14db8-dbf4-52bb-aa58-c07ece72a69c",
+     "criterion": "Geographic and mission priorities",
+     "weight_points": null,
+     "text": "Applicants should align with the foundation's geographic priority (Utah) and its mission priorities: education, innovation, health care and community."
+    },
+    {
+     "id": "3638a9f4-3d4a-528b-97a3-dcc492aaed55",
+     "criterion": "Strengthening the community",
+     "weight_points": null,
+     "text": "Dedicated to helping strengthen and build the community and its individuals through every walk of life, with a focus on impact on the Utah community."
+    }
+   ]
+  }
+ ],
+ "synthetic": {
+  "period": "2026-Q3",
+  "now": "2026-10-16T00:00:00Z",
+  "indicators": [
+   {
+    "id": "27ccd3bd-1488-52d5-99b8-e6f92e0216c3",
+    "source_id": "census-saipe",
+    "indicator_code": "poverty_rate",
+    "geo_fips": "49035",
+    "period": "2024",
+    "value": 11.8,
+    "moe": 0.9,
+    "unit": "percent",
+    "vintage": "2024",
+    "ingest_run_id": "synthetic-run-1"
+   },
+   {
+    "id": "9dde99b2-b37c-503f-93bc-2750f48687a4",
+    "source_id": "census-sahie",
+    "indicator_code": "uninsured_rate",
+    "geo_fips": "49035",
+    "period": "2023",
+    "value": 10.6,
+    "moe": 0.7,
+    "unit": "percent",
+    "vintage": "2023",
+    "ingest_run_id": "synthetic-run-1"
+   },
+   {
+    "id": "c48c700c-2947-52df-b2ef-0a4cc5b0afcc",
+    "source_id": "census-saipe",
+    "indicator_code": "poverty_rate",
+    "geo_fips": "49057",
+    "period": "2024",
+    "value": 10.2,
+    "moe": 1.1,
+    "unit": "percent",
+    "vintage": "2024",
+    "ingest_run_id": "synthetic-run-1"
+   },
+   {
+    "id": "34a34790-5ffa-53a1-9d24-84164d677b33",
+    "source_id": "census-sahie",
+    "indicator_code": "uninsured_rate",
+    "geo_fips": "49057",
+    "period": "2023",
+    "value": 9.4,
+    "moe": 0.8,
+    "unit": "percent",
+    "vintage": "2023",
+    "ingest_run_id": "synthetic-run-1"
+   }
+  ],
+  "summary": {
+   "count": 14,
+   "median": 250000,
+   "min": 75000,
+   "max": 800000,
+   "utah_share": 0.21,
+   "recipient_types": {
+    "nonprofit": 11,
+    "county": 3
+   }
+  },
+  "similar": [
+   {
+    "id": "61f8dc23-8307-5f25-8ffb-5929edad1c2c",
+    "source": "usaspending",
+    "funder": "Synthetic Funder",
+    "recipient": "Synthetic Recipient",
+    "recipient_state": "UT",
+    "recipient_type": "nonprofit",
+    "amount": 250000,
+    "fiscal_year": 2025,
+    "assistance_listing": null,
+    "description": "This synthetic project expands trauma informed family therapy for rural households referred by juvenile courts across three frontier counties",
+    "score": 2,
+    "reason": "Synthetic Recipient won $250,000 in FY2025: shares the terms.",
+    "source_ref": "award_history:61f8dc23-8307-5f25-8ffb-5929edad1c2c"
+   }
+  ],
+  "metrics": {
+   "m1": {
+    "rows": 64,
+    "viewRows": 64,
+    "asOf": "Sep 2026",
+    "delta": null,
+    "n": 64,
+    "median": 19,
+    "p25": 10,
+    "p75": 33,
+    "stillWaitingShare": 0.12
+   },
+   "m2": {
+    "rows": 70,
+    "viewRows": 70,
+    "asOf": "Sep 2026",
+    "delta": null,
+    "n": 70,
+    "median": 6,
+    "p25": 3,
+    "p75": 11
+   },
+   "m3": {
+    "rows": 70,
+    "viewRows": 70,
+    "asOf": "Sep 2026",
+    "delta": null,
+    "n": 70,
+    "share": 0.14,
+    "topReason": null
+   },
+   "m4": {
+    "rows": 0,
+    "viewRows": 40,
+    "asOf": "Sep 2026",
+    "delta": null,
+    "n": 40,
+    "total": {
+     "band": "all",
+     "completed": 27,
+     "closed": 40,
+     "rate": 0.675
+    },
+    "includesHiddenBands": false
+   },
+   "m5": {
+    "rows": 27,
+    "viewRows": 27,
+    "asOf": "Sep 2026",
+    "delta": null,
+    "n": 27,
+    "costPerCompleted": 1520,
+    "programPerCompleted": 1340
+   }
+  }
+ }
+}

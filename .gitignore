@@ -32,7 +32,9 @@ npm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-harness/audits/
+harness/audits/*
+!harness/audits/llm-bakeoff-rubric.md
+!harness/audits/llm-bakeoff-*
 
 # Claude Code subagent worktrees (never committed)
 .claude/worktrees/

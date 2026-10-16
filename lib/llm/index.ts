@@ -40,8 +40,10 @@ export class LlmError extends Error {
 }
 
 export type GenerateJsonInput<T extends z.ZodType> = { system: string; prompt: string; schema: T; timeoutMs?: number };
-/** Tests inject a guard with their own clock and store; the app uses one per server instance, counting in Postgres when it can. */
-export type GenerateJsonOptions = { guard?: OpenRouterGuard };
+/** Tests inject a guard with their own clock and store; the app uses one per server instance, counting in Postgres when it can.
+ * `forceProvider` is eval-only (F-508i): one provider, no fallback, allowed only under `LLM_EVAL=1` and outside the Next server
+ * (route handlers run with `NEXT_RUNTIME` set). It is a separate argument, so a request body spread into `input` cannot set it. */
+export type GenerateJsonOptions = { guard?: OpenRouterGuard; forceProvider?: Provider };
 
 let defaultGuard: OpenRouterGuard | undefined;
 
@@ -55,14 +57,16 @@ export async function generateJson<T extends z.ZodType>(
   input: GenerateJsonInput<T>,
   options: GenerateJsonOptions = {},
 ): Promise<{ data: z.infer<T>; meta: LlmMeta }> {
+  const force = options.forceProvider;
+  if (force && (process.env.LLM_EVAL !== '1' || process.env.NEXT_RUNTIME)) throw new Error('forceProvider is eval-only: set LLM_EVAL=1 and run outside the app');
   const guard = options.guard ?? (defaultGuard ??= new OpenRouterGuard(defaultQuotaStore()));
   const started = Date.now();
   const jsonSchema = z.toJSONSchema(input.schema) as Record<string, unknown>;
   delete jsonSchema.$schema; // Gemini's response schema takes the body only
-  const steps: Step[] = [
+  const steps: Step[] = ([
     { provider: 'gemini', key: process.env.GEMINI_API_KEY, call: callGemini },
     { provider: 'openrouter', key: process.env.OPENROUTER_API_KEY, call: callOpenRouter },
-  ];
+  ] as Step[]).filter((s) => !force || s.provider === force);
   const failed: LlmAttempt[] = [];
   let calls = 0;
   for (const step of steps) {

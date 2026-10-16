@@ -17,7 +17,8 @@
     "test:e2e": "playwright test",
     "seed:synthetic": "node --experimental-strip-types --no-warnings=ExperimentalWarning lib/synthetic/cli.ts",
     "knowledge:import": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/knowledge-import.mjs",
-    "eval:grants": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/grant-match-eval.mjs"
+    "eval:grants": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/grant-match-eval.mjs",
+    "eval:llm": "LLM_EVAL=1 node --conditions=react-server --experimental-transform-types --no-warnings=ExperimentalWarning scripts/llm-bakeoff.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
