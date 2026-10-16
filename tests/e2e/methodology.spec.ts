@@ -29,7 +29,8 @@ for (const [email, eyebrow, seesDraft] of CASES) {
     await expect(page.locator("[data-slot=weights-total]")).toHaveText(/^Total\s*1\s*of 100 points as stored, across one input\.$/);
     await expect(page.locator("[data-slot=not-published-count]")).toHaveText("3 of 29 counties are Not published for this version.");
     await expect(page.locator("[data-testid^=limit-]")).toHaveCount(6);
-    await expect(page.locator("[data-slot=source-footer]")).toContainText(/^Public sources: Census SAHIE · Need score version v2-synthetic · as of .* · Synthetic data$/);
+    // DS-16b: each weight card has its own source-footer; the page footer is the last one.
+    await expect(page.locator("[data-slot=source-footer]").last()).toContainText(/^Public sources: Census SAHIE · Need score version v2-synthetic · as of .* · Synthetic data$/);
     const notice = page.locator("[data-slot=draft-notice]");
     await expect(notice).toHaveCount(seesDraft ? 1 : 0);
     if (seesDraft) await expect(notice).toContainText(/Newer draft on file.*Version \S+ was created \w{3} \d{4} and is not approved\. The map and this page still use the approved version\./);
@@ -66,7 +67,9 @@ test("AC1: weight cards read N of 100 points; label → numeral → sentence →
   await page.mouse.move(0, 0);
   await expect(face(page)).toBeHidden();
   await trigger.focus();
-  await expect(face(page)).toHaveText(words);
+  await expect(face(page)).toBeVisible();
+  // innerText on both sides: toHaveText compares textContent, which has no whitespace between the face's sibling elements.
+  expect(await face(page).innerText()).toBe(words);
   await page.keyboard.press("Enter");
   const dialog = page.getByRole("dialog");
   await expect(dialog).toHaveAccessibleName("Uninsured rate");
