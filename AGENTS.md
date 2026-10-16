@@ -26,6 +26,7 @@ pnpm test:e2e           # playwright
 pnpm seed:synthetic     # load synthetic FAS data into local DB
 supabase start          # local Supabase (needs Docker)
 supabase db reset       # rebuild local DB from migrations + seed
+git config branch.<branch>.gateBase origin/<parent>   # stacked branch: pnpm gate and the push hook measure against the parent (D-032)
 ```
 **Smoke check before you start and before you finish:** `pnpm install && pnpm lint && pnpm typecheck && pnpm test`.
 
