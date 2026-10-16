@@ -3,21 +3,26 @@
 import { useState, type FormEvent } from "react";
 import { Stack } from "@/components/layout";
 import { AggregateBadge } from "@/components/trust";
+import { Hint } from "@/components/trust/explain";
+import { ExplainLayer } from "@/components/trust/explain-layer";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { AGGREGATE_METRICS, EMPTY_AGGREGATE, formatValue, metricLabel, NOTE_MAX, periodLabel, validateAggregate, type AggregateError, type AggregateInput, type AggregateRecent } from "@/lib/intake/aggregate";
+import { AGGREGATE_BADGE_HINT, AGGREGATE_HELP, aggregateCell, countyWords } from "@/lib/intake/words";
 
 type County = { fips: string; name: string };
 type Key = keyof AggregateInput;
 const LABEL: Record<Key, string> = { period: "Period (quarter)", metric: "Metric", value: "Total", county_fips: "County", note: "Note (optional)" };
-const HINT: Partial<Record<Key, string>> = { period: "Like 2026-Q2", value: "A whole number, or dollars for a money metric", county_fips: "Leave as All counties for an org-wide total", note: `Plain text, up to ${NOTE_MAX} characters. No names or client details.` };
+/** DS-23: the badge explains itself (tooltip on hover and focus, popover on tap); one row badge per total stays a plain label because the total beside it opens the same words. */
+const Sigma = () => <Hint text={AGGREGATE_BADGE_HINT} label="Aggregate submission" className="rounded-full"><AggregateBadge /></Hint>;
+const TOTAL = "inline-flex min-h-11 items-center rounded-sm font-medium tabular-nums underline decoration-dotted underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 lg:min-h-0";
 
 /** F-303: one period total per submit, plus the org's newest totals (read server-side under RLS, prepended locally after a save). */
 export function AggregateForm({ counties, recent }: { counties: County[]; recent: AggregateRecent[] }) {
   const [input, setInput] = useState<AggregateInput>(EMPTY_AGGREGATE), [errors, setErrors] = useState<AggregateError[]>([]);
   const [saved, setSaved] = useState<string | null>(null), [saving, setSaving] = useState(false);
   const [problem, setProblem] = useState<string | null>(null), [list, setList] = useState(recent);
-  const errorFor = (k: Key) => errors.find((e) => e.column === k)?.message, countyName = (fips: string | null) => (fips ? counties.find((c) => c.fips === fips)?.name ?? fips : "All counties");
+  const errorFor = (k: Key) => errors.find((e) => e.column === k)?.message, countyName = (fips: string | null) => countyWords(fips, counties);
 
   function showErrors(errs: AggregateError[]) {
     setErrors(errs);
@@ -41,7 +46,7 @@ export function AggregateForm({ counties, recent }: { counties: County[]; recent
   }
 
   function field(k: Key, control: (a11y: Record<string, unknown>) => React.ReactNode) {
-    const id = `agg-${k}`, err = errorFor(k), hint = HINT[k];
+    const id = `agg-${k}`, err = errorFor(k), hint = AGGREGATE_HELP[k];
     const describedBy = [hint && `${id}-hint`, err && `${id}-error`].filter(Boolean).join(" ") || undefined;
     return (
       <div key={k} data-slot="form-field">
@@ -58,7 +63,7 @@ export function AggregateForm({ counties, recent }: { counties: County[]; recent
     <Stack gap={6}>
       <form noValidate onSubmit={onSubmit} data-slot="aggregate-form">
         <Stack gap={4}>
-          <p data-slot="aggregate-notice" className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground"><AggregateBadge /> Totals are stored as aggregate submissions and always shown with the Σ Aggregate label.</p>
+          <p data-slot="aggregate-notice" className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground"><Sigma /> Totals are stored as aggregate submissions and always shown with the Σ Aggregate label.</p>
           {n ? <p role="alert" data-slot="entry-alert" className="text-sm font-medium text-destructive">{n === 1 ? "1 field needs" : `${n} fields need`} attention. Fix the errors shown below each field.</p> : null}
           {field("period", (a) => <input {...a} type="text" inputMode="text" placeholder="2026-Q2" />)}
           {field("metric", (a) => <select {...a}><option value="">Choose…</option>{AGGREGATE_METRICS.map((m) => <option key={m.code} value={m.code}>{m.label}</option>)}</select>)}
@@ -72,12 +77,12 @@ export function AggregateForm({ counties, recent }: { counties: County[]; recent
       </form>
       <section aria-labelledby="agg-recent-title">
         <h2 id="agg-recent-title" className="mb-2 text-base font-semibold">Recent aggregate totals</h2>
-        {list.length ? (
+        {list.length ? (<ExplainLayer>
           <ul data-slot="aggregate-recent" className="divide-y divide-border text-sm">
             {list.map((r) => <li key={r.id} data-id={r.id} className="flex flex-wrap items-center gap-2 py-2"><AggregateBadge /> {periodLabel(r.period)} · {metricLabel(r.metric_code)} ·{" "}
-              <span className="tabular-nums font-medium">{formatValue(r.metric_code, r.value)}</span> · {countyName(r.county_fips)}</li>)}
+              <span tabIndex={0} data-slot="aggregate-total" {...aggregateCell(r, counties)} className={TOTAL}>{formatValue(r.metric_code, r.value)}</span> · {countyName(r.county_fips)}</li>)}
           </ul>
-        ) : <p className="text-sm text-muted-foreground">No aggregate totals yet.</p>}
+        </ExplainLayer>) : <p className="text-sm text-muted-foreground">No aggregate totals yet.</p>}
       </section>
     </Stack>
   );

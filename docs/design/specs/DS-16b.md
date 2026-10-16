@@ -123,5 +123,5 @@ One PR (`ds-16b-methodology`).
 
 ## Open questions
 1. `need_score_config` has no rationale column, so "why this weight" cannot be shown; the card says what the input measures and nothing about why. Needs a schema decision (George) before any sentence appears.
-2. `loading.tsx` for `/methodology` waits for `PageSkeleton` (#262).
+2. `loading.tsx` for `/methodology` waits for `PageSkeleton` (#262). **Resolved by DS-23.**
 3. The seed is single-input (`uninsured: 1`), so the multi-input headline (`counts most, at 30 of 100 points`) is covered by unit tests only until a multi-input version is approved.

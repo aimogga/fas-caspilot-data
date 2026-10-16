@@ -135,5 +135,5 @@ One PR (b). Follow-up DS-18c after DS-18a merges: wire `Hint` + `aggregateCell` 
 4. Helper words name what a field feeds only where the glossary names that metric; nothing else is promised.
 
 ## Open questions
-1. `components/intake/AggregateForm.tsx` owns the Σ badge, the recent-totals list and the aggregate `HINT` map; it is DS-18a's file this week. The `Hint` and `ExplainLayer` wiring (two to three lines each, builders ready here) needs a follow-up once DS-18a merges.
+1. `components/intake/AggregateForm.tsx` owns the Σ badge, the recent-totals list and the aggregate `HINT` map; it is DS-18a's file this week. The `Hint` and `ExplainLayer` wiring (two to three lines each, builders ready here) needs a follow-up once DS-18a merges. **Resolved by DS-23** (the DS-18c follow-up, folded in).
 2. The `County code (Utah FIPS)` label is an F-302 schema string shared with the upload mapper (`INTAKE_SCHEMA`); renaming it to "County" belongs with DS-18a's intake wording so both screens change together.

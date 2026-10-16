@@ -31,6 +31,7 @@ Every packet: spec first (`docs/design/specs/DS-<id>.md`), one branch off `origi
 | DS-16a/b | `/data-freshness`, `/methodology` | Cadence and vintage explanations, run-id `Provenance`, `loading.tsx`, summary below 1024; weights as "30 of 100 points" cards, inputs `Provenance`, z-score `Hint` | `components/freshness/*`, `components/methodology/*` | 1024-hover |
 | DS-17 | `/staff/packets` | Figure tiles under an `ExplainLayer`, select and download `Hint`s, print page numbers, `loading.tsx` | `components/packets/PacketView.tsx` | -print |
 | DS-18a/b | `/staff/intake`, `/staff/entry`, `/admin` | Wizard error cells from `title` to `Hint`; stepper and dropzone tokens; batch badges + 44 px rows; entry helper text; aggregate badge `Hint`; nav icons for all 12 links | `components/intake/*`, `components/shell/ShellFrame.tsx` | 800 rail |
+| DS-23 | `/staff/entry` (Aggregate totals), `/data-freshness`, `/methodology`, `/staff/packets` | DS-18c follow-up: aggregate field sentences from `lib/intake/words.ts`, Σ badge `Hint`, recent totals under one `ExplainLayer`; the three deferred `loading.tsx` skeletons | `components/intake/AggregateForm.tsx`, `lib/intake/words.ts`, three `loading.tsx` | 1024-hover on the Σ badge and a total |
 | DS-19 | all | Theme toggle in the user menu; `.dark` persisted + `prefers-color-scheme` + no-flash script; dark shots and axe for every route; chart ramp contrast | `components/shell/*`, `app/layout.tsx` | -dark everywhere |
 
 ## Running a packet
