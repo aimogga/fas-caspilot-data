@@ -32,6 +32,7 @@ Every packet: spec first (`docs/design/specs/DS-<id>.md`), one branch off `origi
 | DS-17 | `/staff/packets` | Figure tiles under an `ExplainLayer`, select and download `Hint`s, print page numbers, `loading.tsx` | `components/packets/PacketView.tsx` | -print |
 | DS-18a/b | `/staff/intake`, `/staff/entry`, `/admin` | Wizard error cells from `title` to `Hint`; stepper and dropzone tokens; batch badges + 44 px rows; entry helper text; aggregate badge `Hint`; nav icons for all 12 links | `components/intake/*`, `components/shell/ShellFrame.tsx` | 800 rail |
 | DS-19 | all | Theme toggle in the user menu; `.dark` persisted + `prefers-color-scheme` + no-flash script; dark shots and axe for every route; chart ramp contrast | `components/shell/*`, `app/layout.tsx` | -dark everywhere |
+| DS-24 | `/staff/grants` | Header in words; a helper sentence per form field (`lib/grants/form-words.ts`); import in the dashed dropzone; award, close date, `Manual entry` and missing funder under one `ExplainLayer` with source, added month and why missing; footer sentence; `ErrorState` with reference; failures in words; `loading.tsx` | `app/(app)/staff/grants/*`, `components/grants/Foundation*.tsx`, `lib/grants/form-words.ts`, `tests/e2e/foundation-grants.spec.ts` | 1024-hover on an award; -dark |
 
 ## Running a packet
 1. The supervisor launches the `designer` agent with the packet id, route, role and sub-packet (a child session on the vercel.app cloud environment when shots against the preview are needed).
