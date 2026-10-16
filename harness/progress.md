@@ -1089,15 +1089,17 @@ Left: nothing in DS-15. Open: the seed shows both M6 groups, so the hidden-share
 Decisions: none new (applies D-040; designer defaults listed in the spec's Decisions).
 
 ---
-## 2026-10-16 04:55 (UTC) — Cloud Agent (Engineer Supervisor) — DS-16b and DS-17 after shots; DS-17, DS-18a and DS-18b before shots (design)
-Did: from production main 923caad: `docs/design/reviews/DS-16b/after/methodology-{375,1024,1440}[-hover].png` (hover on a weight card label). Before shots for the open packets: `DS-17/before/staff-packets-*`, `DS-18a/before/staff-intake-*`, `DS-18b/before/staff-entry-*` and `admin-*` plus the 800 px nav rail `staff-entry-800.png`. After #274 landed: `DS-17/after/staff-packets-{375,1024,1440}[-hover].png` (hover on a figure tile), the Letter print sheet `staff-packets-816-print.png` and `.pdf`. Manifest rows for each.
-State: binary and manifest only. Branch `design/after-shots-day7`. All 375 shots under 10 000 px.
-Left: DS-15b, DS-18a and DS-18b after shots once #273, #276 and #277 are on production.
-Decisions: none new.
 ## 2026-10-16 03:10 (UTC) — Cloud Agent (Designer) — DS-18a: upload page error cells explain themselves, stepper and dropzone in tokens, batch statuses in words, loading skeleton (design)
 Did: `components/intake/UploadWizard.tsx`: preview error cells drop the native `title` for a kit `Hint` on the word `Error` (`aria-label` `Error: <reason>`, same words on hover, focus and tap; `data-error` kept); the stepper is three token-only discs (current filled in the accent with `aria-current="step"`, finished ticked with a lucide `Check`, upcoming muted, sr-only step words, `data-state` hooks); the file input sits in a dashed `data-slot=dropzone` card with one helper sentence wired through `aria-describedby`; step 2 reads `Match columns`; the preview helper no longer promises a tooltip. `components/intake/BatchList.tsx`: status badge and word in one `Hint` per row (`Saved` / `Rolled back` with a plain sentence, unknown statuses say `Recorded as "<status>"`), type in words (`Case records`, `Not recorded`), the reference carries a `Hint`, headers `Reference` and `Rows saved`, `data-slot=batch-row|batch-status`. `app/(app)/staff/intake/page.tsx`: serif headline in words `Add FAS records from a spreadsheet`, description ending on the trust rule; `loading.tsx` with `PageSkeleton`. Spec: `docs/design/specs/DS-18.md` (DS-18b appends).
 State: lint, typecheck, unit tests (skeleton route list extended) and `pnpm gate` green. No Docker, Supabase or preview in this shell: `tests/e2e/upload.spec.ts` updated (headline and dropzone, hint per error cell hover = focus with no `td[title]`, stepper done/current, batch status hint and type words, row ≥ 44 px at 375, axe and scrollWidth at 375/1024/1440) for CI. Before and after shots: the supervisor from production and the preview. Branch `ds-18a-intake` off main.
 Left: DS-18b (`/staff/entry`, `AggregateBadge`, nav icons) on its own branch. Open: the screen plan's five-step stepper, sample values and right rail wait for saved mappings; `rows_ok` null shows `0` as before.
 Decisions: none new (designer defaults in the spec: `Committed` reads `Saved` to match the button; eyebrow stays the shared `WORKSPACE`; one `Hint` per error cell rather than an `ExplainLayer`; no drag-and-drop script because the native input already accepts a drop).
+
+---
+## 2026-10-16 04:55 (UTC) — Cloud Agent (Engineer Supervisor) — DS-16b and DS-17 after shots; DS-17, DS-18a and DS-18b before shots (design)
+Did: from production main 923caad: `docs/design/reviews/DS-16b/after/methodology-{375,1024,1440}[-hover].png` (hover on a weight card label). Before shots for the open packets: `DS-17/before/staff-packets-*`, `DS-18a/before/staff-intake-*`, `DS-18b/before/staff-entry-*` and `admin-*` plus the 800 px nav rail `staff-entry-800.png`. After #274 landed: `DS-17/after/staff-packets-{375,1024,1440}[-hover].png` (hover on a figure tile), the Letter print sheet `staff-packets-816-print.png` and `.pdf`. Manifest rows for each.
+State: binary and manifest only. Branch `design/after-shots-day7`. All 375 shots under 10 000 px.
+Left: DS-15b, DS-18a and DS-18b after shots once #273, #276 and #277 are on production.
+Decisions: none new.
 
 ---
