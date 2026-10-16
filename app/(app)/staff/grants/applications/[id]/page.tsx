@@ -11,12 +11,10 @@ import { createClient } from "@/lib/supabase/server";
 import { approveDraft, newVersion } from "./actions";
 
 export const dynamic = "force-dynamic";
-const STATUS = { DRAFT: "Draft, open for edits", approved: "Approved, read-only", archived: "Archived, read-only" } as const;
-const DOWNLOAD_OFF = "Word download opens once an admin approves this draft.";
+const STATUS = { DRAFT: "Draft, open for edits", approved: "Approved, read-only", archived: "Archived, read-only" } as const, DOWNLOAD_OFF = "Word download opens once an admin approves this draft.";
 
 export default async function ApplicationPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params, client = await createClient();
-  const role = client ? (await client.auth.getUser()).data.user?.app_metadata?.role : null;
+  const { id } = await params, client = await createClient(), role = client ? (await client.auth.getUser()).data.user?.app_metadata?.role : null;
   let app: LoadedApplication | null;
   try { app = client ? await loadApplication(client, id) : null; } catch (e) {
     console.error("[application] load failed", { message: e instanceof Error ? e.message : "unknown" });

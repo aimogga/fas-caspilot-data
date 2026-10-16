@@ -7,12 +7,9 @@ import { applyEdit, approvalBlockers } from "@/lib/application/review";
 import { createClient } from "@/lib/supabase/server";
 
 async function session(id: string) {
-  const client = await createClient();
-  const user = client ? (await client.auth.getUser()).data.user : null;
-  const role = user?.app_metadata?.role;
+  const client = await createClient(), user = client ? (await client.auth.getUser()).data.user : null, role = user?.app_metadata?.role;
   if (!client || !user || (role !== "admin" && role !== "staff")) throw new Error("forbidden");
-  const app = await loadApplication(client, id);
-  if (!app) throw new Error("not found");
+  const app = await loadApplication(client, id); if (!app) throw new Error("not found");
   return { client, role, app };
 }
 const path = (id: string) => `/staff/grants/applications/${id}`;
@@ -25,8 +22,7 @@ export async function saveSection(form: FormData): Promise<void> {
   if (log.error) throw new Error(log.error.message);
   const upd = await client.from("application_draft").update({ sections: applyEdit(app.draft.sections, key, body, app.snapshot) }).eq("id", id);
   if (upd.error) throw new Error(upd.error.message);
-  revalidatePath(path(id));
-  redirect(`${path(id)}#${key}`);
+  revalidatePath(path(id)); redirect(`${path(id)}#${key}`);
 }
 
 export async function approveDraft(form: FormData): Promise<void> {

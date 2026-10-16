@@ -125,8 +125,7 @@ describe('application editor and Word export (F-508h)', () => {
   });
 
   it('DOCX: refused unless approved; header on every page, sections under the funder headings, Sources and Assumptions appendices', async () => {
-    const now = new Date('2026-10-16T00:00:00Z');
-    expect(() => applicationPacket(app('DRAFT'), now)).toThrow(NOT_APPROVED_EXPORT);
+    const now = new Date('2026-10-16T00:00:00Z'); expect(() => applicationPacket(app('DRAFT'), now)).toThrow(NOT_APPROVED_EXPORT);
     const withAssumption = base().map((x, i) => (i === 2 ? { ...x, assumptions: ['A partner clinic hosts sessions.'] } : x));
     const p = applicationPacket(app('approved', withAssumption), now);
     expect(p.sections.map((x) => x.title)).toEqual(['Need for the project', 'Approach', 'Budget', 'Sources', 'Assumptions']);

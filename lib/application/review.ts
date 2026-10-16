@@ -4,8 +4,7 @@ import type { Fact, Snapshot } from '../strategy/snapshot';
 import { checkSection, type Section } from './generate';
 import { limitProblems, wordCount, type SectionPlan } from './sections';
 
-export const UNCITED = 'This number has no source. Add a source or remove it before approval.';
-export const NO_LIMIT = 'No limit stated';
+export const UNCITED = 'This number has no source. Add a source or remove it before approval.', NO_LIMIT = 'No limit stated';
 export const PORTAL_NOTE = 'FAS submits through the funder’s own portal. This page never submits, emails or sends anything.';
 export type SectionReview = { words: string; over: string[]; uncited: number[]; blocked: boolean };
 
