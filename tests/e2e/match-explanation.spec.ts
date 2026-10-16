@@ -74,7 +74,7 @@ test("staff sees seeded matches by score and the How we matched panel shows only
     await expect(panel.locator("[data-slot=match-cap]")).toHaveText(CAP_NOTE);
     await expect(panel.locator("[data-slot=match-check]").first()).toHaveText(/Who may apply · Only state governments may apply$/);
     await expect(panel.locator("[data-slot=match-check][data-status=flagged]")).toHaveCount(1);
-    await panel.getByRole("button", { name: "Close" }).click();
+    await panel.getByRole("button", { name: "Close", exact: true }).click();
     await expect(panel).toHaveCount(0);
     await expect(buttons.nth(1)).toBeFocused();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
