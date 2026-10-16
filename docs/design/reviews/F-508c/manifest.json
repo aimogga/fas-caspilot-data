@@ -1,0 +1,92 @@
+[
+  {
+    "id": "F-508c",
+    "tag": "after",
+    "route": "/admin/knowledge",
+    "width": 375,
+    "variant": "base",
+    "host": "127.0.0.1",
+    "sha": "bda2a6f",
+    "at": "2026-10-16T00:30:10.783Z"
+  },
+  {
+    "id": "F-508c",
+    "tag": "after",
+    "route": "/admin/knowledge",
+    "width": 375,
+    "variant": "hover",
+    "host": "127.0.0.1",
+    "sha": "bda2a6f",
+    "at": "2026-10-16T00:30:11.066Z"
+  },
+  {
+    "id": "F-508c",
+    "tag": "after",
+    "route": "/admin/knowledge",
+    "width": 1024,
+    "variant": "base",
+    "host": "127.0.0.1",
+    "sha": "bda2a6f",
+    "at": "2026-10-16T00:30:12.305Z"
+  },
+  {
+    "id": "F-508c",
+    "tag": "after",
+    "route": "/admin/knowledge",
+    "width": 1024,
+    "variant": "hover",
+    "host": "127.0.0.1",
+    "sha": "bda2a6f",
+    "at": "2026-10-16T00:30:12.566Z"
+  },
+  {
+    "id": "F-508c",
+    "tag": "after",
+    "route": "/admin/knowledge",
+    "width": 1440,
+    "variant": "base",
+    "host": "127.0.0.1",
+    "sha": "bda2a6f",
+    "at": "2026-10-16T00:30:13.733Z"
+  },
+  {
+    "id": "F-508c",
+    "tag": "after",
+    "route": "/admin/knowledge",
+    "width": 1440,
+    "variant": "hover",
+    "host": "127.0.0.1",
+    "sha": "bda2a6f",
+    "at": "2026-10-16T00:30:13.987Z"
+  },
+  {
+    "id": "F-508c",
+    "tag": "after",
+    "route": "/staff/knowledge",
+    "width": 375,
+    "variant": "base",
+    "host": "127.0.0.1",
+    "sha": "bda2a6f",
+    "at": "2026-10-16T00:30:17.074Z"
+  },
+  {
+    "id": "F-508c",
+    "tag": "after",
+    "route": "/staff/knowledge",
+    "width": 1024,
+    "variant": "base",
+    "host": "127.0.0.1",
+    "sha": "bda2a6f",
+    "at": "2026-10-16T00:30:18.114Z"
+  },
+  {
+    "id": "F-508c",
+    "tag": "after",
+    "route": "/staff/knowledge",
+    "width": 1440,
+    "variant": "base",
+    "host": "127.0.0.1",
+    "sha": "bda2a6f",
+    "at": "2026-10-16T00:30:19.164Z"
+  }
+]
