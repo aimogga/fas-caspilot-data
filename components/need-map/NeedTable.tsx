@@ -9,7 +9,9 @@ import { NeedMapQuery, type NeedTableData } from "@/lib/need-map/query";
 import { FAS_BADGE, NEED_TERMS, indicatorCell, needTerm, scoreCell, type CellData } from "@/lib/need-map/terms";
 
 const NUM = "text-right tabular-nums";
-const STICKY = "bg-background md:sticky md:left-0 md:z-10";
+const STICKY = "bg-card pl-3 md:sticky md:left-0 md:z-10";
+// Below `md` the ranked list (`RankedList`) replaces the table; from `md` the table sits in a bordered box that scrolls sideways, so a cut-off column reads as "more to the right".
+const BOX = "hidden w-full max-w-full overflow-x-auto rounded-md border border-border bg-card md:block";
 const LINK = "rounded-sm text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2";
 // Cells are reading targets for the one explain card: focusable by arrow keys and tap, not Tab stops (the county link is the row's control).
 const CELL = "min-w-0 break-words py-2 pr-3 align-top rounded-sm focus-visible:outline-2 focus-visible:outline-ring focus-visible:-outline-offset-2";
@@ -25,7 +27,7 @@ export function NeedTable({ data, fas = false }: { data: NeedTableData; fas?: bo
   const version = data.version ? `Need score version ${data.version}` : undefined;
   return (
     <ExplainLayer terms={NEED_TERMS}>
-    <div role="region" tabIndex={0} aria-label="County need table" aria-describedby="need-table-keys" data-slot="need-table" className="w-full max-w-full overflow-x-auto">
+    <div role="region" tabIndex={0} aria-label="County need table" aria-describedby="need-table-keys" data-slot="need-table" className={BOX}>
       <p id="need-table-keys" className="sr-only">Arrow keys move through the numbers and read what each one means; Enter keeps the explanation open and Escape closes it.</p>
       <ResponsiveTable stack>
         <caption className="sr-only">Utah counties by need rank, with public indicators</caption>
