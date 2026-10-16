@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
-import { generateJson, LlmError } from './index';
+import { generateJson as generate, LlmError, MemoryQuotaStore, OpenRouterGuard, type GenerateJsonInput } from './index';
 import { DEFAULT_GEMINI_MODEL, DEFAULT_OPENROUTER_MODEL } from './providers';
 
 // Mocked fetch only: no real network, no real keys. The values below are fakes the tests look for in errors.
@@ -18,6 +18,8 @@ const openrouter = (content: string) => json({ choices: [{ message: { content } 
 const fetchMock = vi.fn<typeof fetch>();
 const urls = () => fetchMock.mock.calls.map(([u]) => String(u));
 const input = { system: 'Cite stored rows only.', prompt: PROMPT, schema };
+// A fresh in-memory guard per call: unit tests never reach a database, even where CI sets Supabase service env (golden rule 2).
+const generateJson = (i: GenerateJsonInput<typeof schema>) => generate(i, { guard: new OpenRouterGuard(new MemoryQuotaStore()) });
 
 beforeEach(() => {
   vi.stubGlobal('fetch', fetchMock);
@@ -25,6 +27,7 @@ beforeEach(() => {
   vi.stubEnv('OPENROUTER_API_KEY', OPENROUTER_KEY);
   vi.stubEnv('GEMINI_MODEL', '');
   vi.stubEnv('OPENROUTER_MODEL', '');
+  vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', '');
   vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
 
