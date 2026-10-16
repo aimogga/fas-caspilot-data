@@ -30,7 +30,7 @@ test("staff generates and views a cited draft; an admin approves it; staff canno
   await expect(page.getByRole("heading", { level: 2 })).toHaveText(["How FAS meets each criterion", "Suggested ask", "Risks", "Narrative outline", "Inferences (not facts)"]);
   await expect(page.locator("[data-slot=inferences] li")).toHaveText(["Inference: reviewers may weigh rural reach heavily."]);
   // A citation chip opens the stored row: same words on focus (hover card) and on Enter (dialog).
-  const chip = page.locator("[data-slot=evidence] [data-slot=explain-trigger]").first();
+  const chip = page.locator("[data-slot=draft-evidence] [data-slot=explain-trigger]").first();
   await chip.focus();
   const card = page.locator("[data-slot=hover-card-content] [data-slot=explain-content]");
   await expect(card).toContainText("Family Therapy Access Grants (synthetic)");
@@ -39,7 +39,7 @@ test("staff generates and views a cited draft; an admin approves it; staff canno
   await chip.press("Enter");
   await expect(page.getByRole("dialog", { name: /Family Therapy Access Grants/ })).toContainText("As of");
   await page.keyboard.press("Escape");
-  await expect(chip).toBeFocused();
+  await expect(chip).toBeFocused(); await chip.blur();
   await expect(page.locator("[data-slot=model], [data-slot=review]")).toHaveText(["Google Gemini · e2e-fake", "Not reviewed yet: an admin approves or rejects"]);
   await expect(page.getByRole("button", { name: "Approve draft" })).toHaveCount(0);
   for (const width of [375, 1024, 1440]) {

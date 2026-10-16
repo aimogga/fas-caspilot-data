@@ -73,5 +73,6 @@ export function footerWords(row: Pick<DraftRow, 'model_meta' | 'created_at' | 's
   const day = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/Denver' });
   const who = row.approved_by && row.approved_by === viewer ? 'you' : 'an admin';
   return { model: last ? `${last.provider === 'gemini' ? 'Google Gemini' : 'OpenRouter'} · ${last.model}` : 'Model not recorded',
-    generated: `Generated ${day(row.created_at)}`, review: row.status === 'approved' && row.approved_at ? `Approved by ${who} on ${day(row.approved_at)}` : row.status === 'rejected' ? 'Rejected by an admin' : 'Not reviewed yet: an admin approves or rejects' };
+    generated: `Generated ${day(row.created_at)}`,
+    review: row.status === 'approved' && row.approved_at ? `Approved by ${who} on ${day(row.approved_at)}` : row.status === 'rejected' ? 'Rejected by an admin' : row.status === 'failed' ? 'Failed drafts cannot be reviewed' : 'Not reviewed yet: an admin approves or rejects' };
 }

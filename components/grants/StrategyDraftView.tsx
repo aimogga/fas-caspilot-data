@@ -35,7 +35,7 @@ export function StrategyDraftView({ draft, facts, builtAt }: { draft: StrategyDr
               <div className="flex flex-wrap items-baseline justify-between gap-2"><h3 className="text-base font-medium leading-snug break-words">{c.criterion}</h3><span data-slot="confidence" className="text-sm text-muted-foreground">{CONFIDENCE[c.confidence]}</span></div>
               <Block title="FAS position"><p className="max-w-prose">{c.fas_position}</p></Block>
               <Block title="Evidence">
-                {c.evidence.length ? <ul data-slot="evidence" className="flex flex-col gap-2">{c.evidence.map((e, j) => <li key={j} className="flex max-w-prose flex-wrap items-center gap-x-2">{e.claim} <Chip id={e.citation_id} facts={facts} builtAt={builtAt} /></li>)}</ul>
+                {c.evidence.length ? <ul data-slot="draft-evidence" className="flex flex-col gap-2">{c.evidence.map((e, j) => <li key={j} className="flex max-w-prose flex-wrap items-center gap-x-2">{e.claim} <Chip id={e.citation_id} facts={facts} builtAt={builtAt} /></li>)}</ul>
                   : <p className="text-muted-foreground">No cited evidence.</p>}
               </Block>
               <Block title="Gaps">{c.gaps.length ? <ul className={LIST}>{c.gaps.map((g, j) => <li key={j}>{g}</li>)}</ul> : <p className="text-muted-foreground">None named.</p>}</Block>

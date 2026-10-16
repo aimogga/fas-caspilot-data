@@ -48,7 +48,7 @@ describe('strategy draft screen helpers (F-508f)', () => {
   it('footer names the model, the generation date and who approved', () => {
     const base = { model_meta: [{ provider: 'gemini', model: 'gemini-2.5-flash' }], created_at: '2026-10-16T18:00:00Z', status: 'approved' as const, approved_by: 'u1', approved_at: '2026-10-17T18:00:00Z' };
     expect(footerWords(base, 'u1')).toEqual({ model: 'Google Gemini · gemini-2.5-flash', generated: 'Generated Oct 16, 2026', review: 'Approved by you on Oct 17, 2026' });
-    expect(footerWords({ ...base, approved_by: 'u2' }, 'u1').review).toBe('Approved by an admin on Oct 17, 2026');
+    expect(footerWords({ ...base, approved_by: 'u2' }, 'u1').review).toBe('Approved by an admin on Oct 17, 2026'); expect(footerWords({ ...base, status: 'failed' }, 'u1').review).toBe('Failed drafts cannot be reviewed');
     expect(footerWords({ ...base, model_meta: null, status: 'DRAFT', approved_by: null, approved_at: null }, 'u1')).toMatchObject({ model: 'Model not recorded', review: 'Not reviewed yet: an admin approves or rejects' });
   });
 });
