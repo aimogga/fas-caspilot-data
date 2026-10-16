@@ -1067,5 +1067,16 @@ Did: `/staff/entry` header in words (eyebrow `Enter data`, H1 `Add one record at
 State: lint, typecheck, 866 unit tests green; e2e runs in CI (no Supabase here). Branch `ds-18b-entry-admin-nav` off main 0de2ff2. Shots: supervisor, from production and the preview, plus the 800 rail.
 Left: wiring the Σ badge `Hint` and the recent-totals `ExplainLayer` into `components/intake/AggregateForm.tsx` (DS-18a owns `components/intake/**` this week; `components/trust/index.tsx` is kit-only) and its own `HINT` words; a two-to-three-line follow-up (DS-18c) once DS-18a merges, builders and tests already here. The `County code (Utah FIPS)` label is an F-302 schema string shared with the upload mapper (Open question 2).
 Decisions: none new (designer defaults in the spec: nav e2e in a new file because #251/#252 edit `shell.spec.ts`; admin H1 stays the DS-10a greeting; glyph choices listed).
+## 2026-10-16 03:55 (UTC) — Cloud Agent (Engineer Supervisor) — DS-12b and DS-15a after shots; DS-14 403, DS-15a and DS-16a before shots (design)
+Did: captured from the merged previews `docs/design/reviews/DS-12b/after/staff-grants-matches-{375,1024,1440}[-hover].png` plus a 1440 `-panel` shot with the "How we matched" aside open, and `docs/design/reviews/DS-15a/after/dashboard-{375,1024,1440}[-hover].png` (hover on an M4 completed cell). Before shots from production main for the next packets: `DS-15a/before/dashboard-*`, `DS-16a/before/data-freshness-*` and `DS-14/before/403-from-%2Fstaff-*` (as board). Manifest rows for each.
+State: binary and manifest only. Branch `design/after-shots-day5`. The 1440 panel shot shows four of the six parts (viewport capture); the 375 full-page shot has the whole panel. 375 shots stay under 10 000 px.
+Left: DS-14 after shots (`/login` signed out, `/403` as board) and DS-16a after shots once #262 and #266 merge; DS-16b before/after once #271 merges.
+
+---
+## 2026-10-16 04:45 (UTC) — Cloud Agent (Engineer Supervisor) — DS-14 and DS-16a after shots; DS-16b before shots (design)
+Did: from production main after the merges: `docs/design/reviews/DS-14/after/403-from-%2Fstaff-{375,1024,1440}[-hover].png` as board (hover on the role hint) and `DS-14/after/login-{375,1024,1440}.png` + `login-1440-hover.png` taken signed out (hover on the Example chip); `DS-16a/after/data-freshness-{375,1024,1440}[-hover].png` as staff (hover on the cadence hint) and `-admin` variants showing the "Latest load" column; `DS-16b/before/methodology-{375,1024,1440}.png`. Manifest rows merged from two shots branches, duplicates dropped.
+State: binary and manifest only. Branch `design/after-shots-day6`, stacked on `design/after-shots-day5` (D-032). All 375 shots under 10 000 px.
+Left: DS-16b, DS-15b, DS-17 after shots; DS-18a/b before and after shots.
+Decisions: none new.
 
 ---
