@@ -65,9 +65,10 @@ test("AC3: filter labels, pipeline stages and the manual badge carry hints that 
     const hovered = await tip.textContent();
     await trigger.focus();
     await expect(tip).toHaveText(hovered ?? "");
-    await page.keyboard.press("Tab");
+    await trigger.blur();
     await page.mouse.move(0, 0);
-    await expect(tip).toHaveCount(0);
+    // Blur rather than Tab: Tab can land on the next hint and open its tooltip, which would make `tip` stale for the next call.
+    await expect(page.locator("[data-slot=tooltip-content]", { hasText: hovered ?? "" })).toHaveCount(0);
   };
   const bar = page.locator("[data-slot=filter-bar]");
   await expect(bar.locator("[data-slot=hint-trigger]")).toHaveCount(4);
