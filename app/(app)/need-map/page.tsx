@@ -4,15 +4,13 @@ import { Cluster, EmptyState, ErrorState, PageHeader, Stack } from "@/components
 import { FasFilter } from "@/components/need-map/FasFilter";
 import { MapSelect } from "@/components/need-map/MapSelect";
 import { NeedMap } from "@/components/need-map/NeedMap";
-import { NeedTable } from "@/components/need-map/NeedTable";
-import { RankedList } from "@/components/need-map/RankedList";
 import { NeedMapQuery, type NeedTableData } from "@/lib/need-map/query";
 import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 // Target look (visual-direction.md): a serif question, then one plain sentence. The measure count is not named because the columns come from whatever sources have loaded.
-const DESCRIPTION = "Each county is ranked against the other 28 on public measures such as poverty and uninsured rates. Darker means more need. Pick a county to see why it ranks where it does.";
+const DESCRIPTION = "Each county is ranked against the other 28 on public measures such as poverty and uninsured rates. Darker means more need. Pick a county on the map or from the menu to see why it ranks where it does.";
 
 export default async function NeedMapPage({ searchParams }: { searchParams: Promise<{ fas?: string; county?: string }> }) {
   const params = await searchParams;
@@ -40,13 +38,10 @@ export default async function NeedMapPage({ searchParams }: { searchParams: Prom
       ) : (
         <>
           {data.version === null ? (
-            <EmptyState title="Need score not computed yet">The map appears once an admin approves a need-score version. County indicators are still in the table.</EmptyState>
+            <EmptyState title="Need score not computed yet">The map appears once an admin approves a need-score version. County indicators are still being loaded.</EmptyState>
           ) : (
             <div data-slot="need-map-card" className="rounded-lg border border-border bg-card p-4 text-card-foreground"><MapSelect><NeedMap data={data} fas={fas} selected={selected} /></MapSelect></div>
           )}
-          {/* Below md: the ranked list; from md: the table. Both are in the DOM; CSS shows one (DS-11b). */}
-          <RankedList data={data} fas={fas} />
-          <NeedTable data={data} fas={fas} />
           <p data-slot="source-footer" className="text-xs font-medium tracking-wide text-muted-foreground">{data.footer}</p>
         </>
       )}

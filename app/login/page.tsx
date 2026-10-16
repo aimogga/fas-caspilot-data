@@ -2,6 +2,7 @@
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Page, FormField, Skeleton } from '@/components/layout';
+import { ExplainCard, Hint } from '@/components/trust/explain';
 import { Wordmark } from '@/components/shell/ShellFrame';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,13 @@ import { createClient } from '@/lib/supabase/client';
 import { safeRedirect } from '@/lib/auth/role-guards';
 import { mapLoginError, UNAVAILABLE_ERROR, type LoginError } from '@/lib/auth/login-errors';
 import { syntheticBadgeVisible } from '@/lib/shell/nav';
+
+/** The one number on the page is an example; its card says so and still carries source, period, n and as of (D-040). */
+const EXAMPLE = { id: 'example', title: 'Example figure', plain: 'A made-up number that shows how every figure in FAS Evidence carries its source, period, count and date. Nothing here comes from a family record.' };
+const EXAMPLE_ROWS: [string, string][] = [['Period', 'Q3 2026'], ['n', '64']];
+const EXAMPLE_HINT = 'An example of how a number looks once you sign in. It is not a real figure.';
+const PREVIEW_HINT = 'This preview runs on made-up records. No real family data is here.';
+const CHIP = 'rounded-full bg-muted px-2 text-xs leading-4 text-muted-foreground';
 
 function Brand() {
   return (
@@ -127,16 +135,18 @@ export default function LoginPage() {
           </Suspense>
         </div>
         <section data-slot="login-panel" aria-labelledby="login-panel-title">
-          {synthetic ? <span data-slot="env-badge">Synthetic data · preview</span> : null}
+          {synthetic ? <Hint text={PREVIEW_HINT} className="self-start"><span data-slot="env-badge">Synthetic data · preview</span></Hint> : null}
           <p data-slot="login-eyebrow" id="login-panel-title">Public data to proof</p>
           <p data-slot="login-quote">Public data shows where families struggle. Your records show what happens next.</p>
-          <div data-slot="login-sample" aria-hidden="true">
-            <div data-slot="login-sample-head">
-              <p>Days from court order to first session</p>
-              <span data-slot="login-sample-chip">Example</span>
+          <div data-slot="login-example" className="hidden max-w-xs flex-col gap-2 rounded-lg border border-border bg-card p-6 text-card-foreground shadow-sm lg:flex">
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-sm text-muted-foreground">Days from court order to first session</p>
+              <Hint text={EXAMPLE_HINT}><span data-slot="login-sample-chip" className={CHIP}>Example</span></Hint>
             </div>
-            <p><strong>23</strong> days median</p>
-            <p>FAS records · Q3 2026 · n = 64 · synthetic</p>
+            <p className="text-sm text-muted-foreground"><strong className="text-4xl font-semibold tabular-nums text-foreground">23</strong> days, median</p>
+            <p data-slot="login-sample-footer" className="text-xs font-medium tracking-wide text-muted-foreground">
+              <ExplainCard term={EXAMPLE} value="23 days" source="FAS records (example)" asOf="Sep 2026" rows={EXAMPLE_ROWS}>FAS records · Q3 2026 · n 64 · synthetic</ExplainCard>
+            </p>
           </div>
           <p data-slot="login-note">Protected data. County-level only; counts under 11 are hidden. Every sign-in is logged.</p>
         </section>

@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { assertLocalSupabase, localPgEnv } from '../db/local-pg.ts';
 import { DEFAULT_CASES, DEFAULT_SEED, generate, toSql } from './generate.ts';
+import { knowledgeSql } from './knowledge.ts';
 
 function statusEnv(): Record<string, string | undefined> {
   const raw = execFileSync('supabase', ['status', '-o', 'env'], { encoding: 'utf8' });
@@ -21,7 +22,7 @@ function statusEnv(): Record<string, string | undefined> {
 
 export function run(argv: string[]): void {
   const i = argv.indexOf('--sql');
-  const sql = toSql(generate(DEFAULT_SEED, DEFAULT_CASES));
+  const sql = toSql(generate(DEFAULT_SEED, DEFAULT_CASES)) + knowledgeSql();
   if (i >= 0) {
     const path = argv[i + 1];
     if (!path) throw new Error('pnpm seed:synthetic --sql <file>');
