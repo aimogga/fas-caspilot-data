@@ -3,6 +3,7 @@
 // DS-12a: the grant matches list. One card per stored match_result; every number, badge and status explains itself (D-040). Renders stored values only.
 import { Ban, Check, CircleDot, CircleHelp, TriangleAlert } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { DraftStrategyButton } from "@/components/grants/DraftStrategyButton";
 import { MatchPanel } from "@/components/grants/MatchPanel";
 import { ExplainCard, Hint } from "@/components/trust/explain";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +57,7 @@ export function MatchList({ rows, asOf }: { rows: MatchItem[]; asOf?: string }) 
             <Badges row={r} />
             <div><Button type="button" variant="outline" size="sm" aria-expanded={open === r.id} aria-controls={`match-${r.id}`} onClick={() => setOpen(open === r.id ? null : r.id)}>How we matched</Button></div>
             {open === r.id ? <MatchPanel id={`match-${r.id}`} components={r.components} flags={r.flags} /> : null}
+            <DraftStrategyButton opportunityId={r.opportunityId} />
           </div>
         </li>
       ))}

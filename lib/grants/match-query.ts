@@ -8,7 +8,7 @@ import type { Flag, OpportunityInput } from './types';
 
 export type MatchFlags = { eligible: boolean | 'unknown'; flags: Flag[] };
 /** `award` and `status` (DS-12a) read stored `opportunity.award_*` and `pipeline_status.status`; `status` is null when nobody has moved the opportunity. */
-export type MatchItem = { id: string; title: string; funder: string; closes: string; award: string; status: string | null; score: number; eligibility: string; components: Component[]; flags: Flag[] };
+export type MatchItem = { id: string; opportunityId: string; title: string; funder: string; closes: string; award: string; status: string | null; score: number; eligibility: string; components: Component[]; flags: Flag[] };
 export type MatchList = { config: { id: string; draft: boolean } | null; asOf: string | null; rows: MatchItem[] };
 type Opp = { title: string; funder: string | null; close_date: string | null; award_floor: number | string | null; award_ceiling: number | string | null };
 type ResultRow = { id: string; opportunity_id: string; score: number | string | null; components: unknown; flags: unknown; computed_at: string; opportunity: Opp | null };
@@ -59,7 +59,7 @@ export class MatchQuery {
       let flags: MatchFlags = { eligible: 'unknown', flags: [] };
       try { flags = fromMatchFlags(r.flags); } catch { /* malformed stored flags read as unknown */ }
       const o = r.opportunity as NonNullable<ResultRow['opportunity']>;
-      return { id: r.id, title: o.title, funder: o.funder ?? 'Funder not recorded', closes: o.close_date ? `closes ${fmt(o.close_date, { month: 'short', day: 'numeric', year: 'numeric' })}` : 'no close date',
+      return { id: r.id, opportunityId: r.opportunity_id, title: o.title, funder: o.funder ?? 'Funder not recorded', closes: o.close_date ? `closes ${fmt(o.close_date, { month: 'short', day: 'numeric', year: 'numeric' })}` : 'no close date',
         award: awardRange(num(o.award_floor), num(o.award_ceiling)), status: status.get(r.opportunity_id) ?? null, score: Number(r.score ?? 0),
         eligibility: MatchQuery.eligibilityLabel(flags), components: Array.isArray(r.components) ? (r.components as Component[]) : [], flags: flags.flags };
     }).sort((a, b) => b.score - a.score || a.title.localeCompare(b.title));
