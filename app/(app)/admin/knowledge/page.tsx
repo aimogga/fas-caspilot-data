@@ -13,15 +13,9 @@ const FIRST_STEPS = "Start with your mission. Then add each program, then eligib
 
 /** Rows plus the signed-in user's id (for "by you"); null when the store cannot be read. */
 async function loadPage() {
-  try {
-    const client = await createClient();
-    if (!client) throw new Error("no Supabase client");
-    const [rows, user] = await Promise.all([loadKnowledge(client), client.auth.getUser()]);
-    return { rows, me: user.data.user?.id ?? null };
-  } catch (e) {
-    console.error("[knowledge] load failed", { message: e instanceof Error ? e.message : "unknown" });
-    return null;
-  }
+  const client = await createClient();
+  const res = client ? await Promise.all([loadKnowledge(client), client.auth.getUser()]).catch((e: Error) => console.error("[knowledge] load failed", { message: e.message })) : null;
+  return res ? { rows: res[0], me: res[1].data.user?.id ?? null } : null;
 }
 
 function FilterForm({ f }: { f: Filters }) {
