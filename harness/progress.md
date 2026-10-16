@@ -954,6 +954,12 @@ State: lint, typecheck, 771 unit tests and `pnpm gate` green locally. No Docker 
 Left: DS-12b (`MatchPanel` redesign; removes the now-unused `MatchTable`). Open: no `loading.tsx` for this route (DS-14), the refresh/API-key footer line needs source-registry rows, the digest threshold could join the header.
 Decisions: none new (designer wording defaults listed in the spec).
 
+## 2026-10-15 23:35 (UTC) — Cloud Agent (Engineer Supervisor) — DS-12a after shots from the PR preview (design)
+Did: captured the "after" evidence for DS-12a from the `ds-12a-grant-matches` preview: `docs/design/reviews/DS-12a/after/staff-grants-matches-{1024,1440}[-hover].png` plus manifest rows. The hover shots show a flag badge's plain-words tooltip.
+State: binary and manifest only. Branch `design/after-shots-ds-12a`. The 375 full-page shots were dropped before commit: the card list renders about 35 000 px tall at phone width (69 opportunities, every card expanded in height), which DS-12b should address with a compact row and a "show more".
+Left: nothing beyond DS-12b.
+Decisions: none new.
+
 ## 2026-10-15 23:25 (UTC) — Claude Code (cloud, Engineer) — F-508a: LLM adapter, Gemini primary, OpenRouter free-tier fallback (#222)
 Did: `lib/llm/` with one server-only entry point, `generateJson({ system, prompt, schema, timeoutMs? })`, returning zod-validated `data` plus `meta { provider, model, attempts, input_tokens, output_tokens, latency_ms }`. Gemini `generateContent` first (JSON mode, `responseJsonSchema` from `z.toJSONSchema`, default `gemini-2.5-flash`); OpenRouter chat completions second (`response_format: json_object`, schema in the system message, `HTTP-Referer` and `X-Title`, default `meta-llama/llama-3.3-70b-instruct:free`). Falls back on 429, 5xx, timeout (30 s default), network error, missing key, invalid JSON or schema; Gemini 400/401/403 logged as a config error by status only. Both failing throws `LlmError` with `{ provider, status }` per attempt and nothing else. New deps `zod` and `server-only` (vitest aliases `server-only` to its empty server module). 15 unit tests with a mocked fetch. `.env.example`, the ARCHITECTURE AI row and the D-003 amendment updated.
 State: lint, typecheck, unit tests and `pnpm gate` green. No real network calls; the keys are not in this shell. Branch `f508a-llm-adapter`.
