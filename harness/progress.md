@@ -965,3 +965,10 @@ Did: Spec `docs/design/specs/DS-13a.md` (audit from the PR #214 before shots). `
 State: lint, typecheck, 785 unit tests green. No Docker, Supabase or preview in this shell: `tests/e2e/board-dashboard.spec.ts` (new H1 and header, Data-as-of rows, three KPIs in order, M4 counts and comparison words, hover = focus words, 44 px triggers at 375, print sizes and hidden faces) runs in CI; after shots are taken by the supervisor from the preview (`--print --pdf`). Branch `ds-13a-board-kpis` off main.
 Left: DS-13b (sections in words, sources paragraph, page numbers, packet card). Open: seed has no Q3 court-ordered first session, so the M1 KPI shows its n = 0 words on previews; the summary paragraph is still seven sentences; no stored packet record for the packet card.
 Decisions: none new (applies D-040).
+## 2026-10-16 00:55 (UTC) — Cloud Agent (Engineer Supervisor) — DS-10b, DS-11b and DS-13a after shots from the PR previews (design)
+Did: captured the "after" evidence for three Day-3 packets from their Vercel previews: `docs/design/reviews/DS-10b/after/staff-{375,1024,1440}[-hover].png` (hover on a "Needs you" badge and a KPI sparkline), `docs/design/reviews/DS-11b/after/need-map-{375,1024,1440}[-hover|-focus].png` (the county card on pointer over and on arrow-key focus, Davis County), and `docs/design/reviews/DS-13a/after/board-{375,1024,1440}[-hover].png` plus the Letter print sheet `board-816-print.png` and `board-816-print.pdf`; manifest rows for each.
+State: binary and manifest only. Branch `design/after-shots-day3` (merges `design/after-shots-ds-10b`, `-ds-13a`, `-ds-11b`). The DS-10b 375 hover shot was dropped because it was identical to the base shot (no pointer at phone width). DS-11b 375 shots are kept: the ranked list brings the page down to about 3 500 px.
+Left: DS-12b and DS-13b after shots once those packets merge. Seen on the previews, to carry into packets: the DS-11b hover card overlaps the legend at 1440; the synthetic seed leaves "Needs you" empty and the board M1 KPI at n = 0.
+Decisions: none new.
+
+---
