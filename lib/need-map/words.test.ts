@@ -37,7 +37,7 @@ describe('DS-11b map words', () => {
   });
   it('explains a county with no score instead of inventing a rank', () => {
     const daggett = hoverWords(find('49009'), data.counties, columns, 'v2-synthetic');
-    expect(daggett.term.plain).toBe('No need score, so no rank or band. Its public measures are still in the table.');
+    expect(daggett.term.plain).toBe('No need score, so no rank or band. Its public measures are in the county panel.');
     expect(daggett.rows.slice(0, 3).map((r) => r[1])).toEqual([undefined, undefined, undefined]);
     expect(daggett.hidden).toBe('The source did not publish this for this county in that release.');
     expect(hoverWords(find('49009'), data.counties, [], null).rows.at(-1)).toEqual(['Source', undefined]);
