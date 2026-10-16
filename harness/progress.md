@@ -1067,5 +1067,16 @@ Did: `lib/packets/words.ts` (pure, 4 tests): `PACKET_TERMS` (outcome change, fam
 State: lint, typecheck, unit tests and `pnpm gate` green. No Docker, Supabase or preview here: `tests/e2e/packets.spec.ts` (existing F-403/F-404 cases kept; the `h2` title check became the eyebrow check) adds AC2–AC6 for CI, including the `-print` `emulateMedia` case. Before and after shots: the supervisor, from production and the preview. Branch `ds-17-packets` off main.
 Left: nothing in DS-17; `loading.tsx` lands with #262. Open: outcome tiles keep the instrument code label (`PHQ-9 mean change`) because the label is shared with the CSV and DOCX through the model; `Page n of N` prints only in engines with `@page` margin boxes (Chromium shows the footer line without a number); no stored packet yet, so the cover's `Prepared` month comes from the clock.
 Decisions: none new (applies D-040).
+## 2026-10-16 03:55 (UTC) — Cloud Agent (Engineer Supervisor) — DS-12b and DS-15a after shots; DS-14 403, DS-15a and DS-16a before shots (design)
+Did: captured from the merged previews `docs/design/reviews/DS-12b/after/staff-grants-matches-{375,1024,1440}[-hover].png` plus a 1440 `-panel` shot with the "How we matched" aside open, and `docs/design/reviews/DS-15a/after/dashboard-{375,1024,1440}[-hover].png` (hover on an M4 completed cell). Before shots from production main for the next packets: `DS-15a/before/dashboard-*`, `DS-16a/before/data-freshness-*` and `DS-14/before/403-from-%2Fstaff-*` (as board). Manifest rows for each.
+State: binary and manifest only. Branch `design/after-shots-day5`. The 1440 panel shot shows four of the six parts (viewport capture); the 375 full-page shot has the whole panel. 375 shots stay under 10 000 px.
+Left: DS-14 after shots (`/login` signed out, `/403` as board) and DS-16a after shots once #262 and #266 merge; DS-16b before/after once #271 merges.
+
+---
+## 2026-10-16 04:45 (UTC) — Cloud Agent (Engineer Supervisor) — DS-14 and DS-16a after shots; DS-16b before shots (design)
+Did: from production main after the merges: `docs/design/reviews/DS-14/after/403-from-%2Fstaff-{375,1024,1440}[-hover].png` as board (hover on the role hint) and `DS-14/after/login-{375,1024,1440}.png` + `login-1440-hover.png` taken signed out (hover on the Example chip); `DS-16a/after/data-freshness-{375,1024,1440}[-hover].png` as staff (hover on the cadence hint) and `-admin` variants showing the "Latest load" column; `DS-16b/before/methodology-{375,1024,1440}.png`. Manifest rows merged from two shots branches, duplicates dropped.
+State: binary and manifest only. Branch `design/after-shots-day6`, stacked on `design/after-shots-day5` (D-032). All 375 shots under 10 000 px.
+Left: DS-16b, DS-15b, DS-17 after shots; DS-18a/b before and after shots.
+Decisions: none new.
 
 ---
