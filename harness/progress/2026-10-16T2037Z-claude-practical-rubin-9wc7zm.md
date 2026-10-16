@@ -1,0 +1,5 @@
+## 2026-10-16 20:40 (UTC) — Claude Code (cloud, Engineer Supervisor) — LLM adapter tests keep the quota store in memory when service-role env is set (tooling)
+Did: `lib/llm/index.test.ts` stubs `SUPABASE_SERVICE_ROLE_KEY` empty in `beforeEach`. With #267 (F-508a2) on main, `defaultQuotaStore()` returns the Postgres store whenever service-role env is present. The `audit` job (nightly-audit.yml) sets it, so the default guard's quota calls went through the test's mocked `fetch` and 12 fallback tests failed ("test failed" in buildHealth, named thanks to #270). Plain `ci` has no service-role env, so it stayed green. First seen on #247 at f7c2e2a; main's next nightly audit would hit it too.
+State: reproduced with `SUPABASE_URL=http://127.0.0.1:1 SUPABASE_SERVICE_ROLE_KEY=not-a-secret pnpm vitest run lib/llm` (12 failed), then 34/34 green with the fix; full `pnpm test` with that env: 1020 passed; without it, green too. Branch `claude/practical-rubin-9wc7zm` off main 97e4821.
+Left: nothing.
+Decisions: none new.
