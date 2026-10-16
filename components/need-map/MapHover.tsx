@@ -15,10 +15,18 @@ export function MapHover({ words, selected = null, children }: { words: Record<s
   const root = useRef<HTMLDivElement>(null), card = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<string | null>(null), [focus, setFocus] = useState<string | null>(null), [at, setAt] = useState<At | null>(null);
   const fips = hover ?? focus ?? selected;
+  // The map sticks from 1024 while the page scrolls, so the card is placed again on scroll and resize: it keeps following the county it describes.
   useLayoutEffect(() => {
-    const path = fips && root.current?.querySelector(`path[data-fips="${fips}"]`);
-    if (!path || !root.current) return setAt(null);
-    setAt({ fips, ...cardPosition(path.getBoundingClientRect(), root.current.getBoundingClientRect(), card.current?.offsetHeight ?? 0) });
+    const place = () => {
+      const path = fips && root.current?.querySelector(`path[data-fips="${fips}"]`);
+      if (!path || !root.current) return setAt(null);
+      const next = { fips, ...cardPosition(path.getBoundingClientRect(), root.current.getBoundingClientRect(), card.current?.offsetHeight ?? 0) };
+      setAt((prev) => (prev && prev.fips === next.fips && prev.left === next.left && prev.top === next.top ? prev : next));
+    };
+    place();
+    window.addEventListener("scroll", place, { passive: true });
+    window.addEventListener("resize", place);
+    return () => { window.removeEventListener("scroll", place); window.removeEventListener("resize", place); };
   }, [fips]);
   const onPointerOver = (e: PointerEvent<HTMLDivElement>) => setHover(fipsOf(e.target));
   const onFocus = (e: FocusEvent<HTMLDivElement>) => setFocus(fipsOf(e.target));

@@ -370,6 +370,7 @@ for (const [width, height] of [[1440, 900], [1024, 768]]) {
     // The hover card still lands on the county after scrolling.
     const county = (await page.locator("path[data-fips='49049']").boundingBox())!;
     await page.mouse.move(county.x + county.width / 2, county.y + county.height / 2);
+    await expect(page.locator("[data-slot=map-hover-card]")).toHaveAttribute("data-fips", "49049");
     const card = (await page.locator("[data-slot=map-hover-card]").boundingBox())!;
     expect(card.y).toBeGreaterThanOrEqual(0);
     expect(card.y + card.height).toBeLessThanOrEqual(height + 1);
