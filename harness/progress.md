@@ -995,3 +995,9 @@ Did: `/staff/grants/applications/[id]` (board 403 by the `/staff` guard): sticky
 State: lint, typecheck, 820 unit tests, `next build` and `pnpm gate --base origin/f508g-application-writer` green; D-012: 399 lines. No Supabase CLI or preview here: `tests/e2e/application-editor.spec.ts` (seeds a synthetic approved strategy + draft with the service role, i.e. the mocked adapter's output; edit + history row, uncited warning, staff has no approve, approve blocked then allowed, Word 409 then 200, board 403, axe) runs in CI; 375/1024/1440 shots are taken by the supervisor from the preview. Branch `f508h-application-editor`, stacked on `f508g-application-writer` (#261).
 Left: no `export_job`/`audit_log` row for application downloads yet (the packet route writes one; would push past 400 lines). No list page linking drafts yet (reach a draft by id). Must not merge before #227; human_gate george-before-merge.
 Decisions: none new.
+
+## 2026-10-16 01:55 (UTC) — Claude Code (cloud, Engineer) — F-508h after shots from the PR preview (design)
+Did: `pnpm shots --id F-508h --tag after` against the #263 preview at `6e79d94`: open draft as staff at 375 (full page), 1024 and 1440, each with a focus variant showing a citation chip's explain card; approved draft as admin at 1024 and 1440. 8 PNGs plus manifest rows in `docs/design/reviews/F-508h/`. The drafts are synthetic rows in fas-dev (stack migrations F-508e and F-508g applied there ahead of merge, with George's OK).
+State: binary and manifest only. Branch `design/after-shots-f508h`, stacked on `f508h-application-editor`.
+Left: fas-dev migration history needs a repair when the F-508 stack merges (F-508g recorded as `20261016013518`; F-508e applied by hand with no history row).
+Decisions: none new.
