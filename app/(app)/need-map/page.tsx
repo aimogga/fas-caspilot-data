@@ -5,6 +5,7 @@ import { FasFilter } from "@/components/need-map/FasFilter";
 import { MapSelect } from "@/components/need-map/MapSelect";
 import { NeedMap } from "@/components/need-map/NeedMap";
 import { NeedTable } from "@/components/need-map/NeedTable";
+import { RankedList } from "@/components/need-map/RankedList";
 import { NeedMapQuery, type NeedTableData } from "@/lib/need-map/query";
 import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
@@ -43,6 +44,8 @@ export default async function NeedMapPage({ searchParams }: { searchParams: Prom
           ) : (
             <div data-slot="need-map-card" className="rounded-lg border border-border bg-card p-4 text-card-foreground"><MapSelect><NeedMap data={data} fas={fas} selected={selected} /></MapSelect></div>
           )}
+          {/* Below md: the ranked list; from md: the table. Both are in the DOM; CSS shows one (DS-11b). */}
+          <RankedList data={data} fas={fas} />
           <NeedTable data={data} fas={fas} />
           <p data-slot="source-footer" className="text-xs font-medium tracking-wide text-muted-foreground">{data.footer}</p>
         </>
