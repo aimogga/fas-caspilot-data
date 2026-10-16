@@ -82,4 +82,28 @@ describe('CountyPanel', () => {
     expect(none).toContain(SELECT_PROMPT);
     expect(none).not.toContain('Highest need');
   });
+  it('DS-20a: before a pick, "Highest need" lists the top rows as links with rank and score explained, the FAS badge, and the prompt', () => {
+    const top = [row(), row({ fips: '49043', name: 'Summit County', fas: false, rank: '2 of 26', score: '+1.20', binNo: 5 })];
+    const out = renderToStaticMarkup(createElement(CountyPanel, { county: null, columns, version: 'v2', rankedCount: 26, sources, top }));
+    expect(out).toMatch(/<h2 id="county-panel-title"[^>]*>Highest need</);
+    expect(out).toContain(TOP_PROMPT);
+    expect(out).not.toContain(SELECT_PROMPT);
+    expect((out.match(/<li data-fips="49\d{3}"/g) ?? []).length).toBe(2);
+    expect(out).toMatch(/<li data-fips="49035"[^>]*><span tabindex="-1" data-term="rank" data-value="1 of 26" data-source="Need score version v2"[^>]*>1<\/span><a [^>]*href="\?county=49035"/);
+    expect(out).toMatch(/aria-label="Salt Lake County, rank 1 of 26, need score \+1\.74, FAS county"/);
+    expect(out).toMatch(/data-term="need_score" data-value="\+1\.74"[^>]*>\+1\.74<\/span>/);
+    expect(out).toMatch(/data-term="fas_county"[^>]*>[^]*? FAS county<\/span><\/a>/);
+    expect(out).toMatch(/Summit County<\/span><\/a>/);
+    expect((out.match(/data-slot="explain-trigger"[^>]*>(Rank|Need score)</g) ?? []).length).toBe(2);
+    expect(out).toContain('data-slot="explain-layer"');
+  });
+
+  it('DS-20a: with ?fas=1 the list is titled for FAS counties and its links keep the filter; with no ranked county the old prompt stays', () => {
+    const out = renderToStaticMarkup(createElement(CountyPanel, { county: null, columns, version: 'v2', rankedCount: 26, sources, top: [row()], fas: true }));
+    expect(out).toMatch(/>Highest need among FAS counties</);
+    expect(out).toContain('href="?county=49035&amp;fas=1"');
+    const none = renderToStaticMarkup(createElement(CountyPanel, { county: null, columns, version: 'v2', rankedCount: 0, sources, top: [] }));
+    expect(none).toContain(SELECT_PROMPT);
+    expect(none).not.toContain('Highest need');
+  });
 });
