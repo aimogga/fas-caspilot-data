@@ -1223,9 +1223,8 @@ Left: #226 admin UI writes through `saveKnowledge`; F-508 citation validation ca
 Decisions: none new.
 
 ---
-
-## 2026-10-16 04:15 (UTC) — Claude Code (cloud, Engineer) — pr-gate PR_GATE_BASE override (D-028, D-032)
-Did: `resolveBase` in `scripts/pr-gate.mjs` (from #239) also reads `PR_GATE_BASE`, after `--base` and before `branch.<name>.gateBase`. Like `gateBase`, it must be an `origin/*` branch: a shared `originRef` check throws `PR_GATE_BASE must be an origin/* branch` otherwise. It is for a one-off or CI run against a parent without setting git config. The push hook runs `pnpm gate`, which inherits the env. The usage line documents it. 1 new unit test (precedence and refusal); the CLI was checked with `PR_GATE_BASE=origin/main` (base printed) and `=HEAD` (refused).
-State: lint, typecheck, unit tests and `pnpm gate` green. Branch `tooling/pr-gate-env-base`. Supersedes nothing; #258 (an earlier duplicate of #239) was closed.
-Left: nothing.
+## 2026-10-16 03:20 (UTC) — Claude Code (cloud, Engineer) — Audit buildHealth names the failing test (tooling)
+Did: `checkBuild` in `scripts/nightly-audit.mjs` is exported and takes the command runner as an argument (default `execSync`). When lint, typecheck or test fails, it now adds up to 12 short lines (FAIL, ×, Error, ETIMEDOUT, ENOBUFS, Timed out; each trimmed to 200 chars, duplicates dropped) and the exit code/signal to the buildHealth details, instead of only "test failed". Three unit tests in `scripts/nightly-audit.test.mjs` (green, failing test named, timeout). Split out of #247, where the `audit` job failed intermittently with "test failed" and nothing to trace (`ci` and every local run passed).
+State: lint, typecheck and unit tests green; gate vs main green. Branch `tooling/audit-build-details` off main.
+Left: if #247's audit goes red again after this merges, the report names the test.
 Decisions: none new.

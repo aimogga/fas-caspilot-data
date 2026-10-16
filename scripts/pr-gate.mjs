@@ -51,15 +51,22 @@ export function longLines(files, max = MAX_LINE_LENGTH, generated = []) {
   return hits;
 }
 
-/** progress.md is append-only: the base file must survive as a prefix, and the branch's own `## ` entry comes after it. */
-export function progressAppendOnly(baseText, headText) {
-  const base = String(baseText).trimEnd();
-  const head = String(headText).trimEnd();
-  if (!head.startsWith(base)) return { verdict: 'fail', evidence: 'lines from the base branch were changed or removed' };
-  const added = head.slice(base.length);
-  const entries = (added.match(/^## /gm) || []).length;
-  if (entries === 0) return { verdict: 'warn', evidence: 'no new entry yet (append one before the PR opens)' };
-  return { verdict: 'pass', evidence: `${entries} new entry appended last` };
+/** D-041: one file per progress entry, so two branches never touch the same path. `harness/progress.md` is frozen history. */
+export const PROGRESS_DIR = 'harness/progress/';
+export const PROGRESS_ENTRY = /^harness\/progress\/\d{4}-\d{2}-\d{2}T\d{4}Z-[A-Za-z0-9._-]+\.md$/;
+
+/** Takes `git diff --name-status --no-renames base...HEAD`: the branch adds exactly one well-named entry file and edits none. */
+export function progressEntry(nameStatus) {
+  const rows = String(nameStatus).split('\n').filter(Boolean).map((l) => l.split('\t'));
+  if (rows.some(([, f]) => f === 'harness/progress.md')) return { verdict: 'fail', evidence: 'harness/progress.md is frozen (D-041); move the entry to harness/progress/<YYYY-MM-DDTHHMMZ>-<branch>.md' };
+  const mine = rows.filter(([, f]) => f.startsWith(PROGRESS_DIR));
+  const edited = mine.filter(([s]) => s !== 'A').map(([s, f]) => `${f} (${s})`);
+  if (edited.length) return { verdict: 'fail', evidence: `existing entries changed: ${edited.join(', ')}` };
+  const bad = mine.map(([, f]) => f).filter((f) => !PROGRESS_ENTRY.test(f));
+  if (bad.length) return { verdict: 'fail', evidence: `entry name must be harness/progress/<YYYY-MM-DDTHHMMZ>-<branch>.md: ${bad.join(', ')}` };
+  if (mine.length === 0) return { verdict: 'warn', evidence: 'no new entry yet (add one before the PR opens)' };
+  if (mine.length > 1) return { verdict: 'fail', evidence: `exactly one new entry per branch, found ${mine.length}: ${mine.map(([, f]) => f).join(', ')}` };
+  return { verdict: 'pass', evidence: `1 new entry: ${mine[0][1]}` };
 }
 
 function gitFiles(exec) {
@@ -108,10 +115,8 @@ export function run({ base = 'origin/main', skipTests = false, exec = execSync, 
     if (hits.length) throw new Error(hits.join(', '));
     return { verdict: 'pass', evidence: `${Object.keys(files).length} changed file(s) checked` };
   });
-  step('progress.md', 'append-only; branch entry last', () => {
-    const baseText = exec(`git show ${base}:harness/progress.md`, { encoding: 'utf-8' });
-    return progressAppendOnly(baseText, read('harness/progress.md', 'utf-8'));
-  });
+  step('progress entry', 'exactly one new harness/progress/ file; no existing entry or progress.md edited', () =>
+    progressEntry(exec(`git diff --name-status --no-renames ${base}...HEAD`, { encoding: 'utf-8' })));
   rows.push({ name: 'PR body', requirement: 'contains `Refs F-xxx`; lists excluded files by name', verdict: 'manual', evidence: 'QA checks the body; not visible here' });
   return rows;
 }

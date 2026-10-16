@@ -40,7 +40,7 @@ Terms live in `lib/trust/glossary.ts` (core: metrics, hidden reasons, freshness,
 pnpm install --frozen-lockfile        # once per worktree
 pnpm lint && pnpm typecheck && pnpm test
 pnpm test:e2e -- tests/e2e/<spec>.spec.ts   # needs local Supabase or CI; /ui needs none
-pnpm gate                              # lint, typecheck, unit, secret scan, 400-line cap, 300-char lines, progress order
+pnpm gate                              # lint, typecheck, unit, secret scan, 400-line cap, 300-char lines, one progress entry file
 pnpm shots -- --id DS-10a --tag before --role staff --route /staff [--base <preview url>] [--hover "<sel>"] [--focus "<sel>"] [--print] [--dark]
 pnpm review-page                       # rebuilds docs/design/reviews/index.html
 ```
@@ -49,7 +49,7 @@ The shots script signs in with `DESIGN_SHOTS_PASSWORD` from the environment (nev
 ## Shared-file rules
 - Kit-only files, never edited by a page packet: `app/globals.css`, `components/trust/index.tsx`, `components/trust/explain.tsx`, `harness/generated-files.json`.
 - `tests/e2e/layout-parity.spec.ts`: additions only (a new route's geometry rows).
-- `harness/progress.md`: append once, last, after merging `origin/main` (`pnpm gate` enforces the order).
+- Progress: add one `harness/progress/<YYYY-MM-DDTHHMMZ>-<branch>.md` file; never edit `harness/progress.md` or another entry (`pnpm gate` enforces it, D-041).
 - Page-local CSS goes in a component-local file (precedent `components/board/print.css`), never in globals.
 
 ## Stop conditions
