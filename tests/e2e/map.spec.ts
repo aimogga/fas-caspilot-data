@@ -27,7 +27,9 @@ for (const [email, eyebrow] of [["staff@example.test", "WORKSPACE"], ["admin@exa
       await expect(page.locator("[data-slot=page-header] p").first()).toHaveText(eyebrow);
       await expect(page.locator("tbody tr")).toHaveCount(29);
       await expect(page.getByText("Need score not computed yet")).toHaveCount(0);
-      await expect(page.getByRole("region", { name: "County need table" })).toBeVisible();
+      // DS-11b: the table from md up; the ranked list below it (both in the DOM, CSS shows one).
+      await expect(page.getByRole("region", { name: "County need table" })).toBeVisible({ visible: width >= 768 });
+      await expect(page.locator("[data-slot=ranked-list]")).toBeVisible({ visible: width < 768 });
       const rows = page.locator("tbody tr");
       await expect(rows.nth(0)).toContainText(/Rich County.*1 of 26.*\+1\.40.*5 of 5.*Ranked/);
       await expect(rows.nth(1)).toContainText(/San Juan County.*2 of 26/);
@@ -81,7 +83,8 @@ test("board: FAS county badges, and the switch filters to seeded FAS counties vi
   }
 });
 
-const LEGEND = ["Need score (version v2-synthetic) · Placeholder bins", "Lowest −1.40 to −0.80", "Highest +1.00 to +1.40", "Not published", "FAS county (outlined)", "Placeholder bins (5 equal-count groups) until need-score weights are set.", "Relative ranking, not absolute need."];
+const LEGEND = ["Need score (version v2-synthetic) · Placeholder bins", "Lowest need · 7 counties", "Highest need · 5 counties", "Not published · 3 counties", "FAS county (outlined)",
+  "Placeholder bins (5 equal-count groups) until need-score weights are set.", "Relative ranking, not absolute need."];
 
 test("map: 29 county paths above the table, legend copy, FAS outlines, hatch; light and dark screenshots", async ({ page }) => {
   await signIn(page, "board@example.test");
@@ -97,7 +100,7 @@ test("map: 29 county paths above the table, legend copy, FAS outlines, hatch; li
       await expect(map.locator("path[data-fips='49009']")).toHaveAttribute("aria-label", "Daggett County, not published");
       await expect(map.locator("path[data-fips='49011']")).toHaveAttribute("aria-label", "Davis County, rank 20 of 26, need score −0.80, FAS county");
       for (const text of LEGEND) await expect(page.locator("[data-slot=map-legend]")).toContainText(text);
-      await expect(map.locator("text").first()).toBeVisible({ visible: width >= 1440 });
+      await expect(map.locator("text").first()).toBeVisible({ visible: width >= 1024 });
       const svg = await map.locator("svg").boundingBox();
       expect(svg?.height ?? 0).toBeLessThanOrEqual(640);
       expect(svg?.width ?? 0).toBeLessThanOrEqual(width === 375 ? 343 : 696);
@@ -164,7 +167,7 @@ test("explain layer: hover, focus and Enter show the same words on a cell; Esc c
   await signIn(page, "staff@example.test");
   const card = page.locator("[data-slot=explain-layer-card]"), panel = page.locator("[data-slot=county-panel]"), dialog = page.getByRole("dialog");
   const cell = page.locator("tr[data-fips='49005'] td[data-term='rank']");
-  for (const width of [1024, 375]) {
+  for (const width of [1024, 800]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/need-map?county=49035");
     await expect(card).toHaveCount(0);
@@ -207,4 +210,76 @@ test("explain layer: hover, focus and Enter show the same words on a cell; Esc c
     await median.hover();
     await expect(page.locator("[data-slot=tooltip-content]")).toContainText("The middle Utah county for this measure");
   }
+});
+
+// DS-11b: one card for the 29 county paths (pointer, arrow-key focus and the selected county show the same words), legend hints, rank labels from 1024.
+test("map hover card: hover, focus and the selected county show the same words; it follows arrow keys, explains a hatched county and stays inside the figure", async ({ page }) => {
+  await signIn(page, "staff@example.test");
+  const card = page.locator("[data-slot=map-hover-card]"), davis = page.locator("path[data-fips='49011']");
+  for (const width of [1440, 1024]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/need-map");
+    await expect(card).toHaveCount(0);
+    await davis.hover();
+    await expect(card).toContainText(/^Davis County.*A higher need score than 6 of the 25 other counties scored.*Rank.*20 of 26.*Need score.*−0\.80.*Band.*Lowest need \(1 of 5\).*FAS county.*Yes, FAS funds therapy here.*Source.*Need score version/s);
+    const words = await card.innerText();
+    const [box, figure] = [await card.boundingBox(), await page.locator("[data-slot=map-hover]").boundingBox()];
+    expect(box!.x + box!.width).toBeLessThanOrEqual(figure!.x + figure!.width + 1);
+    expect(box!.x).toBeGreaterThanOrEqual(figure!.x - 1);
+    await page.mouse.move(0, 0);
+    await expect(card).toHaveCount(0);
+    await davis.focus();
+    expect(await card.innerText()).toBe(words);
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator("path[data-fips='49043']")).toBeFocused();
+    await expect(card).toHaveAttribute("data-fips", "49043");
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/\?county=49043$/);
+    await page.locator("path[data-fips='49009']").hover();
+    await expect(card).toContainText(/Daggett County.*No need score, so no rank or band.*Why it's hidden.*The source did not publish this for this county in that release\./s);
+    await page.locator("[data-slot=map-legend] [data-slot=hint-trigger]").first().hover();
+    await expect(page.locator("[data-slot=tooltip-content]")).toContainText(/^Need scores −\d\.\d\d to −\d\.\d\d, \d+ counties\. Band 1 of 5: equal-count placeholder bands until FAS sets the final weights\.$/);
+    await expect(page.locator("[data-slot=need-map] text").first()).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+    const violations = (await new AxeBuilder({ page }).analyze()).violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+    expect(violations).toEqual([]);
+  }
+});
+
+test.describe("touch", () => {
+  test.use({ hasTouch: true, viewport: { width: 375, height: 812 } });
+  test("375: a tap selects the county and shows its card with the hover words; the ranked list has 29 rows that open the panel; no sideways scroll", async ({ page }) => {
+    await signIn(page, "staff@example.test");
+    await page.goto("/need-map");
+    const card = page.locator("[data-slot=map-hover-card]"), list = page.locator("[data-slot=ranked-list]"), rows = list.locator("li[data-fips]");
+    await page.locator("path[data-fips='49011']").tap();
+    await expect(page).toHaveURL(/\?county=49011$/);
+    await expect(card).toHaveAttribute("data-fips", "49011");
+    await expect(card).toContainText(/^Davis County.*Rank.*20 of 26.*Band.*Lowest need \(1 of 5\).*FAS county/s);
+    await expect(list).toBeVisible();
+    await expect(page.getByRole("region", { name: "County need table" })).toBeHidden();
+    await expect(rows).toHaveCount(29);
+    await expect(rows.nth(0)).toContainText(/^1Rich County\+1\.40Highest need$/);
+    await expect(rows.nth(3)).toContainText(/^4Tooele County\+1\.10Highest needFAS county$/);
+    await expect(rows.nth(26)).toContainText(/Daggett CountyNot publishedNo need score/);
+    expect((await rows.nth(0).locator("a").boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+    const violations = (await new AxeBuilder({ page }).analyze()).violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+    expect(violations).toEqual([]);
+    await rows.nth(0).locator("a").tap();
+    await expect(page).toHaveURL(/\?county=49033#county-panel$/);
+    const panel = page.locator("[data-slot=county-panel]");
+    await expect(panel.getByRole("heading")).toContainText("Rich County");
+    await expect(panel).toBeInViewport();
+  });
+});
+
+test("1024: the table sits in a bordered box that scrolls sideways; the ranked list is hidden", async ({ page }) => {
+  await signIn(page, "board@example.test");
+  await page.setViewportSize({ width: 1024, height: 900 });
+  await page.goto("/need-map");
+  await expect(page.locator("[data-slot=ranked-list]")).toBeHidden();
+  const box = page.locator("[data-slot=need-table]");
+  expect(await box.evaluate((el) => [getComputedStyle(el).overflowX, getComputedStyle(el).borderTopWidth, el.scrollWidth > el.clientWidth])).toEqual(["auto", "1px", true]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(1024);
 });
