@@ -34,7 +34,7 @@ describe('entry helpers', () => {
     const by = Object.fromEntries(INTAKE_SCHEMA.case.fields.map((f) => [f.key, controlFor(f)]));
     expect(by).toMatchObject({ id: 'hidden', referral_source: 'select', court_involved: 'yesno', referral_date: 'date', county_fips: 'county', household_size: 'number', prior_services: 'text' });
     expect(controlFor(INTAKE_SCHEMA.application.fields[1])).toBe('ref');
-    expect(hintFor(INTAKE_SCHEMA.application.fields[1])).toBe('Paste the parent record id');
+    expect(hintFor(INTAKE_SCHEMA.application.fields[1])).toMatch(/^Paste the id of the saved case this belongs to\./);
   });
   it('rowForInsert drops blanks and id, pins org_id, and turns prior_services into a json array', () => {
     const row = rowForInsert('case', { id: null, court_involved: true, referral_date: '2024-03-01', county_fips: '49035', household_size: null, prior_services: 'IOP; school counselor' }, ORG);

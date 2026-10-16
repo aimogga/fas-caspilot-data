@@ -29,11 +29,5 @@
   [data-slot=metric-card] [data-slot=card], [data-slot=freshness-widget] [data-slot=card], [data-slot=board-section] [data-slot=card], [data-slot=packet-pictures] [data-slot=card] { border: 1px solid #000; box-shadow: none; }
   [data-slot=suppressed] { background: none; border: 1px dashed #000; }
   a[href] { text-decoration: none; }
-  /* F-403 evidence packet: controls hidden, each section on its own page, running footer on every printed page. */
-  [data-slot=packet-controls] { display: none !important; }
-  [data-slot=packet-section] { break-before: page; page-break-before: always; }
-  [data-slot=packet-cover] { min-height: 40vh; }
-  [data-slot=packet-footer] { position: fixed; bottom: 0; left: 0; right: 0; font-size: 9pt; text-align: center; }
-  [data-slot=packet-figures] { display: block !important; }
-  [data-slot=packet-figures] > * { break-inside: avoid; border: 1px solid #000; margin-bottom: 6pt; }
+  /* The evidence packet print rules live in components/packets/print.css (DS-17). */
 }

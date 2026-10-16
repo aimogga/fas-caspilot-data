@@ -1,8 +1,10 @@
 "use client";
 
+import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type ChangeEvent } from "react";
 import { FormField, ResponsiveTable, Stack } from "@/components/layout";
+import { Hint } from "@/components/trust/explain";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { postJson, savedText } from "@/lib/intake/commit";
@@ -11,10 +13,15 @@ import { applyMapping, autoMap, fileProblem, missingRequired, PREVIEW_ROWS, summ
 import { INTAKE_ENTITIES, INTAKE_SCHEMA, type IntakeEntity } from "@/lib/intake/schema";
 import { validateRows } from "@/lib/intake/validate";
 import { useHydrated } from "@/lib/use-hydrated";
+import { cn } from "@/lib/utils";
 
 type Step = 1 | 2 | 3; type Parsed = { name: string; headers: string[]; rows: string[][] };
 type Saved = { batchId: string; rows: number };
-const STEPS = ["Choose file", "Map columns", "Preview"] as const;
+const STEPS = ["Choose file", "Match columns", "Preview"] as const;
+// DS-18a stepper: one disc per step; the current one is filled in the accent, finished ones carry a tick, the rest stay muted. Tokens only.
+const DISC = "inline-flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold tabular-nums";
+const DISC_STATE = { current: "border-primary bg-primary text-primary-foreground", done: "border-primary text-primary", next: "border-border text-muted-foreground" };
+const DROPZONE = "rounded-lg border border-dashed border-input bg-card p-6 shadow-sm";
 const NOT_IN_FILE = "";
 const NUMERIC = new Set(["integer", "money"]);
 const titleCase = (s: string) => s[0].toUpperCase() + s.slice(1);
@@ -86,12 +93,16 @@ export function UploadWizard({ countyFips }: { countyFips: string[] }) {
 
   return (
     <Stack gap={6}>
-      <ol data-slot="wizard-steps" data-hydrated={hydrated || undefined} className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-        {STEPS.map((label, i) => (
-          <li key={label} aria-current={step === i + 1 ? "step" : undefined} className={step === i + 1 ? "font-semibold" : "text-muted-foreground"}>
-            {i + 1} {label}{step === i + 1 ? <span className="sr-only"> (current step)</span> : null}
-          </li>
-        ))}
+      <ol data-slot="wizard-steps" data-hydrated={hydrated || undefined} className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
+        {STEPS.map((label, i) => {
+          const state = step === i + 1 ? "current" : step > i + 1 ? "done" : "next";
+          return (
+            <li key={label} data-state={state} aria-current={state === "current" ? "step" : undefined} className={cn("flex items-center gap-2", state === "current" ? "font-semibold" : "text-muted-foreground")}>
+              <span aria-hidden className={cn(DISC, DISC_STATE[state])}>{state === "done" ? <Check className="size-3.5" strokeWidth={3} /> : i + 1}</span>
+              <span className="sr-only">Step {i + 1}{state === "current" ? ", current step" : state === "done" ? ", done" : ""}: </span>{label}
+            </li>
+          );
+        })}
       </ol>
       <h2 className="font-serif text-xl font-semibold">Step {step} of 3: {STEPS[step - 1]}</h2>
       {step === 1 ? (
@@ -102,11 +113,14 @@ export function UploadWizard({ countyFips }: { countyFips: string[] }) {
             </select>
           </FormField>
           <a className={buttonVariants({ variant: "outline" })} href={`/api/intake/template?entity=${entity}`}>Download template</a>
-          <FormField label="CSV file (5 MB max)" htmlFor="intake-file">
-            <input id="intake-file" type="file" accept=".csv,text/csv" onChange={onFile} aria-describedby={fileError ? "intake-file-error" : undefined} aria-invalid={fileError ? true : undefined} />
-          </FormField>
-          {fileError ? <p id="intake-file-error" role="alert" className="text-sm text-destructive">{fileError}</p> : null}
-          {parsed ? <p className="text-sm">{parsed.name} · <span className="tabular-nums">{parsed.rows.length}</span> data rows found.</p> : null}
+          <div data-slot="dropzone" className={cn(DROPZONE, "flex flex-col gap-3")}>
+            <FormField label="CSV file (5 MB max)" htmlFor="intake-file">
+              <input id="intake-file" type="file" accept=".csv,text/csv" onChange={onFile} className="max-w-full" aria-describedby={fileError ? "intake-file-help intake-file-error" : "intake-file-help"} aria-invalid={fileError ? true : undefined} />
+            </FormField>
+            <p id="intake-file-help" className="text-sm text-muted-foreground">Drop a CSV here or choose one from your computer. Use the template so the columns match.</p>
+            {fileError ? <p id="intake-file-error" role="alert" className="text-sm text-destructive">{fileError}</p> : null}
+            {parsed ? <p className="text-sm">{parsed.name} · <span className="tabular-nums">{parsed.rows.length}</span> data rows found.</p> : null}
+          </div>
           <div className="flex flex-wrap gap-3">
             <a className={buttonVariants({ variant: "outline" })} href="/staff">Back</a>
             <Button type="button" disabled={!parsed} onClick={() => setStep(2)}>Next</Button>
@@ -137,7 +151,7 @@ export function UploadWizard({ countyFips }: { countyFips: string[] }) {
       {step === 3 && parsed && preview ? (
         <Stack gap={4}>
           <p data-slot="preview-summary" className="text-base font-medium tabular-nums">{preview.summary.text}</p>
-          <p className="text-sm text-muted-foreground">Showing the first {Math.min(PREVIEW_ROWS, parsed.rows.length)} of {parsed.rows.length} rows. Cells marked Error carry the reason in a tooltip; the error report lists every one.</p>
+          <p className="text-sm text-muted-foreground">Showing the first {Math.min(PREVIEW_ROWS, parsed.rows.length)} of {parsed.rows.length} rows. Cells marked Error show the reason when you hover, focus or tap them; the error report lists every one.</p>
           <ResponsiveTable>
             <thead>
               <tr>
@@ -152,8 +166,8 @@ export function UploadWizard({ countyFips }: { countyFips: string[] }) {
                   {fields.map((f) => {
                     const msg = preview.summary.byCell.get(`${i + 2}:${f.key}`);
                     return (
-                      <td key={f.key} data-error={msg ? "true" : undefined} title={msg ? `✕ ${msg}` : undefined} className={NUMERIC.has(f.type) ? "text-right tabular-nums" : undefined}>
-                        {msg ? <><span className="font-semibold text-destructive">Error</span><span className="sr-only">: {msg}</span> </> : null}{rec[f.key]}
+                      <td key={f.key} data-error={msg ? "true" : undefined} className={NUMERIC.has(f.type) ? "text-right tabular-nums" : undefined}>
+                        {msg ? <><Hint text={msg} label={`Error: ${msg}`} className="px-1 font-semibold text-destructive underline decoration-dotted underline-offset-4">Error</Hint> </> : null}{rec[f.key]}
                       </td>
                     );
                   })}

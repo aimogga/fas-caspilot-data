@@ -38,7 +38,8 @@ for (const width of WIDTHS) {
         formBottom: rect("[data-slot=login-main]").bottom,
         panelTop: rect("[data-slot=login-panel]").top,
         panelLeft: rect("[data-slot=login-panel]").left,
-        sampleDisplay: getComputedStyle(document.querySelector("[data-slot=login-sample]")!).display,
+        sampleDisplay: getComputedStyle(document.querySelector("[data-slot=login-example]")!).display,
+        sampleHidden: document.querySelector("[data-slot=login-example]")!.getAttribute("aria-hidden"),
       };
     });
     expect(m.scroll).toBeLessThanOrEqual(width);
@@ -59,6 +60,7 @@ for (const width of WIDTHS) {
     } else {
       expect(m.panelLeft).toBeGreaterThan(m.h1Left);
       expect(m.sampleDisplay).not.toBe("none");
+      expect(m.sampleHidden).toBeNull();
       await expect(page.locator("[data-slot=login-sample-chip]")).toHaveText("Example");
     }
     expect(await axe(page)).toEqual([]);
@@ -83,6 +85,39 @@ for (const width of WIDTHS) {
     await page.screenshot({ path: `${ART}/login-${width}-error.png`, fullPage: true });
   });
 }
+
+// DS-14: the one number on the page is an example and says so on hover, focus and Enter; the badge explains the preview.
+test("example card explains itself: chip and badge hints read the same on hover and focus, the footer opens the Example figure card", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/login");
+  const tip = page.locator("[data-slot=tooltip-content]").first();
+  const chip = page.locator("[data-slot=login-example] [data-slot=hint-trigger]");
+  await chip.hover();
+  await expect(tip).toHaveText("An example of how a number looks once you sign in. It is not a real figure.");
+  const hovered = await tip.textContent();
+  await page.mouse.move(0, 0);
+  await chip.focus();
+  await expect(tip).toHaveText(hovered ?? "");
+  await page.keyboard.press("Escape");
+  const badge = page.locator("[data-slot=login-panel] [data-slot=hint-trigger]", { hasText: "Synthetic data" });
+  if (await badge.count()) {
+    await badge.hover();
+    await expect(tip).toHaveText("This preview runs on made-up records. No real family data is here.");
+  }
+  const footer = page.locator("[data-slot=login-sample-footer] [data-slot=explain-trigger]");
+  await expect(footer).toHaveText("FAS records · Q3 2026 · n 64 · synthetic");
+  await footer.focus();
+  await page.keyboard.press("Enter");
+  const dialog = page.getByRole("dialog", { name: "Example figure" });
+  await expect(dialog).toContainText("Nothing here comes from a family record.");
+  for (const row of ["Value", "23 days", "Source", "FAS records (example)", "As of", "Sep 2026", "Period", "Q3 2026", "n", "64"]) await expect(dialog).toContainText(row);
+  await expect(dialog).not.toContainText("hidden");
+  expect(await axe(page)).toEqual([]);
+  await page.keyboard.press("Escape");
+  await expect(footer).toBeFocused();
+  const numeral = await page.locator("[data-slot=login-example] strong").evaluate((el) => getComputedStyle(el).fontSize);
+  expect(parseFloat(numeral)).toBeGreaterThanOrEqual(32);
+});
 
 test("Show/Hide toggles the password field with aria-pressed", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
