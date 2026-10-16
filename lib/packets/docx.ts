@@ -1,7 +1,7 @@
 /** F-404 DOCX export (pure): the packet model rendered with `docx`. Every string comes from `Packet` through `docxBlocks` (picture captions via
  * `pictureCaption`, which `renderText` lists too), never recomputed, so `assertPacket` on the model and the checks over `docxText` cover the same text.
  * Letter, 1-inch margins, built-in fonts only; pictures are SVG with a PNG fallback. */
-import { AlignmentType, Document, Footer, HeadingLevel, ImageRun, type IRunOptions, Packer, Paragraph, Table, TableCell, TableRow, TextRun, WidthType } from 'docx';
+import { AlignmentType, Document, Footer, Header, HeadingLevel, ImageRun, type IRunOptions, Packer, Paragraph, Table, TableCell, TableRow, TextRun, WidthType } from 'docx';
 import type { Picture } from '../board/pictures';
 import { pictureFallback } from '../charts/png';
 import { pictureCaption, pictureSvg, SVG_WIDTH, svgHeight } from '../charts/svg';
@@ -68,6 +68,7 @@ export async function packetToDocx(p: Packet): Promise<Uint8Array<ArrayBuffer>> 
     styles: { default: { document: { run: { font: FONT, size: 22 } } } },
     sections: [{
       properties: { page: { size: LETTER, margin: { top: MARGIN, right: MARGIN, bottom: MARGIN, left: MARGIN } } },
+      ...(p.header ? { headers: { default: new Header({ children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [run(p.header, { bold: true, size: 18, color: '9A6700' })] })] }) } } : {}),
       footers: { default: new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [run(footer, { size: 18, color: '555555' })] })] }) },
       children: children(blocks.filter((b) => b.kind !== 'footer')),
     }],

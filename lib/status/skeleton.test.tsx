@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { PageSkeleton } from "@/components/status/PageSkeleton";
 import { StatusCard } from "@/components/status/StatusCard";
 
-const ROUTES = ["staff", "dashboard", "need-map", "board", "staff/grants/matches", "staff/intake", "staff/entry", "admin"]; // DS-14 five + DS-18a one + DS-18b two
+const ROUTES = ["staff", "dashboard", "need-map", "board", "staff/grants/matches", "staff/intake", "staff/entry", "admin", "staff/grants"]; // DS-14 five + DS-18a one + DS-18b two + DS-24 one
 
 ROUTES.push("data-freshness", "methodology", "staff/packets"); // DS-25 three
 describe("DS-14 loading skeletons and status card", () => {

@@ -1,6 +1,7 @@
 import 'server-only';
 import { z } from 'zod';
 import { OpenRouterGuard, type GuardSkip, type RetryHeaders } from './guard';
+import { defaultQuotaStore } from './quota-store';
 import {
   callGemini,
   callOpenRouter,
@@ -15,6 +16,7 @@ import {
  * Prompts carry public data and suppressed aggregates only, never FAS client rows (golden rules 2 and 5). */
 export type { Provider } from './providers';
 export { MemoryQuotaStore, OpenRouterGuard, type QuotaStore } from './guard';
+export { defaultQuotaStore, SupabaseQuotaStore } from './quota-store';
 
 /** Why an attempt failed or was skipped: the HTTP status, or a word. Never a key, a prompt or a response body. */
 export type AttemptStatus = number | 'missing_key' | 'timeout' | 'network' | 'invalid_json' | 'invalid_schema' | GuardSkip;
@@ -38,7 +40,7 @@ export class LlmError extends Error {
 }
 
 export type GenerateJsonInput<T extends z.ZodType> = { system: string; prompt: string; schema: T; timeoutMs?: number };
-/** Tests inject a guard with their own clock and store; the app uses one per server instance. */
+/** Tests inject a guard with their own clock and store; the app uses one per server instance, counting in Postgres when it can. */
 export type GenerateJsonOptions = { guard?: OpenRouterGuard };
 
 let defaultGuard: OpenRouterGuard | undefined;
@@ -53,7 +55,7 @@ export async function generateJson<T extends z.ZodType>(
   input: GenerateJsonInput<T>,
   options: GenerateJsonOptions = {},
 ): Promise<{ data: z.infer<T>; meta: LlmMeta }> {
-  const guard = options.guard ?? (defaultGuard ??= new OpenRouterGuard());
+  const guard = options.guard ?? (defaultGuard ??= new OpenRouterGuard(defaultQuotaStore()));
   const started = Date.now();
   const jsonSchema = z.toJSONSchema(input.schema) as Record<string, unknown>;
   delete jsonSchema.$schema; // Gemini's response schema takes the body only

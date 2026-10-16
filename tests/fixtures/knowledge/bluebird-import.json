@@ -1,0 +1,12 @@
+{
+  "source_document": "Bluebird Family Fund narrative kit (fictional)",
+  "as_of": "2026-01-15",
+  "entries": [
+    { "key": "mission", "category": "mission", "title": "Mission (fictional)", "status": "approved", "source": null, "as_of": null,
+      "body": "Bluebird Family Fund is a made-up nonprofit used for testing. It pays licensed therapists so families can start counseling quickly." },
+    { "key": "completion", "category": "outcome", "title": "Completion (fictional)", "status": "approved", "source": "Fictional annual report", "as_of": "2025-12-31",
+      "body": "In this invented example year, 7 in 10 families who started therapy completed at least 8 sessions." },
+    { "key": "closing", "category": "boilerplate", "title": "Closing paragraph (fictional draft)", "status": "draft",
+      "body": "Draft only: we would welcome the chance to discuss how this fictional program could grow with your support." }
+  ]
+}

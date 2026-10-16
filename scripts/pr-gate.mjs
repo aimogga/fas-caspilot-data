@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // pr-gate (D-028): the deterministic PR checks QA applies, as a script instead of an instruction.
-// Usage: node scripts/pr-gate.mjs [--base origin/main] [--skip-tests]   (pnpm gate)
+// Usage: [PR_GATE_BASE=origin/<parent>] node scripts/pr-gate.mjs [--base origin/main] [--skip-tests]   (pnpm gate)
 // Rows print as `step | requirement | verdict | evidence`; exit 1 when any row fails.
 import { execFileSync, execSync, spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -131,12 +131,19 @@ export function exitCode(rows) {
 
 const gitArgs = (args) => execFileSync('git', args, { encoding: 'utf-8' });
 
-/** D-032: a stacked branch is gated against its parent. `--base` wins; else `git config branch.<current>.gateBase` (set by the
- * engineer, e.g. `origin/f508a-llm-adapter`); else `origin/main`. Only `origin/*` refs are accepted, so the base is always a pushed branch.
+/** Only `origin/*` refs are accepted from the env or git config, so the base is always a pushed branch. */
+function originRef(ref, source) {
+  if (!/^origin\/[\w./-]+$/.test(ref)) throw new Error(`${source} must be an origin/* branch, got ${ref}`);
+  return ref;
+}
+
+/** D-032: a stacked branch is gated against its parent. `--base` wins; else `PR_GATE_BASE` (one-off or CI override); else
+ * `git config branch.<current>.gateBase` (set by the engineer, e.g. `origin/f508a-llm-adapter`); else `origin/main`.
  * `git` takes an argument list, never a shell string: a branch name may contain `;` or `$(…)`. */
-export function resolveBase(argv = process.argv, git = gitArgs) {
+export function resolveBase(argv = process.argv, git = gitArgs, env = process.env) {
   const i = argv.indexOf('--base');
   if (i !== -1) return argv[i + 1];
+  if (env.PR_GATE_BASE) return originRef(env.PR_GATE_BASE, 'PR_GATE_BASE');
   let configured = '';
   try {
     const branch = git(['rev-parse', '--abbrev-ref', 'HEAD']).trim();
@@ -144,9 +151,7 @@ export function resolveBase(argv = process.argv, git = gitArgs) {
   } catch {
     return 'origin/main';
   }
-  if (!configured) return 'origin/main';
-  if (!/^origin\/[\w./-]+$/.test(configured)) throw new Error(`gateBase must be an origin/* branch, got ${configured}`);
-  return configured;
+  return configured ? originRef(configured, 'gateBase') : 'origin/main';
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
