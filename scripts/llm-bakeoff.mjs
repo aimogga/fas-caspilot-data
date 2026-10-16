@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 // F-508i: the D-003 LLM bake-off (`pnpm eval:llm [--date=YYYY-MM-DD]`). Needs LLM_EVAL=1 (the pnpm script sets it) and the provider keys in the env;
 // a missing key or quota skips that provider's runs and the report says so. Writes harness/audits/llm-bakeoff-<date>.{json,md} plus drafts beside them.
-// Loads lib/strategy with Node's type transform (lib/llm uses parameter properties) (resolve hook as in grant-match-eval.mjs, plus directory imports); `--conditions=react-server` makes `server-only` an empty module.
+// Loads lib/strategy with Node's type transform (lib/llm uses parameter properties) (resolve hook as in grant-match-eval.mjs, plus directory imports and the '@/' alias); `--conditions=react-server` makes `server-only` an empty module.
 import { register } from 'node:module';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+const root = pathToFileURL(join(import.meta.dirname, '..') + '/').href;
 const hook = `export async function resolve(spec, ctx, next) {
-  if (!/^\\.\\.?\\//.test(spec) || /\\.[cm]?[jt]s$/.test(spec)) return next(spec, ctx);
+  if (spec.startsWith('@/')) spec = ${JSON.stringify(root)} + spec.slice(2); // the tsconfig/vitest '@/' alias
+  if (!/^(\\.\\.?\\/|file:)/.test(spec) || /\\.[cm]?[jt]s$/.test(spec)) return next(spec, ctx);
   try { return await next(spec, ctx); } catch (e) {
     if (e?.code === 'ERR_UNSUPPORTED_DIR_IMPORT') return next(spec + '/index.ts', ctx);
     if (e?.code !== 'ERR_MODULE_NOT_FOUND') throw e;
