@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { ORGANIZATION_NAME, PRODUCT_NAME } from "@/lib/branding";
 import { crumbFor, navForRole, PREVIEW_FOOTER, type NavGroup } from "@/lib/shell/nav";
 import { NAV_ICONS } from "./nav-icons";
+import { ThemeMenu } from "./ThemeMenu";
 
 export function Wordmark() {
   return (
@@ -88,7 +89,7 @@ export function ShellFrame({ role, roleLabel, name, showSynthetic, freshnessChip
             <div data-slot="topbar-brand"><Wordmark /></div>
             <details data-slot="user-menu">
               <summary aria-label="Account menu"><span data-slot="avatar" aria-hidden>{name.slice(0, 1).toUpperCase()}</span><span data-slot="user-name">{name}<small data-slot="user-role">{roleLabel}</small></span></summary>
-              <div><p>{name}</p><p data-slot="role-label">{roleLabel}</p><form action="/api/auth/signout" method="post"><button type="submit">Sign out</button></form></div>
+              <div><p>{name}</p><p data-slot="role-label">{roleLabel}</p><ThemeMenu /><form action="/api/auth/signout" method="post"><button type="submit">Sign out</button></form></div>
             </details>
           </div>
           <div data-slot="topbar-sub">

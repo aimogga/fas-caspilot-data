@@ -4,12 +4,16 @@ import { Loader2 } from "lucide-react"
 import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 const buttonVariants = cva(
-  "appearance-none inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-[color,background-color,opacity] focus-visible:outline-2 focus-visible:outline-solid focus-visible:[outline-color:var(--ring)] focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  [
+    "appearance-none inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-[color,background-color,opacity]",
+    "focus-visible:outline-2 focus-visible:outline-solid focus-visible:[outline-color:var(--ring)] focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50",
+    "aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  ].join(" "),
   {
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive: "bg-destructive text-white hover:bg-destructive/90 dark:bg-destructive/60",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline: "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "border-0 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
