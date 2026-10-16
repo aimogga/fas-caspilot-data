@@ -1054,4 +1054,10 @@ Did: `lib/packets/words.ts` (pure, 4 tests): `PACKET_TERMS` (outcome change, fam
 State: lint, typecheck, unit tests and `pnpm gate` green. No Docker, Supabase or preview here: `tests/e2e/packets.spec.ts` (existing F-403/F-404 cases kept; the `h2` title check became the eyebrow check) adds AC2–AC6 for CI, including the `-print` `emulateMedia` case. Before and after shots: the supervisor, from production and the preview. Branch `ds-17-packets` off main.
 Left: nothing in DS-17; `loading.tsx` lands with #262. Open: outcome tiles keep the instrument code label (`PHQ-9 mean change`) because the label is shared with the CSV and DOCX through the model; `Page n of N` prints only in engines with `@page` margin boxes (Chromium shows the footer line without a number); no stored packet yet, so the cover's `Prepared` month comes from the clock.
 Decisions: none new (applies D-040).
+## 2026-10-16 02:25 (UTC) — Cloud Agent (Engineer Supervisor) — DS-13b after shots and DS-14 login before shots (design)
+Did: captured the DS-13b "after" evidence from the `ds-13b-board-sections` preview: `docs/design/reviews/DS-13b/after/board-{375,1024,1440}[-hover].png` (hover on a county rank cell in section 4), the Letter print sheet `board-816-print.png` and the four-page `board-816-print.pdf`, with manifest rows. Retook the DS-14 "before" shots of `/login` signed out (`docs/design/reviews/DS-14/before/login-{375,1024,1440}.png`): the first set had followed the sign-in redirect and showed `/board`; manifest rows updated.
+State: binary and manifest only. Branch `design/after-shots-day4`. The 375 board shot is about 4 900 px (kept). Seen on the print PDF: the fixed footer repeats "Page N of 4" at the bottom of each page as intended; in the full-page PNG the fixed footer renders mid-page, which is a screenshot artefact, not a layout fault.
+Left: DS-12b, DS-14 and DS-15a/16a after shots once those packets merge.
+Decisions: none new.
+
 ---
