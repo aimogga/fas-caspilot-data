@@ -42,10 +42,10 @@ test("staff generates and views a cited draft; an admin approves it; staff canno
   await expect(chip).toBeFocused();
   await expect(page.locator("[data-slot=model], [data-slot=review]")).toHaveText(["Google Gemini · e2e-fake", "Not reviewed yet: an admin approves or rejects"]);
   await expect(page.getByRole("button", { name: "Approve draft" })).toHaveCount(0);
-  for (const width of [375, 1024]) {
+  for (const width of [375, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-    await axe(page);
+    await axe(page); await page.screenshot({ path: `test-results/strategy-${width}.png`, fullPage: true });
   }
 
   const admin = await (await browser.newContext()).newPage();
@@ -64,5 +64,5 @@ test("a failed draft shows the citation report in plain words and nothing usable
   await expect(page.locator("[data-slot=citation-report] li")).toHaveText(["Criterion 1, evidence 1: the number 99 does not match any source it cites.", "Tried 2 times."]);
   await expect(page.locator("[data-slot=criteria-map]")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Approve draft" })).toHaveCount(0);
-  await axe(page);
+  for (const width of [375, 1024, 1440]) { await page.setViewportSize({ width, height: 900 }); await axe(page); await page.screenshot({ path: `test-results/strategy-failed-${width}.png`, fullPage: true }); }
 });
