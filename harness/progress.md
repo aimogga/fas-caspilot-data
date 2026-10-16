@@ -1048,3 +1048,10 @@ Left: `app/(app)/data-freshness/loading.tsx` once `PageSkeleton` (#262) is on ma
 Decisions: none new (designer defaults listed in the spec: chip word stays `Current`; the run cell uses the `ExplainCard` face because `Provenance` has no started/finished rows and the kit is read-only).
 
 ---
+## 2026-10-16 02:25 (UTC) — Cloud Agent (Engineer Supervisor) — DS-13b after shots and DS-14 login before shots (design)
+Did: captured the DS-13b "after" evidence from the `ds-13b-board-sections` preview: `docs/design/reviews/DS-13b/after/board-{375,1024,1440}[-hover].png` (hover on a county rank cell in section 4), the Letter print sheet `board-816-print.png` and the four-page `board-816-print.pdf`, with manifest rows. Retook the DS-14 "before" shots of `/login` signed out (`docs/design/reviews/DS-14/before/login-{375,1024,1440}.png`): the first set had followed the sign-in redirect and showed `/board`; manifest rows updated.
+State: binary and manifest only. Branch `design/after-shots-day4`. The 375 board shot is about 4 900 px (kept). Seen on the print PDF: the fixed footer repeats "Page N of 4" at the bottom of each page as intended; in the full-page PNG the fixed footer renders mid-page, which is a screenshot artefact, not a layout fault.
+Left: DS-12b, DS-14 and DS-15a/16a after shots once those packets merge.
+Decisions: none new.
+
+---
