@@ -954,6 +954,12 @@ State: lint, typecheck, 771 unit tests and `pnpm gate` green locally. No Docker 
 Left: DS-12b (`MatchPanel` redesign; removes the now-unused `MatchTable`). Open: no `loading.tsx` for this route (DS-14), the refresh/API-key footer line needs source-registry rows, the digest threshold could join the header.
 Decisions: none new (designer wording defaults listed in the spec).
 
+## 2026-10-15 23:35 (UTC) — Cloud Agent (Engineer Supervisor) — DS-12a after shots from the PR preview (design)
+Did: captured the "after" evidence for DS-12a from the `ds-12a-grant-matches` preview: `docs/design/reviews/DS-12a/after/staff-grants-matches-{1024,1440}[-hover].png` plus manifest rows. The hover shots show a flag badge's plain-words tooltip.
+State: binary and manifest only. Branch `design/after-shots-ds-12a`. The 375 full-page shots were dropped before commit: the card list renders about 35 000 px tall at phone width (69 opportunities, every card expanded in height), which DS-12b should address with a compact row and a "show more".
+Left: nothing beyond DS-12b.
+Decisions: none new.
+
 ## 2026-10-16 00:08 (UTC) — Claude Code (cloud, Engineer) — pr-gate: stacked branches gate against their parent (D-028, D-032)
 Did: `scripts/pr-gate.mjs` exports `resolveBase`: `--base` wins, else `git config branch.<current>.gateBase` (e.g. `git config branch.f508e-strategy-engine.gateBase origin/f508a-llm-adapter`), else `origin/main`; a configured base must be an `origin/*` branch, so it is always a pushed parent. The CLI prints `gate base: <ref>` first. The push hook (`scripts/pr-gate-hook.mjs`, unchanged) runs `pnpm gate`, so a stacked branch's push is now gated as D-032 already measures it (D-012 against the parent, progress.md append-only against the parent). Found when the F-508e stacked branches were blocked by a count that included #223. 2 new unit tests.
 State: lint, typecheck, unit tests and `pnpm gate` green. Branch `tooling/gate-stacked-base` off main. CI still gates PRs against the PR base sha.
