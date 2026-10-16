@@ -4,6 +4,13 @@
     "supabase/config.toml",
     "public/geo/utah-counties.json",
     "tests/fixtures/ut_courts/filings.xlsx",
-    "docs/design/reviews/index.html"
+    "docs/design/reviews/index.html",
+    "tests/fixtures/usaspending/award-detail-doj.json",
+    "tests/fixtures/usaspending/award-detail-hhs.json",
+    "tests/fixtures/ojp_awards/robots-ovc.txt",
+    "tests/fixtures/ojp_awards/award-ovc-published.html",
+    "tests/fixtures/ojp_awards/award-ojjdp-published.html",
+    "tests/fixtures/ojp_awards/award-no-abstract.html",
+    "tests/fixtures/ojp_awards/award-broken-layout.html"
   ]
 }
