@@ -53,8 +53,8 @@ export function copyHits(texts: { path: string; text: string }[], abstracts: Sna
   return hits;
 }
 
-/** Pure citation validator: every number in fas_position, evidence claims and suggested_ask must match a value of a cited fact that is in the snapshot and resolves. */
-export function validateDraft(d: StrategyDraft, s: Snapshot): CitationReport {
+/** Checks one claim: each cited id is in the snapshot and resolves, and every number matches a value of a cited fact. Shared with lib/application. */
+export function claimChecker(s: Snapshot): (path: string, text: string, ids: string[], numbers?: number[]) => ClaimCheck {
   const byId = new Map(s.facts.map((f) => [f.citation_id, f]));
   const resolve = (id: string): Fact | string => {
     const f = byId.get(id), [kind = '', ...rest] = id.split(':'), r = RESOLVERS.get(kind);
@@ -62,11 +62,16 @@ export function validateDraft(d: StrategyDraft, s: Snapshot): CitationReport {
     if (!r) return `no resolver for ${kind}`;
     return r(rest.join(':'), f) ? f : `${id} does not resolve`;
   };
-  const check = (path: string, text: string, ids: string[], numbers = numbersIn(text)): ClaimCheck => {
+  return (path, text, ids, numbers = numbersIn(text)) => {
     const got = ids.map(resolve), facts = got.filter((g): g is Fact => typeof g !== 'string');
     const problems = [...got.filter((g): g is string => typeof g === 'string'), ...numbers.filter((n) => !matches(n, facts)).map((n) => `${n} has no matching cited value`)];
     return { path, text, citation_ids: ids, numbers, problems };
   };
+}
+
+/** Pure citation validator: every number in fas_position, evidence claims and suggested_ask must match a value of a cited fact that is in the snapshot and resolves. */
+export function validateDraft(d: StrategyDraft, s: Snapshot): CitationReport {
+  const check = claimChecker(s);
   const claims = d.criteria_map.flatMap((c, i) => [
     check(`criteria_map[${i}].fas_position`, c.fas_position, c.evidence.map((e) => e.citation_id)),
     ...c.evidence.map((e, j) => check(`criteria_map[${i}].evidence[${j}].claim`, e.claim, [e.citation_id])),
