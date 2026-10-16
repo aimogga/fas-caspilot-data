@@ -1096,15 +1096,17 @@ Left: DS-18b (`/staff/entry`, `AggregateBadge`, nav icons) on its own branch. Op
 Decisions: none new (designer defaults in the spec: `Committed` reads `Saved` to match the button; eyebrow stays the shared `WORKSPACE`; one `Hint` per error cell rather than an `ExplainLayer`; no drag-and-drop script because the native input already accepts a drop).
 
 ---
-## 2026-10-15 23:55 (UTC) — Cloud Agent (Engineer) — design-shots: hover and focus shots wait for the explain face (fix)
-Did: `scripts/design-shots.mjs` took the hover and focus PNGs right after `page.hover` / `page.focus`, before the Radix HoverCard (`openDelay` 150 ms) or Hint tooltip had opened, so DS-10a's `staff-*-hover.png` were byte-identical to the base shots. New exported `waitForFace(page, { timeout 5 s, settle 250 ms, fallback 500 ms })` waits for `FACE` = `[data-slot=explain-content]:visible, [role=tooltip]:visible`, settles briefly when it shows, and falls back to the fixed wait (never throws) when the hovered element opens no face; both the hover and focus branches call it. Two unit tests with a page stub cover the shown and fallback paths and the selector/timeout arguments.
-State: lint, typecheck, 769 unit tests (97 files) green. Probe against a stub page with the pre-installed Chromium: a plain element falls back in ~500 ms, an explain trigger resolves once the face is visible. `docs/design/reviews/**` untouched.
-Left: re-run `pnpm shots --tag after --hover "[data-slot=home-tile] [data-slot=explain-trigger]"` for DS-10a so the hover shots differ from the base.
-Merge note: main gained a 3 s inline wait on the primitive slots (`tooling/shots-hover-wait`); merging main replaced it with `waitForFace`, whose `FACE` now covers the hover-card, tooltip, popover and explain-content slots plus `role=tooltip`, adding the settle and fallback waits and the unit tests.
 ## 2026-10-16 04:55 (UTC) — Cloud Agent (Engineer Supervisor) — DS-16b and DS-17 after shots; DS-17, DS-18a and DS-18b before shots (design)
 Did: from production main 923caad: `docs/design/reviews/DS-16b/after/methodology-{375,1024,1440}[-hover].png` (hover on a weight card label). Before shots for the open packets: `DS-17/before/staff-packets-*`, `DS-18a/before/staff-intake-*`, `DS-18b/before/staff-entry-*` and `admin-*` plus the 800 px nav rail `staff-entry-800.png`. After #274 landed: `DS-17/after/staff-packets-{375,1024,1440}[-hover].png` (hover on a figure tile), the Letter print sheet `staff-packets-816-print.png` and `.pdf`. Manifest rows for each.
 State: binary and manifest only. Branch `design/after-shots-day7`. All 375 shots under 10 000 px.
 Left: DS-15b, DS-18a and DS-18b after shots once #273, #276 and #277 are on production.
 Decisions: none new.
+
+---
+## 2026-10-15 23:55 (UTC) — Cloud Agent (Engineer) — design-shots: hover and focus shots wait for the explain face (fix)
+Did: `scripts/design-shots.mjs` took the hover and focus PNGs right after `page.hover` / `page.focus`, before the Radix HoverCard (`openDelay` 150 ms) or Hint tooltip had opened, so DS-10a's `staff-*-hover.png` were byte-identical to the base shots. New exported `waitForFace(page, { timeout 5 s, settle 250 ms, fallback 500 ms })` waits for `FACE` = `[data-slot=explain-content]:visible, [role=tooltip]:visible`, settles briefly when it shows, and falls back to the fixed wait (never throws) when the hovered element opens no face; both the hover and focus branches call it. Two unit tests with a page stub cover the shown and fallback paths and the selector/timeout arguments.
+State: lint, typecheck, 769 unit tests (97 files) green. Probe against a stub page with the pre-installed Chromium: a plain element falls back in ~500 ms, an explain trigger resolves once the face is visible. `docs/design/reviews/**` untouched.
+Left: re-run `pnpm shots --tag after --hover "[data-slot=home-tile] [data-slot=explain-trigger]"` for DS-10a so the hover shots differ from the base.
+Merge note: main gained a 3 s inline wait on the primitive slots (`tooling/shots-hover-wait`); merging main replaced it with `waitForFace`, whose `FACE` now covers the hover-card, tooltip, popover and explain-content slots plus `role=tooltip`, adding the settle and fallback waits and the unit tests.
 
 ---
