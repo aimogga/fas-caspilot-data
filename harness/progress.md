@@ -1036,3 +1036,9 @@ State: lint, typecheck, unit tests and `pnpm gate --base f508e-strategy-engine` 
 Evidence: PR #241 (this part, stacked on #240); CI `ci` (includes `test:db`) and `secret-scan`.
 Left to do: merges together with part 1; must not merge before #227.
 Decisions needed: none.
+
+## 2026-10-16 04:50 (UTC) — Claude Code (cloud, Engineer) — F-508e QA fix: award_abstract and recipient_profile in the snapshot (#231, criteria 2, 5, 7)
+Did: `loadSnapshot` now reads `award_abstract` (`id, award_history_id, text`, `status = 'published'`) for the similar awards and passes them to `abstracts` as `award_abstract:<id>` (copy guard only; `buildPrompt` sends facts, never abstracts), and reads whitelisted `recipient_profile` columns (matched_name, state, ntee_code, ruling_year, total_revenue, program_service_expenses, match_confidence; no EIN, officers or compensation; `match_confidence <> 'none'`) as facts `recipient_profile:<id>`. `citations.ts` registers UUID resolvers for both kinds; `registerResolver` is a `Map.set`, so a second registration (f508d `winners.ts`) is harmless. New `lib/strategy/snapshot-sources.test.ts` (fake chainable client, no network): loadSnapshot includes both kinds; a draft copying 12 words from an abstract fails with a copy hit; a recipient_profile citation resolves; re-registration does not throw.
+State: lint, typecheck, unit tests and `pnpm gate` green. Branch `f508e-strategy-storage` (gateBase `origin/f508e-strategy-engine`).
+Left: QA re-check of #240/#241 at the new head.
+Decisions: none new.
