@@ -20,7 +20,9 @@ async function openMenu(page: Page) {
   await page.locator("[data-slot=user-menu] summary").click();
   await expect(page.locator("[data-slot=theme-menu]")).toBeVisible();
 }
-const option = (page: Page, name: string) => page.locator("[data-slot=theme-menu]").getByRole("button", { name, exact: false });
+const THEME_VALUE: Record<string, string> = { Light: "light", Dark: "dark", "Match device": "system" };
+// By data-theme, not accessible name: the Match device row's hint sentence is part of its name and contains the word "light".
+const option = (page: Page, name: string) => page.locator(`[data-slot=theme-menu] [data-slot=theme-option][data-theme=${THEME_VALUE[name]}]`);
 
 test("theme: Dark from the account menu sets html.dark and color-scheme, survives a reload, and is marked as pressed", async ({ page }) => {
   await signIn(page, "staff@example.test");
