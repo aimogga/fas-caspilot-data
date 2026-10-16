@@ -131,10 +131,7 @@ export async function analyzeWinners(x: WinnerInput, generate: typeof generateJs
 }
 
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
-const isUuid: Resolver = (ref) => new RegExp(`^${UUID}$`, 'i').test(ref);
-// recipient_profile (#228) and award_abstract (#229) are on this branch's base: their kinds resolve from import.
-registerResolver('recipient_profile', isUuid);
-registerResolver('award_abstract', isUuid);
+// recipient_profile (#228) and award_abstract (#229) resolve through the base RESOLVERS in citations.ts.
 /** Kinds whose table may not exist yet. org_knowledge cites the immutable version a citation quotes. */
 export const WINNER_RESOLVERS: Record<string, [table: string, Resolver]> = {
   org_knowledge: ['org_knowledge_version', (ref) => new RegExp(`^${UUID}@v[1-9]\\d*$`, 'i').test(ref)],

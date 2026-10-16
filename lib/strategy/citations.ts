@@ -8,14 +8,15 @@ export type CitationReport = { ok: boolean; claims: ClaimCheck[]; copied: { path
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const uuid: Resolver = (ref) => UUID.test(ref);
-/** Registry of citation kinds for tables on this branch. Registration points, when those modules land:
- * `registerResolver('org_knowledge', …)` (#225), `registerResolver('recipient_profile', …)` (#228), `registerResolver('award_abstract', …)` (#229). */
+/** Registry of citation kinds. `org_knowledge` (#225) registers itself via `registerResolver`; registering a kind again just replaces it with the same check. */
 export const RESOLVERS = new Map<string, Resolver>([
   ['opportunity', uuid],
   ['opportunity_criteria', uuid],
   ['public_indicator', (ref, f) => uuid(ref, f) && !!f.source?.source_id && !!f.source?.vintage],
   ['award_history', uuid],
   ['award_history_summary', uuid], // ref is the opportunity id the summary was computed for
+  ['award_abstract', uuid], // copy guard only (#229)
+  ['recipient_profile', uuid], // public Form 990 facts (#228)
   ['metric', (ref, f) => /^(m[1-6]|o1):\d{4}-Q[1-4]$/.test(ref) && Object.values(f.values).some((v) => v !== null)],
 ]);
 export function registerResolver(kind: string, resolver: Resolver): void {

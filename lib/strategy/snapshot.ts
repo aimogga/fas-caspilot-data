@@ -15,7 +15,13 @@ export type CriterionRow = { id: string; criterion: string; weight_points: numbe
 export type IndicatorRow = {
   id: string; source_id: string; indicator_code: string; geo_fips: string; period: string; value: number | string | null; moe: number | string | null; unit: string | null; vintage: string; ingest_run_id: string | null;
 };
-/** `extra`: ready facts from org_knowledge (#225), recipient_profile (#228) and award_abstract (#229) once their modules exist; their kinds must be registered resolvers. */
+export type AbstractRow = { id: string; award_history_id: string; text: string };
+/** Whitelisted Form 990 columns only: no officer names, compensation or EIN. */
+export type RecipientProfileRow = {
+  id: string; award_history_id: string | null; matched_name: string | null; state: string | null; ntee_code: string | null; ruling_year: number | null;
+  total_revenue: number | string | null; program_service_expenses: number | string | null; match_confidence: string;
+};
+/** `extra`: ready facts of registered kinds (recipient_profile, later org_knowledge #225). `extraAbstracts`: award_abstract text for the copy guard only. */
 export type SnapshotInput = {
   opportunity: OpportunityRow; criteria: CriterionRow[]; indicators: IndicatorRow[]; similar: SimilarAward[]; summary: AwardSummary;
   metrics: DashboardMetrics | null; period: string; extra?: Fact[]; extraAbstracts?: { citation_id: string; text: string }[]; now: Date;
@@ -84,12 +90,26 @@ export function assembleSnapshot(x: SnapshotInput): Snapshot {
   return assertPrivate({ opportunity_id: o.id, built_at: x.now.toISOString(), facts, abstracts });
 }
 
+/** Published abstracts of the similar awards: copy-guard input, never prompt text. */
+export const abstractsOf = (rows: AbstractRow[]) => rows.filter((r) => r.text).map((r) => ({ citation_id: `award_abstract:${r.id}`, text: r.text }));
+export const profileFacts = (rows: RecipientProfileRow[]): Fact[] => rows.map((r) => ({
+  citation_id: `recipient_profile:${r.id}`, label: `Form 990 profile of ${r.matched_name ?? 'past recipient'}${r.state ? ` (${r.state})` : ''}`,
+  values: { ruling_year: num(r.ruling_year), total_revenue: num(r.total_revenue), program_service_expenses: num(r.program_service_expenses) },
+  source: { source_id: 'propublica_990', ntee_code: r.ntee_code, match_confidence: r.match_confidence },
+}));
+
 /** Thin read layer under the caller's RLS: opportunity, criteria, FAS-county indicators, award history and the suppressed metrics. No client table is read here. */
 export async function loadSnapshot(client: SupabaseClient, opportunityId: string, now: Date): Promise<Snapshot> {
   const opportunity = must(await client.from('opportunity').select('id,title,funder,description,award_floor,award_ceiling,close_date').eq('id', opportunityId).single()) as OpportunityRow;
   const criteria = must(await client.from('opportunity_criteria').select('id,criterion,weight_points,text').eq('opportunity_id', opportunityId)) as CriterionRow[];
   const indicators = await loadServiceIndicators(client);
   const { similar, summary } = await AwardHistoryQuery.forOpportunity(client, opportunityId, 10);
+  const ids = similar.map((a) => a.id);
+  const abstracts = must(await client.from('award_abstract').select('id,award_history_id,text').eq('status', 'published').in('award_history_id', ids)) as AbstractRow[];
+  const profiles = must(await client.from('recipient_profile')
+    .select('id,award_history_id,matched_name,state,ntee_code,ruling_year,total_revenue,program_service_expenses,match_confidence')
+    .neq('match_confidence', 'none').in('award_history_id', ids)) as RecipientProfileRow[];
   const f = parseFilters({}, now);
-  return assembleSnapshot({ opportunity, criteria, indicators, similar, summary, metrics: await MetricsQuery.load(client, f), period: f.period, now });
+  return assembleSnapshot({ opportunity, criteria, indicators, similar, summary, metrics: await MetricsQuery.load(client, f), period: f.period, now,
+    extra: profileFacts(profiles), extraAbstracts: abstractsOf(abstracts) });
 }
