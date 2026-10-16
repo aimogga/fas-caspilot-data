@@ -1202,3 +1202,16 @@ Did: George asked for the selected county to be highlighted and for the map to m
 State: lint, typecheck, unit tests green; e2e runs in CI (no Supabase here): new cases in `tests/e2e/map.spec.ts` (map top within 2 px while scrolling at 1440x900 and 1024x768, selected stroke and dim opacity light and dark, 375 not sticky). Local synthetic render through a scratch `/ui` page with the real shell (restored): map top 72 px at every scroll step, map 588 px at 1440x900 and 456 px at 1024x768, legend inside the viewport, hover card correct after scrolling, no sideways scroll, axe 0 serious/critical light and dark. Shots `docs/design/reviews/DS-23/{before,after}/`. Branch `ds-23-sticky-map` stacked on `ds-22-county-picker` (gateBase set, D-032).
 Left: nothing in DS-23. Open: on phones the menu sits below the map, so choosing a county means scrolling back up; the picker could also appear above the map below 1024 (George to decide).
 Decisions: none new (designer defaults in the spec: opacity on the path, map height reserves legend and page-bottom space).
+
+---
+## 2026-10-16 (UTC) — Claude Code (design planning) — Plan for DS-20 (need map declutter) and DS-21 (sidebar sections with tabs)
+Did: audited `/need-map` rendered locally from main with 13 synthetic indicators at 1440 and 375 (18-column table with sideways scroll, 2–3 line cells repeating nouns and margins, a source note under every header, a 1,100 px county panel with a source line per measure, the legend pushed below the panel, 5,660 px at 375). Wrote `docs/design/PLAN_DS-20_DS-21.md`: DS-20a layout and legend, DS-20b county panel, DS-20c table (5 scored rates by default, "All measures" switch, one-line cells); DS-21 cuts Workspace from 10 links to 5 sections (Home, Insights, Data, Grants, Evidence packets) with link tabs to the existing routes, so no auth or route changes.
+State: plan only, no code. Docs-only diff.
+Left: George's four answers at the end of the plan; then specs and PRs in the order listed there.
+Decisions: none new (proposed only).
+
+---
+## 2026-10-16 (UTC) — Claude Code (design planning) — DS-20/DS-21 open questions decided
+Did: at George's request, made the four open calls in `docs/design/PLAN_DS-20_DS-21.md` with the reason for each: sections Home · Insights · Data · Grants · Evidence packets (Methodology is the last Data tab); the need-map table opens on the 5 scored rates with a Key | All switch in `?cols=all`; the panel shows the source once per group; the table stays visible under the map. Added four house rules for later data pages.
+State: plan decided, no code. All four packets unblocked: DS-21a ∥ DS-20a, then DS-20b, then DS-20c.
+Decisions: the four above, recorded in the plan (designer defaults George delegated; no acceptance criterion changed).
