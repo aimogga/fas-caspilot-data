@@ -1,0 +1,92 @@
+[
+  {
+    "id": "DS-16a",
+    "tag": "after",
+    "route": "/data-freshness",
+    "width": 375,
+    "variant": "base",
+    "host": "fas-caspilot-data-2c4d4grjl-aimoggas-projects.vercel.app",
+    "sha": "04e34c8",
+    "at": "2026-10-16T04:10:11.629Z"
+  },
+  {
+    "id": "DS-16a",
+    "tag": "after",
+    "route": "/data-freshness",
+    "width": 375,
+    "variant": "hover",
+    "host": "fas-caspilot-data-2c4d4grjl-aimoggas-projects.vercel.app",
+    "sha": "04e34c8",
+    "at": "2026-10-16T04:10:11.839Z"
+  },
+  {
+    "id": "DS-16a",
+    "tag": "after",
+    "route": "/data-freshness",
+    "width": 1024,
+    "variant": "base",
+    "host": "fas-caspilot-data-2c4d4grjl-aimoggas-projects.vercel.app",
+    "sha": "04e34c8",
+    "at": "2026-10-16T04:10:13.425Z"
+  },
+  {
+    "id": "DS-16a",
+    "tag": "after",
+    "route": "/data-freshness",
+    "width": 1024,
+    "variant": "hover",
+    "host": "fas-caspilot-data-2c4d4grjl-aimoggas-projects.vercel.app",
+    "sha": "04e34c8",
+    "at": "2026-10-16T04:10:13.569Z"
+  },
+  {
+    "id": "DS-16a",
+    "tag": "after",
+    "route": "/data-freshness",
+    "width": 1440,
+    "variant": "base",
+    "host": "fas-caspilot-data-2c4d4grjl-aimoggas-projects.vercel.app",
+    "sha": "04e34c8",
+    "at": "2026-10-16T04:10:15.515Z"
+  },
+  {
+    "id": "DS-16a",
+    "tag": "after",
+    "route": "/data-freshness",
+    "width": 1440,
+    "variant": "hover",
+    "host": "fas-caspilot-data-2c4d4grjl-aimoggas-projects.vercel.app",
+    "sha": "04e34c8",
+    "at": "2026-10-16T04:10:15.654Z"
+  },
+  {
+    "id": "DS-16a",
+    "tag": "after",
+    "route": "/data-freshness",
+    "width": 375,
+    "variant": "admin",
+    "host": "fas-caspilot-data-2c4d4grjl-aimoggas-projects.vercel.app",
+    "sha": "04e34c8",
+    "at": "2026-10-16T04:10:29.925Z"
+  },
+  {
+    "id": "DS-16a",
+    "tag": "after",
+    "route": "/data-freshness",
+    "width": 1024,
+    "variant": "admin",
+    "host": "fas-caspilot-data-2c4d4grjl-aimoggas-projects.vercel.app",
+    "sha": "04e34c8",
+    "at": "2026-10-16T04:10:31.516Z"
+  },
+  {
+    "id": "DS-16a",
+    "tag": "after",
+    "route": "/data-freshness",
+    "width": 1440,
+    "variant": "admin",
+    "host": "fas-caspilot-data-2c4d4grjl-aimoggas-projects.vercel.app",
+    "sha": "04e34c8",
+    "at": "2026-10-16T04:10:33.541Z"
+  }
+]
