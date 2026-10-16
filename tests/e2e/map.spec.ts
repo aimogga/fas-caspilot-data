@@ -332,3 +332,75 @@ for (const email of ["staff@example.test", "admin@example.test", "board@example.
     }
   });
 }
+
+// DS-23: the selected county is unmistakable and the map follows the scroll from 1024. (Axe with a county selected, light and dark, is the test above.)
+async function openAllMeasures(page: Page) {
+  await page.locator("[data-slot=county-panel] summary").filter({ hasText: "All measures" }).click();
+}
+const MAP = (page: Page) => page.getByRole("group", { name: "Utah county need map" });
+const scrollTo = (page: Page, y: number) => page.evaluate((top) => window.scrollTo(0, top), y);
+
+for (const [width, height] of [[1440, 900], [1024, 768]]) {
+  test(`the map stays in view while the panel scrolls at ${width}x${height}`, async ({ page }) => {
+    await signIn(page, "board@example.test");
+    await page.setViewportSize({ width, height });
+    await page.goto("/need-map?county=49035");
+    await openAllMeasures(page);
+    // The seed has few measures, so the panel may be short: give the panel's column enough height to scroll, as a county with every measure open would.
+    await page.evaluate(() => {
+      const spacer = document.createElement("div");
+      spacer.style.height = "1400px";
+      spacer.setAttribute("aria-hidden", "true");
+      document.querySelector("[data-slot=county-panel]")?.parentElement?.appendChild(spacer);
+    });
+    const legend = page.locator("[data-slot=map-legend]");
+    const max = await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight);
+    expect(max).toBeGreaterThan(400);
+    // Start far enough down that the map has reached its pinned spot (the heading above it wraps to more lines at 1024), then it must not move; the spot is the 4.5rem offset.
+    await scrollTo(page, 800);
+    const stuck = (await MAP(page).boundingBox())?.y ?? -1;
+    expect(Math.abs(stuck - 72)).toBeLessThanOrEqual(2);
+    for (let y = 800; y <= max + 300; y += 300) {
+      await scrollTo(page, Math.min(y, max));
+      const box = await MAP(page).boundingBox(), caption = await legend.boundingBox();
+      expect(Math.abs((box?.y ?? -99) - stuck)).toBeLessThanOrEqual(2);
+      expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(height);
+      expect(caption?.y ?? -1).toBeGreaterThanOrEqual(0);
+      expect((caption?.y ?? 0) + (caption?.height ?? 0)).toBeLessThanOrEqual(height);
+    }
+    // The hover card still lands on the county after scrolling.
+    const county = (await page.locator("path[data-fips='49049']").boundingBox())!;
+    await page.mouse.move(county.x + county.width / 2, county.y + county.height / 2);
+    await expect(page.locator("[data-slot=map-hover-card]")).toHaveAttribute("data-fips", "49049");
+    const card = (await page.locator("[data-slot=map-hover-card]").boundingBox())!;
+    expect(card.y).toBeGreaterThanOrEqual(0);
+    expect(card.y + card.height).toBeLessThanOrEqual(height + 1);
+  });
+}
+
+test("the selected county is full strength with a 3 px outline and the others dim, light and dark", async ({ page }) => {
+  await signIn(page, "board@example.test");
+  await page.setViewportSize({ width: 1440, height: 900 });
+  for (const colorScheme of ["light", "dark"] as const) {
+    await page.emulateMedia({ colorScheme });
+    await page.goto("/need-map");
+    await expect(page.locator("path[data-dimmed]")).toHaveCount(0);
+    await page.goto("/need-map?county=49035");
+    await expect(page.locator("path[data-selected='true']")).toHaveCount(1);
+    await expect(page.locator("path[data-dimmed='true']")).toHaveCount(28);
+    await expect(page.locator("path[data-selected-outline='49035']")).toHaveCSS("stroke-width", "3px");
+    await expect(page.locator("path[data-selected-halo='49035']")).toHaveCSS("stroke-width", "6px");
+    await expect(page.locator("path[data-fips='49035']")).toHaveCSS("opacity", "1");
+    await expect(page.locator("path[data-fips='49049']")).toHaveCSS("opacity", "0.55");
+  }
+});
+
+test("at 375 the map is not sticky and the page does not scroll sideways", async ({ page }) => {
+  await signIn(page, "board@example.test");
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto("/need-map?county=49035");
+  await openAllMeasures(page);
+  await scrollTo(page, 1600);
+  expect((await MAP(page).boundingBox())?.y ?? 0).toBeLessThan(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(375);
+});

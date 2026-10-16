@@ -1195,3 +1195,10 @@ Did: George asked for the map first and the dashboard second. `lib/shell/section
 State: lint, typecheck, unit tests green; e2e runs in CI. Branch `ds-21b-insights-order` off main 4bd6c08.
 Left: nothing.
 Decisions: none new.
+
+---
+## 2026-10-16 17:30 (UTC) — Designer agent (DS-23) — Need map: the picked county stands out, the map follows the scroll
+Did: George asked for the selected county to be highlighted and for the map to move with the scroll. `NeedMap`: with a county picked (map or menu) the other 28 paths get `data-dimmed` (55% opacity, 150 ms, none under reduced motion), the picked one keeps full strength with a two-stroke outline in the third pass (6 px `--background` under 3 px `--foreground`, above the FAS outlines; `data-selected-halo`, `data-selected-outline`); counties `?fas=1` already mutes are not dimmed twice; ranks on dimmed counties read in `--foreground`; the sr-only summary adds `Selected: <County>.`. From 1024 the figure (map + legend) is `sticky` at `top-[4.5rem]`, `self-start`, the map height is `min(640px, 100dvh - 19.5rem)` so the block fits and does not ride up at the page end; the panel is no longer sticky. Spec `docs/design/specs/DS-23.md`.
+State: lint, typecheck, unit tests green; e2e runs in CI (no Supabase here): new cases in `tests/e2e/map.spec.ts` (map top within 2 px while scrolling at 1440x900 and 1024x768, selected stroke and dim opacity light and dark, 375 not sticky). Local synthetic render through a scratch `/ui` page with the real shell (restored): map top 72 px at every scroll step, map 588 px at 1440x900 and 456 px at 1024x768, legend inside the viewport, hover card correct after scrolling, no sideways scroll, axe 0 serious/critical light and dark. Shots `docs/design/reviews/DS-23/{before,after}/`. Branch `ds-23-sticky-map` stacked on `ds-22-county-picker` (gateBase set, D-032).
+Left: nothing in DS-23. Open: on phones the menu sits below the map, so choosing a county means scrolling back up; the picker could also appear above the map below 1024 (George to decide).
+Decisions: none new (designer defaults in the spec: opacity on the path, map height reserves legend and page-bottom space).
