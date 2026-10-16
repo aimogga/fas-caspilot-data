@@ -1153,6 +1153,16 @@ Decisions: none new; no token added or changed (designer defaults in the spec: `
 
 ---
 
+## 2026-10-16 08:10 (UTC) — Cloud Agent (Engineer Supervisor) — Day-9 dark-mode shots on every route (DS-19 evidence)
+
+**Did:** merged #282 (DS-19 dark mode, 49f22b0), #283 (map arrow-key test retry, 371b196) and #284 (DS-18b after shots, c028345). Took DS-19 "after" shots against the production deployment of 49f22b0 on all thirteen routes at 375/1024/1440 in dark and light, plus one 1024 dark shot of `/staff` with the account menu open showing the Appearance rows. `docs/design/reviews/DS-19/manifest.json` is listed in `harness/generated-files.json` (it is written by `scripts/design-shots.mjs`; D-012).
+
+**Evidence:** `docs/design/reviews/DS-19/after/*`; review page republished (v13) with a dark row per route.
+
+**Next:** none planned in the design lane; George reviews the page and anything he dislikes becomes the next packet.
+
+---
+
 ## 2026-10-16 04:15 (UTC) — Claude Code (cloud, Engineer) — pr-gate PR_GATE_BASE override (D-028, D-032)
 Did: `resolveBase` in `scripts/pr-gate.mjs` (from #239) also reads `PR_GATE_BASE`, after `--base` and before `branch.<name>.gateBase`. Like `gateBase`, it must be an `origin/*` branch: a shared `originRef` check throws `PR_GATE_BASE must be an origin/* branch` otherwise. It is for a one-off or CI run against a parent without setting git config. The push hook runs `pnpm gate`, which inherits the env. The usage line documents it. 1 new unit test (precedence and refusal); the CLI was checked with `PR_GATE_BASE=origin/main` (base printed) and `=HEAD` (refused).
 State: lint, typecheck, unit tests and `pnpm gate` green. Branch `tooling/pr-gate-env-base`. Supersedes nothing; #258 (an earlier duplicate of #239) was closed.
