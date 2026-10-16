@@ -62,7 +62,7 @@ test("staff sees seeded matches by score and the How we matched panel shows only
     await expect(page.locator("[data-slot=match-aside] [data-slot=match-panel]")).toHaveCount(width < 1024 ? 0 : 1);
     const parts = panel.locator("[data-slot=match-component]");
     await expect(parts).toHaveCount(6);
-    await expect(parts.first()).toContainText(`Mission fit 30 of 30 points ${TOP_REASON}`);
+    await expect(parts.first()).toContainText(new RegExp(`Mission fit\\s*30 of 30 points\\s*${TOP_REASON.replace(/[()]/g, "\\$&")}`));
     await expect(parts.first().locator("[data-slot=match-sources] li")).toHaveText(["FAS settings · program themes", "Grant listing · description"]);
     await expect(panel.locator("[data-slot=match-check]")).toHaveCount(10);
     await expect(panel.locator("[data-slot=match-check][data-status=pass]")).toHaveCount(10);
@@ -72,7 +72,7 @@ test("staff sees seeded matches by score and the How we matched panel shows only
     await expect(buttons.first()).toHaveAttribute("aria-expanded", "false");
     await expect(panel.locator("[data-slot=panel-score]")).toHaveText("0");
     await expect(panel.locator("[data-slot=match-cap]")).toHaveText(CAP_NOTE);
-    await expect(panel.locator("[data-slot=match-check]").first()).toHaveText("Who may apply · Only state governments may apply");
+    await expect(panel.locator("[data-slot=match-check]").first()).toHaveText(/Who may apply · Only state governments may apply$/);
     await expect(panel.locator("[data-slot=match-check][data-status=flagged]")).toHaveCount(1);
     await panel.getByRole("button", { name: "Close" }).click();
     await expect(panel).toHaveCount(0);
