@@ -25,6 +25,8 @@ beforeEach(() => {
   vi.stubEnv('OPENROUTER_API_KEY', OPENROUTER_KEY);
   vi.stubEnv('GEMINI_MODEL', '');
   vi.stubEnv('OPENROUTER_MODEL', '');
+  // The default guard's quota store is Postgres when service-role env is set (the audit job has it); keep it in memory here.
+  vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', '');
   vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
 
