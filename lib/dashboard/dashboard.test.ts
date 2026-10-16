@@ -75,10 +75,11 @@ describe("DS-07a team dashboard (F-401)", () => {
     const shown = renderToStaticMarkup(createElement(M6Card, { data: { n: 29, affiliatedShare: 0.5862, groups } as M6Result }));
     expect(plain(shown)).toMatch(/Affiliated providers 59% · Other providers 41%.*Affiliated providers Avg rate per hour: \$120 Dollars: \$1,700 Episodes: 17 Other providers Avg rate per hour: \$90 Dollars: \$1,200 Episodes: 12/);
     expect([...shown.matchAll(/<th scope="col"[^>]*>([^<]+)<\/th>/g)].map((h) => h[1])).toEqual([...M6_COLUMNS]);
-    expect(shown).toMatch(/aria-hidden="true" class="[^"]*flex h-3.*width:59%.*width:41%/);
+    // DS-15b: the bar's segments are labelled reading targets of the explain layer, no longer aria-hidden.
+    expect(shown).toMatch(/data-slot="m6-bar" class="[^"]*flex h-4.*width:59%.*width:41%/);
     const hidden = renderToStaticMarkup(createElement(M6Card, { data: { n: 20, affiliatedShare: null, groups: [groups[0]!, { group: "other", dollars: null, episodes: null, avgRatePerUnit: null }] } as M6Result }));
     expect(plain(hidden)).toMatch(/Affiliated providers — n<11.*Other providers — n<11.*\$120.*Other providers Avg rate per hour: — n<11/);
-    expect(hidden).not.toMatch(/h-3/);
+    expect(hidden).not.toMatch(/m6-bar/);
   });
   it("O1 card: one row per active measure with its direction note; mean, share and n hide together under 11 (DS-07c, F-305)", () => {
     const m = { label: "PHQ-9", direction: "lower_is_better" as const, improved: 5, unchanged: 1, worsened: 5 };
