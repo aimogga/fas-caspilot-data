@@ -1182,3 +1182,10 @@ Did: with a county selected the panel now reads name + FAS badge, then one serif
 State: lint, typecheck, unit tests green; e2e in CI (no Supabase here; `map.spec.ts` and `visual.spec.ts` updated: level-2 panel heading, rank line, disclosure closed then opened with Enter, one source line per group, group source card). Local synthetic render through a scratch `/ui` page (restored): axe 0 serious/critical at 375/1024/1440, light and dark, closed and open; no sideways scroll. Panel closed 1,455 → 690 px at 1440, 2,335 → 908 at 375. Shots `docs/design/reviews/DS-20b/{before,after}/`. Branch `ds-20b-county-panel` stacked on `ds-20a-need-map-layout` (gateBase set, D-032).
 Left: DS-20c (table) on its own branch. Open: 690 px closed vs the plan's ~450 (bars and sentence kept as planned); `rankedCount` prop now unused in the panel.
 Decisions: none new (designer defaults in the spec: rank line is the one serif headline at `text-xl`; groups split by source and release; bar sub-line without the repeated value).
+
+---
+## 2026-10-16 (UTC) — Claude Code (design) — DS-21b: County need map is the first Insights tab, Team dashboard the second
+Did: George asked for the map first and the dashboard second. `lib/shell/sections.ts` lists Insights as `County need map` · `Team dashboard`, so the Insights sidebar link (a section link opens its first tab) now opens `/need-map`. `components/shell/nav-icons.ts` loses the `/dashboard` glyph (the dashboard is only a tab now; Insights carries the map glyph). Tests updated: `sections.test.ts`, `nav.test.ts`, `nav-icons.test.ts` (8 hrefs); the e2e specs read `SECTIONS`, so they follow the order. Spec `docs/design/specs/DS-21.md` updated. No URL, guard or role change.
+State: lint, typecheck, unit tests green; e2e runs in CI. Branch `ds-21b-insights-order` off main 4bd6c08.
+Left: nothing.
+Decisions: none new.
