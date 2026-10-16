@@ -7,11 +7,12 @@ import { indicatorCodes, inputLabel, sourceLabel } from './labels';
 export type ConfigRow = { version: string; weights: Record<string, number>; created_at: string; approved_by: string | null };
 export type MethodInput = { configs: ConfigRow[]; scores: ScoreRow[]; indicators: IndicatorRow[]; sources: SourceRow[] };
 export type InputRow = { key: string; label: string; known: boolean; source: string; vintage: string; asOf: string; status: 'current' | 'not_published' };
-export type WeightRow = { key: string; label: string; known: boolean; weight: string; share: string };
+/** `points` is the weight as a whole number out of 100 (DESIGN.md need score rule 1); null when the stored weights sum to zero. */
+export type WeightRow = { key: string; label: string; known: boolean; weight: string; share: string; points: number | null };
 export type Draft = { version: string; createdLabel: string };
 export type MethodologyView = {
   version: string; approvedLabel: string; synthetic: boolean; singleInput: boolean; draft: Draft | null;
-  inputs: InputRow[]; weights: WeightRow[]; sum: string; mismatch: string | null; notPublished: string | null; footer: string;
+  inputs: InputRow[]; weights: WeightRow[]; sum: string; mismatch: string | null; notPublished: string | null; footer: string; scored: number; counties: number;
 };
 
 export class MethodologyQuery {
@@ -41,8 +42,9 @@ export class MethodologyQuery {
     const sum = Number(total.toFixed(4));
     const inputs = keys.map((k) => MethodologyQuery.input(k, indicators, input.sources));
     const share = (w: number) => (total > 0 ? `${Math.round((w / total) * 1000) / 10}%` : NOT_PUBLISHED);
-    const weights = inputs.map((r) => ({ key: r.key, label: r.label, known: r.known, weight: String(Number(approved.weights[r.key])), share: share(Number(approved.weights[r.key])) }));
-    const missing = COUNTIES.length - new Set(input.scores.filter((s) => s.version === approved.version).map((s) => s.geo_fips)).size;
+    const points = (w: number) => (total > 0 ? Math.round((w / total) * 100) : null);
+    const weights = inputs.map((r) => ({ key: r.key, label: r.label, known: r.known, weight: String(Number(approved.weights[r.key])), share: share(Number(approved.weights[r.key])), points: points(Number(approved.weights[r.key])) }));
+    const scored = new Set(input.scores.filter((s) => s.version === approved.version).map((s) => s.geo_fips)).size, missing = COUNTIES.length - scored;
     const names = [...new Set(inputs.map((r) => r.source).filter((s) => s !== '—'))];
     const loads = input.sources.map((s) => s.last_success_at ?? '').filter(Boolean).sort();
     const synthetic = approved.version.includes('synthetic') || syntheticBadgeVisible(env);
@@ -52,7 +54,7 @@ export class MethodologyQuery {
     const notPublished = missing > 0 ? `${missing} of ${COUNTIES.length} counties are Not published for this version.` : null;
     const singleInput = keys.length === 1 && approved.version.includes('synthetic');
     const draft = MethodologyQuery.draft(input.configs, approved);
-    return { version: approved.version, approvedLabel: NeedMapQuery.monthYear(approved.created_at), synthetic, singleInput, draft, inputs, weights, sum: String(sum), mismatch, notPublished, footer };
+    return { version: approved.version, approvedLabel: NeedMapQuery.monthYear(approved.created_at), synthetic, singleInput, draft, inputs, weights, sum: String(sum), mismatch, notPublished, footer, scored, counties: COUNTIES.length };
   }
 
   static async load(client: SupabaseClient, env?: string): Promise<MethodologyView | null> {
