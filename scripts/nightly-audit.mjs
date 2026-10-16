@@ -330,15 +330,19 @@ export function checkDeps({run = runPnpmAudit, parse = parseAudit, ignores, toda
   return r;
 }
 
-function checkBuild() {
+export function checkBuild(run = execSync) {
   const r = {status: 'GREEN', findings: [], details: []};
   [['lint', 'pnpm lint'], ['typecheck', 'pnpm typecheck'], ['test', 'pnpm test']].forEach(([n, cmd]) => {
     try {
-      execSync(cmd, {stdio: 'pipe', timeout: 120000});
+      run(cmd, {stdio: 'pipe', timeout: 120000});
       r.details.push(`${n} passed`);
-    } catch {
+    } catch (e) {
       r.status = 'RED';
       r.findings.push(`${n} failed`);
+      // Name what failed: the failing test files and assertion lines, short, never the whole log.
+      const out = `${e.stdout ?? ''}\n${e.stderr ?? ''}`.split('\n').filter((l) => /FAIL|×|Error|ETIMEDOUT|ENOBUFS|Timed out/.test(l));
+      for (const l of [...new Set(out)].slice(0, 12)) r.details.push(`${n}: ${l.trim().slice(0, 200)}`);
+      if (e.code || e.signal) r.details.push(`${n}: exit ${e.status ?? '?'} ${e.code ?? ''} ${e.signal ?? ''}`.trim());
     }
   });
   return r;

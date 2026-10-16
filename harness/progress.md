@@ -1034,3 +1034,9 @@ Did: `lib/dashboard/words.ts` (pure, 5 tests): M4 cell terms (Completed, Closed,
 State: lint, typecheck, unit tests and `pnpm gate` green. No Docker, Supabase or preview here: `tests/e2e/dashboard.spec.ts` (new) carries the hover = focus = tap checks on an M4 cell, the hidden-cell words, the filter, stage and badge hints, the trend tooltip and live region, the delta hints, 44 px triggers at 375, axe at 375/1024/1440 and `scrollWidth`, for CI. Before and after shots: the supervisor, from production and the preview. Branch `ds-15a-dashboard-hover` off main.
 Left: DS-15b (M6 share bar hover with keyboard walk, O1 rows, "View as table" hint). Open: income bands arrive as stored codes (`a`, `b`, `c` in the seed), so the cell words say `in the a band` until FAS's band names exist; the pipeline stage sentences are the designer's plain reading of the seven statuses; a hovered `n<11` cell shows the kit tooltip and the layer card together.
 Decisions: none new (applies D-040).
+
+## 2026-10-16 03:20 (UTC) — Claude Code (cloud, Engineer) — Audit buildHealth names the failing test (tooling)
+Did: `checkBuild` in `scripts/nightly-audit.mjs` is exported and takes the command runner as an argument (default `execSync`). When lint, typecheck or test fails, it now adds up to 12 short lines (FAIL, ×, Error, ETIMEDOUT, ENOBUFS, Timed out; each trimmed to 200 chars, duplicates dropped) and the exit code/signal to the buildHealth details, instead of only "test failed". Three unit tests in `scripts/nightly-audit.test.mjs` (green, failing test named, timeout). Split out of #247, where the `audit` job failed intermittently with "test failed" and nothing to trace (`ci` and every local run passed).
+State: lint, typecheck and unit tests green; gate vs main green. Branch `tooling/audit-build-details` off main.
+Left: if #247's audit goes red again after this merges, the report names the test.
+Decisions: none new.
