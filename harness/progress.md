@@ -1068,3 +1068,10 @@ State: binary and manifest only. Branch `design/after-shots-day5`. The 1440 pane
 Left: DS-14 after shots (`/login` signed out, `/403` as board) and DS-16a after shots once #262 and #266 merge; DS-16b before/after once #271 merges.
 
 ---
+## 2026-10-16 04:45 (UTC) — Cloud Agent (Engineer Supervisor) — DS-14 and DS-16a after shots; DS-16b before shots (design)
+Did: from production main after the merges: `docs/design/reviews/DS-14/after/403-from-%2Fstaff-{375,1024,1440}[-hover].png` as board (hover on the role hint) and `DS-14/after/login-{375,1024,1440}.png` + `login-1440-hover.png` taken signed out (hover on the Example chip); `DS-16a/after/data-freshness-{375,1024,1440}[-hover].png` as staff (hover on the cadence hint) and `-admin` variants showing the "Latest load" column; `DS-16b/before/methodology-{375,1024,1440}.png`. Manifest rows merged from two shots branches, duplicates dropped.
+State: binary and manifest only. Branch `design/after-shots-day6`, stacked on `design/after-shots-day5` (D-032). All 375 shots under 10 000 px.
+Left: DS-16b, DS-15b, DS-17 after shots; DS-18a/b before and after shots.
+Decisions: none new.
+
+---
