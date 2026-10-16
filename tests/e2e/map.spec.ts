@@ -135,7 +135,8 @@ test("map: 29 county paths above the table, legend copy, FAS outlines, hatch; li
 test("county selection: click or ?county= selects, panel copy, table link, arrows move to a neighbour, Enter selects, Esc clears", async ({ page }) => {
   await signIn(page, "board@example.test");
   const panel = page.locator("[data-slot=county-panel]");
-  const heading = panel.getByRole("heading");
+  // Level 2: the panel also has "Key measures" and source-group headings (DS-20b).
+  const heading = panel.getByRole("heading", { level: 2 });
   for (const width of [375, 800, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/need-map");
@@ -148,8 +149,19 @@ test("county selection: click or ?county= selects, panel copy, table link, arrow
     await expect(page).toHaveURL(/\/need-map\?county=49035$/);
     await expect(heading).toContainText("Salt Lake County");
     await expect(panel.locator("[data-slot=badge]")).toHaveText(/FAS county$/);
-    await expect(panel).toContainText(/Rank \d+ of 26 · Need score [+−]\d\.\d\d/);
-    await expect(panel.locator("[data-slot=panel-indicator] [data-slot=source-footer]").first()).toHaveText(/^Census SAHIE · \d{4} · as of \w+ \d{4}$/);
+    // DS-20b: the rank in words with its band, then the score; every measure behind one closed disclosure, one source line per group.
+    await expect(panel.locator("[data-slot=rank-line]")).toContainText(/^(Highest need|\d+(st|nd|rd|th) highest need) of 26 counties scored · [A-Z][a-z ]+ band\s*Need score [+−]\d\.\d\d · version \S+$/);
+    const details = panel.locator("[data-slot=all-measures]"), summary = details.locator("summary");
+    await expect(details).not.toHaveAttribute("open");
+    await expect(summary).toHaveText(/^All measures \(\d+\)$/);
+    await expect(details.locator("[data-slot=panel-indicator]").first()).toBeHidden();
+    if (width < 1024) expect((await summary.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+    await summary.focus();
+    await page.keyboard.press("Enter");
+    await expect(details).toHaveAttribute("open", "");
+    await expect(details.locator("[data-slot=measure-group]").first().getByRole("heading", { level: 3 })).toHaveText("Health coverage");
+    await expect(details.locator("[data-slot=source-footer]").first()).toHaveText(/^Census SAHIE \d{4} · as of \w+ \d{4}$/);
+    await expect(details.locator("[data-slot=panel-indicator] [data-slot=source-footer]")).toHaveCount(0);
     await expect(page.locator("path[data-fips='49035']")).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator("path[data-selected-outline='49035']")).toHaveCount(1);
     await expect(page.locator("path[aria-pressed='true']")).toHaveCount(1);
@@ -233,6 +245,7 @@ test("explain layer: hover, focus and Enter show the same words on a cell; Esc c
   await page.setViewportSize({ width: 1024, height: 900 });
   await page.locator("thead [data-slot=explain-trigger]", { hasText: "Rank" }).hover();
   await expect(page.locator("[data-slot=hover-card-content]")).toContainText("This county's place among the counties that have a score, 1 being the highest need.");
+  await panel.locator("[data-slot=all-measures] summary").click();
   await panel.locator("[data-slot=source-footer] [data-slot=explain-trigger]").first().click();
   await expect(dialog).toContainText(/Census SAHIE.*Source.*Census SAHIE.*As of.*Period\s*\d{4}/s);
   await page.keyboard.press("Escape");
@@ -302,7 +315,7 @@ test.describe("touch", () => {
     await rows.nth(0).locator("a").tap();
     await expect(page).toHaveURL(/\?county=49033#county-panel$/);
     const panel = page.locator("[data-slot=county-panel]");
-    await expect(panel.getByRole("heading")).toContainText("Rich County");
+    await expect(panel.getByRole("heading", { level: 2 })).toContainText("Rich County");
     await expect(panel).toBeInViewport();
   });
 });
