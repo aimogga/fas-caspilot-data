@@ -22,7 +22,8 @@ test("AC2: M4 cells share one explain layer; hover, focus and Enter show the sam
   await expect(m4.locator("[data-slot=explain-layer]")).toHaveCount(1);
   await expect(card).toHaveCount(0);
   await cell.hover();
-  await expect(card).toContainText(/^Completed.*12 in the a band.*FAS records.*as of \w{3} \d{4}/s);
+  // The card's rows read `Value · Source · As of` with the date alone (`Sep 2026`), so no "as of" words are expected here.
+  await expect(card).toContainText(/^Completed.*12 in the a band.*FAS records.*\w{3} \d{4}/s);
   const words = await card.innerText();
   await page.mouse.move(0, 0);
   await expect(card).toHaveCount(0);
@@ -54,21 +55,25 @@ test("AC3: filter labels, pipeline stages and the manual badge carry hints that 
   await page.setViewportSize({ width: 1440, height: 900 });
   expect((await page.goto("/dashboard"))?.status()).toBe(200);
   const tip = page.locator("[data-slot=tooltip-content]").first();
+  // Same pattern as home.spec: hover, read, then focus the same trigger and expect the same string; the pointer leaves afterwards.
   const same = async (trigger: ReturnType<Page["locator"]>, pattern: RegExp) => {
     await trigger.hover();
     await expect(tip).toHaveText(pattern);
     const hovered = await tip.textContent();
-    await page.mouse.move(0, 0);
     await trigger.focus();
     await expect(tip).toHaveText(hovered ?? "");
     await page.keyboard.press("Tab");
+    await page.mouse.move(0, 0);
+    await expect(tip).toHaveCount(0);
   };
   const bar = page.locator("[data-slot=filter-bar]");
   await expect(bar.locator("[data-slot=hint-trigger]")).toHaveCount(4);
-  await same(bar.getByRole("button", { name: "About Quarter" }), /^The three months the numbers cover\./);
-  await same(bar.getByRole("button", { name: "About Compare to prior quarter" }), /^Adds an arrow and words/);
+  await same(bar.getByRole("button", { name: "About Quarter", exact: true }), /^The three months the numbers cover\./);
+  await same(bar.getByRole("button", { name: "About Compare to prior quarter", exact: true }), /^Adds an arrow and words/);
   const pipeline = page.locator("[data-slot=pipeline-widget]");
-  await expect(pipeline.locator("li > span > [data-slot=hint-trigger]:first-child")).toHaveText(["New", "Reviewing", "Pursuing", "Submitted", "Awarded", "Declined", "Passed"]);
+  for (const stage of ["New", "Reviewing", "Pursuing", "Submitted", "Awarded", "Declined", "Passed"]) {
+    await expect(pipeline.locator(`li[data-stage=${stage}] [data-slot=hint-trigger]`).first()).toHaveText(stage);
+  }
   await same(pipeline.locator("li[data-stage=Pursuing] [data-slot=hint-trigger]").first(), /^FAS has decided to apply and is preparing the application\. \d+ opportunit(y is|ies are) at this stage\.$/);
   await same(pipeline.locator("li[data-stage=Pursuing] [data-slot=hint-trigger]", { hasText: "Manual entry" }), /^Entered by hand by FAS staff/);
   await expect(pipeline).not.toContainText(/\bpct\b|\bM[1-6]\b/);
