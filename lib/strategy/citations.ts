@@ -35,7 +35,7 @@ export function numbersIn(text: string): number[] {
 }
 
 /** A written number matches a stored value at its own rounding (or 0.5%); fractions (rates, |v| ≤ 1) also match as percents. */
-const matches = (n: number, facts: Fact[]) => facts.some((f) => Object.values(f.values).some((v) => v !== null &&
+export const matches = (n: number, facts: Fact[]) => facts.some((f) => Object.values(f.values).some((v) => v !== null &&
   (Math.abs(v) <= 1 ? [v, v * 100] : [v]).some((c) => Math.abs(n - c) <= Math.max(0.005 * Math.abs(c), 0.5 * (Number.isInteger(n) ? 1 : 0.1)))));
 
 /** 12+ consecutive words shared with a stored award description or abstract. */
@@ -54,15 +54,17 @@ export function copyHits(texts: { path: string; text: string }[], abstracts: Sna
   return hits;
 }
 
+/** The cited fact, or why it does not count: not in the snapshot, no registered resolver for its kind, or the resolver refuses it. */
+export function resolveFact(byId: Map<string, Fact>, id: string): Fact | string {
+  const f = byId.get(id), [kind = '', ...rest] = id.split(':'), r = RESOLVERS.get(kind);
+  if (!f) return `${id} is not in the snapshot`;
+  if (!r) return `no resolver for ${kind}`;
+  return r(rest.join(':'), f) ? f : `${id} does not resolve`;
+}
+
 /** Checks one claim: each cited id is in the snapshot and resolves, and every number matches a value of a cited fact. Shared with lib/application. */
 export function claimChecker(s: Snapshot): (path: string, text: string, ids: string[], numbers?: number[]) => ClaimCheck {
-  const byId = new Map(s.facts.map((f) => [f.citation_id, f]));
-  const resolve = (id: string): Fact | string => {
-    const f = byId.get(id), [kind = '', ...rest] = id.split(':'), r = RESOLVERS.get(kind);
-    if (!f) return `${id} is not in the snapshot`;
-    if (!r) return `no resolver for ${kind}`;
-    return r(rest.join(':'), f) ? f : `${id} does not resolve`;
-  };
+  const byId = new Map(s.facts.map((f) => [f.citation_id, f])), resolve = (id: string) => resolveFact(byId, id);
   return (path, text, ids, numbers = numbersIn(text)) => {
     const got = ids.map(resolve), facts = got.filter((g): g is Fact => typeof g !== 'string');
     const problems = [...got.filter((g): g is string => typeof g === 'string'), ...numbers.filter((n) => !matches(n, facts)).map((n) => `${n} has no matching cited value`)];
