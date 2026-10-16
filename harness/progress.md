@@ -1022,16 +1022,16 @@ Left: DS-12b, DS-14 and DS-15a/16a after shots once those packets merge.
 Decisions: none new.
 
 ---
-## 2026-10-16 01:30 (UTC) — Cloud Agent (Designer) — DS-14: sign in and 403 explain themselves, loading skeletons for the five main routes (design)
-Did: Spec `docs/design/specs/DS-14.md` (audit, decisions, open questions). `/login`: the example card is a real card (`bg-card`, border, `shadow-sm`, 24 px padding, 36 px tabular numeral) and no longer `aria-hidden`; the "Example" chip is a `Hint` ("…It is not a real figure."), the footer is an `ExplainCard` titled "Example figure" with Value, Source, As of, Period and n rows, and the "Synthetic data · preview" badge is a `Hint`; the error copy stays generic (the mockup's lockout sentence is not a state the app has). `/403`: new `components/status/FocusHeading.tsx` (client H1, `tabIndex -1`, focus on mount, visible ring) behind `StatusCard`'s `focusTitle`; the icon follows the `EmptyState` 40 px glyph pattern (`status-glyph`) on every status page; the role name carries a `Hint` ("Board member is the role on your account…"); the path stays mono; no "attempt logged" sentence because no code inserts an audit row on a 403. New `components/status/PageSkeleton.tsx` (`role="status"`, one sr-only "Loading <page>" sentence, `aria-hidden` bars sized by blocks, `motion-reduce:animate-none`) and `loading.tsx` for `/staff`, `/dashboard`, `/need-map`, `/board`, `/staff/grants/matches`.
-State: lint, typecheck, 797 unit tests green (new: `lib/status/skeleton.test.tsx`, 3). No Docker, Supabase or preview in this shell: `tests/e2e/login.spec.ts` (example card hover = focus words, footer dialog rows, numeral ≥ 32 px, axe) and `tests/e2e/status-pages.spec.ts` (H1 focused, role hint hover = focus, 40 px glyph, no "logged") run in CI. Before shots: `docs/design/reviews/DS-14/before/` (they show `/board`: the shots run signed in and `/login` redirected; retake signed out). After shots: the supervisor from the preview. Branch `ds-14-login-403` off main.
-Left: a 403 `audit_log` insert (engineer packet) before the page may say the attempt was logged; "Forgot password?" with F-605; "Ask an admin for access" needs an email path (George gate); skeletons for `/data-freshness` and `/methodology` in DS-16.
-Decisions: none new (designer choices listed in the spec).
-
----
 
 ## 2026-10-16 00:08 (UTC) — Claude Code (cloud, Engineer) — pr-gate: stacked branches gate against their parent (D-028, D-032)
 Did: `scripts/pr-gate.mjs` exports `resolveBase`: `--base` wins, else `git config branch.<current>.gateBase` (e.g. `git config branch.f508e-strategy-engine.gateBase origin/f508a-llm-adapter`), else `origin/main`; a configured base must be an `origin/*` branch, so it is always a pushed parent. The CLI prints `gate base: <ref>` first. The push hook (`scripts/pr-gate-hook.mjs`, unchanged) runs `pnpm gate`, so a stacked branch's push is now gated as D-032 already measures it (D-012 against the parent, progress.md append-only against the parent). Found when the F-508e stacked branches were blocked by a count that included #223. 3 new unit tests; `resolveBase` calls git with an argument list (`execFileSync`), never a shell string, after CodeRabbit flagged branch-name interpolation.
 State: lint, typecheck, unit tests and `pnpm gate` green. Branch `tooling/gate-stacked-base` off main. CI still gates PRs against the PR base sha.
 Left: nothing.
 Decisions: none new (implements D-032 for the hook). Entry added after merge (#239 merged without it to stop progress.md conflicts with main).
+## 2026-10-16 02:25 (UTC) — Cloud Agent (Engineer Supervisor) — DS-13b after shots and DS-14 login before shots (design)
+Did: captured the DS-13b "after" evidence from the `ds-13b-board-sections` preview: `docs/design/reviews/DS-13b/after/board-{375,1024,1440}[-hover].png` (hover on a county rank cell in section 4), the Letter print sheet `board-816-print.png` and the four-page `board-816-print.pdf`, with manifest rows. Retook the DS-14 "before" shots of `/login` signed out (`docs/design/reviews/DS-14/before/login-{375,1024,1440}.png`): the first set had followed the sign-in redirect and showed `/board`; manifest rows updated.
+State: binary and manifest only. Branch `design/after-shots-day4`. The 375 board shot is about 4 900 px (kept). Seen on the print PDF: the fixed footer repeats "Page N of 4" at the bottom of each page as intended; in the full-page PNG the fixed footer renders mid-page, which is a screenshot artefact, not a layout fault.
+Left: DS-12b, DS-14 and DS-15a/16a after shots once those packets merge.
+Decisions: none new.
+
+---
