@@ -126,7 +126,9 @@ export function exitCode(rows) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const baseIdx = process.argv.indexOf('--base');
-  const rows = run({ base: baseIdx === -1 ? 'origin/main' : process.argv[baseIdx + 1], skipTests: process.argv.includes('--skip-tests') });
+  const base = baseIdx === -1 ? 'origin/main' : process.argv[baseIdx + 1];
+  const rows = run({ base, skipTests: process.argv.includes('--skip-tests') });
+  console.log(`base: ${base}`);
   console.log(format(rows));
   process.exit(exitCode(rows));
 }

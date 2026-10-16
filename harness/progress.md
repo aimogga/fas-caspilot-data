@@ -971,3 +971,9 @@ Did: `lib/staff/todo.ts` (pure, 4 tests): "Needs you" rows from stored tables on
 State: lint, typecheck and unit tests green. No Docker or preview in this shell: `tests/e2e/home.spec.ts` gains the DS-10b checks (card state, badge words, one link per row, no "0 rows", summary before actions, no codes in source names, vintage hint, axe, scrollWidth) for CI. Before shots: `docs/design/reviews/DS-10a/after/`; after shots: the supervisor from the preview. Branch `ds-10b-home-todo` off main.
 Left: sparkline hover (`LineHover` is sized for the 192 px dashboard plot; needs a small layer or a `size` prop, DS-15a territory); the "Families helped, by month" chart still has no monthly series; no route edits an episode's non-start reason yet.
 Decisions: none new (designer wording defaults in the spec).
+
+## 2026-10-16 (UTC) — Cloud Agent (Engineer) — pre-push hook gates stacked branches against their parent (D-032)
+Did: `scripts/pr-gate-hook.mjs` now runs `pnpm gate --base <base>`, resolving the base with the pure exported `resolveBase`: `PR_GATE_BASE` env var, else `git config branch.<current>.gateBase`, else `origin/main` (unchanged default). The block message names the base and where it came from; `scripts/pr-gate.mjs` prints `base: <ref>` above its rows and is otherwise unchanged. Tests in `scripts/pr-gate-hook.test.mjs` (env wins, branch config, default, config read, non-push passthrough). D-032 gains the one-line how-to.
+State: lint, typecheck, unit tests and `pnpm gate` green. No gate row changed; only the base is configurable.
+Left: on each stacked branch run `git config branch.<name>.gateBase origin/<parent>`; unset it (`git config --unset branch.<name>.gateBase`) once the parent merges.
+Decisions: none new (applies D-032).
