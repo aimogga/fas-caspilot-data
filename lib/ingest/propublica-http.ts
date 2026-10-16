@@ -7,17 +7,18 @@ import { SahieHttp, type IngestHttpDeps } from './sahie-http';
 // synthetic placeholders; real Utah funder list is George-gated
 export const FUNDER_WATCHLIST = ['Example Family Foundation', 'Sample Community Trust', 'Demo Children Fund', 'Placeholder Mental Health Foundation', 'Test Valley Charitable Foundation'];
 export type ProPublicaRunOpts = { env?: Record<string, string | undefined>; now?: Date; httpFetch?: typeof fetch; client?: SupabaseClient; funders?: string[]; limiter?: RateLimiter;
-  load?: typeof FoundationHistoryIngest.load; recordFailure?: typeof PublicIndicatorIngest.recordFailure };
+  load?: (c: SupabaseClient, s: string, sum: string, rows: FoundationRow[]) => ReturnType<typeof FoundationHistoryIngest.load>; recordFailure?: typeof PublicIndicatorIngest.recordFailure };
 export type ProPublicaRunResult = { ingestRunId: string; rowsLoaded: number; sourceId: string; funders: number; notFound: string[] }; const fail = (e: { error: { message: string } | null }, fallback: string) => { if (e.error) throw new Error(e.error.message || fallback); };
 /** Rows land in `award_history` keyed on (source, external_id); each run is an ingest_run and bumps last_success_at. Service role only (no client write policy). */
 export class FoundationHistoryIngest {
-  static async load(client: SupabaseClient, sourceName: string, checksum: string, rows: FoundationRow[]) {
+  /** `target` defaults to award_history; F-506b reuses the same run/provenance path for `recipient_profile`. */
+  static async load<R extends object = FoundationRow>(client: SupabaseClient, sourceName: string, checksum: string, rows: R[], target = { table: 'award_history', onConflict: 'source,external_id' }) {
     const src = await client.from('source_registry').select('id').eq('name', sourceName).single(), sourceId = src.data?.id as string;
     if (src.error || !sourceId) throw new Error(`source ${sourceName} is not registered`);
     const started = await client.from('ingest_run').insert({ source_id: sourceId, status: 'running', checksum }).select('id').single(), ingestRunId = started.data?.id as string;
     fail(started, 'ingest_run insert failed');
     try {
-      if (rows.length) fail(await client.from('award_history').upsert(rows.map((r) => ({ ...r, ingest_run_id: ingestRunId })), { onConflict: 'source,external_id' }), 'upsert failed');
+      if (rows.length) fail(await client.from(target.table).upsert(rows.map((r) => ({ ...r, ingest_run_id: ingestRunId })), { onConflict: target.onConflict }), 'upsert failed');
       const now = new Date().toISOString(); fail(await client.from('ingest_run').update({ status: 'ok', rows_loaded: rows.length, finished_at: now }).eq('id', ingestRunId), 'run update failed');
       await client.from('source_registry').update({ last_success_at: now }).eq('id', sourceId); return { ingestRunId, rowsLoaded: rows.length, sourceId };
     } catch (e) {
