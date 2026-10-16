@@ -4,19 +4,11 @@ import { KnowledgeList } from "@/components/knowledge/KnowledgeList";
 import { EmptyState, ErrorState, FormField, PageHeader, Section, Stack } from "@/components/layout";
 import { buttonVariants } from "@/components/ui/button";
 import { CATEGORIES } from "@/lib/knowledge/guard";
-import { applyFilters, CATEGORY_LABEL, type Filters, loadKnowledge, parseFilters, STATUS_WORDS, STATUSES } from "@/lib/knowledge/view";
-import { createClient } from "@/lib/supabase/server";
+import { loadPage } from "@/lib/knowledge/load";
+import { applyFilters, CATEGORY_LABEL, type Filters, FIRST_STEPS, parseFilters, STATUS_WORDS, STATUSES } from "@/lib/knowledge/view";
 
 export const dynamic = "force-dynamic";
 const DESCRIPTION = "What the grant writer may say about FAS. Only approved entries are quoted, and every quote cites the version it used.";
-const FIRST_STEPS = "Start with your mission. Then add each program, then eligibility facts: the year FAS became a 501(c)(3), UEI status and the latest audit. Add outcomes last, each with its source and as-of date.";
-
-/** Rows plus the signed-in user's id (for "by you"); null when the store cannot be read. */
-async function loadPage() {
-  const client = await createClient();
-  const res = client ? await Promise.all([loadKnowledge(client), client.auth.getUser()]).catch((e: Error) => console.error("[knowledge] load failed", { message: e.message })) : null;
-  return res ? { rows: res[0], me: res[1].data.user?.id ?? null } : null;
-}
 
 function FilterForm({ f }: { f: Filters }) {
   const opts = (all: string, list: readonly string[], label: (v: string) => string) => [<option key="all" value="all">{all}</option>, ...list.map((v) => <option key={v} value={v}>{label(v)}</option>)];

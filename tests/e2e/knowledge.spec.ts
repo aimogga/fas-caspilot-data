@@ -58,3 +58,27 @@ test("staff and board get 403 on the admin screen, so they cannot edit (F-508c)"
     const page = await (await browser.newContext()).newPage(); await signIn(page, email); expect((await page.goto("/admin/knowledge"))?.status()).toBe(403);
   }
 });
+
+test("staff read approved entries with no edit controls (F-508c)", async ({ page, browser }) => {
+  const admin = await (await browser.newContext()).newPage(); // CI has no synthetic seed, so an admin approves one fictional entry first
+  const title = `Mission (fictional) ${Date.now()}`;
+  await signIn(admin, "admin@example.test");
+  await admin.goto("/admin/knowledge");
+  await submit(admin, { title, body: "Bluebird Family Fund is a made-up nonprofit used for testing." });
+  await admin.getByRole("button", { name: `Approve: ${title}` }).click();
+  await expect(admin.locator("[data-slot=knowledge-row]", { hasText: title })).toHaveAttribute("data-status", "approved");
+  await signIn(page, "staff@example.test");
+  expect((await page.goto("/staff/knowledge"))?.status()).toBe(200);
+  await expect(page.locator("[data-slot=knowledge-row]", { hasText: title })).toBeVisible();
+  await expect(page.locator("[data-slot=knowledge-row]:not([data-status=approved])")).toHaveCount(0);
+  await expect(page.locator("[data-slot=knowledge-form], [data-slot=knowledge-edit]")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /^(Approve|Archive|Return to draft):/ })).toHaveCount(0);
+  await page.locator("[data-slot=hint-trigger]").first().focus();
+  await expect(page.getByRole("tooltip")).toContainText("the grant writer may quote this text");
+  expect(await axe(page)).toEqual([]);
+});
+
+test("board gets 403 on the staff knowledge screen (F-508c)", async ({ page }) => {
+  await signIn(page, "board@example.test");
+  expect((await page.goto("/staff/knowledge"))?.status()).toBe(403);
+});

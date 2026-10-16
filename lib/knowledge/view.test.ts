@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyFilters, CONFIRM_LABEL, editorWords, groupByCategory, type ListRow, monthYear, parseFilters, parseForm } from './view';
+import { applyFilters, CONFIRM_LABEL, FIRST_STEPS, editorWords, groupByCategory, type ListRow, monthYear, parseFilters, parseForm } from './view';
 
 const form = (o: Record<string, string>) => { const f = new FormData(); for (const [k, v] of Object.entries(o)) f.set(k, v); return f; };
 const OK = { confirm: 'yes', category: 'mission', title: 'Mission (fictional)', body: 'Bluebird Family Fund is a made-up nonprofit.', source: '', as_of: '' };
@@ -30,5 +30,10 @@ describe('F-508c knowledge view helpers', () => {
     expect(monthYear('2025-12-31')).toBe('Dec 2025');
     expect(monthYear(null)).toBeNull();
     expect([editorWords(null, 'u1'), editorWords('u1', 'u1'), editorWords('u2', 'u1')]).toEqual(['the setup import', 'you', 'another admin']);
+  });
+
+  it('the empty state says what to add first: mission, programs, eligibility facts, then outcomes with sources', () => {
+    for (const w of ['mission', 'programs', '501(c)(3)', 'UEI', 'audit', 'outcomes', 'source', 'as-of']) expect(FIRST_STEPS).toContain(w);
+    expect(FIRST_STEPS.indexOf('mission')).toBeLessThan(FIRST_STEPS.indexOf('outcomes'));
   });
 });
