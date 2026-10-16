@@ -148,9 +148,12 @@ test("county selection: click or ?county= selects, panel copy, table link, arrow
   await expect(page).toHaveURL(/\?county=49049&fas=1$/);
   await expect(heading).toContainText("Utah County");
   await page.goto("/need-map?county=49035");
-  await page.locator("path[data-fips='49035']").focus();
-  await page.keyboard.press("ArrowRight");
-  await expect(page.locator("path[data-fips='49043']")).toBeFocused();
+  // The page streams in behind a skeleton (DS-14); retry until the map's key handler is hydrated and the arrow moves focus.
+  await expect(async () => {
+    await page.locator("path[data-fips='49035']").focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator("path[data-fips='49043']")).toBeFocused({ timeout: 1000 });
+  }).toPass({ timeout: 15_000 });
   await page.keyboard.press("ArrowDown");
   await expect(page.locator("path[data-fips='49051']")).toBeFocused();
   await page.keyboard.press("Enter");
