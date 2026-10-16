@@ -20,7 +20,7 @@ export default async function DataFreshnessPage() {
   }
   return (
     <Stack gap={6}>
-      <PageHeader eyebrow="WORKSPACE" title="Data freshness" description={DESCRIPTION} actions={view ? <FreshnessSummary view={view} /> : undefined} />
+      <PageHeader eyebrow="WORKSPACE" title="Data freshness" description={view && view.rows.length ? <FreshnessSummary view={view} /> : DESCRIPTION} />
       {!view ? (
         <ErrorState message="Couldn't load data freshness" referenceId={randomUUID()} href="/data-freshness">Something went wrong loading the source list. Try again.</ErrorState>
       ) : view.rows.length === 0 ? (
