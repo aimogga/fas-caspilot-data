@@ -116,11 +116,13 @@ test("a CSV with bad county, date order and enum shows errors and offers the rep
   await expect(triggers.first()).toHaveAttribute("aria-label", "Error: County code 99999 is not a Utah county");
   const reasons: string[] = [];
   for (let i = 0; i < n; i++) {
-    await expect(async () => { await triggers.nth(i).hover(); await expect(tip).toHaveText(/\S/); }).toPass();
-    reasons.push((await tip.textContent()) ?? "");
-    await page.mouse.move(0, 0);
-    await expect(tip).toBeHidden(); // so the next hover reads its own words, not the previous cell's
+    // Each read is self-identifying: the cell's own aria-label names the reason, so a tooltip left open by the previous cell cannot satisfy it.
+    const cell = triggers.nth(i), reason = ((await cell.getAttribute("aria-label")) ?? "").replace(/^Error: /, "");
+    expect(reason).toMatch(/\S/);
+    await expect(async () => { await cell.hover(); expect(await tip.textContent()).toBe(reason); }).toPass();
+    reasons.push(reason);
   }
+  await page.mouse.move(0, 0);
   expect(reasons[0]).toBe("County code 99999 is not a Utah county");
   expect(reasons.filter((r) => r.includes("is before"))).toHaveLength(1);
   expect(reasons.filter((r) => r.includes("not allowed"))).toHaveLength(1);
