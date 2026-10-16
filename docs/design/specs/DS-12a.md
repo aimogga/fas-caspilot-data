@@ -139,3 +139,117 @@ Reading order = visual order: tile → title → meta → badges → button → 
 2. The mockup footer's "Grants.gov refreshed Oct 10, 6:00 AM · API key used 0 days ago" needs `source_registry` / ingest-run rows the page does not load; the footer shows the newest `computed_at` instead.
 3. The digest threshold and the "above threshold" count live in `match_config.params.digest_threshold` (`lib/grants/digest.ts`); the header could cite it in a later sub-packet.
 4. `MatchTable` stays in `MatchPanel.tsx` (DS-12b's file) until b removes it.
+
+---
+
+# DS-12b — "How we matched" panel, plain-words flags, show more (`/staff/grants/matches`)
+Source docs: `docs/design/POLISH_PLAN.md` row DS-12b; `docs/design/fas-screen-plan-part2.md` §4 P2-1 (sticky right panel: score, six components with points, a bar, the reason and a source; eligibility checklist; award-history summary with "full winning applications are not public"; bars have text values); mockup `docs/design/mockups/p2-grant-matches.png`; `docs/design/targets/visual-direction.md` shared type steps (22 px serif section headline, 34 px numeral, 11–12 px source lines); the supervisor's findings from the DS-12a after shots (`docs/design/reviews/DS-12a/after/`); D-040.
+**Depends on:** DS-12a merged (#219). **Budget:** ≤ 400 hand-written lines. Sub-packet **b** only.
+
+## Audit (before: `docs/design/reviews/DS-12a/after/`)
+### Numbers inventory
+| Element | Has hover card? | Term id | Source shown? | As-of shown? | Hidden reason wired? | Action |
+|---|---|---|---|---|---|---|
+| Component line `Mission fit · 30 of 30 points · <reason>` | no | — | raw column paths (`org.program_themes, opportunity.description`) | no | — | label is an `ExplainCard` on `COMPONENT[key]` (value `x of y points`, source words, as of); bar; reason; one source chip per ref with a `Hint` in words |
+| Cap component `Blocker · 0 of 0 points` | no | — | raw path | no | — | `ExplainCard` on `CAP[key]`; no bar; the stored reason as the sentence |
+| Flag line `Blocker · Could not check award size: opportunity.award_floor missing` | no | — | path inside the words | no | — | `flagWords(code, message)` in plain words; the stored string moves to the hover card's `Stored reason` row |
+| Flag badge in the list (same leak) | `Hint` (severity words) | severity | no | no | — | `ExplainCard` on the severity term with rows `Stored reason` and `Checked from`; badge text from `flagWords` |
+| Eligibility checklist | missing | — | — | — | — | ten rows from `FLAG_CODES`: glyph + check name + words (passed / flagged words / not checked: why) |
+| Award history | missing | — | — | — | — | one line only when stored `award_history` rows exist for the listing: count, middle award, "Full winning applications are not public." |
+| Award range `$0–$750,000` | n/a | — | — | — | — | `awardRange` reads a 0 floor as "up to" |
+
+### Controls under 44 px below 1024
+| Control | Measured at 375 | Fix |
+|---|---|---|
+| none new; `Button` and the kit triggers are 44 px below `lg` | 44 | keep; the new `Show 10 more` and `Close` buttons use `Button` |
+
+### Layout
+| Width | Horizontal scroll? | Reading order = visual order? | Notes |
+|---|---|---|---|
+| 375 | no | yes | 69 cards ≈ 35 000 px; the panel sits inside the open card; **fix:** 10 cards at a time with `Show 10 more` |
+| 1024 | no | yes | panel inline under the row, far from the fit tile it explains; **fix:** sticky aside in a second column |
+| 1440 | no | yes | same |
+
+### States
+| State | Exists? | Fix |
+|---|---|---|
+| Empty, error, 403 | yes (DS-12a) | keep |
+| Loading | no `loading.tsx` | DS-14 (unchanged) |
+| Panel: no flags | `No eligibility flags` | checklist shows ten `Passed` rows instead |
+| Panel: no award rows for the listing | — | the award line is omitted (never 0, never invented) |
+
+### Copy faults
+| Text | Where | Replacement |
+|---|---|---|
+| `Could not check award size: opportunity.award_floor missing` | badge, panel | `Award size not checked: the listing does not state an award range` |
+| `org.program_themes, opportunity.description` | panel source line | chips `FAS settings · program themes`, `Grant listing · description`, each with a hint in words |
+| `0 of 0 points` on a cap component | panel | the cap term title and its stored reason only |
+| `$0–$750,000` | meta line | `up to $750,000` |
+
+### Estimate
+~330 hand-written lines (terms 50 + tests 15, match-query 14, `MatchPanel` 45 deleted + 100 added, `MatchList` 60, e2e 45). No split needed.
+
+## Scope
+- `lib/grants/terms.ts`: `CHECK` (ten check names in words), `flagWords(code, message)`, `sourceWords(ref)` → `{ label, plain }`, `checklist(flags)` → ten rows `{ code, label, status, words, flag? }`; `awardRange` treats a 0 floor as no floor.
+- `lib/grants/match-query.ts`: `MatchItem.awards: { count, median } | null` from stored `award_history` rows on the opportunity's `assistance_listing` (one query, `summarize()` from `lib/grants/award-history.ts`); null when the listing is missing or has no rows. `assistance_listing` added to the opportunity select.
+- `components/grants/MatchPanel.tsx`: rewritten (below); `MatchTable` removed (nothing imports it).
+- `components/grants/MatchList.tsx`: two-column grid at ≥ 1024 with the panel in a sticky aside; inline under the row below; flag badges through `flagWords` + `ExplainCard`; `Show 10 more` with an `aria-live` count.
+- `tests/e2e/match-explanation.spec.ts`: panel words, focus on open, flag words on hover, show-more, axe, scrollWidth.
+- Out of scope: pipeline actions (no route yet), filters, digest threshold, `loading.tsx`.
+
+## Layouts
+| Viewport | Panel |
+|---|---|
+| 375–1023 | Inside the open card, under the badges, full width, 16 px padding; the `Show 10 more` button full width under the list |
+| ≥ 1024 | The list area becomes `grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)]`; the list in column 1, the panel an `aside` in column 2, `lg:sticky lg:top-20 lg:self-start`, 24 px padding; the source footer stays under the list |
+
+Panel reading order: eyebrow `How we matched` → serif title (the opportunity) → numeral + `of 100 fit` → six components (label, points, bar, reason, source chips) → cap note when stored → `Eligibility checks` list → award-history line when stored → `Close`.
+
+## Components (existing only)
+`Button` (ui), `ExplainCard`, `Hint` (explain kit), `Section`, `SourceFooter`; lucide `Check`, `Ban`, `TriangleAlert`, `CircleHelp`. The bar is the `CompareBars` idiom (muted track, `bg-chart-1` fill, text values beside it, `aria-hidden` on the graphic).
+
+## Exact copy
+- Eyebrow `How we matched`; heading = the opportunity title (serif, `tabIndex={-1}`, receives focus on open).
+- Score: `<score>` then `of 100 fit`; sr text `<score> of 100 points`.
+- Component row: `<COMPONENT title>` · `<points> of <max> points` · the stored reason · chips. Chip text `<Where> · <field words>`; hint `From <where long>: the <field words> field.` where `opportunity` → `Grant listing` / `the grant listing as the funder published it`, `org` → `FAS settings` / `the FAS facts an admin entered in settings`, `match_config` → `Matching rules` / `the approved matching rules`, `eligibility` → `Eligibility checks` / `the ten eligibility checks`.
+- Cap note: the `CAP` term title with the stored reason as its sentence.
+- Checklist heading `Eligibility checks`. Rows: `<check name> · Passed` (check glyph); `<check name> · <flagWords>` (triangle or ban by severity); `<check name> · <flagWords>` for a not-checked row (question glyph). Check names: `Who may apply`, `Geography`, `Close date`, `SAM.gov registration`, `Audited financials`, `Cost share`, `Years operating`, `Award size`, `Programme themes`, `Letter of intent`.
+- `flagWords`: `Could not check <what>: <field> missing` → `<What> not checked: <why>` with `why` = `the listing does not state <field words>` for `opportunity.*` (`who may apply`, `any description`, `a close date`, `whether cost share is required`, `an award range`, `a funding category`) and `FAS has not entered <field words> in settings` for `org.*` (`whether FAS is a 501(c)(3)`, `the state FAS is in`, `the SAM.gov registration status`, `the annual budget`, `the programme themes`, `whether FAS has audited financial statements`, `how many years FAS has operated`). Any other stored message is returned as stored (they are already words).
+- Award line: `Past winners on this listing: <n> awards, the middle one $<median>.` then `Full winning applications are not public.` with a `Hint`: `Counted from public award records for the same Assistance Listing. The middle award means half were smaller, half larger.`
+- Buttons: `Show 10 more` (`Show the last <k>` when fewer remain); live region `Showing <k> of <n>`; `Close` (returns focus to the row's `How we matched`).
+
+## States
+- Open: one panel at a time; mount moves focus to the heading; `Close` or the toggle closes and focus returns to the toggle.
+- Capped score: numeral `0`, the cap note explains; components still listed with their own points.
+- No award rows: the line is absent. A 0 award floor reads `up to <ceiling>`.
+- All ten checks passed: ten `Passed` rows (no "No eligibility flags" sentence).
+
+## Trust rules
+Every string on the panel comes from `match_result.components`, `match_result.flags`, `opportunity` or `award_history`; the panel never recomputes a score. The stored flag string stays visible in the hover card (`Stored reason`). No actions are shown because no pipeline route exists.
+
+## Accessibility
+- The aside is `aria-labelledby` the panel heading; the heading has `tabIndex={-1}` and receives focus on open (2.4.3); `Close` returns focus to the toggle.
+- Bars are `aria-hidden`; the points text is the value. Checklist status is glyph + words, never colour alone.
+- Hover, focus and tap show the same words (kit triggers); 44 px below 1024.
+- axe 0 serious/critical at 375 and 1024; `scrollWidth` = viewport.
+
+## Acceptance criteria → tests
+| # | Criterion | Test |
+|---|---|---|
+| 1 | `flagWords` turns a "Could not check … missing" flag into plain words without a column path; other messages pass through | `lib/grants/terms.test.ts` |
+| 2 | `checklist` yields the ten checks with pass / flagged / unclear and words; `sourceWords` names every ref prefix without a path; `awardRange(0, x)` reads `up to` | `lib/grants/terms.test.ts` |
+| 3 | Opening a row moves focus to the panel heading; the panel lists six components as `<label> · x of y points` with the stored reason and source chips in words; the capped row shows the cap note | `tests/e2e/match-explanation.spec.ts` |
+| 4 | The checklist shows ten rows; the blocked row's `Who may apply` row carries the flag words; hovering a flag badge shows the `Stored reason` row | same |
+| 5 | At ≥ 1024 the panel is an aside beside the list; below, it is inside the open card | same (bounding boxes) |
+| 6 | `Show 10 more` renders ten cards at a time with a live `Showing k of n` count (hidden when n ≤ 10); the award line renders only from stored rows; axe 0 serious/critical; `scrollWidth` = width | `lib/grants/match-list.test.tsx` (static render, 12 rows); e2e for axe and width |
+
+## Allowed files
+`lib/grants/terms.ts`, `lib/grants/terms.test.ts`, `lib/grants/match-query.ts`, `lib/grants/match-list.test.tsx`, `components/grants/MatchPanel.tsx`, `components/grants/MatchList.tsx`, `tests/e2e/match-explanation.spec.ts`, `docs/design/specs/DS-12a.md`, `harness/progress.md`. (`app/(app)/staff/grants/matches/page.tsx` needed no change: `MatchList`'s props are unchanged.)
+
+## Decisions
+Designer defaults (not George's): the check names, the "not checked: why" sentences, the award-history wording, `Show 10 more`.
+
+## Open questions
+1. The seed's two F-504 opportunities have no `assistance_listing`, so previews never show the award line; a seeded listing with award rows would exercise it.
+2. Pipeline actions (Move to Pursuing, Request strategy draft, Pass) wait for a pipeline route.
+3. Filters and the digest-threshold header line remain for a later packet.
