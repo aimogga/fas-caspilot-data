@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { ErrorState } from "@/components/layout";
 import { SourceFooter, SuppressedCell, type SourceFooterProps } from "@/components/trust";
-import { ExplainCard } from "@/components/trust/explain";
+import { ExplainCard, Hint } from "@/components/trust/explain";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NOT_AVAILABLE, notAvailableNote, type DashboardCard } from "@/lib/dashboard/cards";
@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 /** DS-07 metric card. With only `card` it is "Not available yet"; `footer` marks a wired card and `value === null` a suppressed one.
  * Table cards (M4, M6, O1) pass `body` instead of `value`: suppression then lives in their cells. */
 export type MetricCardProps = {
-  card: DashboardCard; value?: string | null; valueText?: string; stats?: string; delta?: string | null; subline?: string | null; muted?: string;
+  card: DashboardCard; value?: string | null; valueText?: string; stats?: string; delta?: string | null; deltaHint?: string; subline?: string | null; muted?: string;
   footer?: SourceFooterProps; trend?: ReactNode; n?: number; rows?: number; filtered?: boolean; noData?: string; error?: string; body?: ReactNode; href?: string;
 };
 const BIG = "text-[2rem] leading-none font-semibold tabular-nums", SMALL = "text-sm text-muted-foreground";
@@ -27,7 +27,7 @@ function Body({ p, state }: { p: MetricCardProps; state: ReturnType<typeof state
       <>
         <p className={BIG}>{p.valueText ? <><span aria-hidden>{p.value}</span><span className="sr-only">{p.valueText}</span></> : p.value}</p>
         {p.stats ? <p className={cn(SMALL, "tabular-nums")}>{p.stats}</p> : null}
-        {p.delta ? <p data-slot="delta" className="text-sm font-medium">{p.delta}</p> : null}
+        {p.delta ? <p data-slot="delta" className="text-sm font-medium">{p.deltaHint ? <Hint text={p.deltaHint}>{p.delta}</Hint> : p.delta}</p> : null}
         {p.subline ? <p className="text-sm">{p.subline}</p> : null}
         {p.muted ? <p className={SMALL}>{p.muted}</p> : null}
       </>
