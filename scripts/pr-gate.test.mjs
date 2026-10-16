@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { describe, expect, it } from 'vitest';
-import { BINARY, MAX_LINES, countDiff, exitCode, format, loadGenerated, longLines, progressAppendOnly, resolveBase, run } from './pr-gate.mjs';
+import { BINARY, MAX_LINES, countDiff, exitCode, format, loadGenerated, longLines, progressEntry, resolveBase, run } from './pr-gate.mjs';
 
 const numstat = (rows) => rows.map(([a, d, f]) => `${a}\t${d}\t${f}`).join('\n');
 
@@ -11,7 +11,7 @@ describe('countDiff (D-012)', () => {
   });
 
   it('fails a 401-line diff and passes 400 through run()', () => {
-    const fake = (lines) => ({ exec: (cmd) => (cmd.includes('--numstat') ? numstat([[lines, 0, 'lib/big.ts']]) : cmd.includes('git show') ? '# p\n' : ''), read: () => '# p\n' });
+    const fake = (lines) => ({ exec: (cmd) => (cmd.includes('--numstat') ? numstat([[lines, 0, 'lib/big.ts']]) : ''), read: () => '' });
     const rows = run({ skipTests: true, ...fake(401) });
     expect(rows.find((r) => r.name === 'D-012 lines')).toMatchObject({ verdict: 'fail', evidence: expect.stringContaining('= 401') });
     expect(exitCode(rows)).toBe(1);
@@ -34,23 +34,41 @@ describe('longLines', () => {
   });
 });
 
-describe('progressAppendOnly', () => {
-  const base = '# Progress\n\n## 2026-10-13 17:05 (UTC) — A\nDid: a\n';
-  it('passes when the branch entry is appended after the base text', () => {
-    expect(progressAppendOnly(base, `${base}\n## 2026-10-13 18:00 (UTC) — B\nDid: b\n`)).toEqual({ verdict: 'pass', evidence: '1 new entry appended last' });
+describe('progressEntry (D-041)', () => {
+  const entry = 'harness/progress/2026-10-16T0358Z-claude-exciting-ritchie-7wg8ec.md';
+  const ns = (rows) => rows.map(([s, f]) => `${s}\t${f}`).join('\n');
+  it('passes when the branch adds exactly one well-named entry file', () => {
+    expect(progressEntry(ns([['M', 'lib/a.ts'], ['A', entry]]))).toEqual({ verdict: 'pass', evidence: `1 new entry: ${entry}` });
   });
-  it('fails when a base line is removed or changed, warns when nothing was appended', () => {
-    expect(progressAppendOnly(base, base.replace('Did: a', 'Did: changed')).verdict).toBe('fail');
-    expect(progressAppendOnly(base, '# Progress\n').verdict).toBe('fail');
-    expect(progressAppendOnly(base, base).verdict).toBe('warn');
+  it('warns when no entry was added yet', () => {
+    expect(progressEntry(ns([['M', 'lib/a.ts']])).verdict).toBe('warn');
+    expect(progressEntry('').verdict).toBe('warn');
+  });
+  it('fails two new entries, an edited or deleted entry, or a bad name', () => {
+    const second = 'harness/progress/2026-10-16T0400Z-other.md';
+    expect(progressEntry(ns([['A', entry], ['A', second]]))).toMatchObject({ verdict: 'fail', evidence: expect.stringContaining('found 2') });
+    expect(progressEntry(ns([['A', entry], ['M', second]]))).toMatchObject({ verdict: 'fail', evidence: expect.stringContaining(`${second} (M)`) });
+    expect(progressEntry(ns([['D', second]]))).toMatchObject({ verdict: 'fail', evidence: expect.stringContaining('(D)') });
+    for (const bad of ['harness/progress/notes.md', 'harness/progress/2026-10-16-0358-x.md', 'harness/progress/2026-10-16T0358Z-a/b.md', 'harness/progress/2026-10-16T0358Z-x.txt']) {
+      expect(progressEntry(ns([['A', bad]]))).toMatchObject({ verdict: 'fail', evidence: expect.stringContaining('entry name') });
+    }
+  });
+  it('fails any edit to the frozen harness/progress.md, even an append', () => {
+    expect(progressEntry(ns([['A', entry], ['M', 'harness/progress.md']]))).toMatchObject({ verdict: 'fail', evidence: expect.stringContaining('frozen') });
     expect(exitCode([{ verdict: 'warn' }, { verdict: 'manual' }])).toBe(0);
+  });
+  it('run() reads the name-status diff against the base', () => {
+    const cmds = [];
+    const exec = (cmd) => (cmds.push(cmd), cmd.includes('--name-status') ? `A\t${entry}\n` : '');
+    expect(run({ skipTests: true, base: 'origin/p', exec, read: () => '' }).find((r) => r.name === 'progress entry').verdict).toBe('pass');
+    expect(cmds).toContain('git diff --name-status --no-renames origin/p...HEAD');
   });
 });
 
 describe('run and CLI', () => {
   it('turns a failing pnpm step into a fail row with the last output lines', () => {
     const spawn = (_cmd, args) => (args[0] === 'lint' ? { status: 1, stdout: 'a\nb\n', stderr: 'boom' } : { status: 0, stdout: '', stderr: '' });
-    const rows = run({ spawn, exec: (cmd) => (cmd.includes('git show') ? '' : ''), read: () => '' });
+    const rows = run({ spawn, exec: () => '', read: () => '' });
     expect(rows.find((r) => r.name === 'lint')).toMatchObject({ verdict: 'fail', evidence: 'a | b | boom' });
     expect(rows.find((r) => r.name === 'typecheck').verdict).toBe('pass');
     expect(format(rows).split('\n')[0]).toBe('step | requirement | verdict | evidence');
