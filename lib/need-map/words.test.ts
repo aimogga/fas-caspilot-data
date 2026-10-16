@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { COUNTIES } from '../synthetic/generate';
 import type { Column } from './query';
 import { NeedMapQuery, type NeedInput } from './query';
-import { bandHint, bandName, hoverWords, legendBands } from './words';
+import { LEGEND_NOTE, bandHint, bandName, hoverWords, legendBands, topCounties } from './words';
 
 const UNPUBLISHED = ['49009', '49031', '49055'];
 const seedScore = (fips: string): number => (fips === '49011' ? seedScore('49005') : ((Number(fips.slice(2)) * 7) % 29 - 14) / 10);
@@ -37,9 +37,16 @@ describe('DS-11b map words', () => {
   });
   it('explains a county with no score instead of inventing a rank', () => {
     const daggett = hoverWords(find('49009'), data.counties, columns, 'v2-synthetic');
-    expect(daggett.term.plain).toBe('No need score, so no rank or band. Its public measures are still in the table.');
+    expect(daggett.term.plain).toBe('No need score, so no rank or band. Its public measures are in the county panel.');
     expect(daggett.rows.slice(0, 3).map((r) => r[1])).toEqual([undefined, undefined, undefined]);
     expect(daggett.hidden).toBe('The source did not publish this for this county in that release.');
     expect(hoverWords(find('49009'), data.counties, [], null).rows.at(-1)).toEqual(['Source', undefined]);
+  });
+  it('DS-20a: topCounties is the first five ranked rows in rank order; with ?fas=1 the top FAS counties; unscored rows never count', () => {
+    expect(topCounties(data.rows).map((c) => [c.rank, c.name])).toEqual([['1 of 26', 'Rich County'], ['2 of 26', 'San Juan County'], ['3 of 26', 'Sevier County'], ['4 of 26', 'Tooele County'], ['5 of 26', 'Utah County']]);
+    expect(topCounties(NeedMapQuery.build(input, { fas: true }).rows).map((c) => c.name)).toEqual(['Tooele County', 'Utah County', 'Weber County', 'Salt Lake County', 'Davis County']);
+    expect(topCounties(data.rows.filter((c) => c.status !== 'Ranked'))).toEqual([]);
+    expect(topCounties(data.rows, 2)).toHaveLength(2);
+    expect(LEGEND_NOTE).toBe('Relative ranking · placeholder bands until FAS sets the weights.');
   });
 });

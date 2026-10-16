@@ -1,0 +1,5 @@
+## 2026-10-16 04:58 (UTC) — Claude Code (Engineer) — D-041: one file per progress entry (process)
+Did: progress entries move from the shared `harness/progress.md` to one file each under `harness/progress/`, so open PRs no longer conflict after every merge to `main`. `progressEntry()` in `scripts/pr-gate.mjs` replaces `progressAppendOnly()`: exactly one new well-named entry file, no edited entry, no edit to the frozen progress.md. The nightly audit reads progress.md plus the entry files. AGENTS.md read order and Definition of done, PR template, Cursor rule, engineer and designer role files, QA checklist and D-029/D-032/D-037 point to D-041.
+State: lint, typecheck, unit tests and `pnpm gate` green. Two scratch branches that each add an entry merge into `main` one after the other with no conflict.
+Left: open branches that already appended to progress.md move that entry into a `harness/progress/` file on their next `origin/main` merge (the gate fails until they do).
+Decisions: D-041 (new).

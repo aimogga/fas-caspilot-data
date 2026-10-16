@@ -1,7 +1,8 @@
 // DS-12a: the grant-matching words in plain language (D-040). Domain terms live here so page packets never edit `lib/trust/glossary.ts`.
 import { STAGES } from "@/lib/dashboard/query";
 import type { Term } from "@/lib/trust/glossary";
-import type { FlagSeverity } from "./types";
+import { FLAG_CODES, type FlagCode } from "./eligibility";
+import type { CheckStatus, Flag, FlagSeverity } from "./types";
 
 const t = (id: string, title: string, plain: string): Term => ({ id, title, plain });
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
@@ -56,11 +57,53 @@ export function stageTerm(status: string | null): Term {
   return stage ? t(`stage_${stage.toLowerCase()}`, stage, STAGE_PLAIN[stage]) : t("stage_other", cap(status.trim()), "A stage FAS entered by hand. The grant pipeline shows who owns it.");
 }
 
-const usd = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
-/** Award floor and ceiling as words; both come from stored `opportunity` columns and a missing pair reads as such, never as 0. */
+export const usd = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
+/** Award floor and ceiling as words; both come from stored `opportunity` columns and a missing pair reads as such, never as 0. A 0 floor is no floor (DS-12b). */
 export function awardRange(floor: number | null, ceiling: number | null): string {
+  if (floor === 0) floor = null;
   if (floor !== null && ceiling !== null) return `${usd(floor)}–${usd(ceiling)}`;
   return ceiling !== null ? `up to ${usd(ceiling)}` : floor !== null ? `from ${usd(floor)}` : "award not stated";
 }
 
 export const GRANT_TERMS: Term[] = [FIT_SCORE, ...Object.values(COMPONENT), ...Object.values(CAP), ...Object.values(SEVERITY), ...Object.values(ELIGIBILITY), NOT_TRACKED, ...STAGES.map((s) => stageTerm(s))];
+
+// DS-12b: the ten eligibility checks, stored flags and source refs in words. Column paths never reach the badge; the stored string stays in the hover card.
+/** One name per `FLAG_CODES` code, in the order `lib/grants/eligibility.ts` runs them. */
+export const CHECK: Record<FlagCode, string> = {
+  applicant_type: "Who may apply", geography: "Geography", close_date: "Close date", sam_registration: "SAM.gov registration", audit_required: "Audited financials",
+  cost_share: "Cost share", min_years_operating: "Years operating", award_size: "Award size", theme_overlap: "Programme themes", loi_required: "Letter of intent",
+};
+const WHERE: Record<string, [string, string]> = {
+  opportunity: ["Grant listing", "the grant listing as the funder published it"], org: ["FAS settings", "the FAS facts an admin entered in settings"],
+  match_config: ["Matching rules", "the approved matching rules"], eligibility: ["Eligibility checks", "the ten eligibility checks"],
+};
+/** Why a check could not run, by the stored field path: what the listing does not state, or what FAS has not entered. */
+const MISSING: Record<string, string> = {
+  "opportunity.eligibility.applicant_types": "who may apply", "opportunity.description": "any description", "opportunity.close_date": "a close date",
+  "opportunity.eligibility.is_cost_sharing": "whether cost share is required", "opportunity.award_floor": "an award range", "opportunity.eligibility.funding_categories": "a funding category",
+  "org.is_501c3": "whether FAS is a 501(c)(3)", "org.state": "the state FAS is in", "org.sam_status": "the SAM.gov registration status", "org.annual_budget_usd": "the annual budget",
+  "org.program_themes": "the programme themes", "org.has_audited_financials": "whether FAS has audited financial statements", "org.years_operating": "how many years FAS has operated",
+};
+const field = (ref: string) => ref.split(".").pop()?.replace(/_/g, " ") ?? ref;
+/** A stored `source_ref` such as `org.program_themes` as a chip label and a hint sentence, both without the path. */
+export function sourceWords(ref: string): { label: string; plain: string } {
+  const [where, plainWhere] = WHERE[ref.split(".")[0]] ?? ["Stored record", "a stored record"];
+  const f = ref.includes(".") && !where.toLowerCase().endsWith(field(ref)) ? field(ref) : "";
+  return { label: f ? `${where} · ${f}` : where, plain: f ? `From ${plainWhere}: the ${f} field.` : `From ${plainWhere}.` };
+}
+/** The stored flag message in plain words. "Could not check <what>: <field> missing" becomes "<What> not checked: <why>"; anything else is already words and passes through. */
+export function flagWords(code: string, message: string): string {
+  const m = /^Could not check (.+): (\S+) missing$/.exec(message);
+  if (!m) return message;
+  const [, what, ref] = m, why = MISSING[ref] ?? field(ref);
+  return `${cap(what)} not checked: ${ref.startsWith("org.") ? `FAS has not entered ${why} in settings` : `the listing does not state ${why}`}`;
+}
+export type CheckRow = { code: FlagCode; label: string; status: CheckStatus; words: string; flag?: Flag };
+/** The ten checks for one stored flag list: a code with no flag passed; a "Could not check" flag is unclear; any other flag is flagged (mirrors `checkEligibility`). */
+export function checklist(flags: Flag[]): CheckRow[] {
+  return FLAG_CODES.map((code) => {
+    const flag = flags.find((f) => f.code === code);
+    if (!flag) return { code, label: CHECK[code], status: "pass", words: "Passed" };
+    return { code, label: CHECK[code], status: flag.message.startsWith("Could not check") ? "unclear" : "flagged", words: flagWords(code, flag.message), flag };
+  });
+}
