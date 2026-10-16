@@ -6,9 +6,9 @@ import { navForRole } from "./nav";
 describe("DS-18b, DS-21 nav icons", () => {
   it("every href any role can see has its own glyph; no two links share one; nothing extra is mapped", () => {
     const hrefs = [...new Set(["admin", "staff", "board_viewer"].flatMap((r) => navForRole(r).groups.flatMap((g) => g.items.map((i) => i.href))))];
-    expect(hrefs).toHaveLength(8);
+    expect(hrefs).toHaveLength(9);
     for (const h of hrefs) expect(NAV_ICONS[h], h).toBeTypeOf("object");
-    expect(new Set(hrefs.map((h) => NAV_ICONS[h])).size).toBe(8);
+    expect(new Set(hrefs.map((h) => NAV_ICONS[h])).size).toBe(9);
     expect(Object.keys(NAV_ICONS).sort()).toEqual([...hrefs].sort());
   });
 
