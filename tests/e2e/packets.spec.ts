@@ -32,7 +32,8 @@ for (const [variant, query, scope] of [["grant", "variant=grant&county=49035", "
     await expect(page.locator("[data-slot=packet-title]")).toHaveText(`FAS Evidence packet · ${variant === "grant" ? "Grant attachment" : "Board packet"} · ${scope}`);
     await expect(page.locator("[data-slot=packet-ribbon]")).toHaveText("DRAFT · for review");
     await expect(page.locator("[data-slot=packet-cover]")).toContainText(/Prepared \w{3} \d{4} · Data (as of \w{3} \d{4}|date not available yet)/);
-    await expect(page.locator("[data-slot=packet-section] h2")).toHaveText(ORDER);
+    // DS-17: the title moved to the eyebrow; the h2 is the section's first sentence in words.
+    await expect(page.locator("[data-slot=packet-section] [data-slot=section-eyebrow]")).toHaveText(ORDER.map((t, i) => `Section ${i + 1} of 6 · ${t}`));
     // The board's pictures sit inside FAS results and Outcomes (statewide board packet always has at least the wait picture in the seed).
     const pictures = page.locator("[data-slot=packet-pictures] [data-picture]");
     if (variant === "board") await expect(pictures.first()).toBeVisible();
@@ -92,4 +93,126 @@ test("staff downloads the DOCX and CSV appendix with month-only filenames; board
   const boardDocx = await page.request.get("/api/packets/export?variant=board&format=docx");
   expect([boardDocx.status(), (await boardDocx.body()).subarray(0, 2).toString()]).toEqual([200, "PK"]);
   expect((await page.request.get("/api/packets/export?variant=grant&county=49035&format=csv")).status()).toBe(403);
+});
+
+// DS-17 (D-040): every figure tile explains itself; the controls and downloads say what they do; sections lead with words; print carries the footer on every sheet.
+const PRIVACY = "Fewer than 11 families, so the number is hidden to protect privacy.";
+// The first pointer action can land before hydration on CI, so the first hover re-tries until its face appears.
+const hoverUntil = (target: ReturnType<Page["locator"]>, face: ReturnType<Page["locator"]>) =>
+  expect(async () => { await target.hover(); await expect(face).toBeVisible({ timeout: 1500 }); }).toPass({ timeout: 30_000 });
+
+test("AC2: figure tiles share one explain layer; hover, focus and Enter show the same words; a hidden tile says why with no value; Escape returns focus", async ({ page }) => {
+  await signIn(page, "staff@example.test");
+  await page.setViewportSize({ width: 1024, height: 900 });
+  expect((await page.goto("/staff/packets?variant=grant&county=49035"))?.status()).toBe(200);
+  const packet = page.locator("[data-slot=packet]"), card = packet.locator("[data-slot=explain-layer-card]");
+  await expect(packet.locator("[data-slot=explain-layer]")).toHaveCount(1);
+  const tiles = packet.locator("[data-slot=packet-figure]");
+  expect(await tiles.count()).toBeGreaterThan(0);
+  for (const t of await tiles.all()) await expect(t).toHaveAttribute("data-term", /.+/);
+  const shown = tiles.filter({ hasNot: page.locator("[data-slot=suppressed]") }).first(), hidden = tiles.filter({ has: page.locator("[data-slot=suppressed]") });
+  await expect(card).toHaveCount(0);
+  await hoverUntil(shown, card);
+  await expect(card).toContainText(/Value\s*\S/);
+  await expect(card).toContainText(/Source\s*\S/);
+  const words = await card.innerText();
+  await page.mouse.move(0, 0);
+  await expect(card).toHaveCount(0);
+  await shown.focus();
+  expect(await card.innerText()).toBe(words);
+  await page.keyboard.press("Enter");
+  await expect(card).toHaveAttribute("role", "dialog");
+  expect(await page.getByRole("dialog").innerText()).toBe(words);
+  await page.keyboard.press("Escape");
+  await expect(card).toHaveCount(0);
+  await expect(shown).toBeFocused();
+  await shown.blur();
+  if (await hidden.count()) {
+    await hidden.first().hover();
+    await expect(card).toContainText(/Why it's hidden\s*(Fewer than 11 families|Hidden so the smaller group|This number appears once)/);
+    await expect(card).not.toContainText("Value");
+    if ((await hidden.first().locator("[data-slot=suppressed]").innerText()).trim() === "fewer than 11") await expect(card).toContainText(PRIVACY);
+    await page.mouse.move(0, 0);
+  }
+  // The words also live outside the card: the tile carries the label, the source and the as-of month.
+  await expect(shown.locator("dt")).toHaveText(/\S/);
+  await expect(shown.locator("dd").last()).toHaveText(/ · (as of \w{3} \d{4}|date not available yet)$/);
+  expect(await axe(page)).toEqual([]);
+});
+
+test("AC3: Variant, County and both downloads carry hints that read the same on hover and on focus; 44 px triggers at 375", async ({ page }) => {
+  await signIn(page, "staff@example.test");
+  await page.setViewportSize({ width: 1440, height: 900 });
+  expect((await page.goto("/staff/packets?variant=grant&county=49035"))?.status()).toBe(200);
+  const controls = page.locator("[data-slot=packet-controls]"), tip = page.locator("[data-slot=tooltip-content]").first();
+  await expect(controls.locator("[data-slot=hint-trigger]")).toHaveCount(4);
+  const same = async (name: string, pattern: RegExp) => {
+    const trigger = controls.getByRole("button", { name: `About ${name}`, exact: true });
+    await hoverUntil(trigger, tip);
+    await expect(tip).toHaveText(pattern);
+    const hovered = await tip.textContent();
+    await trigger.focus();
+    await expect(tip).toHaveText(hovered ?? "");
+    await trigger.blur();
+    await page.mouse.move(0, 0);
+    await expect(page.locator("[data-slot=tooltip-content]", { hasText: hovered ?? "" })).toHaveCount(0);
+  };
+  await same("Variant", /^Grant attachment is for a funder/);
+  await same("County", /^Limits the grant attachment to one Utah county/);
+  await same("Download Word (.docx)", /^A Word file of this packet.*month or quarter only/);
+  await same("Download CSV appendix", /^A spreadsheet of the figures only.*month or quarter only\.$/);
+  await expect(page.locator("#variant")).toHaveAccessibleName("Variant");
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/staff/packets?variant=grant&county=49035");
+  for (const t of await controls.locator("[data-slot=hint-trigger]").all()) {
+    const b = (await t.boundingBox())!;
+    expect(Math.min(b.width, b.height)).toBeGreaterThanOrEqual(44);
+  }
+});
+
+test("AC4: each section shows an eyebrow with its number and title and a serif headline in words", async ({ page }) => {
+  await signIn(page, "admin@example.test");
+  await page.setViewportSize({ width: 1024, height: 900 });
+  expect((await page.goto("/staff/packets?variant=board"))?.status()).toBe(200);
+  const sections = page.locator("[data-slot=packet-section]");
+  await expect(sections).toHaveCount(6);
+  for (const [i, s] of (await sections.all()).entries()) {
+    await expect(s.locator("[data-slot=section-eyebrow]")).toHaveText(`Section ${i + 1} of 6 · ${ORDER[i]}`);
+    const h2 = s.locator("h2");
+    await expect(h2).toHaveText(/\S.*\.$/);
+    await expect(h2).not.toHaveText(ORDER[i]!);
+    expect(await h2.evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(/serif/i);
+    await expect(s).toHaveAttribute("aria-labelledby", `${await s.getAttribute("id")}-lead`);
+  }
+  await expect(page.locator("[data-slot=packet]")).not.toContainText(/\bpct\b|\bFIPS\b/);
+});
+
+test("AC5 -print: hints, tooltips and the layer card never print; the footer is fixed at the foot of every sheet; sections start a page; tiles do not split", async ({ page }) => {
+  await signIn(page, "staff@example.test");
+  await page.setViewportSize({ width: 816, height: 1056 });
+  expect((await page.goto("/staff/packets?variant=grant&county=49035"))?.status()).toBe(200);
+  const tile = page.locator("[data-slot=packet-figure]").first(), card = page.locator("[data-slot=explain-layer-card]");
+  await hoverUntil(tile, card);
+  await page.emulateMedia({ media: "print" });
+  await expect(card).toBeHidden();
+  await expect(page.locator("[data-slot=hint-trigger]").first()).toBeHidden();
+  await expect(page.locator("[data-slot=packet-controls]")).toBeHidden();
+  const footer = page.locator("[data-slot=packet-footer]");
+  await expect(footer).toBeVisible();
+  expect(await footer.evaluate((el) => [getComputedStyle(el).position, getComputedStyle(el).textAlign])).toEqual(["fixed", "center"]);
+  expect(await page.locator("[data-slot=packet-section]").first().evaluate((el) => getComputedStyle(el).breakBefore)).toBe("page");
+  expect(await tile.evaluate((el) => [getComputedStyle(el).breakInside, getComputedStyle(el).color])).toEqual(["avoid", "rgb(0, 0, 0)"]);
+  await mkdir(ART, { recursive: true });
+  await page.screenshot({ path: `${ART}/packet-ds17-print.png`, clip: { x: 0, y: 0, width: 816, height: 1056 } });
+});
+
+test("AC6: axe 0 serious or critical at 375, 1024 and 1440 with no horizontal overflow", async ({ page }) => {
+  await signIn(page, "staff@example.test");
+  for (const width of [375, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    expect((await page.goto("/staff/packets?variant=grant&county=49035"))?.status()).toBe(200);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth), `scroll @ ${width}`).toBeLessThanOrEqual(width);
+    expect(await axe(page), `axe @ ${width}`).toEqual([]);
+  }
 });
