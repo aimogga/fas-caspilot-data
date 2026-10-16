@@ -77,7 +77,10 @@ describe("DS-21 section links", () => {
   });
 
   it("exactly one sidebar link is active on every page, and a section link is active on all of its tabs", () => {
-    const cases = [["/staff", "Home"], ["/dashboard", "Insights"], ["/need-map", "Insights"], ["/staff/intake", "Data"], ["/staff/entry", "Data"], ["/data-freshness", "Data"], ["/methodology", "Data"], ["/staff/grants", "Grants"], ["/staff/grants/matches", "Grants"], ["/staff/packets", "Evidence packets"], ["/board", "Board dashboard"]] as const;
+    const cases = [
+      ["/staff", "Home"], ["/dashboard", "Insights"], ["/need-map", "Insights"], ["/staff/intake", "Data"], ["/staff/entry", "Data"], ["/data-freshness", "Data"],
+      ["/methodology", "Data"], ["/staff/grants", "Grants"], ["/staff/grants/matches", "Grants"], ["/staff/packets", "Evidence packets"], ["/board", "Board dashboard"],
+    ] as const;
     for (const [path, label] of cases) for (const role of ["staff", "admin"]) expect(active(role, path), `${role} ${path}`).toEqual([label]);
     expect(active("admin", "/admin")).toEqual(["Overview"]);
     expect(active("staff", "/%73taff/intake")).toEqual(["Data"]);
