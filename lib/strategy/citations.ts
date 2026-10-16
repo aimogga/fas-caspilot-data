@@ -62,14 +62,19 @@ export function resolveFact(byId: Map<string, Fact>, id: string): Fact | string 
   return r(rest.join(':'), f) ? f : `${id} does not resolve`;
 }
 
-/** Pure citation validator: every number in fas_position, evidence claims and suggested_ask must match a value of a cited fact that is in the snapshot and resolves. */
-export function validateDraft(d: StrategyDraft, s: Snapshot): CitationReport {
+/** Checks one claim: each cited id is in the snapshot and resolves, and every number matches a value of a cited fact. Shared with lib/application. */
+export function claimChecker(s: Snapshot): (path: string, text: string, ids: string[], numbers?: number[]) => ClaimCheck {
   const byId = new Map(s.facts.map((f) => [f.citation_id, f])), resolve = (id: string) => resolveFact(byId, id);
-  const check = (path: string, text: string, ids: string[], numbers = numbersIn(text)): ClaimCheck => {
+  return (path, text, ids, numbers = numbersIn(text)) => {
     const got = ids.map(resolve), facts = got.filter((g): g is Fact => typeof g !== 'string');
     const problems = [...got.filter((g): g is string => typeof g === 'string'), ...numbers.filter((n) => !matches(n, facts)).map((n) => `${n} has no matching cited value`)];
     return { path, text, citation_ids: ids, numbers, problems };
   };
+}
+
+/** Pure citation validator: every number in fas_position, evidence claims and suggested_ask must match a value of a cited fact that is in the snapshot and resolves. */
+export function validateDraft(d: StrategyDraft, s: Snapshot): CitationReport {
+  const check = claimChecker(s);
   const claims = d.criteria_map.flatMap((c, i) => [
     check(`criteria_map[${i}].fas_position`, c.fas_position, c.evidence.map((e) => e.citation_id)),
     ...c.evidence.map((e, j) => check(`criteria_map[${i}].evidence[${j}].claim`, e.claim, [e.citation_id])),
