@@ -24,7 +24,8 @@ export function Td({ label, value, numeric = true, data }: { label: string; valu
   );
 }
 const HIDDEN = "Hidden · protects another cell";
-const KEYS = "Arrow keys move through the numbers and read what each one means; Enter keeps the explanation open and Escape closes it.";
+/** The sr-only instruction every explain region (M4, M6, O1) describes itself with. */
+export const KEYS = "Arrow keys move through the numbers and read what each one means; Enter keeps the explanation open and Escape closes it.";
 /** M4 body (DS-07c): one row per income band from `compute.m4` (F-306 suppression already applied), total row in the footer.
  * DS-15a: every count and rate cell, the complementary row and the total row explain themselves through one `ExplainLayer`. */
 export function M4Table({ data, asOf = "Not available yet" }: { data: M4Result; asOf?: string }) {
