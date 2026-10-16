@@ -119,6 +119,13 @@ describe('strategy draft engine (F-508e)', () => {
     expect(() => assertPrivate({ ...s, abstracts: [{ citation_id: 'award_history:x', text: 't', notes: 'n' } as never] })).toThrow(/client-level key/);
   });
 
+  it('a rate matches as a percent, but a count or amount 100 times its cited value does not', () => {
+    const cite = (claim: string, citation_id: string) => validateDraft({ ...good, criteria_map: [{ ...good.criteria_map[0]!, fas_position: 'x', evidence: [{ claim, citation_id }] }] }, snap).ok;
+    expect(cite('Completion rate is 70%.', 'metric:m4:2026-Q3')).toBe(true);
+    expect(cite('We served 3,000 families.', 'metric:m4:2026-Q3')).toBe(false);
+    expect(cite('Similar awards number 1,200.', `award_history_summary:${OPP}`)).toBe(false);
+  });
+
   it('numbersIn finds money, percents and scaled numbers and skips years and codes', () => {
     expect(numbersIn('In FY2024 and 2025, M1 rose to 12.5% of $1,200 or 1.2 million (Q3).')).toEqual([12.5, 1200, 1.2e6]);
   });
