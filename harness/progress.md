@@ -1041,15 +1041,17 @@ Left: nothing in DS-12. Open: the seed's F-504 opportunities carry no `assistanc
 Decisions: none new (designer wording defaults in the spec).
 
 ---
-## 2026-10-16 03:55 (UTC) — Cloud Agent (Engineer Supervisor) — DS-12b and DS-15a after shots; DS-14 403, DS-15a and DS-16a before shots (design)
-Did: captured from the merged previews `docs/design/reviews/DS-12b/after/staff-grants-matches-{375,1024,1440}[-hover].png` plus a 1440 `-panel` shot with the "How we matched" aside open, and `docs/design/reviews/DS-15a/after/dashboard-{375,1024,1440}[-hover].png` (hover on an M4 completed cell). Before shots from production main for the next packets: `DS-15a/before/dashboard-*`, `DS-16a/before/data-freshness-*` and `DS-14/before/403-from-%2Fstaff-*` (as board). Manifest rows for each.
-State: binary and manifest only. Branch `design/after-shots-day5`. The 1440 panel shot shows four of the six parts (viewport capture); the 375 full-page shot has the whole panel. 375 shots stay under 10 000 px.
-Left: DS-14 after shots (`/login` signed out, `/403` as board) and DS-16a after shots once #262 and #266 merge; DS-16b before/after once #271 merges.
-Decisions: none new.
 ## 2026-10-16 02:05 (UTC) — Cloud Agent (Designer) — DS-16a: data freshness in words, cadence and vintage explained, run detail for admins, summary on every width (design)
 Did: `lib/freshness/words.ts` (pure: `cadenceWords` from the stored cadence and the D-021 cycle table, naming the yearly fallback when a word has no day count or no cadence is stored; `statusWords` = `Current · loaded <date>`, `Stale since <date> · N days`, `Failed on <run date>`, `Not published · no load yet`, one dated sentence each; `summaryWords` = `7 public sources: 1 failed, 1 stale, 1 with no load yet, 4 current.`; `vintageCard` over DS-10b `vintageWords`; `runWords` with the full id, started, finished, status in words and rows loaded; `footerWords` with the stale rule). `lib/freshness/query.ts`: rows carry `cadenceRaw` and `run` (id, status, started, finished, rows loaded) in place of `runId`; `Never` → `No load yet`. `components/freshness/DataFreshnessTable.tsx`: source column via `sourceName` (never a code), vintage cell as an `ExplainCard`, cadence as a `Hint`, status badge plus dated words in one `Hint`, admin-only "Latest load" `ExplainCard`, the summary sentence in serif as the page description at every width with the aggregate chip and a hint. `CHROME` exported from `AggregateFreshnessChip.tsx`. Spec: `docs/design/specs/DS-16.md` (DS-16b appends).
 State: lint, typecheck, unit tests (new: words 4; query updated) and `pnpm gate` green; hand-written diff 272 lines. No Docker, Supabase or preview in this shell: `tests/e2e/freshness.spec.ts` extended (sources in words, dated statuses in one trigger per row, admin run card with the full id vs none for staff, cadence hint and vintage card hover = focus, summary visible and 44 px triggers at 375, axe at 375/1024/1440) for CI. Before and after shots: the supervisor from production and the preview. Branch `ds-16a-freshness` off main.
 Left: `app/(app)/data-freshness/loading.tsx` once `PageSkeleton` (#262) is on main; `weekly` has no D-021 day count (engineering); the admin run link waits for a run route. DS-16b (`/methodology`) runs separately.
 Decisions: none new (designer defaults listed in the spec: chip word stays `Current`; the run cell uses the `ExplainCard` face because `Provenance` has no started/finished rows and the kit is read-only).
+
+---
+## 2026-10-16 03:55 (UTC) — Cloud Agent (Engineer Supervisor) — DS-12b and DS-15a after shots; DS-14 403, DS-15a and DS-16a before shots (design)
+Did: captured from the merged previews `docs/design/reviews/DS-12b/after/staff-grants-matches-{375,1024,1440}[-hover].png` plus a 1440 `-panel` shot with the "How we matched" aside open, and `docs/design/reviews/DS-15a/after/dashboard-{375,1024,1440}[-hover].png` (hover on an M4 completed cell). Before shots from production main for the next packets: `DS-15a/before/dashboard-*`, `DS-16a/before/data-freshness-*` and `DS-14/before/403-from-%2Fstaff-*` (as board). Manifest rows for each.
+State: binary and manifest only. Branch `design/after-shots-day5`. The 1440 panel shot shows four of the six parts (viewport capture); the 375 full-page shot has the whole panel. 375 shots stay under 10 000 px.
+Left: DS-14 after shots (`/login` signed out, `/403` as board) and DS-16a after shots once #262 and #266 merge; DS-16b before/after once #271 merges.
+Decisions: none new.
 
 ---
