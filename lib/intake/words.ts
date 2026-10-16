@@ -1,7 +1,7 @@
 /** Plain words for manual entry (DS-18b, D-040): one helper sentence per field (what to enter, why, what it feeds), the data attributes one `ExplainLayer`
  * reads off a recent aggregate total, and the Σ badge hint. Pure; only rules `validate.ts` enforces and only metrics the glossary names are mentioned. */
 import { GLOSSARY } from '../trust/glossary';
-import { formatValue, metricLabel, periodLabel, type AggregateRecent } from './aggregate';
+import { formatValue, metricLabel, NOTE_MAX, periodLabel, type AggregateInput, type AggregateRecent } from './aggregate';
 import { PARENT_TABLE } from './entry';
 import type { Field, FieldType } from './schema';
 
@@ -55,6 +55,15 @@ export function fieldHelp(field: Field): string | null {
   if (field.type === 'uuid') return null;
   return FIELD_HELP[field.key] ?? (field.type === 'uuid_ref' ? refHelp(field.key) : TYPE_HELP[field.type] ?? null);
 }
+
+/** DS-25: the aggregate form's helper sentences, one per field, naming only the rules `validateAggregate` checks. */
+export const AGGREGATE_HELP: Record<keyof AggregateInput, string> = {
+  period: 'The quarter the total covers, like 2026-Q2. Required; Q1 is January to March and Q4 is October to December.',
+  metric: 'What the total counts, such as families served or dollars paid to providers. Required.',
+  value: `The total for the quarter, ${WHOLE}; for dollars paid, ${DOLLARS}. Required.`,
+  county_fips: 'The Utah county the total covers. Leave as All counties for a total across the whole organization.',
+  note: `Anything a reader needs to know about this total, up to ${NOTE_MAX} characters. Plain words, no names or client details.`,
+};
 
 /** Σ badge hint: the glossary sentence, so the badge, the notice and the card say the same thing. */
 export const AGGREGATE_BADGE_HINT = GLOSSARY.aggregate.plain;
