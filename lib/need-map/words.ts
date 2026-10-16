@@ -8,6 +8,11 @@ export type HoverRow = [string, string | undefined];
 export type HoverWords = { term: Term; rows: HoverRow[]; hidden?: string };
 const NAMES: string[][] = [[], ['All scored'], ['Lower need', 'Higher need'], ['Lowest need', 'Middle', 'Highest need'], ['Lowest need', 'Lower need', 'Higher need', 'Highest need'], ['Lowest need', 'Lower need', 'Middle', 'Higher need', 'Highest need']];
 const RELATIVE = 'Relative ranking, not absolute need.';
+/** The one note under the legend strip (DS-20a): replaces the legend title suffix, the two legend lines and the footer suffix. Keeps "placeholder" visible (DESIGN need-map rule 4). */
+export const LEGEND_NOTE = 'Relative ranking · placeholder bands until FAS sets the weights.';
+
+/** The first `n` ranked rows, in rank order. `rows` already honours the FAS filter and is sorted by rank, so with `?fas=1` these are the top FAS counties. */
+export const topCounties = (rows: CountyRow[], n = 5): CountyRow[] => rows.filter((r) => r.status === 'Ranked').slice(0, n);
 
 /** Band `binNo` of `k` in words; `Band n` only when the data has more bands than we have names for. */
 export const bandName = (binNo: number, k: number): string => NAMES[k]?.[binNo - 1] ?? `Band ${binNo}`;
