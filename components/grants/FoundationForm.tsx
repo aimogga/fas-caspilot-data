@@ -18,7 +18,7 @@ export const GrantCard = ({ title, slot, children }: { title: string; slot: stri
   <Card data-slot={slot} className="h-full"><CardHeader><CardTitle><h2 className="text-base font-semibold">{title}</h2></CardTitle></CardHeader><CardContent className="flex flex-col items-start gap-4">{children}</CardContent></Card>
 );
 
-/** "Add one grant" card: labels above inputs, `Required` in text, a helper sentence under every field (DS-22), inline errors; both in aria-describedby; focus on the first invalid field. */
+/** "Add one grant" card: labels above inputs, `Required` in text, a helper sentence under every field (DS-24), inline errors; both in aria-describedby; focus on the first invalid field. */
 export function FoundationForm() {
   const router = useRouter(), formRef = useRef<HTMLFormElement>(null);
   const [errors, setErrors] = useState<RowError[]>([]), [saved, setSaved] = useState<string | null>(null), [failure, setFailure] = useState<string | null>(null), [busy, setBusy] = useState(false);

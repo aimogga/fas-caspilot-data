@@ -6,7 +6,7 @@ import { addedMonth, DROP_HELP, FORM_HELP, formHelp, HEADER, HIDDEN, IMPORT_INTR
 const BANNED = /\b(N\/A|null|undefined|NaN|pct|FIPS|MOE|TBD|lorem|CasePilot)\b|!|M[1-6]\b|\$0\.00/;
 const ROW = { id: 'a', title: 'Synthetic Access Fund', funder: 'Synthetic Foundation', close_date: '2027-03-31', award_floor: 5000, award_ceiling: 25000, source: 'foundation_manual', imported: '2026-10' };
 
-describe('DS-22 foundation grant words', () => {
+describe('DS-24 foundation grant words', () => {
   it('every form field has one or two plain sentences, and no help is written for a field that does not exist', () => {
     for (const f of FOUNDATION_FIELDS) {
       const help = formHelp(f.key);
