@@ -1,4 +1,5 @@
 import 'server-only';
+import { isFreeModel, type RetryHeaders } from './guard';
 
 /** Provider calls behind `generateJson` (lib/llm/index.ts). Callers never import this file (D-003). */
 export type Provider = 'gemini' | 'openrouter';
@@ -14,7 +15,10 @@ export type ProviderResult = { model: string; text: string; inputTokens: number 
 
 /** A provider HTTP failure. Carries the status only: never the key, the prompt or the response body. */
 export class ProviderHttpError extends Error {
-  constructor(readonly status: number) {
+  constructor(
+    readonly status: number,
+    readonly retry?: RetryHeaders,
+  ) {
     super(`HTTP ${status}`);
   }
 }
@@ -55,8 +59,12 @@ type OpenRouterResponse = {
 };
 
 /** OpenAI-compatible JSON mode. Free models rarely honour `json_schema`, so the schema rides in the system message. */
+export const openRouterModel = () => process.env.OPENROUTER_MODEL || DEFAULT_OPENROUTER_MODEL;
+
 export async function callOpenRouter(key: string, req: ProviderRequest): Promise<ProviderResult> {
-  const model = process.env.OPENROUTER_MODEL || DEFAULT_OPENROUTER_MODEL;
+  const model = openRouterModel();
+  // Second lock behind OpenRouterGuard.admit: a paid model never reaches fetch.
+  if (!isFreeModel(model)) throw new Error('paid_model_refused');
   const system = `${req.system}\n\nReply with one JSON object only, matching this JSON Schema:\n${JSON.stringify(req.jsonSchema)}`;
   const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
@@ -76,7 +84,10 @@ export async function callOpenRouter(key: string, req: ProviderRequest): Promise
     }),
     signal: req.signal,
   });
-  if (!res.ok) throw new ProviderHttpError(res.status);
+  if (!res.ok) {
+    const retry = { retryAfter: res.headers.get('retry-after'), rateLimitReset: res.headers.get('x-ratelimit-reset') };
+    throw new ProviderHttpError(res.status, retry);
+  }
   const body = (await res.json()) as OpenRouterResponse;
   const usage = body.usage;
   return {
