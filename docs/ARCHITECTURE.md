@@ -16,7 +16,7 @@
 | Ingestion code | `packages/ingest/<source>` (TypeScript), executed by Supabase Edge Functions or a small worker | Unit-tested with recorded fixtures |
 | Scheduling & alerts | n8n at n8n.casepilot.io (D-002) | n8n triggers ingest functions and sends failure alerts + weekly grant digest; workflow JSON exported to `n8n/` |
 | Exports | Server-side PDF and DOCX generation (D-004) | Stored in Supabase Storage with an `export_job` record |
-| AI drafts | LLM via `lib/llm/` adapter (D-003) | Structured JSON output, citation validation before display |
+| AI drafts | LLM via the server-only `lib/llm/` adapter (D-003): Gemini primary (`GEMINI_API_KEY`, `GEMINI_MODEL`), OpenRouter free tier fallback (`OPENROUTER_API_KEY`, `OPENROUTER_MODEL`) | Schema-validated JSON output (zod) with provider/model/tokens/latency meta, citation validation before display |
 | Build agents | Grok team + Cursor (local + Cloud Agents); Nightly Audit as a GitHub Actions cron | Agents never hold production credentials |
 
 **Why ingestion code lives in the repo, not only in n8n:** code in git can be tested by QA, reviewed in PRs and read by agents. n8n stays the scheduler and messenger, which plays to its strengths.

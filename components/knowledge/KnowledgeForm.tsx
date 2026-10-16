@@ -16,9 +16,7 @@ function useSubmit(action: (s: ActionState, f: FormData) => Promise<ActionState>
   const [state, run, pending] = useActionState(action, null);
   const ref = useRef<HTMLFormElement>(null);
   useEffect(() => { if (state?.ok && resetOnOk) ref.current?.reset(); }, [state, resetOnOk]);
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); const data = new FormData(e.currentTarget, (e.nativeEvent as SubmitEvent).submitter); startTransition(() => run(data));
-  };
+  const onSubmit = (e: FormEvent<HTMLFormElement>) => { e.preventDefault(); const data = new FormData(e.currentTarget, (e.nativeEvent as SubmitEvent).submitter); startTransition(() => run(data)); };
   return { state, pending, ref, onSubmit };
 }
 

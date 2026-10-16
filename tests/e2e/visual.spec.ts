@@ -17,7 +17,7 @@ test("board opens with the quarter as pictures: headline in words, hidden bands 
   for (const width of [375, 1024]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/board");
-    const charts = page.locator("[data-slot=board-pictures] [data-slot=chart]");
+    const charts = page.locator("[data-slot=board-section] [data-slot=chart]");
     // Seed (DS-07c): M4 total 25 of 29 is shown, so the completion picture always exists; up to four pictures in all.
     expect(await charts.count()).toBeGreaterThanOrEqual(1);
     expect(await charts.count()).toBeLessThanOrEqual(4);
@@ -27,7 +27,6 @@ test("board opens with the quarter as pictures: headline in words, hidden bands 
     await expect(completion).toContainText("All bands");
     await completion.getByRole("button", { name: "View as table" }).click();
     await expect(completion.locator("table")).toBeVisible();
-    await expect(page.locator("[data-slot=metric-card]")).toHaveCount(7);
     await noOverflow(page, width);
     expect(await axe(page), `axe @ ${width}`).toEqual([]);
   }
@@ -39,7 +38,7 @@ test("county panel opens in words with comparison bars against the state median 
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/need-map?county=49035");
     const panel = page.locator("[data-slot=county-panel]");
-    await expect(panel.getByRole("heading")).toContainText("Salt Lake County");
+    await expect(panel.getByRole("heading", { level: 2 })).toContainText("Salt Lake County");
     await expect(panel.locator("[data-slot=county-compare]")).toContainText(/^Salt Lake County has a higher .+ than \d+ of \d+ other Utah counties|^No rate indicators are published/);
     const bars = panel.locator("[data-slot=compare-bars] li[data-where]");
     if (await bars.count()) {

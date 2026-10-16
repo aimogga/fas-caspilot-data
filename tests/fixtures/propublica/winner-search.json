@@ -1,0 +1,4 @@
+{"total_results": 3, "selected_state": "UT", "organizations": [
+  {"ein": 200000001, "name": "SYNTHETIC FAMILY COUNSELING CENTER INC", "city": "OGDEN", "state": "UT", "ntee_code": "F22", "subseccd": 3, "score": 20.1},
+  {"ein": 200000002, "name": "Synthetic Family Counseling Network", "city": "PROVO", "state": "UT", "ntee_code": "F20", "subseccd": 3, "score": 14.0},
+  {"ein": 200000003, "name": "Synthetic Youth Arts Alliance", "city": "BOISE", "state": "ID", "ntee_code": "A20", "subseccd": 3, "score": 3.3}]}
