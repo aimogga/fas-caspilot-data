@@ -1141,5 +1141,12 @@ Decisions: none new; no token added or changed (designer defaults in the spec: `
 **Evidence:** `docs/design/reviews/DS-18b/after/*`; review page republished (v12).
 
 **Next:** DS-19 dark mode (#282) and the map arrow-key test fix (#283) on CI; dark shots on every route after DS-19 merges.
+## 2026-10-16 06:50 (UTC) — Cloud Agent (Engineer Supervisor) — map.spec arrow-key step waits for hydration (fix)
+
+**Did:** `tests/e2e/map.spec.ts` county arrow-key step now retries focus + ArrowRight until focus moves (`toPass`, 15 s). The need-map page streams behind DS-14's skeleton, so the first key press could land before the map's key handler hydrated; the step flaked on #276 and #218 (three attempts each time, passed on re-run).
+
+**Evidence:** `pnpm gate` green; e2e runs in CI.
+
+**Next:** none; test-only change.
 
 ---
