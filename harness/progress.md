@@ -1120,3 +1120,13 @@ Decisions: none new (designer defaults in the spec: nav e2e in a new file becaus
 **Next:** DS-18b after shots (Day 8b) once the production build of f403333 is captured; DS-19 dark mode packet in flight on `ds-19-dark-mode`.
 
 ---
+
+## 2026-10-16 06:50 (UTC) — Cloud Agent (Engineer Supervisor) — map.spec arrow-key step waits for hydration (fix)
+
+**Did:** `tests/e2e/map.spec.ts` county arrow-key step now retries focus + ArrowRight until focus moves (`toPass`, 15 s). The need-map page streams behind DS-14's skeleton, so the first key press could land before the map's key handler hydrated; the step flaked on #276 and #218 (three attempts each time, passed on re-run).
+
+**Evidence:** `pnpm gate` green; e2e runs in CI.
+
+**Next:** none; test-only change.
+
+---
