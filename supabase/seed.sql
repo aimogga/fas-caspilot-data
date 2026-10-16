@@ -98,6 +98,8 @@ INSERT INTO opportunity_criteria (id, opportunity_id, criterion, weight_points, 
   ('20202020-2020-2020-2020-202020202020', '10101010-1010-1010-1010-101010101010', 'mission', 1, 't', 'syn');
 INSERT INTO award_history (id, source, funder, recipient, recipient_state, amount, fiscal_year, description, raw) VALUES
   ('30303030-3030-3030-3030-303030303030', 'usaspending', 'HHS', 'Synth Recip', 'UT', 1, 2024, 'syn', '{}');
+INSERT INTO recipient_profile (id, award_history_id, recipient_key, recipient, match_method, match_confidence) VALUES
+  ('31313131-3131-3131-3131-313131313131', '30303030-3030-3030-3030-303030303030', 'synth recip|UT', 'Synth Recip', 'none', 'none');
 INSERT INTO match_result (id, org_id, opportunity_id, score, components, flags, model_version) VALUES
   ('40404040-4040-4040-4040-404040404041', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '10101010-1010-1010-1010-101010101010', 1, '{}', '{}', 'v1'),
   ('40404040-4040-4040-4040-404040404042', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '10101010-1010-1010-1010-101010101010', 1, '{}', '{}', 'v1');

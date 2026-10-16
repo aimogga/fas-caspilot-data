@@ -38,5 +38,75 @@
     "host": "fas-caspilot-data.vercel.app",
     "sha": "5de6954",
     "at": "2026-10-15T22:15:08.842Z"
+  },
+  {
+    "id": "DS-13a",
+    "tag": "after",
+    "route": "/board",
+    "width": 375,
+    "variant": "base",
+    "host": "fas-caspilot-data-git-ds-13a-board-kpis-aimoggas-projects.vercel.app",
+    "sha": "17521a7",
+    "at": "2026-10-16T00:19:59.005Z"
+  },
+  {
+    "id": "DS-13a",
+    "tag": "after",
+    "route": "/board",
+    "width": 375,
+    "variant": "hover",
+    "host": "fas-caspilot-data-git-ds-13a-board-kpis-aimoggas-projects.vercel.app",
+    "sha": "17521a7",
+    "at": "2026-10-16T00:19:59.534Z"
+  },
+  {
+    "id": "DS-13a",
+    "tag": "after",
+    "route": "/board",
+    "width": 1024,
+    "variant": "base",
+    "host": "fas-caspilot-data-git-ds-13a-board-kpis-aimoggas-projects.vercel.app",
+    "sha": "17521a7",
+    "at": "2026-10-16T00:20:01.581Z"
+  },
+  {
+    "id": "DS-13a",
+    "tag": "after",
+    "route": "/board",
+    "width": 1024,
+    "variant": "hover",
+    "host": "fas-caspilot-data-git-ds-13a-board-kpis-aimoggas-projects.vercel.app",
+    "sha": "17521a7",
+    "at": "2026-10-16T00:20:01.907Z"
+  },
+  {
+    "id": "DS-13a",
+    "tag": "after",
+    "route": "/board",
+    "width": 1440,
+    "variant": "base",
+    "host": "fas-caspilot-data-git-ds-13a-board-kpis-aimoggas-projects.vercel.app",
+    "sha": "17521a7",
+    "at": "2026-10-16T00:20:03.785Z"
+  },
+  {
+    "id": "DS-13a",
+    "tag": "after",
+    "route": "/board",
+    "width": 1440,
+    "variant": "hover",
+    "host": "fas-caspilot-data-git-ds-13a-board-kpis-aimoggas-projects.vercel.app",
+    "sha": "17521a7",
+    "at": "2026-10-16T00:20:04.134Z"
+  },
+  {
+    "id": "DS-13a",
+    "tag": "after",
+    "route": "/board",
+    "width": 816,
+    "variant": "print",
+    "host": "fas-caspilot-data-git-ds-13a-board-kpis-aimoggas-projects.vercel.app",
+    "sha": "17521a7",
+    "at": "2026-10-16T00:20:06.782Z"
   }
 ]

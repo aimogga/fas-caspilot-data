@@ -34,7 +34,7 @@ const ACTORS = ['anon', 'admin', 'staff', 'board_viewer', 'other-org', 'other-ad
 const OPS = ['select', 'insert', 'update', 'delete'] as const;
 const PUBLIC = ['geo_county', 'source_registry', 'ingest_run', 'public_indicator', 'need_score_config', 'need_score', 'fas_service_county', 'match_config'] as const;
 const FAS = ['case', 'application', 'authorization', 'provider', 'delivery_episode', 'outcome_measure', 'upload_batch', 'aggregate_submission'] as const;
-const GLOB = ['opportunity', 'opportunity_criteria', 'award_history'] as const;
+const GLOB = ['opportunity', 'opportunity_criteria', 'award_history', 'recipient_profile'] as const;
 const GRW = ['match_result', 'strategy_draft', 'pipeline_status'] as const;
 const JOB = ['export_job', 'audit_log'] as const;
 const ORG_T = [...FAS, ...GRW, ...JOB] as const;
@@ -51,7 +51,7 @@ const TAG: Record<Table, string> = {
   need_score_config: 'version', need_score: 'geo_fips', fas_service_county: 'fips', match_config: 'id', org: 'uei', case: 'referral_source',
   application: 'decision', authorization: 'service_type', provider: 'npi', delivery_episode: 'discharge_status',
   outcome_measure: 'measure_code', upload_batch: 'file_path', aggregate_submission: 'period',
-  opportunity: 'external_id', opportunity_criteria: 'criterion', award_history: 'description',
+  opportunity: 'external_id', opportunity_criteria: 'criterion', award_history: 'description', recipient_profile: 'recipient_key',
   match_result: 'model_version', strategy_draft: 'status', pipeline_status: 'notes',
   export_job: 'type', audit_log: 'action',
 };
@@ -88,6 +88,7 @@ const M: Record<Table, { s: Rec; r: (t: string) => Rec; p: Rec; u: Rec }> = {
   opportunity: { s: { id: OPP1 }, r: (t) => ({ source: 'grants_gov', external_id: t, title: t, eligibility: {}, raw: {} }), p: { title: 'X' }, u: { title: 'Synth Opp' } },
   opportunity_criteria: { s: { id: '20202020-2020-2020-2020-202020202020' }, r: (t) => ({ opportunity_id: OPP1, criterion: t, weight_points: 1, text: t }), p: { weight_points: 9 }, u: { weight_points: 1 } },
   award_history: { s: { id: '30303030-3030-3030-3030-303030303030' }, r: (t) => ({ source: 'usaspending', funder: 'HHS', recipient: t, description: t, raw: {} }), p: { amount: 9 }, u: { amount: 1 } },
+  recipient_profile: { s: { id: '31313131-3131-3131-3131-313131313131' }, r: (t) => ({ recipient_key: t, recipient: t, match_method: 'none', match_confidence: 'none' }), p: { ntee_code: 'X' }, u: { ntee_code: null } },
   match_result: { s: { id: '40404040-4040-4040-4040-404040404041' }, r: (t) => ({ org_id: ORG1, opportunity_id: OPP1, score: 1, components: {}, flags: {}, model_version: t }), p: { score: 9 }, u: { score: 1 } },
   strategy_draft: { s: { id: '50505050-5050-5050-5050-505050505051' }, r: (t) => ({ org_id: ORG1, opportunity_id: OPP1, snapshot: { t }, output: {}, citation_report: {}, status: 'DRAFT' }), p: { status: 'approved' }, u: { status: 'DRAFT' } },
   pipeline_status: { s: { opportunity_id: OPP1, org_id: ORG1 }, r: (t) => ({ opportunity_id: OPP1, org_id: ORG1, status: 'watch', notes: t }), p: { notes: 'x' }, u: { notes: 'n' } },
@@ -418,6 +419,7 @@ describe('rls', () => {
     { t: 'audit_log', def: 'FOREIGN KEY (org_id) REFERENCES org(id)' },
     { t: 'opportunity', def: "CHECK ((source = ANY (ARRAY['grants_gov'::text, 'foundation_manual'::text, 'foundation_csv'::text])))" },
     { t: 'award_history', def: "CHECK ((source = ANY (ARRAY['usaspending'::text, 'irs_990pf'::text])))" },
+    { t: 'recipient_profile', def: "CHECK ((match_confidence = ANY (ARRAY['high'::text, 'medium'::text, 'low'::text, 'none'::text])))" },
     { t: 'strategy_draft', def: "CHECK ((status = ANY (ARRAY['DRAFT'::text, 'approved'::text, 'rejected'::text, 'failed'::text])))" },
   ])('$t has $def', ({ t, def }) => {
     const got = sql(`SELECT pg_get_constraintdef(c.oid) FROM pg_constraint c JOIN pg_class r ON r.oid=c.conrelid JOIN pg_namespace n ON n.oid=r.relnamespace WHERE n.nspname='public' AND r.relname='${t}'`).trim().split('\n');
