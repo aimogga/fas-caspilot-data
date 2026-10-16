@@ -1,0 +1,92 @@
+[
+  {
+    "id": "DS-15b",
+    "tag": "after",
+    "route": "/dashboard",
+    "width": 375,
+    "variant": "base",
+    "host": "fas-caspilot-data-oxhzr8c37-aimoggas-projects.vercel.app",
+    "sha": "b4a1f79",
+    "at": "2026-10-16T06:00:59.040Z"
+  },
+  {
+    "id": "DS-15b",
+    "tag": "after",
+    "route": "/dashboard",
+    "width": 1024,
+    "variant": "base",
+    "host": "fas-caspilot-data-oxhzr8c37-aimoggas-projects.vercel.app",
+    "sha": "b4a1f79",
+    "at": "2026-10-16T06:01:00.750Z"
+  },
+  {
+    "id": "DS-15b",
+    "tag": "after",
+    "route": "/dashboard",
+    "width": 1440,
+    "variant": "base",
+    "host": "fas-caspilot-data-oxhzr8c37-aimoggas-projects.vercel.app",
+    "sha": "b4a1f79",
+    "at": "2026-10-16T06:01:02.236Z"
+  },
+  {
+    "id": "DS-15b",
+    "tag": "after",
+    "route": "/dashboard",
+    "width": 1024,
+    "variant": "base",
+    "host": "fas-caspilot-data-oxhzr8c37-aimoggas-projects.vercel.app",
+    "sha": "b4a1f79",
+    "at": "2026-10-16T06:01:09.668Z"
+  },
+  {
+    "id": "DS-15b",
+    "tag": "after",
+    "route": "/dashboard",
+    "width": 1024,
+    "variant": "hover",
+    "host": "fas-caspilot-data-oxhzr8c37-aimoggas-projects.vercel.app",
+    "sha": "b4a1f79",
+    "at": "2026-10-16T06:01:12.815Z"
+  },
+  {
+    "id": "DS-15b",
+    "tag": "after",
+    "route": "/dashboard",
+    "width": 1024,
+    "variant": "base",
+    "host": "fas-caspilot-data-oxhzr8c37-aimoggas-projects.vercel.app",
+    "sha": "b4a1f79",
+    "at": "2026-10-16T06:01:16.641Z"
+  },
+  {
+    "id": "DS-15b",
+    "tag": "after",
+    "route": "/dashboard",
+    "width": 1024,
+    "variant": "hover",
+    "host": "fas-caspilot-data-oxhzr8c37-aimoggas-projects.vercel.app",
+    "sha": "b4a1f79",
+    "at": "2026-10-16T06:01:16.796Z"
+  },
+  {
+    "id": "DS-15b",
+    "tag": "after",
+    "route": "/dashboard",
+    "width": 1024,
+    "variant": "base",
+    "host": "fas-caspilot-data-oxhzr8c37-aimoggas-projects.vercel.app",
+    "sha": "b4a1f79",
+    "at": "2026-10-16T06:01:55.213Z"
+  },
+  {
+    "id": "DS-15b",
+    "tag": "after",
+    "route": "/dashboard",
+    "width": 1024,
+    "variant": "hover",
+    "host": "fas-caspilot-data-oxhzr8c37-aimoggas-projects.vercel.app",
+    "sha": "b4a1f79",
+    "at": "2026-10-16T06:01:58.329Z"
+  }
+]
