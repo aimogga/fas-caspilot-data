@@ -1049,6 +1049,12 @@ State: lint, typecheck, 820 unit tests, `next build` and `pnpm gate --base origi
 Left: no `export_job`/`audit_log` row for application downloads yet (the packet route writes one; would push past 400 lines). No list page linking drafts yet (reach a draft by id). Must not merge before #227; human_gate george-before-merge.
 Decisions: none new.
 
+## 2026-10-16 04:00 (UTC) — Claude Code (cloud, Engineer) — F-508h: QA fix, approved application is read-only (#243 criterion 3)
+Did: new forward migration `20261016040000_f508h_application_approved_lock.sql` replaces `application_draft_review()`: once approved (`approved_at` set) status only moves to `archived`, never back to DRAFT (also not through archived); a content edit (sections, validation_report, model_meta) to a non-DRAFT row is refused with 42501 instead of silently dropped. `tests/db/application-draft.test.ts`: admin approved→DRAFT refused, admin body edit refused, approved→archived allowed, archived→DRAFT refused, row unchanged. `tests/e2e/application-editor.spec.ts`: after approval "Start a new version to edit" lands on a new id showing "Draft, open for edits" with edit controls, original row stays approved; `[data-slot=assumptions]` and `[data-slot=needs-edit]` asserted. Trimmed lines in this PR's own code (joined statements, no behavior change) to stay under the cap.
+State: lint, typecheck, unit tests, `pnpm gate` green; D-012: 399 lines. No Supabase CLI here: `test:db` and `test:e2e` run in CI.
+Left: as in the 01:30 entry.
+Decisions: none new.
+
 ## 2026-10-16 01:55 (UTC) — Claude Code (cloud, Engineer) — F-508h after shots from the PR preview (design)
 Did: `pnpm shots --id F-508h --tag after` against the #263 preview at `6e79d94`: open draft as staff at 375 (full page), 1024 and 1440, each with a focus variant showing a citation chip's explain card; approved draft as admin at 1024 and 1440. 8 PNGs plus manifest rows in `docs/design/reviews/F-508h/`. The drafts are synthetic rows in fas-dev (stack migrations F-508e and F-508g applied there ahead of merge, with George's OK).
 State: binary and manifest only. Branch `design/after-shots-f508h`, stacked on `f508h-application-editor`.

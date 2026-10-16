@@ -12,10 +12,7 @@ const month = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleD
 export function applicationPacket({ draft, snapshot, title }: LoadedApplication, now: Date): Packet {
   if (draft.status !== 'approved') throw new ApplicationError(NOT_APPROVED_EXPORT);
   const facts = new Map(snapshot.facts.map((f) => [f.citation_id, f])), cited = [...new Set(draft.sections.flatMap((s) => s.citation_ids))];
-  const sources = cited.map((id) => {
-    const f = facts.get(id), w = f ? factWords(f) : null;
-    return { label: f?.label ?? 'Not in the stored snapshot', value: `id ${id}`, kind: 'value' as const, sourceLabel: w?.source ?? 'missing', asOf: month(snapshot.built_at) };
-  });
+  const sources = cited.map((id) => [id, facts.get(id)] as const).map(([id, f]) => ({ label: f?.label ?? 'Not in the stored snapshot', value: `id ${id}`, kind: 'value' as const, sourceLabel: f ? factWords(f).source : 'missing', asOf: month(snapshot.built_at) }));
   const assumptions = draft.sections.flatMap((s) => s.assumptions.map((a) => `${s.heading}: ${a}`));
   const section = (id: string, t: string, paragraphs: string[], source: string, figures: Packet['sections'][number]['figures'] = []) => ({ id: id as SectionId, title: t, paragraphs, figures, source });
   return {

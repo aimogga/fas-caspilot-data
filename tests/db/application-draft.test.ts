@@ -40,7 +40,7 @@ describe('integration: application_draft', () => {
     expect((await createClient(API, ANON, opts).from('application_draft').select('id').eq('id', id)).data ?? []).toEqual([]);
   });
 
-  it('staff edits a DRAFT but cannot approve; admin approves with stamps and the approved row is frozen', async () => {
+  it('staff edits a DRAFT but cannot approve; admin approves with stamps; the approved row is frozen and never goes back to DRAFT', async () => {
     const id = (await insert('staff')).data!.id as string;
     expect((await c.staff!.from('application_draft').update({ sections: [{ key: 's1', body: 'edited' }] }).eq('id', id).select('sections').single()).data?.sections).toEqual([{ key: 's1', body: 'edited' }]);
     expect((await c.staff!.from('application_draft').update({ status: 'approved' }).eq('id', id).select()).error?.code).toBe('42501');
@@ -48,7 +48,11 @@ describe('integration: application_draft', () => {
     const ok = await c.admin!.from('application_draft').update({ status: 'approved', approved_by: STAFF }).eq('id', id).select('status,approved_by,approved_at').single();
     expect(ok.data).toMatchObject({ status: 'approved', approved_by: ADMIN, approved_at: expect.any(String) });
     expect((await c.staff!.from('application_draft').update({ sections: [] }).eq('id', id).select()).data).toEqual([]);
-    expect((await c.admin!.from('application_draft').update({ sections: [] }).eq('id', id).select('sections').single()).data?.sections).toEqual([{ key: 's1', body: 'edited' }]);
+    expect((await c.admin!.from('application_draft').update({ sections: [] }).eq('id', id).select()).error?.code).toBe('42501');
+    expect((await c.admin!.from('application_draft').update({ status: 'DRAFT' }).eq('id', id).select()).error?.code).toBe('42501');
+    expect((await c.admin!.from('application_draft').update({ status: 'archived' }).eq('id', id).select('status').single()).data?.status).toBe('archived');
+    expect((await c.admin!.from('application_draft').update({ status: 'DRAFT' }).eq('id', id).select()).error?.code).toBe('42501');
+    expect((await svc.from('application_draft').select('status,sections').eq('id', id).single()).data).toEqual({ status: 'archived', sections: [{ key: 's1', body: 'edited' }] });
   });
 
   it('the edit history is append-only for everyone, and only DRAFT rows take edits', async () => {
