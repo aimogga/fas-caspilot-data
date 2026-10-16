@@ -70,6 +70,13 @@ describe('runBakeoff (F-508i)', () => {
     expect(runs.map((r) => (r.skipped ? r.reason : 'ran'))).toEqual(['ran', 'quota', 'quota', 'quota', 'quota', ...Array(5).fill('missing_key')]);
     expect(gen.mock.calls.every(([, o]) => o.forceProvider === 'gemini')).toBe(true);
   });
+
+  it('an OpenRouter guard refusal stops that provider like a quota answer', async () => {
+    const gen = mockGen((s, o) => (o.forceProvider === 'openrouter' ? new LlmError([{ provider: 'openrouter', status: 'openrouter_quota_exhausted' }]) : draftFor(s)));
+    const runs = await runBakeoff(items, { generate: gen, env: ENV, ...fakeTime() });
+    expect(runs.slice(5).map((r) => (r.skipped ? r.reason : 'ran'))).toEqual(Array(5).fill('quota'));
+    expect(gen.mock.calls.filter(([, o]) => o.forceProvider === 'openrouter')).toHaveLength(1);
+  });
 });
 
 describe('scoring and report (F-508i)', () => {

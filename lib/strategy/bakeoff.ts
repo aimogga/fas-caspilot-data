@@ -10,7 +10,8 @@ export const CALL_CAP = 20; // 5 opportunities x 2 rounds x 2 providers; OpenRou
 export const SPACING_MS = 4_000;
 export const DECISION_RULE = 'The provider with higher citation accuracy wins; a tie goes to the higher QA rubric mean (D-003 memo).';
 const KEYS: Record<Provider, string> = { gemini: 'GEMINI_API_KEY', openrouter: 'OPENROUTER_API_KEY' };
-const QUOTA = new Set([402, 429]);
+/** A 402/429 answer or an OpenRouter guard refusal (#227) ends that provider's runs. */
+const QUOTA = new Set<unknown>([402, 429, 'paid_model_refused', 'openrouter_quota_exhausted', 'openrouter_cooldown', 'openrouter_disabled_today']);
 
 export type EvalItem = { key: string; kind: 'federal' | 'utah' | 'foundation'; source_url: string; fetched_at: string; snapshot: Snapshot };
 type Fixture = {
@@ -52,9 +53,11 @@ export type Run = { provider: Provider; key: string; kind: EvalItem['kind'] } & 
   { skipped: false; status: DraftResult['status']; score: Score; draft: DraftResult } | { skipped: true; reason: 'missing_key' | 'quota' | 'call_cap' });
 type Deps = { generate?: typeof generateJson; sleep?: (ms: number) => Promise<void>; clock?: () => number; env?: Record<string, string | undefined>; cap?: number; spacingMs?: number };
 class CapReached extends Error {}
+/** Not an LlmError, so generateDraft rethrows it at once instead of spending a second round on a refusing provider. */
+class QuotaHit extends Error {}
 
 /** Sequential: provider by provider, opportunity by opportunity, at most one call every `spacingMs`, `cap` calls in all.
- * A missing key, a 402/429 quota answer or the cap skips the rest of that provider's runs (or all runs, for the cap) and says why. */
+ * A missing key, a 402/429 quota answer or guard refusal, or the cap skips the rest of that provider's runs (or all runs, for the cap) and says why. */
 export async function runBakeoff(items: EvalItem[], deps: Deps = {}): Promise<Run[]> {
   const { generate = generateJson, sleep = (ms) => new Promise((r) => setTimeout(r, ms)), clock = Date.now, env = process.env, cap = CALL_CAP, spacingMs = SPACING_MS } = deps;
   const runs: Run[] = [];
@@ -64,22 +67,20 @@ export async function runBakeoff(items: EvalItem[], deps: Deps = {}): Promise<Ru
     for (const it of items) {
       const base = { provider, key: it.key, kind: it.kind };
       if (capped || stop) { runs.push({ ...base, skipped: true, reason: capped ? 'call_cap' : (stop as 'missing_key' | 'quota') }); continue; }
-      let quota = false;
       const forced: typeof generateJson = async (input) => {
         if (calls >= cap) throw new CapReached();
         const wait = last + spacingMs - clock();
         if (wait > 0) await sleep(wait);
         calls += 1; last = clock();
         try { return await generate(input, { forceProvider: provider }); } catch (e) {
-          if (e instanceof LlmError && e.attempts.some((a) => QUOTA.has(a.status as number))) quota = true;
-          throw e;
+          throw e instanceof LlmError && e.attempts.some((a) => QUOTA.has(a.status)) ? new QuotaHit() : e;
         }
       };
       try {
         const draft = await generateDraft(it.snapshot, forced);
-        if (quota) { stop = 'quota'; runs.push({ ...base, skipped: true, reason: 'quota' }); continue; }
         runs.push({ ...base, skipped: false, status: draft.status, score: scoreRun(draft), draft });
       } catch (e) {
+        if (e instanceof QuotaHit) { stop = 'quota'; runs.push({ ...base, skipped: true, reason: 'quota' }); continue; }
         if (!(e instanceof CapReached)) throw e;
         capped = true; runs.push({ ...base, skipped: true, reason: 'call_cap' });
       }
