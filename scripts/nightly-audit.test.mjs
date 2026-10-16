@@ -5,6 +5,7 @@ import {
   generateReport,
   matchSecretLine,
   checkProgressLog,
+  readProgressLog,
   parseAgentsCommands,
   parseAudit,
   checkBuild,
@@ -126,6 +127,14 @@ describe('checkProgressLog', () => {
   it('finds documented PRs and flags missing', () => {
     expect(checkProgressLog(['Fix (#3)', 'Merge pull request #4 from'], 'PR #3\nPR #4')).toEqual({found: ['3', '4'], missing: []});
     expect(checkProgressLog(['Add (#5)'], 'PR #3')).toEqual({found: [], missing: ['5']});
+  });
+});
+describe('readProgressLog (D-041)', () => {
+  it('joins the frozen progress.md with each entry file in filename order', () => {
+    const files = {'harness/progress.md': 'PR #1', 'd/2026-10-16T0400Z-b.md': 'PR #3', 'd/2026-10-16T0358Z-a.md': 'PR #2'};
+    const log = readProgressLog('d', (p) => p === 'd' || p in files, (p) => files[p], () => ['2026-10-16T0400Z-b.md', 'x.txt', '2026-10-16T0358Z-a.md']);
+    expect(log).toBe('PR #1\nPR #2\nPR #3');
+    expect(checkProgressLog(['Add (#3)'], log).missing).toEqual([]);
   });
 });
 describe('parseAgentsCommands', () => {

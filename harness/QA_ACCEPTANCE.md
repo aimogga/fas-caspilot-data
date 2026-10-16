@@ -6,7 +6,7 @@ QA is the only role that sets a feature to `passing` in `feature_list.json`, and
 1. CI green (lint, typecheck, unit, db, e2e smoke).
 2. A test exists for every acceptance criterion of the feature (map them in the PR table).
 3. No real data, secrets or production URLs in the diff, fixtures or screenshots.
-4. `progress.md` entry present.
+4. One new `harness/progress/` entry file present (D-041).
 5. Feature-specific checks below.
 
 ## Feature-specific checks

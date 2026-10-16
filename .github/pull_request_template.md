@@ -15,7 +15,7 @@
 - [ ] New tables have RLS (deny by default) + policy tests
 - [ ] Displayed numbers trace to stored rows (source_id / vintage / upload batch)
 - [ ] Suppression applied to any shared output
-- [ ] `harness/progress.md` entry appended
+- [ ] One new `harness/progress/<YYYY-MM-DDTHHMMZ>-<branch>.md` entry added (D-041)
 - [ ] Hand-written diff ≤ 400 lines (`max_diff_lines`); lockfiles and generated files don't count but are listed below (D-012)
 - [ ] QA packet requested
 
