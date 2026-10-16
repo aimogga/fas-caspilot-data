@@ -1,4 +1,4 @@
-/** Plain words for the Foundation grants page (DS-20, D-040): the header, one helper sentence per form field, the import help, the hover words
+/** Plain words for the Foundation grants page (DS-22, D-040): the header, one helper sentence per form field, the import help, the hover words
  * for each recent opportunity, and save failures. Pure. Helper sentences name only rules `validateFoundation` and the API enforce. */
 import { MANUAL_HINT } from '../dashboard/words';
 import type { Term } from '../trust/glossary';

@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { FOUNDATION_FIELDS } from "../../lib/grants/foundation";
 import { FORM_HELP, HIDDEN } from "../../lib/grants/form-words";
 
-/** DS-20: the Foundation grants page in words. Header, a helper sentence on every field, every list value explains itself, 44 px targets, clean at three widths in light and dark. */
+/** DS-22: the Foundation grants page in words. Header, a helper sentence on every field, every list value explains itself, 44 px targets, clean at three widths in light and dark. */
 const axe = (page: Page) => new AxeBuilder({ page }).analyze().then((r) => r.violations.filter((v) => v.impact === "serious" || v.impact === "critical").map((v) => v.id));
 async function signIn(page: Page) {
   await page.goto("/login"); await page.fill("#email", "staff@example.test"); await page.fill("#password", "testpass123");

@@ -9,7 +9,7 @@ import { HEADER, RECENT_HEADLINE, RECENT_TERMS, recentCells, recentNote, type Ce
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
-// DS-20: every value in a row is a reading target for one explain card (pointer, focus, tap); 44 px below 1024.
+// DS-22: every value in a row is a reading target for one explain card (pointer, focus, tap); 44 px below 1024.
 const TARGET = "inline-flex min-h-11 items-center rounded-sm focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 lg:min-h-0";
 const Target = ({ cell, className = "" }: { cell: Cell; className?: string }) => <span tabIndex={0} data-slot="recent-value" {...cell.attrs} className={`${TARGET} underline decoration-dotted underline-offset-4 ${className}`}>{cell.text}</span>;
 
