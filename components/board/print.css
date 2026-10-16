@@ -1,12 +1,19 @@
 /* F-402 board dashboard print sheet: letter-size, black on white, no shell, cards never split across pages. */
 @media print {
-  @page { margin: 16mm; }
+  @page { size: letter; margin: 16mm; }
   [data-slot=sidebar], [data-slot=topbar], [data-slot=skip], [data-slot=actions], [data-slot=print-button], [data-slot=sheet-content], button { display: none !important; }
+  /* DS-13a: the explain faces never print; their words live in the footers. Explain triggers print as plain text; the KPI row keeps three across. */
+  [data-slot=popover-content], [data-slot=hover-card-content], [data-slot=tooltip-content] { display: none !important; }
+  [data-slot=explain-trigger], [data-slot=hint-trigger] { display: inline !important; min-height: 0; text-decoration: none; }
+  [data-slot=explain-trigger] > svg { display: none; }
+  [data-slot=kpi-row] { display: grid !important; grid-template-columns: repeat(3, 1fr); border-color: #000; }
+  [data-slot=kpi] { border-color: #000; break-inside: avoid; page-break-inside: avoid; }
+  [data-slot=board-asof] { break-inside: avoid; page-break-inside: avoid; }
   html, body, [data-slot=column], [data-slot=page], [data-slot=metric-card] [data-slot=card], [data-slot=freshness-widget] [data-slot=card], [data-slot=board-pictures] [data-slot=card], [data-slot=packet-pictures] [data-slot=card] { background: #fff !important; }
   body, body * { color: #000 !important; }
   [data-slot=column] > [data-slot=page] { max-width: none; padding: 0; font-size: 11pt; }
   [data-slot=page-header] { display: flex; flex-direction: column; gap: 6pt; }
-  [data-slot=page-header] h1 { font-size: 22pt; }
+  [data-slot=page-header] h1 { font-size: 22pt; font-family: var(--font-serif); }
   [data-slot=grid] { display: block !important; }
   [data-slot=grid] > * { margin-bottom: 8pt; }
   [data-slot=metric-card], [data-slot=freshness-widget], [data-slot=board-pictures] [data-slot=card], [data-slot=packet-pictures] [data-slot=card], [data-slot=board-summary], [data-slot=board-note] { break-inside: avoid; page-break-inside: avoid; }
