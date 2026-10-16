@@ -45,7 +45,7 @@ describe('DS-18b aggregate words', () => {
     expect(aggregateCell({ period: '2025-Q4', metric_code: 'families_served', value: 31, county_fips: null }, COUNTIES)['data-value']).toBe('31 families served, Oct–Dec 2025 (Q4), All counties');
     expect(countyWords('49049', COUNTIES)).toBe('49049');
   });
-  it('DS-23: every aggregate field has one or two plain sentences naming its rule; required fields say so', () => {
+  it('DS-25: every aggregate field has one or two plain sentences naming its rule; required fields say so', () => {
     expect(Object.keys(AGGREGATE_HELP).sort()).toEqual(['county_fips', 'metric', 'note', 'period', 'value']);
     for (const [k, help] of Object.entries(AGGREGATE_HELP)) {
       expect(help, k).toMatch(/^[A-Z].*\.$/);

@@ -6,7 +6,7 @@ import { StatusCard } from "@/components/status/StatusCard";
 
 const ROUTES = ["staff", "dashboard", "need-map", "board", "staff/grants/matches", "staff/intake", "staff/entry", "admin"]; // DS-14 five + DS-18a one + DS-18b two
 
-ROUTES.push("data-freshness", "methodology", "staff/packets"); // DS-23 three
+ROUTES.push("data-freshness", "methodology", "staff/packets"); // DS-25 three
 describe("DS-14 loading skeletons and status card", () => {
   it("PageSkeleton is a status region with one sr-only sentence, hidden bars sized by the blocks, and no pulse under reduced motion", () => {
     const m = renderToStaticMarkup(<PageSkeleton page="the board summary" blocks={[{ cols: 3, h: "h-32" }, { cols: 1, h: "h-28", n: 5 }]} />);

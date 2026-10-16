@@ -56,7 +56,7 @@ export function fieldHelp(field: Field): string | null {
   return FIELD_HELP[field.key] ?? (field.type === 'uuid_ref' ? refHelp(field.key) : TYPE_HELP[field.type] ?? null);
 }
 
-/** DS-23: the aggregate form's helper sentences, one per field, naming only the rules `validateAggregate` checks. */
+/** DS-25: the aggregate form's helper sentences, one per field, naming only the rules `validateAggregate` checks. */
 export const AGGREGATE_HELP: Record<keyof AggregateInput, string> = {
   period: 'The quarter the total covers, like 2026-Q2. Required; Q1 is January to March and Q4 is October to December.',
   metric: 'What the total counts, such as families served or dollars paid to providers. Required.',

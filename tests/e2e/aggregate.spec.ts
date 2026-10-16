@@ -69,12 +69,12 @@ test("375 and 1024: no horizontal scroll, 44px targets, axe clean", async ({ pag
   }
 });
 
-// DS-23: the Σ badge, the helper sentences and every recent total explain themselves on hover, focus and tap.
+// DS-25: the Σ badge, the helper sentences and every recent total explain themselves on hover, focus and tap.
 const BADGE = "A total that FAS entered as a total, not built up from individual records.";
 const hoverUntil = (target: ReturnType<Page["locator"]>, face: ReturnType<Page["locator"]>) =>
   expect(async () => { await target.hover(); await expect(face).toBeVisible({ timeout: 1500 }); }).toPass({ timeout: 30_000 });
 
-test("DS-23: every aggregate field carries a plain sentence in aria-describedby", async ({ page }) => {
+test("DS-25: every aggregate field carries a plain sentence in aria-describedby", async ({ page }) => {
   await signIn(page, "staff@example.test");
   await openAggregate(page);
   for (const k of ["period", "metric", "value", "county_fips", "note"]) {
@@ -86,7 +86,7 @@ test("DS-23: every aggregate field carries a plain sentence in aria-describedby"
   await expect(page.locator("#agg-period-hint")).toContainText("like 2026-Q2");
 });
 
-test("DS-23: the Σ badge says what an aggregate is on hover, on focus and on tap", async ({ page }) => {
+test("DS-25: the Σ badge says what an aggregate is on hover, on focus and on tap", async ({ page }) => {
   await signIn(page, "staff@example.test");
   await page.setViewportSize({ width: 1024, height: 900 });
   await openAggregate(page);
@@ -105,7 +105,7 @@ test("DS-23: the Σ badge says what an aggregate is on hover, on focus and on ta
   expect(Math.min(box?.width ?? 0, box?.height ?? 0)).toBeGreaterThanOrEqual(44);
 });
 
-test("DS-23: a recent total explains itself through one layer: hover, focus and Enter show the same words; Escape closes", async ({ page }) => {
+test("DS-25: a recent total explains itself through one layer: hover, focus and Enter show the same words; Escape closes", async ({ page }) => {
   await signIn(page, "staff@example.test");
   await page.setViewportSize({ width: 1024, height: 900 });
   await openAggregate(page);

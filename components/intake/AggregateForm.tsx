@@ -13,7 +13,7 @@ import { AGGREGATE_BADGE_HINT, AGGREGATE_HELP, aggregateCell, countyWords } from
 type County = { fips: string; name: string };
 type Key = keyof AggregateInput;
 const LABEL: Record<Key, string> = { period: "Period (quarter)", metric: "Metric", value: "Total", county_fips: "County", note: "Note (optional)" };
-/** DS-23: the badge explains itself (tooltip on hover and focus, popover on tap); one row badge per total stays a plain label because the total beside it opens the same words. */
+/** DS-25: the badge explains itself (tooltip on hover and focus, popover on tap); one row badge per total stays a plain label because the total beside it opens the same words. */
 const Sigma = () => <Hint text={AGGREGATE_BADGE_HINT} label="Aggregate submission" className="rounded-full"><AggregateBadge /></Hint>;
 const TOTAL = "inline-flex min-h-11 items-center rounded-sm font-medium tabular-nums underline decoration-dotted underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 lg:min-h-0";
 
