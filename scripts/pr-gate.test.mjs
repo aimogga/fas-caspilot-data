@@ -103,6 +103,13 @@ describe('resolveBase (D-032 stacked branches)', () => {
     expect(() => resolveBase(['node', 'gate'], git('child', 'HEAD'))).toThrow(/origin\/\*/);
     expect(() => resolveBase(['node', 'gate'], git('child', 'origin/x;rm -rf .'))).toThrow(/origin\/\*/);
   });
+  it('PR_GATE_BASE sits between --base and gateBase, and must be an origin/* branch', () => {
+    const env = { PR_GATE_BASE: 'origin/env-parent' };
+    expect(resolveBase(['node', 'gate', '--base', 'HEAD'], git('x', 'origin/p'), env)).toBe('HEAD');
+    expect(resolveBase(['node', 'gate'], git('child', 'origin/parent-branch'), env)).toBe('origin/env-parent');
+    expect(resolveBase(['node', 'gate'], git('child', 'origin/parent-branch'), { PR_GATE_BASE: '' })).toBe('origin/parent-branch');
+    expect(() => resolveBase(['node', 'gate'], git('x', undefined), { PR_GATE_BASE: 'origin/x;rm -rf .' })).toThrow(/PR_GATE_BASE must be/);
+  });
   it('passes the branch name to git as one argument, never through a shell', () => {
     const calls = [];
     const git = (args) => (calls.push(args), args[0] === 'rev-parse' ? 'feature;id;#\n' : 'origin/p\n');
