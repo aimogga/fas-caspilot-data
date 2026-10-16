@@ -89,7 +89,7 @@ const M: Record<Table, { s: Rec; r: (t: string) => Rec; p: Rec; u: Rec }> = {
   opportunity_criteria: { s: { id: '20202020-2020-2020-2020-202020202020' }, r: (t) => ({ opportunity_id: OPP1, criterion: t, weight_points: 1, text: t }), p: { weight_points: 9 }, u: { weight_points: 1 } },
   award_history: { s: { id: '30303030-3030-3030-3030-303030303030' }, r: (t) => ({ source: 'usaspending', funder: 'HHS', recipient: t, description: t, raw: {} }), p: { amount: 9 }, u: { amount: 1 } },
   match_result: { s: { id: '40404040-4040-4040-4040-404040404041' }, r: (t) => ({ org_id: ORG1, opportunity_id: OPP1, score: 1, components: {}, flags: {}, model_version: t }), p: { score: 9 }, u: { score: 1 } },
-  strategy_draft: { s: { id: '50505050-5050-5050-5050-505050505051' }, r: (t) => ({ org_id: ORG1, opportunity_id: OPP1, inputs_snapshot: { t }, output: {}, citations: {}, status: 'draft' }), p: { status: 'approved' }, u: { status: 'draft' } },
+  strategy_draft: { s: { id: '50505050-5050-5050-5050-505050505051' }, r: (t) => ({ org_id: ORG1, opportunity_id: OPP1, snapshot: { t }, output: {}, citation_report: {}, status: 'DRAFT' }), p: { status: 'approved' }, u: { status: 'DRAFT' } },
   pipeline_status: { s: { opportunity_id: OPP1, org_id: ORG1 }, r: (t) => ({ opportunity_id: OPP1, org_id: ORG1, status: 'watch', notes: t }), p: { notes: 'x' }, u: { notes: 'n' } },
   export_job: { s: { id: '60606060-6060-6060-6060-606060606061' }, r: (t) => ({ org_id: ORG1, type: t, params: {}, suppression_applied: true, created_by: ADMIN }), p: { file_path: 'x' }, u: { file_path: '/synthetic/a.pdf' } },
   audit_log: { s: { id: '70707070-7070-7070-7070-707070707071' }, r: (t) => ({ org_id: ORG1, actor: ADMIN, action: t, entity: 'org', details: {} }), p: { action: 'x' }, u: { action: 'seed' } },
@@ -103,6 +103,7 @@ function allowed(table: Table, actor: Actor, op: Op): boolean {
   if (!SIGNED.has(actor)) return false;
   const own = actor === 'admin' || actor === 'staff';
   if (inArr(table, GLOB)) return op === 'select' && (own || actor === 'other-org' || actor === 'other-admin');
+  if (table === 'strategy_draft' && op === 'update') return actor === 'admin';
   if (inArr(table, FAS) || inArr(table, GRW)) return own && (op !== 'delete' || actor === 'admin');
   if (table === 'export_job') return own && (op === 'select' || op === 'insert');
   if (table === 'audit_log') return (op === 'select' && actor === 'admin') || (op === 'insert' && own);
@@ -120,7 +121,7 @@ function tagq(table: Table, t: string, row?: Rec): Rec {
   if (table === 'need_score') return { version: 'v1', geo_fips: '49049' };
   if (table === 'fas_service_county') return { fips: '49001' };
   if (table === 'strategy_draft' && row?.id) return { id: row.id };
-  if (table === 'strategy_draft') return { inputs_snapshot: { t } };
+  if (table === 'strategy_draft') return { snapshot: { t } };
   return { [TAG[table]]: t };
 }
 
@@ -417,7 +418,7 @@ describe('rls', () => {
     { t: 'audit_log', def: 'FOREIGN KEY (org_id) REFERENCES org(id)' },
     { t: 'opportunity', def: "CHECK ((source = ANY (ARRAY['grants_gov'::text, 'foundation_manual'::text, 'foundation_csv'::text])))" },
     { t: 'award_history', def: "CHECK ((source = ANY (ARRAY['usaspending'::text, 'irs_990pf'::text])))" },
-    { t: 'strategy_draft', def: "CHECK ((status = ANY (ARRAY['draft'::text, 'approved'::text, 'rejected'::text])))" },
+    { t: 'strategy_draft', def: "CHECK ((status = ANY (ARRAY['DRAFT'::text, 'approved'::text, 'rejected'::text, 'failed'::text])))" },
   ])('$t has $def', ({ t, def }) => {
     const got = sql(`SELECT pg_get_constraintdef(c.oid) FROM pg_constraint c JOIN pg_class r ON r.oid=c.conrelid JOIN pg_namespace n ON n.oid=r.relnamespace WHERE n.nspname='public' AND r.relname='${t}'`).trim().split('\n');
     expect(got).toContain(def);

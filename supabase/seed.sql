@@ -101,9 +101,9 @@ INSERT INTO award_history (id, source, funder, recipient, recipient_state, amoun
 INSERT INTO match_result (id, org_id, opportunity_id, score, components, flags, model_version) VALUES
   ('40404040-4040-4040-4040-404040404041', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '10101010-1010-1010-1010-101010101010', 1, '{}', '{}', 'v1'),
   ('40404040-4040-4040-4040-404040404042', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '10101010-1010-1010-1010-101010101010', 1, '{}', '{}', 'v1');
-INSERT INTO strategy_draft (id, org_id, opportunity_id, inputs_snapshot, output, citations, status, created_by) VALUES
-  ('50505050-5050-5050-5050-505050505051', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '10101010-1010-1010-1010-101010101010', '{}', '{}', '{}', 'draft', '11111111-1111-1111-1111-111111111111'),
-  ('50505050-5050-5050-5050-505050505052', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '10101010-1010-1010-1010-101010101010', '{}', '{}', '{}', 'draft', '55555555-5555-5555-5555-555555555555');
+INSERT INTO strategy_draft (id, org_id, opportunity_id, snapshot, output, citation_report, status, created_by) VALUES
+  ('50505050-5050-5050-5050-505050505051', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '10101010-1010-1010-1010-101010101010', '{}', '{}', '{}', 'DRAFT', '11111111-1111-1111-1111-111111111111'),
+  ('50505050-5050-5050-5050-505050505052', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '10101010-1010-1010-1010-101010101010', '{}', '{}', '{}', 'DRAFT', '55555555-5555-5555-5555-555555555555');
 INSERT INTO pipeline_status (opportunity_id, org_id, status, owner, notes) VALUES
   ('10101010-1010-1010-1010-101010101010', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'watch', 'a', 'n'),
   ('10101010-1010-1010-1010-101010101010', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'watch', 'b', 'n');
