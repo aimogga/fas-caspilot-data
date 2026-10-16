@@ -2,18 +2,20 @@ import { ChevronRight, MapPin } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { CompareBars } from "@/components/need-map/CompareBars";
+import { CountyPicker } from "@/components/need-map/CountyPicker";
 import { Swatch, fillFor } from "@/components/need-map/NeedMap";
 import { ExplainCard, Hint, Provenance } from "@/components/trust/explain";
 import { ExplainLayer } from "@/components/trust/explain-layer";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { NeedCompare, type Compare } from "@/lib/need-map/compare";
 import { KEY_MEASURES, measureGroups, rankLine } from "@/lib/need-map/panel";
+import type { PickerOption } from "@/lib/need-map/picker";
 import { NeedMapQuery, type Column, type CountyRow } from "@/lib/need-map/query";
 import { FAS_BADGE, NEED_TERMS, moeWords, needTerm, scoreCell, splitMoe } from "@/lib/need-map/terms";
 
-export const SELECT_PROMPT = "Select a county on the map or in the table.";
-/** Before a pick (DS-20a): the top ranked counties answer the page's question, then one line on how to go further. */
-export const TOP_PROMPT = "Select any county on the map or in the table to see why it ranks where it does.";
+export const SELECT_PROMPT = "Pick a county on the map or from the menu above.";
+/** Before a pick (DS-20a, DS-22): the top ranked counties answer the page's question, then one line on how to go further. */
+export const TOP_PROMPT = "Pick a county on the map or from the menu above to see why it ranks where it does.";
 const TOP_ROW = "grid min-h-11 grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-x-3 border-t border-border text-sm";
 const LINK = "flex min-h-11 min-w-0 items-center gap-2 rounded-sm font-medium text-foreground no-underline hover:underline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2";
 const CELL = "rounded-sm tabular-nums focus-visible:outline-2 focus-visible:outline-ring";
@@ -21,14 +23,15 @@ const NOT_PUBLISHED = "Not published";
 const SUMMARY = "flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-sm text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 [&::-webkit-details-marker]:hidden";
 export type PanelSource = { code: string; name: string; vintage: string; asOf: string };
 export type CountyPanelProps = { county: CountyRow | null; columns: Column[]; version: string | null; rankedCount: number; sources: PanelSource[]; /** All counties, for the comparison. */ counties?: CountyRow[];
-  /** Before a pick: the top ranked rows (FAS-filtered when `fas`). */ top?: CountyRow[]; fas?: boolean };
+  /** Before a pick: the top ranked rows (FAS-filtered when `fas`). */ top?: CountyRow[]; fas?: boolean; /** County picker options (DS-22). */ options?: PickerOption[] };
 
 /** County detail (DS-20b): name, the rank in words, the score, the county in one sentence, the five key measures against the state median, then every measure behind one disclosure, grouped by source. */
-export function CountyPanel({ county, columns, version, sources, counties = [], top = [], fas = false }: CountyPanelProps) {
+export function CountyPanel({ county, columns, version, sources, counties = [], top = [], fas = false, options = [] }: CountyPanelProps) {
   const title = county ? county.name : top.length ? `Highest need${fas ? " among FAS counties" : ""}` : "County detail", compare = county ? NeedCompare.rows(county, counties, columns) : [];
   return (
     <Card id="county-panel" data-slot="county-panel" aria-labelledby="county-panel-title" role="region">
       <CardHeader>
+        <CountyPicker options={options} selected={county?.fips ?? null} />
         <h2 id="county-panel-title" data-slot="card-title" aria-live="polite" className="flex flex-wrap items-center gap-2 text-base leading-none font-semibold">
           {title}{county?.fas ? <Badge variant="info" prefix={<MapPin aria-hidden />}>FAS county</Badge> : null}
         </h2>

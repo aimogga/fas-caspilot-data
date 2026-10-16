@@ -6,7 +6,7 @@ import { bandName } from './words';
 /** The five rates that make up the need score (DESIGN need score rule 3), in panel order. */
 export const KEY_MEASURES = ['uninsured_rate', 'poverty_rate', 'child_poverty_rate', 'single_parent_pct', 'no_vehicle_pct'] as const;
 /** Plain-words topic per source name; an unknown source is its own topic. Order here is the group order. */
-const TOPICS: Record<string, string> = { 'Census SAHIE': 'Health coverage', 'Census SAIPE': 'Poverty', 'Census ACS 5-year': 'Households and population' };
+const TOPICS: Record<string, string> = { 'Census SAHIE': 'Health coverage', 'Census SAIPE': 'Poverty', 'Census ACS 5-year': 'Households and population', 'Utah State Courts': 'Court filings' };
 
 /** 1 → `1st`, 2 → `2nd`, 13 → `13th`, 22 → `22nd`. */
 export function ordinal(n: number): string {
