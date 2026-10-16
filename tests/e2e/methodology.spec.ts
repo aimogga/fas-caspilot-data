@@ -20,8 +20,9 @@ for (const [email, eyebrow, seesDraft] of CASES) {
     expect(res?.status()).toBe(200);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Need score methodology");
     await expect(page.locator("[data-slot=page-header] p").first()).toHaveText(eyebrow);
-    await expect(page.locator("[data-slot=sidebar] nav a[aria-current=page]")).toHaveText("Methodology");
-    await expect(page.locator("[data-slot=crumbs]")).toHaveText("Methodology");
+    // DS-21: staff and admin reach it as the Data section's last tab; a board viewer keeps the direct link.
+    await expect(page.locator("[data-slot=sidebar] nav a[aria-current=page]")).toHaveText(email.startsWith("board") ? "Methodology" : "Data");
+    await expect(page.locator("[data-slot=crumbs]")).toHaveText(email.startsWith("board") ? "Methodology" : "Data · Methodology");
     await expect(page.getByRole("link", { name: "Back to need map" })).toHaveAttribute("href", "/need-map");
     await expect(page.locator("[data-slot=version-line]")).toHaveText(/^Version v2-synthetic, approved Oct 2026\s*·\s*one input, 100 points\s*·\s*26 of 29 counties scored\s*Synthetic data$/);
     await expect(page.locator("section:has(#inputs) tr[data-row=uninsured]")).toContainText(/Uninsured rate.*Census SAHIE.*2023.*Current/);

@@ -19,7 +19,7 @@ for (const [email, admin] of [["staff@example.test", false], ["admin@example.tes
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Data freshness");
     await expect(page.locator("[data-slot=page-header] p").first()).toHaveText("WORKSPACE");
     await expect(page.locator("[data-slot=page-header] p").nth(1)).toContainText(/^\d+ public sources: /);
-    await expect(page.locator("[data-slot=sidebar] nav a[aria-current=page], [data-slot=crumbs]")).toHaveText(["Data freshness", "Data freshness"]);
+    await expect(page.locator("[data-slot=sidebar] nav a[aria-current=page], [data-slot=crumbs]")).toHaveText(["Data", "Data · Freshness"]);
     await expect(page.locator("thead th")).toHaveText(admin ? [...HEADERS, "Latest load"] : HEADERS);
     // DS-16a AC5: the source column is words, never a registry code.
     for (const th of await page.locator("tbody th[scope=row]").all()) await expect(th.locator("span").first()).not.toHaveText(/^[a-z0-9]+[-_][a-z0-9_-]+$/);
