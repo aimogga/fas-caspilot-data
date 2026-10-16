@@ -2,7 +2,8 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { SELECT_PROMPT } from '@/components/need-map/CountyPanel';
-import { NeedMap, legendBins, summary } from '@/components/need-map/NeedMap';
+import { NeedMap, summary } from '@/components/need-map/NeedMap';
+import { RankedList } from '@/components/need-map/RankedList';
 import { COUNTIES } from '../synthetic/generate';
 import { NeedBins } from './bins';
 import { NeedMapQuery, type NeedInput } from './query';
@@ -55,16 +56,20 @@ describe('NeedMap markup', () => {
 
   it('prints the legend copy exactly, with numeric bin ranges, and the map summary', () => {
     expect(html).toMatch(/<figcaption data-slot="map-legend"[^>]*><p[^>]*>Need score \(version v2-synthetic\) · Placeholder bins<\/p><ul/);
-    expect(legendBins(data.counties)).toEqual(['Lowest −1.40 to −0.80', 'Lower −0.70 to −0.30', 'Middle −0.20 to +0.30', 'Higher +0.40 to +0.90', 'Highest +1.00 to +1.40']);
-    for (const text of ['Not published', 'FAS county (outlined)', 'Placeholder bins (5 equal-count groups) until need-score weights are set.', 'Relative ranking, not absolute need.']) {
+    // DS-11b: the legend is in words, one Hint per line (band range and count, why hatched, what an FAS county is).
+    expect(count(html, /<li[^>]*><button [^>]*data-slot="hint-trigger"[^>]*><span aria-hidden="true"[^>]*><\/span>(Lowest|Lower|Middle|Higher|Highest)( need)? · \d+ counties<\/button>/g)).toBe(5);
+    for (const text of ['Not published · 3 counties', 'FAS county (outlined)', 'Placeholder bins (5 equal-count groups) until need-score weights are set.', 'Relative ranking, not absolute need.']) {
       expect(html).toContain(`${text}</`);
     }
     expect(summary(data.counties)).toBe('Highest need: Rich County, San Juan County, Sevier County. Lowest need: Morgan County, Kane County, Iron County. 3 counties not published.');
     expect(html).toMatch(/<svg [^>]*role="group" aria-label="Utah county need map" aria-describedby="need-map-summary"/);
   });
 
-  it('prints rank labels only where the county box is at least 28 px each way, hidden below 1440', () => {
-    expect(count(html, /<text [^>]*class="hidden font-mono tabular-nums min-\[1440px\]:block">\d+<\/text>/g)).toBe(26);
+  it('prints rank labels where the county box is at least 24 px each way from 1024, hidden below; the hover card wrapper and hover stroke are there', () => {
+    expect(count(html, /<text [^>]*class="hidden font-medium tabular-nums lg:block lg:text-xl min-\[1440px\]:text-base">\d+<\/text>/g)).toBe(26);
+    expect(html).toMatch(/^<div data-slot="map-hover" class="relative"><figure/);
+    expect(count(html, /<path [^>]*class="cursor-pointer hover:stroke-2 hover:stroke-foreground focus-visible:outline-2 focus-visible:outline-ring"/g)).toBe(29);
+    expect(html).not.toContain('data-slot="map-hover-card"');
     expect(html).toMatch(/<text [^>]*fill="var\(--primary-foreground\)"[^>]*>1<\/text>/);
   });
 
@@ -85,5 +90,18 @@ describe('NeedMap markup', () => {
     const dim = renderToStaticMarkup(createElement(NeedMap, { data: NeedMapQuery.build(input, { fas: true }), fas: true }));
     expect(count(dim, /<path [^>]*data-dim="true"[^>]*tabindex="0" role="button"[^>]*aria-label="[^"]+"[^>]*style="fill:var\(--muted\)"/g)).toBe(24);
     expect([count(dim, /<path [^>]*data-fips=/g), count(dim, /<path [^>]*data-fas-outline=/g), count(dim, /<text /g)]).toEqual([29, 5, 5]);
+  });
+});
+
+describe('RankedList markup (DS-11b, below md)', () => {
+  const list = renderToStaticMarkup(createElement(RankedList, { data }));
+  it('is one 44 px link row per county, hidden from md up, with rank, name, score, band words, FAS badge and the hatch for no score', () => {
+    expect(list).toMatch(/^<section data-slot="ranked-list" aria-labelledby="ranked-list-title" class="md:hidden"><h2 [^>]*>29 counties, highest need first<\/h2><p [^>]*>26 of 29 have a need score\. Tap a county/);
+    expect(count(list, /<li data-fips="49\d{3}"><a aria-label="[^"]+" class="grid min-h-11 [^"]*" href="\?county=49\d{3}#county-panel">/g)).toBe(29);
+    expect(list).toMatch(/<a aria-label="Davis County, rank 20 of 26, need score −0\.80, FAS county"[^>]*href="\?county=49011#county-panel"><span[^>]*>20<\/span><span[^>]*>Davis County<\/span><span[^>]*>−0\.80<\/span>/);
+    expect(list).toMatch(/Davis County[^]*?data-slot="badge" data-variant="muted"[^>]*><span aria-hidden="true"[^>]*><\/span> Lowest need<\/span><span data-slot="badge" data-variant="info"[^>]*>[^]*? FAS county<\/span>/);
+    expect(list).toMatch(/aria-label="Daggett County, not published"[^>]*><span[^>]*><span aria-hidden="true" [^>]*style="background-color:var\(--suppressed\);[^"]*"><\/span><\/span><span[^>]*>Daggett County<\/span>/);
+    expect(list).toMatch(/Daggett County<\/span><span[^>]*><span[^>]*>Not published<\/span><\/span><span[^>]*>No need score<\/span>/);
+    expect(renderToStaticMarkup(createElement(RankedList, { data: NeedMapQuery.build(input, { fas: true }), fas: true }))).toMatch(/5 counties, highest need first[^]*href="\?county=49035&amp;fas=1#county-panel"/);
   });
 });
