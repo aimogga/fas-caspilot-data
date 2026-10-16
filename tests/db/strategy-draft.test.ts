@@ -49,5 +49,13 @@ describe('integration: strategy_draft review', () => {
     const { data } = await insert('staff', 'failed');
     const r = await c.admin!.from('strategy_draft').update({ status: 'approved' }).eq('id', data!.id).select();
     expect(r.error?.code).toBe('22023');
+    expect((await c.admin!.from('strategy_draft').update({ status: 'DRAFT' }).eq('id', data!.id).select()).error?.code).toBe('22023');
+    expect((await svc.from('strategy_draft').select('status').eq('id', data!.id).single()).data?.status).toBe('failed');
+  });
+
+  it('a review update cannot change the row id', async () => {
+    const { data } = await insert('staff', 'DRAFT');
+    const r = await c.admin!.from('strategy_draft').update({ id: crypto.randomUUID(), status: 'rejected' }).eq('id', data!.id).select('id,status').single();
+    expect(r.data).toEqual({ id: data!.id, status: 'rejected' });
   });
 });
