@@ -977,3 +977,10 @@ Did: `lib/need-map/words.ts` (pure: `bandName`, `legendBands` with name, range a
 State: lint, typecheck, unit tests (new: words 3, map/list markup) and `pnpm gate` green. No Docker, Supabase or preview here: `tests/e2e/map.spec.ts` gains the map hover card test (hover = focus = selected words, arrows, hatched county, legend hint, labels, axe at 1440/1024), a touch test at 375 (tap selects and shows the card, 29 rows ≥ 44 px, table hidden, `scrollWidth` ≤ 375, row tap lands on the panel) and the 1024 table-box test, for CI. Before shots: `docs/design/reviews/DS-11a/after/`; after shots: the supervisor takes them from the preview. Branch `ds-11b-map-hover` off main.
 Left: view switch (Map · Ranked list · Table) deferred; county names on the map and the weights approval month need a design decision and stored data.
 Decisions: none new (applies D-040; designer choices listed in the spec).
+## 2026-10-16 00:55 (UTC) — Cloud Agent (Engineer Supervisor) — DS-10b, DS-11b and DS-13a after shots from the PR previews (design)
+Did: captured the "after" evidence for three Day-3 packets from their Vercel previews: `docs/design/reviews/DS-10b/after/staff-{375,1024,1440}[-hover].png` (hover on a "Needs you" badge and a KPI sparkline), `docs/design/reviews/DS-11b/after/need-map-{375,1024,1440}[-hover|-focus].png` (the county card on pointer over and on arrow-key focus, Davis County), and `docs/design/reviews/DS-13a/after/board-{375,1024,1440}[-hover].png` plus the Letter print sheet `board-816-print.png` and `board-816-print.pdf`; manifest rows for each.
+State: binary and manifest only. Branch `design/after-shots-day3` (merges `design/after-shots-ds-10b`, `-ds-13a`, `-ds-11b`). The DS-10b 375 hover shot was dropped because it was identical to the base shot (no pointer at phone width). DS-11b 375 shots are kept: the ranked list brings the page down to about 3 500 px.
+Left: DS-12b and DS-13b after shots once those packets merge. Seen on the previews, to carry into packets: the DS-11b hover card overlaps the legend at 1440; the synthetic seed leaves "Needs you" empty and the board M1 KPI at n = 0.
+Decisions: none new.
+
+---
