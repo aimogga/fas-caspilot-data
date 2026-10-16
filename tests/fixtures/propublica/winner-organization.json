@@ -1,0 +1,4 @@
+{"organization": {"ein": 200000001, "name": "SYNTHETIC FAMILY COUNSELING CENTER INC", "city": "OGDEN", "state": "UT", "ntee_code": "F22", "subsection_code": 3, "ruling_date": "1998-06-01"},
+ "filings_with_data": [
+  {"tax_prd": 202306, "tax_prd_yr": 2023, "formtype": 0, "totrevenue": 2400000, "totfuncexpns": 2100000, "totcntrbgfts": 1800000, "totprgmsrvcexpns": 1700000, "totassetsend": 900000, "pct_compnsatncurrofcr": 0.04},
+  {"tax_prd": 202206, "tax_prd_yr": 2022, "formtype": 0, "totrevenue": 2000000, "totfuncexpns": 1900000, "totcntrbgfts": 1500000}]}
