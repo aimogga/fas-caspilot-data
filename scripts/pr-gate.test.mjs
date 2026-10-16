@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { describe, expect, it } from 'vitest';
-import { BINARY, MAX_LINES, countDiff, exitCode, format, loadGenerated, longLines, progressAppendOnly, run } from './pr-gate.mjs';
+import { BINARY, MAX_LINES, countDiff, exitCode, format, loadGenerated, longLines, progressAppendOnly, resolveBase, run } from './pr-gate.mjs';
 
 const numstat = (rows) => rows.map(([a, d, f]) => `${a}\t${d}\t${f}`).join('\n');
 
@@ -65,5 +65,23 @@ describe('run and CLI', () => {
     const r = spawnSync(process.execPath, ['scripts/pr-gate.mjs', '--skip-tests', '--base', 'HEAD'], { encoding: 'utf8', timeout: 60000 });
     expect(r.stdout).toContain('secret scan | ');
     expect(r.status).toBe(0);
+  });
+});
+
+describe('resolveBase (D-032 stacked branches)', () => {
+  const git = (branch, configured) => (cmd) => {
+    if (cmd.startsWith('git rev-parse')) return `${branch}\n`;
+    if (configured === undefined) throw new Error('exit 1');
+    return `${configured}\n`;
+  };
+  it('--base wins, then branch.<name>.gateBase, then origin/main', () => {
+    expect(resolveBase(['node', 'gate', '--base', 'HEAD'], git('x', 'origin/p'))).toBe('HEAD');
+    expect(resolveBase(['node', 'gate'], git('child', 'origin/parent-branch'))).toBe('origin/parent-branch');
+    expect(resolveBase(['node', 'gate'], git('feature', undefined))).toBe('origin/main');
+    expect(resolveBase(['node', 'gate'], git('feature', ''))).toBe('origin/main');
+  });
+  it('refuses a configured base that is not an origin/* branch', () => {
+    expect(() => resolveBase(['node', 'gate'], git('child', 'HEAD'))).toThrow(/origin\/\*/);
+    expect(() => resolveBase(['node', 'gate'], git('child', 'origin/x;rm -rf .'))).toThrow(/origin\/\*/);
   });
 });

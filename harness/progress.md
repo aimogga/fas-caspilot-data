@@ -953,3 +953,9 @@ Did: `/staff/grants/matches` drops the table for `ol > li[data-match]` cards (`c
 State: lint, typecheck, 771 unit tests and `pnpm gate` green locally. No Docker or preview in this shell, so `tests/e2e/match-explanation.spec.ts` (rows, meta, badges, flag hover words, tile focus words, cap reason, footer, panel, axe, scrollWidth at 375/1024) runs in CI; after shots are taken by the supervisor from the preview. Branch `ds-12a-grant-matches` off main.
 Left: DS-12b (`MatchPanel` redesign; removes the now-unused `MatchTable`). Open: no `loading.tsx` for this route (DS-14), the refresh/API-key footer line needs source-registry rows, the digest threshold could join the header.
 Decisions: none new (designer wording defaults listed in the spec).
+
+## 2026-10-16 00:08 (UTC) — Claude Code (cloud, Engineer) — pr-gate: stacked branches gate against their parent (D-028, D-032)
+Did: `scripts/pr-gate.mjs` exports `resolveBase`: `--base` wins, else `git config branch.<current>.gateBase` (e.g. `git config branch.f508e-strategy-engine.gateBase origin/f508a-llm-adapter`), else `origin/main`; a configured base must be an `origin/*` branch, so it is always a pushed parent. The CLI prints `gate base: <ref>` first. The push hook (`scripts/pr-gate-hook.mjs`, unchanged) runs `pnpm gate`, so a stacked branch's push is now gated as D-032 already measures it (D-012 against the parent, progress.md append-only against the parent). Found when the F-508e stacked branches were blocked by a count that included #223. 2 new unit tests.
+State: lint, typecheck, unit tests and `pnpm gate` green. Branch `tooling/gate-stacked-base` off main. CI still gates PRs against the PR base sha.
+Left: nothing.
+Decisions: none new (implements D-032 for the hook).

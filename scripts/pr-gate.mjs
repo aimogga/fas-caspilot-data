@@ -124,9 +124,27 @@ export function exitCode(rows) {
   return rows.some((r) => r.verdict === 'fail') ? 1 : 0;
 }
 
+/** D-032: a stacked branch is gated against its parent. `--base` wins; else `git config branch.<current>.gateBase` (set by the
+ * engineer, e.g. `origin/f508a-llm-adapter`); else `origin/main`. Only `origin/*` refs are accepted, so the base is always a pushed branch. */
+export function resolveBase(argv = process.argv, exec = execSync) {
+  const i = argv.indexOf('--base');
+  if (i !== -1) return argv[i + 1];
+  let configured = '';
+  try {
+    const branch = exec('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).trim();
+    configured = exec(`git config --get branch.${branch}.gateBase`, { encoding: 'utf-8' }).trim();
+  } catch {
+    return 'origin/main';
+  }
+  if (!configured) return 'origin/main';
+  if (!/^origin\/[\w./-]+$/.test(configured)) throw new Error(`gateBase must be an origin/* branch, got ${configured}`);
+  return configured;
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const baseIdx = process.argv.indexOf('--base');
-  const rows = run({ base: baseIdx === -1 ? 'origin/main' : process.argv[baseIdx + 1], skipTests: process.argv.includes('--skip-tests') });
+  const base = resolveBase();
+  const rows = run({ base, skipTests: process.argv.includes('--skip-tests') });
+  console.log(`gate base: ${base}`);
   console.log(format(rows));
   process.exit(exitCode(rows));
 }
