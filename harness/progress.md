@@ -1120,3 +1120,10 @@ Decisions: none new (designer defaults in the spec: nav e2e in a new file becaus
 **Next:** DS-18b after shots (Day 8b) once the production build of f403333 is captured; DS-19 dark mode packet in flight on `ds-19-dark-mode`.
 
 ---
+## 2026-10-15 23:55 (UTC) — Cloud Agent (Engineer) — design-shots: hover and focus shots wait for the explain face (fix)
+Did: `scripts/design-shots.mjs` took the hover and focus PNGs right after `page.hover` / `page.focus`, before the Radix HoverCard (`openDelay` 150 ms) or Hint tooltip had opened, so DS-10a's `staff-*-hover.png` were byte-identical to the base shots. New exported `waitForFace(page, { timeout 5 s, settle 250 ms, fallback 500 ms })` waits for `FACE` = `[data-slot=explain-content]:visible, [role=tooltip]:visible`, settles briefly when it shows, and falls back to the fixed wait (never throws) when the hovered element opens no face; both the hover and focus branches call it. Two unit tests with a page stub cover the shown and fallback paths and the selector/timeout arguments.
+State: lint, typecheck, 769 unit tests (97 files) green. Probe against a stub page with the pre-installed Chromium: a plain element falls back in ~500 ms, an explain trigger resolves once the face is visible. `docs/design/reviews/**` untouched.
+Left: re-run `pnpm shots --tag after --hover "[data-slot=home-tile] [data-slot=explain-trigger]"` for DS-10a so the hover shots differ from the base.
+Merge note: main gained a 3 s inline wait on the primitive slots (`tooling/shots-hover-wait`); merging main replaced it with `waitForFace`, whose `FACE` now covers the hover-card, tooltip, popover and explain-content slots plus `role=tooltip`, adding the settle and fallback waits and the unit tests.
+
+---
