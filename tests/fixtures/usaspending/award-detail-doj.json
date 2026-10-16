@@ -1,0 +1,167 @@
+{
+ "id": 231634874,
+ "generated_unique_award_id": "ASST_NON_15POVC22GG00810ASSI_015",
+ "fain": "15POVC22GG00810ASSI",
+ "uri": null,
+ "category": "grant",
+ "type": "03",
+ "type_description": "FORMULA GRANT (A)",
+ "description": "THIS APPLICANT WILL PROVIDE FUNDS FROM THE CRIME VICTIMS FUND TO ENHANCE CRIME VICTIM SERVICES IN THE STATE. VICTIMS OF CRIME ACT (VOCA) ASSISTANCE FUNDS TYPICALLY ARE TYPICALLY COMPETITIVELY AWARDED BY THE STATE TO LOCAL COMMUNITY-BASED ORGANIZATIONS THAT PROVIDE DIRECT SERVICES TO CRIME VICTIMS. NC/NCF",
+ "subaward_count": 100,
+ "total_subaward_amount": 14514966.47,
+ "total_subsidy_cost": 0.0,
+ "total_loan_value": 0.0,
+ "total_obligation": 14503897.0,
+ "date_signed": "2022-08-25",
+ "base_and_all_options": null,
+ "base_exercised_options": null,
+ "non_federal_funding": null,
+ "total_funding": 14503897.0,
+ "total_account_outlay": 14503897.0,
+ "total_account_obligation": 14503897.0,
+ "account_outlays_by_defc": [
+  {
+   "code": "Q",
+   "amount": 14503897.0
+  }
+ ],
+ "account_obligations_by_defc": [
+  {
+   "code": "Q",
+   "amount": 14503897.0
+  }
+ ],
+ "record_type": 2,
+ "cfda_info": [
+  {
+   "applicant_eligibility": "Not Applicable",
+   "beneficiary_eligibility": "Beneficiary eligibility is the same as applicant eligibility.",
+   "cfda_federal_agency": "OFFICE OF JUSTICE PROGRAMS, JUSTICE, DEPARTMENT OF",
+   "cfda_number": "16.575",
+   "cfda_objectives": "Program goal(s) name: Help victims of crime with needed services. \nProgram goal(s) description: Improve the treatment of victims of crime by providing victims with the assistance, support, and services necessary to aid their restoration and healing after a criminal act. \nProgram objective(s) name: Provide subawards to assist victims locally.\nProgram objective(s) description: Support state and territory crime victim assistance programs; provide subgrants to local community-based organizations and public agencies that provide services to crime victims.",
+   "cfda_obligations": "(Grant) FY 24$778,895,230.00; FY 25$1,267,586,250.00; FY 26 est $0.00; - ",
+   "cfda_popular_name": "",
+   "cfda_title": "Crime Victim Assistance",
+   "cfda_website": "https://www.ojp.gov/",
+   "federal_action_obligation_amount": 14503897.0,
+   "non_federal_funding_amount": 0.0,
+   "sam_website": "https://sam.gov/fal/2d71dc7a01aa4630a529746d1fbb2196/view",
+   "total_funding_amount": 14503897.0
+  }
+ ],
+ "transaction_obligated_amount": 14503897.0,
+ "funding_agency": {
+  "id": 263,
+  "has_agency_page": true,
+  "toptier_agency": {
+   "name": "Department of Justice",
+   "code": "015",
+   "abbreviation": "DOJ",
+   "slug": "department-of-justice"
+  },
+  "subtier_agency": {
+   "name": "Office of Justice Programs",
+   "code": "1550",
+   "abbreviation": "OJP"
+  },
+  "office_agency_name": "OJP VICTIMS OF CRIME"
+ },
+ "awarding_agency": {
+  "id": 263,
+  "has_agency_page": true,
+  "toptier_agency": {
+   "name": "Department of Justice",
+   "code": "015",
+   "abbreviation": "DOJ",
+   "slug": "department-of-justice"
+  },
+  "subtier_agency": {
+   "name": "Office of Justice Programs",
+   "code": "1550",
+   "abbreviation": "OJP"
+  },
+  "office_agency_name": "OJP VICTIMS OF CRIME"
+ },
+ "period_of_performance": {
+  "start_date": "2021-10-01",
+  "end_date": "2025-09-30",
+  "last_modified_date": "2025-03-13"
+ },
+ "recipient": {
+  "recipient_hash": "e05438c6-0e1a-8ad3-c8f4-d07e4051cbfb-R",
+  "recipient_name": "STATE OF UTAH - UTAH OFFICE FOR VICTIMS OF CRIME",
+  "recipient_uei": "JTU4EQKVKAN1",
+  "recipient_unique_id": null,
+  "parent_recipient_hash": null,
+  "parent_recipient_name": null,
+  "parent_recipient_uei": null,
+  "parent_recipient_unique_id": null,
+  "business_categories": [
+   "Government",
+   "U.S. Regional/State Government"
+  ],
+  "location": {
+   "location_country_code": "USA",
+   "country_name": "UNITED STATES",
+   "state_code": "UT",
+   "state_name": "UTAH",
+   "city_name": "SALT LAKE CITY",
+   "county_code": "035",
+   "county_name": "SALT LAKE",
+   "address_line1": "350 E 500 S",
+   "address_line2": "STE 200",
+   "address_line3": null,
+   "congressional_code": "01",
+   "zip4": "3347",
+   "zip5": "84111",
+   "foreign_postal_code": null,
+   "foreign_province": null
+  }
+ },
+ "executive_details": {
+  "officers": [
+   {
+    "name": null,
+    "amount": null
+   },
+   {
+    "name": null,
+    "amount": null
+   },
+   {
+    "name": null,
+    "amount": null
+   },
+   {
+    "name": null,
+    "amount": null
+   },
+   {
+    "name": null,
+    "amount": null
+   }
+  ]
+ },
+ "place_of_performance": {
+  "location_country_code": "USA",
+  "country_name": "UNITED STATES",
+  "county_code": "035",
+  "county_name": "SALT LAKE",
+  "city_name": "SALT LAKE CITY",
+  "state_code": "UT",
+  "state_name": "UTAH",
+  "congressional_code": "01",
+  "zip4": "3347",
+  "zip5": "84111",
+  "address_line1": null,
+  "address_line2": null,
+  "address_line3": null,
+  "foreign_province": null,
+  "foreign_postal_code": null
+ },
+ "total_outlay": 14503897.0,
+ "funding_opportunity": {
+  "number": "O-OVC-2022-171314",
+  "goals": "UNDER THIS FORMULA PROGRAM, THE OFFICE FOR VICTIMS OF CRIME WILL AWARD EACH ELIGIBLE STATE AND TERRITORY VICTIM ASSISTANCE PROGRAM AN ANNUAL GRANT TO SUPPORT ELIGIBLE CRIME VICTIM ASSISTANCE PROGRAMS IN THAT STATE OR TERRITORY. ELIGIBLE CRIME VICTIM ASSISTANCE PROGRAMS ARE THOSE THAT ARE \"OPERATED BY A PUBLIC AGENCY OR NONPROFIT ORGANIZATION, OR A COMBINATION OF SUCH AGENCIES OR ORGANIZATIONS OR OF BOTH SUCH AGENCIES AND ORGANIZATIONS, AND PROVIDE SERVICES TO VICTIMS OF CRIME,\" AND THAT MEET THE OTHER REQUIREMENTS SET OUT IN 34 U.S.C. \u00c3\u0082\u00c2\u00a7 20103(B). SERVICES GENERALLY INCLUDE THOSE EFFORTS THAT (1) RESPOND TO THE EMOTIONAL, PSYCHOLOGICAL, OR PHYSICAL NEEDS OF CRIME VICTIMS, (2) HELP VICTIMS OF CRIME TO STABILIZE THEIR LIVES AFTER A VICTIMIZATION, (3) HELP VICTIMS TO UNDERSTAND AND PARTICIPATE IN THE CRIMINAL JUSTICE SYSTEM, AND (4) RESTORE A MEASURE OF SECURITY AND SAFETY FOR THE VICTIM. THE VAST MAJORITY OF VICTIM ASSISTANCE FUNDING GOES TO LOCAL DIRECT SERVICE PROGRAMS, INCLUDING CHILDREN'S ADVOCACY CENTERS, DOMESTIC VIOLENCE SHELTERS, RAPE CRISIS CENTERS, HUMAN TRAFFICKING AND ELDER ABUSE PROGRAMS, CIVIL LEGAL SERVICES, CRIME VICTIMS' RIGHTS ENFORCEMENT, AS WELL AS VICTIM ASSISTANCE POSITIONS IN PROSECUTORS' OFFICES AND LAW ENFORCEMENT DEPARTMENTS."
+ }
+}
