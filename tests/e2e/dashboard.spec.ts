@@ -142,3 +142,99 @@ test("AC5 + AC6: deltas are an arrow plus words with a hint naming the prior qua
   await page.locator("#filter-sheet").getByRole("button", { name: "About County" }).click();
   await expect(page.getByRole("dialog").filter({ hasText: "Limits every number" })).toBeVisible();
 });
+
+// DS-15b: the M6 share bar and table, the O1 rows and the View as table hint. Seed facts: affiliated 59% / $120 / $1,700 / 17, other 41% / $90 / $1,200 / 12; PHQ-9 −1.5 / 75% / 12, GAD-7 under 11.
+const cardFor = (page: Page, id: string) => page.locator("[data-slot=metric-card]").filter({ has: page.locator(`#card-${id}-title`) });
+
+test("AC7: M6 segments and cells share one explain layer; hover, focus and Enter show the same words on a segment; Left and Right walk the segments; Escape returns focus", async ({ page }) => {
+  await signIn(page);
+  await page.setViewportSize({ width: 1024, height: 900 });
+  expect((await page.goto("/dashboard"))?.status()).toBe(200);
+  const m6 = cardFor(page, "m6");
+  test.skip((await m6.getAttribute("data-state")) !== "value", "the seed has no M6 value this quarter");
+  const card = m6.locator("[data-slot=explain-layer-card]"), segments = m6.locator("[data-slot=m6-bar] [data-term=m6_share]");
+  await expect(m6.locator("[data-slot=explain-layer]")).toHaveCount(1);
+  await expect(segments).toHaveCount(2);
+  await expect(m6.locator("[data-slot=m6-share]")).toHaveText(/Affiliated providers 59%\s*·\s*Other providers 41%/);
+  await hoverUntil(segments.first(), card);
+  await expect(card).toContainText(/^Share of therapy dollars.*59% of therapy dollars went to affiliated providers \(\$1,700\).*FAS records.*\w{3} \d{4}/s);
+  const words = await card.innerText();
+  await page.mouse.move(0, 0);
+  await expect(card).toHaveCount(0);
+  await segments.first().focus();
+  expect(await card.innerText()).toBe(words);
+  await page.keyboard.press("Enter");
+  await expect(card).toHaveAttribute("role", "dialog");
+  await expect(page.getByRole("dialog")).toHaveAccessibleName("Share of therapy dollars");
+  expect(await page.getByRole("dialog").innerText()).toBe(words);
+  await page.keyboard.press("Escape");
+  await expect(card).toHaveCount(0);
+  await expect(segments.first()).toBeFocused();
+  await page.keyboard.press("ArrowRight");
+  await expect(segments.nth(1)).toBeFocused();
+  await expect(card).toContainText("41% of therapy dollars went to other providers ($1,200)");
+  await page.keyboard.press("ArrowLeft");
+  await expect(segments.first()).toBeFocused();
+  await m6.locator("tbody tr[data-group=affiliated] td[data-term=m6_rate]").hover();
+  await expect(card).toContainText(/^Average rate per hour.*\$120 per hour for affiliated providers/s);
+  await m6.locator("tbody tr[data-group=other] td[data-term=m6_episodes]").hover();
+  await expect(card).toContainText(/^Episodes.*12 episodes with other providers/s);
+  await page.mouse.move(0, 0);
+  expect(await axe(page)).toEqual([]);
+});
+
+test("AC8: O1 cells share one explain layer; hover and focus say the figure for the survey with the direction in words; the row under 11 pairs says why on every cell", async ({ page }) => {
+  await signIn(page);
+  await page.setViewportSize({ width: 1024, height: 900 });
+  expect((await page.goto("/dashboard"))?.status()).toBe(200);
+  const o1 = cardFor(page, "o1");
+  test.skip((await o1.getAttribute("data-state")) !== "value", "the seed has no O1 value this quarter");
+  const card = o1.locator("[data-slot=explain-layer-card]"), row = o1.locator("tbody tr[data-measure=PHQ-9]"), mean = row.locator("td[data-term=o1_mean]");
+  await expect(o1.locator("[data-slot=explain-layer]")).toHaveCount(1);
+  await hoverUntil(mean, card);
+  await expect(card).toContainText(/^Mean change.*−1\.5 points on the PHQ-9 survey \(lower is better\).*FAS records.*\w{3} \d{4}/s);
+  const words = await card.innerText();
+  await page.mouse.move(0, 0);
+  await expect(card).toHaveCount(0);
+  await mean.focus();
+  expect(await card.innerText()).toBe(words);
+  await page.keyboard.press("ArrowRight");
+  await expect(row.locator("td[data-term=o1_improved]")).toBeFocused();
+  await expect(card).toContainText("75% of families improved on the PHQ-9 survey");
+  await page.keyboard.press("ArrowRight");
+  await expect(row.locator("td[data-term=o1_n]")).toBeFocused();
+  await expect(card).toContainText("12 families with a start and an end score on the PHQ-9 survey");
+  for (const term of ["o1_mean", "o1_improved", "o1_n"]) {
+    await o1.locator(`tbody tr[data-suppressed] td[data-term=${term}]`).first().hover();
+    await expect(card).toContainText(PRIVACY);
+    await expect(card).not.toContainText("Value");
+  }
+  await page.mouse.move(0, 0);
+  await expect(o1).not.toContainText(/\bpct\b/);
+  expect(await axe(page)).toEqual([]);
+});
+
+test("AC9: the View as table toggle has an Info hint that reads the same on hover and focus and is 44 px at 375; every delta on the page carries a hint", async ({ page }) => {
+  await signIn(page);
+  await page.setViewportSize({ width: 1024, height: 900 });
+  expect((await page.goto("/dashboard"))?.status()).toBe(200);
+  const hints = page.getByRole("button", { name: "About the table view", exact: true }), tip = page.locator("[data-slot=tooltip-content]").first();
+  expect(await hints.count()).toBeGreaterThan(0);
+  expect(await hints.count()).toBe(await page.getByRole("button", { name: "View as table", exact: true }).count());
+  await hoverUntil(hints.first(), tip);
+  await expect(tip).toHaveText(/^Shows the same numbers as the picture in a table, one row per period, with hidden values marked\.$/);
+  const hovered = await tip.textContent();
+  await hints.first().focus();
+  await expect(tip).toHaveText(hovered ?? "");
+  await hints.first().blur();
+  await page.mouse.move(0, 0);
+  const deltas = page.locator("[data-slot=delta]");
+  expect(await deltas.count()).toBe(await deltas.locator("[data-slot=hint-trigger]").count());
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/dashboard");
+  const small = page.getByRole("button", { name: "About the table view", exact: true }).first(), box = (await small.boundingBox())!;
+  expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(44);
+  await small.click();
+  await expect(page.getByRole("dialog").filter({ hasText: "Shows the same numbers as the picture" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+});

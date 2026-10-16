@@ -1048,3 +1048,11 @@ Left: `app/(app)/data-freshness/loading.tsx` once `PageSkeleton` (#262) is on ma
 Decisions: none new (designer defaults listed in the spec: chip word stays `Current`; the run cell uses the `ExplainCard` face because `Provenance` has no started/finished rows and the kit is read-only).
 
 ---
+
+## 2026-10-16 04:20 (UTC) — Cloud Agent (Designer) — DS-15b: team dashboard M6 share bar and O1 rows under the explain layer, View as table hint, deltas audited
+Did: `lib/dashboard/words.ts` (pure, 3 new tests): seven terms (`m6_share`, `m6_rate`, `m6_dollars`, `m6_episodes`, `o1_mean`, `o1_improved`, `o1_n`), `m6Segment` (share and dollars in words, or the small-count sentence for a group under 11 and the complementary sentence for the share hidden with it), `m6Cell`, `o1Cell` (figure for the survey with the direction in words; a row under 11 pairs carries the privacy sentence and no value on every cell), `TABLE_HINT`. `M6Card`: one `ExplainLayer` in a keyboard region; the share phrases, the two bar segments (`role="img"`, labelled, 16 px) and the six cells are targets; Left/Right walk them. `OutcomesCard`: the same region and layer on mean, share and n. `TrendToggle`: an Info `Hint` (`About the table view`) beside `View as table`, `print:hidden`. `metric-props` passes `asOf` to both cards; `KEYS` exported from `M4Table`. Deltas audited: M1, M2, M3, M5 already carry `deltaHint`; the table cards show none; AC9 pins the count. Spec: `docs/design/specs/DS-15.md` DS-15b section appended.
+State: lint, typecheck, unit tests and `pnpm gate` green. No Docker, Supabase or preview here: `tests/e2e/dashboard.spec.ts` AC7–AC9 (segment hover = focus = Enter, Left/Right walk, Escape returns focus, O1 row words and hidden row, hint hover = focus, 44 px at 375, delta coverage, axe) run in CI. Before and after shots: the supervisor, from production and the preview. Branch `ds-15b-dashboard-m6-o1` off main.
+Left: nothing in DS-15. Open: the seed shows both M6 groups, so the hidden-share card is unit-tested only; `Avg rate per hour` header abbreviation is DS-07c copy pinned by its tests; the hint also reaches board and packet pictures through `ChartFrame`, check the glyph reads quiet on the board after shots.
+Decisions: none new (applies D-040; designer defaults listed in the spec's Decisions).
+
+---

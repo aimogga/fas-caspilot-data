@@ -1,23 +1,36 @@
-/** Plain words for the team dashboard (DS-15a, D-040): what each M4 cell means and the data attributes one `ExplainLayer` reads off it, a sentence per filter and per
- * pipeline stage, the delta hint, the trend points and the M1 distribution line without codes. Pure. */
+/** Plain words for the team dashboard (DS-15a/b, D-040): what each M4, M6 and O1 cell means and the data attributes one `ExplainLayer` reads off it, a sentence per filter
+ * and per pipeline stage, the delta hint, the trend points and the M1 distribution line without codes. Pure. */
 import type { ChartPoint } from '../charts/scale';
 import { chip } from '../staff/home';
 import { term, whyHidden, type Term } from '../trust/glossary';
 import { STAGES } from './query';
-import { bandLabel, num, pct, quarterPoints, type TrendPoint } from './format';
-import type { M4Result } from './metrics-query';
+import { GROUP_LABELS } from './cards';
+import { bandLabel, money, num, pct, quarterPoints, signed, type TrendPoint } from './format';
+import type { M4Result, M6Result, O1Result } from './metrics-query';
 
 export type CellData = { 'data-term': string; 'data-value'?: string; 'data-source'?: string; 'data-asof'?: string; 'data-hidden'?: string };
 export type M4Kind = 'completed' | 'closed' | 'rate';
+export type M6Kind = 'rate' | 'dollars' | 'episodes';
+export type O1Kind = 'mean' | 'improved' | 'n';
 type M4Row = M4Result['rows'][number];
+type M6Group = M6Result['groups'][number];
+type O1Measure = Pick<O1Result['measures'][number], 'code' | 'label' | 'direction' | 'n' | 'meanChange' | 'shareImproved' | 'suppressed'>;
 const FAS = 'FAS records';
 export const HIDDEN_RATE = 'No rate is shown because the count behind it is hidden.';
+const t = (id: string, title: string, plain: string): Term => ({ id, title, plain, source: FAS });
 
-/** M4 cell terms; the metric itself and the hidden reasons stay in the shared glossary. */
+/** M4, M6 and O1 cell terms; the metrics themselves and the hidden reasons stay in the shared glossary. */
 export const DASH_TERMS: Record<string, Term> = {
-  m4_completed: { id: 'm4_completed', title: 'Completed', plain: 'How many families in this income band finished the planned course of therapy, among those whose therapy closed this quarter.', source: FAS },
-  m4_closed: { id: 'm4_closed', title: 'Closed', plain: 'How many families in this income band had their therapy close this quarter, whether or not they finished it.', source: FAS },
-  m4_rate: { id: 'm4_rate', title: 'Completion rate', plain: 'Completed divided by closed, for this income band. Higher is better.', source: FAS },
+  m4_completed: t('m4_completed', 'Completed', 'How many families in this income band finished the planned course of therapy, among those whose therapy closed this quarter.'),
+  m4_closed: t('m4_closed', 'Closed', 'How many families in this income band had their therapy close this quarter, whether or not they finished it.'),
+  m4_rate: t('m4_rate', 'Completion rate', 'Completed divided by closed, for this income band. Higher is better.'),
+  m6_share: t('m6_share', 'Share of therapy dollars', 'The share of everything FAS paid for therapy this quarter that went to this group of providers. The two groups add up to all of it.'),
+  m6_rate: t('m6_rate', 'Average rate per hour', 'What this group of providers charged per hour of therapy on average, weighted by the hours they delivered this quarter.'),
+  m6_dollars: t('m6_dollars', 'Dollars paid', 'The total FAS paid to this group of providers for therapy this quarter.'),
+  m6_episodes: t('m6_episodes', 'Episodes', 'How many courses of therapy this group of providers delivered this quarter. One episode is one family\'s course of therapy.'),
+  o1_mean: t('o1_mean', 'Mean change', 'The average change in survey score from the start of therapy to the end, in points. On a distress scale a negative number means families felt better.'),
+  o1_improved: t('o1_improved', 'Share improved', 'The share of families whose score moved in the better direction between the start and the end of therapy.'),
+  o1_n: t('o1_n', 'Scored pairs', 'How many families had both a start and an end score on this survey, so a change could be measured. Under 11 pairs, the whole row is hidden.'),
 };
 /** A dashboard term or a core glossary term. */
 export const dashTerm = (id: string): Term => DASH_TERMS[id] ?? term(id);
@@ -31,6 +44,37 @@ export function m4Cell(kind: M4Kind, row: Pick<M4Row, 'band' | 'completed' | 'cl
 }
 /** The one cell of a complementary-hidden band. */
 export const complementaryCell = (asOf: string): CellData => ({ 'data-term': 'complementary', 'data-source': FAS, 'data-asof': asOf, 'data-hidden': whyHidden('complementary') });
+
+/** The lower-case group name in words (`affiliated providers`). */
+const groupWords = (group: string): string => (GROUP_LABELS[group] ?? group).toLowerCase();
+/** One segment of the M6 share bar (and its words above it): the share and the dollars behind it, or why the share is hidden (a group under 11 episodes hides its own figures;
+ * the other group's share is hidden with it so the small group cannot be worked out). */
+export function m6Segment(group: string, share: number | null, dollars: number | null, asOf: string): CellData {
+  const shown = share == null ? undefined : `${pct(share)} of therapy dollars went to ${groupWords(group)}${dollars == null ? '' : ` (${money(dollars)})`}`;
+  const hidden = share != null ? undefined : whyHidden(dollars == null ? 'suppressed' : 'complementary');
+  return { 'data-term': 'm6_share', 'data-value': shown, 'data-source': FAS, 'data-asof': asOf, 'data-hidden': hidden };
+}
+/** One M6 table cell: the figure in words for its provider group, or the privacy sentence when the group is under 11 episodes. */
+export function m6Cell(kind: M6Kind, g: M6Group, asOf: string): CellData {
+  const who = groupWords(g.group), words = {
+    rate: g.avgRatePerUnit == null ? undefined : `${money(g.avgRatePerUnit)} per hour for ${who}`,
+    dollars: g.dollars == null ? undefined : `${money(g.dollars)} paid to ${who}`,
+    episodes: g.episodes == null ? undefined : `${num(g.episodes)} ${g.episodes === 1 ? 'episode' : 'episodes'} with ${who}`,
+  }[kind];
+  return { 'data-term': `m6_${kind}`, 'data-value': words, 'data-source': FAS, 'data-asof': asOf, 'data-hidden': words == null ? whyHidden('suppressed') : undefined };
+}
+/** One O1 cell: the figure in words for its survey, with the direction said plainly; a row under 11 pairs carries the privacy sentence on every cell. */
+export function o1Cell(kind: O1Kind, m: O1Measure, asOf: string): CellData {
+  const survey = `the ${m.label} survey`, better = m.direction === 'lower_is_better' ? 'lower is better' : 'higher is better';
+  const words = m.suppressed ? undefined : {
+    mean: m.meanChange == null ? undefined : `${signed(m.meanChange)} points on ${survey} (${better})`,
+    improved: m.shareImproved == null ? undefined : `${pct(m.shareImproved)} of families improved on ${survey}`,
+    n: `${num(m.n)} families with a start and an end score on ${survey}`,
+  }[kind];
+  return { 'data-term': `o1_${kind}`, 'data-value': words, 'data-source': FAS, 'data-asof': asOf, 'data-hidden': words == null ? whyHidden('suppressed') : undefined };
+}
+/** The sentence beside the `View as table` toggle under every chart. */
+export const TABLE_HINT = 'Shows the same numbers as the picture in a table, one row per period, with hidden values marked.';
 
 /** One sentence beside each filter label. */
 export const FILTER_HINTS: Record<string, string> = {
