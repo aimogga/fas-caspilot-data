@@ -1190,6 +1190,12 @@ State: lint, typecheck and `pnpm test` green (902 unit tests). No Supabase here:
 Left: dead-code cleanup packet (delete `NeedTable.tsx`, `RankedList.tsx`, `indicatorCell`, their tests); PR not opened (caller opens it). Open: the menu URL is `?fas=1&county=<fips>` (query order follows the current URL); at 375 the "Highest need" rows truncate FAS county names beside the badge (DS-20a detail); `DS-20.md` still describes the dropped table (DS-20c, PR #292).
 Decisions: none new (designer defaults in the spec: native select, placeholder always the first option, non-FAS pick stays listed).
 
+## 2026-10-16 (UTC) — Claude Code (design) — DS-21b: County need map is the first Insights tab, Team dashboard the second
+Did: George asked for the map first and the dashboard second. `lib/shell/sections.ts` lists Insights as `County need map` · `Team dashboard`, so the Insights sidebar link (a section link opens its first tab) now opens `/need-map`. `components/shell/nav-icons.ts` loses the `/dashboard` glyph (the dashboard is only a tab now; Insights carries the map glyph). Tests updated: `sections.test.ts`, `nav.test.ts`, `nav-icons.test.ts` (8 hrefs); the e2e specs read `SECTIONS`, so they follow the order. Spec `docs/design/specs/DS-21.md` updated. No URL, guard or role change.
+State: lint, typecheck, unit tests green; e2e runs in CI. Branch `ds-21b-insights-order` off main 4bd6c08.
+Left: nothing.
+Decisions: none new.
+
 ---
 ## 2026-10-16 17:30 (UTC) — Designer agent (DS-23) — Need map: the picked county stands out, the map follows the scroll
 Did: George asked for the selected county to be highlighted and for the map to move with the scroll. `NeedMap`: with a county picked (map or menu) the other 28 paths get `data-dimmed` (55% opacity, 150 ms, none under reduced motion), the picked one keeps full strength with a two-stroke outline in the third pass (6 px `--background` under 3 px `--foreground`, above the FAS outlines; `data-selected-halo`, `data-selected-outline`); counties `?fas=1` already mutes are not dimmed twice; ranks on dimmed counties read in `--foreground`; the sr-only summary adds `Selected: <County>.`. From 1024 the figure (map + legend) is `sticky` at `top-[4.5rem]`, `self-start`, the map height is `min(640px, 100dvh - 19.5rem)` so the block fits and does not ride up at the page end; the panel is no longer sticky. Spec `docs/design/specs/DS-23.md`.
