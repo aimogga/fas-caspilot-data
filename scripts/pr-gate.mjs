@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // pr-gate (D-028): the deterministic PR checks QA applies, as a script instead of an instruction.
 // Usage: node scripts/pr-gate.mjs [--base origin/main] [--skip-tests]   (pnpm gate)
+// Base: --base, else PR_GATE_BASE, else `git config branch.<name>.gate-base` (a stacked branch's parent, D-032), else origin/main.
 // Rows print as `step | requirement | verdict | evidence`; exit 1 when any row fails.
 import { execSync, spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -72,6 +73,29 @@ function changedFiles(exec, base) {
   return Object.fromEntries(names.map((n) => [n, readFileSync(n, 'utf-8')]));
 }
 
+export const DEFAULT_BASE = 'origin/main';
+
+/** D-032: a train PR is measured against its parent until the parent lands on main, so the pre-push hook needs a base it can find. */
+export function resolveBase({ argv = [], env = {}, exec = execSync } = {}) {
+  const idx = argv.indexOf('--base');
+  if (idx !== -1 && argv[idx + 1]) return { base: argv[idx + 1], source: '--base' };
+  if (env.PR_GATE_BASE) return { base: env.PR_GATE_BASE, source: 'PR_GATE_BASE' };
+  const git = (args) => exec(`git ${args}`, { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+  let parent = '';
+  try {
+    parent = git(`config --get branch.${git('rev-parse --abbrev-ref HEAD')}.gate-base`);
+  } catch {
+    return { base: DEFAULT_BASE, source: 'default' };
+  }
+  if (!parent) return { base: DEFAULT_BASE, source: 'default' };
+  try {
+    git(`merge-base --is-ancestor ${parent} ${DEFAULT_BASE}`);
+    return { base: DEFAULT_BASE, source: `default (${parent} is merged)` };
+  } catch {
+    return { base: parent, source: 'gate-base' };
+  }
+}
+
 export function run({ base = 'origin/main', skipTests = false, exec = execSync, spawn = spawnSync, read = readFileSync } = {}) {
   const rows = [];
   const step = (name, requirement, fn) => {
@@ -125,8 +149,9 @@ export function exitCode(rows) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const baseIdx = process.argv.indexOf('--base');
-  const rows = run({ base: baseIdx === -1 ? 'origin/main' : process.argv[baseIdx + 1], skipTests: process.argv.includes('--skip-tests') });
+  const { base, source } = resolveBase({ argv: process.argv, env: process.env });
+  const rows = run({ base, skipTests: process.argv.includes('--skip-tests') });
+  console.log(`base: ${base} (${source})`);
   console.log(format(rows));
   process.exit(exitCode(rows));
 }

@@ -971,3 +971,9 @@ Did: `lib/staff/todo.ts` (pure, 4 tests): "Needs you" rows from stored tables on
 State: lint, typecheck and unit tests green. No Docker or preview in this shell: `tests/e2e/home.spec.ts` gains the DS-10b checks (card state, badge words, one link per row, no "0 rows", summary before actions, no codes in source names, vintage hint, axe, scrollWidth) for CI. Before shots: `docs/design/reviews/DS-10a/after/`; after shots: the supervisor from the preview. Branch `ds-10b-home-todo` off main.
 Left: sparkline hover (`LineHover` is sized for the 192 px dashboard plot; needs a small layer or a `size` prop, DS-15a territory); the "Families helped, by month" chart still has no monthly series; no route edits an episode's non-start reason yet.
 Decisions: none new (designer wording defaults in the spec).
+
+## 2026-10-16 01:05 (UTC) — Claude Code (cloud, Engineer) — pr-gate base for stacked branches (D-028, D-032)
+Did: `scripts/pr-gate.mjs` picks its base with the new exported `resolveBase`: `--base`, then `PR_GATE_BASE`, then `git config branch.<name>.gate-base` (the stacked branch's parent), else `origin/main`. A configured parent that is already an ancestor of `origin/main` (merged by the D-032 train) falls back to `origin/main`. The CLI prints `base: <ref> (<source>)` above the rows. The pre-push hook is unchanged: it runs `pnpm gate`, which inherits the env and git config. 4 new unit tests (fake git), one of them through the CLI.
+State: lint, typecheck, unit tests and `pnpm gate` green. Checked on a throwaway worktree of `f508a1-openrouter-guard` with `gate-base origin/f508a-llm-adapter`: D-012 281 and progress.md pass (it counted 616 against main before). Branch `tooling/pr-gate-stacked-base`.
+Left: a stacked branch runs `git config branch.<branch>.gate-base origin/<parent>` once. No config is needed after the parent merges.
+Decisions: none new (implements the D-032 rule that a train PR is measured against its parent).

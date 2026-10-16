@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { describe, expect, it } from 'vitest';
-import { BINARY, MAX_LINES, countDiff, exitCode, format, loadGenerated, longLines, progressAppendOnly, run } from './pr-gate.mjs';
+import { BINARY, MAX_LINES, countDiff, exitCode, format, loadGenerated, longLines, progressAppendOnly, resolveBase, run } from './pr-gate.mjs';
 
 const numstat = (rows) => rows.map(([a, d, f]) => `${a}\t${d}\t${f}`).join('\n');
 
@@ -64,6 +64,44 @@ describe('run and CLI', () => {
   it('CLI --skip-tests exits 0 on this repo (base HEAD: CI checkouts have no origin/main)', () => {
     const r = spawnSync(process.execPath, ['scripts/pr-gate.mjs', '--skip-tests', '--base', 'HEAD'], { encoding: 'utf8', timeout: 60000 });
     expect(r.stdout).toContain('secret scan | ');
+    expect(r.status).toBe(0);
+  });
+});
+
+describe('resolveBase (D-032 stacked branches)', () => {
+  // Fake git: `config` answers with the branch's gate-base, `merge-base --is-ancestor` throws unless the parent is merged.
+  const git = ({ parent = '', merged = false } = {}) => (cmd) => {
+    if (cmd.includes('rev-parse')) return 'f508a1-openrouter-guard\n';
+    if (cmd.includes('config --get')) {
+      expect(cmd).toContain('branch.f508a1-openrouter-guard.gate-base');
+      if (!parent) throw new Error('exit 1');
+      return `${parent}\n`;
+    }
+    if (cmd.includes('merge-base --is-ancestor') && !merged) throw new Error('exit 1');
+    return '';
+  };
+
+  it('prefers --base, then PR_GATE_BASE, over the branch config', () => {
+    const exec = git({ parent: 'origin/parent' });
+    expect(resolveBase({ argv: ['--base', 'HEAD'], env: { PR_GATE_BASE: 'origin/x' }, exec })).toEqual({ base: 'HEAD', source: '--base' });
+    expect(resolveBase({ env: { PR_GATE_BASE: 'origin/x' }, exec })).toEqual({ base: 'origin/x', source: 'PR_GATE_BASE' });
+  });
+
+  it("uses the branch's gate-base parent while it is not yet on main", () => {
+    expect(resolveBase({ exec: git({ parent: 'origin/f508a-llm-adapter' }) })).toEqual({ base: 'origin/f508a-llm-adapter', source: 'gate-base' });
+  });
+
+  it('falls back to origin/main once the parent is merged, or when no parent is set', () => {
+    expect(resolveBase({ exec: git({ parent: 'origin/f508a-llm-adapter', merged: true }) })).toEqual({
+      base: 'origin/main',
+      source: 'default (origin/f508a-llm-adapter is merged)',
+    });
+    expect(resolveBase({ exec: git() })).toEqual({ base: 'origin/main', source: 'default' });
+  });
+
+  it('CLI reads PR_GATE_BASE and prints the base it used', () => {
+    const r = spawnSync(process.execPath, ['scripts/pr-gate.mjs', '--skip-tests'], { encoding: 'utf8', timeout: 60000, env: { ...process.env, PR_GATE_BASE: 'HEAD' } });
+    expect(r.stdout.split('\n')[0]).toBe('base: HEAD (PR_GATE_BASE)');
     expect(r.status).toBe(0);
   });
 });
