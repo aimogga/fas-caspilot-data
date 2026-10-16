@@ -12,7 +12,7 @@ export function DraftStrategyButton({ opportunityId }: { opportunityId: string }
     <form action={action} className="flex flex-col items-start gap-2">
       <input type="hidden" name="opportunityId" value={opportunityId} />
       <Button type="submit" size="sm" disabled={pending}>{pending ? <LoaderCircle aria-hidden className="animate-spin motion-reduce:animate-none" /> : null}Draft a response strategy</Button>
-      <p role="status" data-slot="draft-progress" className="text-sm text-muted-foreground">
+      <p role="status" data-slot="draft-progress" className="text-sm text-muted-foreground empty:sr-only">
         {pending ? "Drafting from stored rows and checking every citation. This can take up to a minute." : state?.error ?? ""}
       </p>
     </form>

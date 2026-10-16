@@ -55,9 +55,9 @@ export function MatchList({ rows, asOf }: { rows: MatchItem[]; asOf?: string }) 
             <h3 className="text-base font-medium leading-snug break-words">{r.title}</h3>
             <p data-slot="match-meta" className="text-sm text-muted-foreground">{r.funder} · {r.closes} · <span className="tabular-nums">{r.award}</span></p>
             <Badges row={r} />
-            <div><Button type="button" variant="outline" size="sm" aria-expanded={open === r.id} aria-controls={`match-${r.id}`} onClick={() => setOpen(open === r.id ? null : r.id)}>How we matched</Button></div>
+            <div className="flex flex-wrap items-start gap-2"><Button type="button" variant="outline" size="sm" aria-expanded={open === r.id} aria-controls={`match-${r.id}`} onClick={() => setOpen(open === r.id ? null : r.id)}>How we matched</Button>
+              <DraftStrategyButton opportunityId={r.opportunityId} /></div>
             {open === r.id ? <MatchPanel id={`match-${r.id}`} components={r.components} flags={r.flags} /> : null}
-            <DraftStrategyButton opportunityId={r.opportunityId} />
           </div>
         </li>
       ))}
