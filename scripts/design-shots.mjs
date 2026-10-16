@@ -12,10 +12,10 @@ export const ROOT = 'docs/design/reviews';
 export const ROLES = ['staff', 'admin', 'board'];
 export const LOCAL_HOSTS = ['127.0.0.1', 'localhost'];
 export const PRINT_WIDTH = 816;
+/** Any open face from the explain kit (components/trust/explain.tsx, explain-layer.tsx): hover card, tooltip or popover primitive, the shared body, or a role=tooltip. */
+export const FACE = ['hover-card-content', 'tooltip-content', 'popover-content', 'explain-content'].map((s) => `[data-slot=${s}]:visible`).concat('[role=tooltip]:visible').join(', ');
 const SEED_PASSWORD = 'testpass123';
 const VALUES = ['id', 'tag', 'role', 'route', 'base', 'widths', 'hover', 'focus'];
-/** Any open hover, tooltip or popover face from the explain kit. */
-export const FACE = '[data-slot=hover-card-content], [data-slot=tooltip-content], [data-slot=popover-content]';
 const FLAGS = ['print', 'pdf', 'dark'];
 
 /** `--key value` pairs and `--flag` switches into options; every check lives here so main() only runs. */
@@ -61,11 +61,18 @@ export function passwordFor(host, env = process.env) {
   throw new Error(`DESIGN_SHOTS_PASSWORD is not set and ${host} is not a local host`);
 }
 
+/** After a hover or focus, wait for the face (HoverCard openDelay 150 ms, Tooltip delay) and let it settle; a plain element with no face gets a short fixed wait instead. Never throws. */
+export async function waitForFace(page, { timeout = 5_000, settle = 250, fallback = 500 } = {}) {
+  const shown = await page.waitForSelector(FACE, { state: 'visible', timeout }).then(() => true, () => false);
+  await page.waitForTimeout(shown ? settle : fallback);
+  return shown;
+}
+
 function readManifest(file) {
   return existsSync(file) ? JSON.parse(readFileSync(file, 'utf-8')) : [];
 }
 
-/** One signed-in context per width: load the route once, wait for the page shell and fonts, then save each variant in order. */
+/** One signed-in context per width: load the route once, wait for the page shell and fonts, then save each variant in order (hover and focus wait for the face first). */
 async function capture(browser, state, o, width, variants, save) {
   const context = await browser.newContext({ storageState: state, reducedMotion: 'reduce', viewport: { width, height: 900 } });
   context.setDefaultTimeout(90_000);
@@ -74,13 +81,15 @@ async function capture(browser, state, o, width, variants, save) {
   await page.waitForSelector('[data-slot=page]');
   await page.evaluate(() => document.fonts.ready.then(() => true));
   for (const variant of variants) {
-    if (variant === 'hover') await page.hover(o.hover);
+    if (variant === 'hover') {
+      await page.hover(o.hover);
+      await waitForFace(page);
+    }
     if (variant === 'focus') {
       await page.mouse.move(0, 0);
       await page.focus(o.focus);
+      await waitForFace(page);
     }
-    // The explain kit opens its hover and focus faces after a short delay; wait for one before the shot.
-    if (variant === 'hover' || variant === 'focus') await page.waitForSelector(FACE, { state: 'visible', timeout: 3_000 }).catch(() => null);
     if (variant === 'print') await page.emulateMedia({ media: 'print' });
     if (variant === 'dark') await page.evaluate(() => document.documentElement.classList.add('dark'));
     const file = await save(page, width, variant);

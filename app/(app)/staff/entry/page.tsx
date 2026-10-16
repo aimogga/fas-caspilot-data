@@ -6,7 +6,8 @@ import type { AggregateRecent } from "@/lib/intake/aggregate";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
-const DESCRIPTION = "Add one record at a time. The same checks run as for uploads.";
+// DS-18b: eyebrow + headline in words; each field carries its own helper sentence (`hintFor`).
+const DESCRIPTION = "Choose what you are adding. Each field says what to enter and why. The same checks run as for uploads before anything is saved.";
 
 /** F-302: county names and codes come from `geo_county` so the select and the validator agree. */
 async function loadCounties(): Promise<{ fips: string; name: string }[] | null> {
@@ -38,7 +39,7 @@ export default async function EntryPage() {
   const [counties, recent] = await Promise.all([loadCounties(), loadRecentAggregates()]);
   return (
     <Stack gap={6}>
-      <PageHeader eyebrow="WORKSPACE" title="Enter data" description={DESCRIPTION} />
+      <PageHeader eyebrow="Enter data" title="Add one record at a time" description={DESCRIPTION} />
       {counties && counties.length ? (
         <EntryForm counties={counties} aggregate={<AggregateForm counties={counties} recent={recent} />} />
       ) : (
