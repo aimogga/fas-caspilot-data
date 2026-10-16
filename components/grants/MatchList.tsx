@@ -72,7 +72,7 @@ export function MatchList({ rows, asOf }: { rows: MatchItem[]; asOf?: string }) 
                 <p data-slot="match-meta" className="text-sm text-muted-foreground">{r.funder} · {r.closes} · <span className="tabular-nums">{r.award}</span></p>
                 <Badges row={r} />
                 <div className="flex flex-wrap items-start gap-2"><Button type="button" variant="outline" size="sm" aria-expanded={open === r.id} aria-controls={`match-${r.id}`} onClick={() => (open === r.id ? close(r.id) : setOpen(r.id))}>How we matched</Button>
-                  <DraftStrategyButton opportunityId={r.opportunityId} /></div>
+                  {r.opportunityId ? <DraftStrategyButton opportunityId={r.opportunityId} /> : null}</div>
                 {!lg && open === r.id ? panel(r) : null}
               </div>
             </li>

@@ -9,7 +9,7 @@ import type { Flag, OpportunityInput } from './types';
 
 export type MatchFlags = { eligible: boolean | 'unknown'; flags: Flag[] };
 /** `award` and `status` (DS-12a) read stored `opportunity.award_*` and `pipeline_status.status`; `status` is null when nobody has moved the opportunity. */
-export type MatchItem = { id: string; opportunityId: string; title: string; funder: string; closes: string; award: string; status: string | null; score: number; eligibility: string; components: Component[]; flags: Flag[]; awards: AwardLine | null };
+export type MatchItem = { id: string; opportunityId?: string; title: string; funder: string; closes: string; award: string; status: string | null; score: number; eligibility: string; components: Component[]; flags: Flag[]; awards: AwardLine | null };
 /** DS-12b: stored `award_history` rows on the opportunity's Assistance Listing, summarised; null when there is no listing or no rows (the line is then omitted). */
 export type AwardLine = { count: number; median: number | null };
 export type MatchList = { config: { id: string; draft: boolean } | null; asOf: string | null; rows: MatchItem[] };
