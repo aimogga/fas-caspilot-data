@@ -17,7 +17,7 @@ export function CountyPanel({ county, columns, version, rankedCount, sources, co
   const title = county ? county.name : "County detail", compare = county ? NeedCompare.rows(county, counties, columns) : [];
   const scoreSource = `Need score version ${version ?? NOT_PUBLISHED}`;
   return (
-    <Card data-slot="county-panel" aria-labelledby="county-panel-title" role="region">
+    <Card id="county-panel" data-slot="county-panel" aria-labelledby="county-panel-title" role="region">
       <CardHeader>
         <h2 id="county-panel-title" data-slot="card-title" aria-live="polite" className="flex flex-wrap items-center gap-2 text-base leading-none font-semibold">
           {title}{county?.fas ? <Badge variant="info" prefix={<MapPin aria-hidden />}>FAS county</Badge> : null}

@@ -1,0 +1,182 @@
+{
+ "id": 267889646,
+ "generated_unique_award_id": "ASST_NON_H79TI087768_075",
+ "fain": "H79TI087768",
+ "uri": "H79TI087768-3346366008",
+ "category": "grant",
+ "type": "04",
+ "type_description": "PROJECT GRANT (B)",
+ "description": "UTAH STATE OPIOID RESPONSE GRANT (UT SOR4) - THE UTAH STATE OPIOID RESPONSE (UT SOR4) GRANT, ADMINISTERED BY THE OFFICE OF SUBSTANCE USE AND MENTAL HEALTH (SUMH) IDENTIFIES YOUTH AGES 12-17 AND ADULTS AGES 18 YEARS AND OLDER, WHO HAVE A CURRENT, OR ARE AT RISK FOR, AN OPIOID USE DISORDER (OUD) OR STIMULANT USE DISORDER (SUD). AT-RISK POPULATIONS INCLUDING TRIBAL POPULATIONS, AND UNINSURED/UNDERINSURED PERSONS AS THE POPULATIONS OF FOCUS. PRIORITY POPULATIONS WILL INCLUDE INDIVIDUALS WHO ARE PREGNANT, INDIVIDUALS WHO USE DRUGS INTRAVENOUSLY, AND INDIVIDUALS WITH HIV AND/OR HEPATITIS C (HCV). THERE WILL BE UT SOR4 PROJECTS IMPLEMENTED AND CONTINUED THROUGHOUT THE STATE. THE ESTIMATED NUMBER OF PEOPLE TO BE SERVED AS A RESULT OF THE AWARD OF THIS GRANT IS 1,000 PER GRANT YEAR.  STRATEGIES AND INTERVENTIONS- PREVENTION AND HARM REDUCTION; IMPROVE CAPACITY AND STRUCTURE; INCREASE ACCESS TO QUALITY CARE AND SERVICES; IMPROVE HEALTH OUTCOMES. PROJECT GOALS AND MEASURABLE OBJECTIVES- GOAL 1: PREVENT AND REDUCE OPIOID AND STIMULANT USE AMONG YOUTH, ADULTS, AND AT-RISK POPULATIONS. GOAL 2: EXPAND KNOWLEDGE AND CONNECTION OF HARM REDUCTION STRATEGIES WITHIN SYSTEMS TO ENHANCE SERVICE ACCESS AND REDUCE THE INCIDENCE OF CO-OCCURRING DISEASES AND MORTALITY RATES WITHIN THE COMMUNITY. GOAL 3: EXPAND ACCESS AND USAGE OF FDA-APPROVED MEDICATIONS FOR THE TREATMENT OF OUD. GOAL 4: EXPAND THE NETWORK OF SYSTEMS ENGAGED IN PHYSICAL AND BEHAVIORAL HEALTH SERVICES THAT SUPPORT INDIVIDUALS WITH OUD AND/OR STIMULANT USE DISORDER TO ENSURE A FULLY INTEGRATED APPROACH. GOAL 5: PROMOTE HEALTH, RECOVERY-ORIENTED SERVICE SYSTEMS AND PEER SUPPORT FOR INDIVIDUALS AND FAMILIES IN RECOVERY FROM OPIOID OR STIMULANT USE DISORDERS.",
+ "subaward_count": 56,
+ "total_subaward_amount": 10540333.0,
+ "total_subsidy_cost": 0.0,
+ "total_loan_value": 0.0,
+ "total_obligation": 32224178.0,
+ "date_signed": "2024-09-24",
+ "base_and_all_options": null,
+ "base_exercised_options": null,
+ "non_federal_funding": 0.0,
+ "total_funding": 32224178.0,
+ "total_account_outlay": 18086926.82,
+ "total_account_obligation": 32224178.0,
+ "account_outlays_by_defc": [
+  {
+   "code": "Q",
+   "amount": 18086926.82
+  }
+ ],
+ "account_obligations_by_defc": [
+  {
+   "code": "Q",
+   "amount": 32224178.0
+  }
+ ],
+ "record_type": 2,
+ "cfda_info": [
+  {
+   "applicant_eligibility": "For the State Opioid Response (SOR) program -  eligibility is limited to Single State Agencies (SSAs) and territories. Note: Tribes will be eligible to apply under a separate announcement.\n\nFor the Tribal Opioid Response (TOR) program  applicants must be a federally recognized American Indian or Alaska Native tribe or tribal organization. Tribes and tribal organizations may apply individually, as a consortia, or in partnership with an urban Indian organization.  Indian Tribe, as defined at 25 U.S.C. \u00a7 1603(14) is any Indian tribe, band, nation, or other organized group or community, including any Alaska Native village or group or regional or village corporation as defined in or established pursuant to the Alaska Native Claims Settlement Act (85 Stat. 688) [43 U.S.C.A. \u00a7 1601 et seq.], which is recognized as eligible for the special programs and services provided by the United States to Indians because of their status as Indians.\nTribal Organization, as defined at 25 U.S.C. \u00a7 1603(26) is the recognized governing body of any Indian tribe; any legally established organization of Indians which is controlled, sanctioned, or chartered by such governing body or which is democratically elected by the adult members of the Indian community to be served by such organization and which includes the maximum participation of Indians in all phases of its activities. Provided that in any case where a contract is let or grant made to an organization to perform services benefiting more than one Indian tribe, the approval of each such Indian tribe shall be a prerequisite to the letting or making of such contract or grant.",
+   "beneficiary_eligibility": "Beneficiary eligibility is the same as applicant eligibility.",
+   "cfda_federal_agency": "SUBSTANCE ABUSE AND MENTAL HEALTH SERVICES ADMINISTRATION, HEALTH AND HUMAN SERVICES, DEPARTMENT OF",
+   "cfda_number": "93.788",
+   "cfda_objectives": "Addressing the opioid  crisis within such States, used for carrying out activities that supplement activities pertaining to opioids undertaken by the State agency responsible for administering the substance abuse prevention and treatment block grant under subpart II of part B of title XIX of the Public Health Service Act (42 U.S.C. 300x\u201321 et seq.); and Tribes and Tribal Organizations to address the opioid crisis within their communities.",
+   "cfda_obligations": "(Grant) FY 24$1,568,212,360.00; FY 25$1,611,857,924.00; FY 26 est $1,611,857,924.00; - ",
+   "cfda_popular_name": "Opioid STR",
+   "cfda_title": "Opioid STR",
+   "cfda_website": "http://www.samhsa.gov",
+   "federal_action_obligation_amount": 21522023.0,
+   "non_federal_funding_amount": 0.0,
+   "sam_website": "https://sam.gov/fal/3d98d7ad2df04b78a5f8cdf0a75fde86/view",
+   "total_funding_amount": 21522023.0
+  },
+  {
+   "applicant_eligibility": "State (includes District of Columbia, U.S. Territories, and Pacific Jurisdictions, public institutions of higher education and hospitals),?Local (includes State-designated Indian Tribes, excludes institutions of higher education and hospitals,?Sponsored organization,?Public nonprofit institution/organization (includes institutions of higher education and hospitals),?Other public institution/organization,?Federally Recognized Indian Tribal Governments,?Private nonprofit institution/organization (includes institutions of higher education and hospitals),?Quasi-public nonprofit institution/organization,?Native American Organizations (includes Indian groups, cooperatives, corporations, partnerships, associations) \n\nPublic organizations, such as units of State and local governments and to domestic private nonprofit organizations such as community-based organizations, universities, colleges and hospitals. State educational agencies, local educational agencies, Indian Tribes (as defined in section 4 of the Indian Self-Determination and Education Assistance Act) or their tribal educational agencies, a school operated by the Bureau of Indian Education, a Regional Corporation, or a Native Hawaiian educational organization.",
+   "beneficiary_eligibility": "Beneficiary eligibility is the same as applicant eligibility.\nPrivate nonprofit institution/organization,?Quasi-public nonprofit organization,?State,?Local,?Sponsored organization,?Public nonprofit institution/organization,?Other public institution/organization,?Federally Recognized Indian Tribal Governments \n\nother non-profits",
+   "cfda_federal_agency": "SUBSTANCE ABUSE AND MENTAL HEALTH SERVICES ADMINISTRATION, HEALTH AND HUMAN SERVICES, DEPARTMENT OF",
+   "cfda_number": "93.243",
+   "cfda_objectives": "SAMHSA was given the authority to address priority substance abuse treatment, prevention and mental health needs of regional and national significance through assistance (grants and cooperative agreements) to States, political subdivisions of States, Indian tribes and tribal organizations, and other public or nonprofit private entities. Under these sections, the Center for Substance Abuse Treatment, Center for Mental Health Services and Center for Substance Abuse Prevention (CSAP) seek to expand the availability of effective mental health, substance abuse prevention, treatment and recovery services available to Americans to improve the lives of those affected by alcohol and drug addictions, and to reduce the impact of alcohol and drug abuse on individuals, families, communities and societies and to address priority mental health needs of regional and national significance and assist children in dealing with violence and traumatic events through by funding grant and cooperative agreement projects. Grants and cooperative agreements may be for (1) knowledge and development and application projects for prevention, treatment and rehabilitation and the conduct or support of evaluations of such projects; (2) training, education, and technical assistance; (3) targeted capacity response programs (4) systems change grants including statewide family network grants and client-oriented and consumer run self-help activities;  (5) programs to foster health and development of children; and (6) coordination and integration of primary care services into publicly-funded community mental health centers and other community-based behavioral health settings.",
+   "cfda_obligations": "(Grant) FY 24$1,883,498,150.00; FY 25$1,879,010,127.00; FY 26 est $1,879,010,127.00; - ",
+   "cfda_popular_name": "Substance Abuse and Mental Health Services Projects of Regional and National Significance",
+   "cfda_title": "Substance Abuse and Mental Health Services Projects of Regional and National Significance",
+   "cfda_website": "http://www.samhsa.gov",
+   "federal_action_obligation_amount": 10702155.0,
+   "non_federal_funding_amount": 0.0,
+   "sam_website": "https://sam.gov/fal/e21edc85cf674efeb4e17ef5b3410560/view",
+   "total_funding_amount": 10702155.0
+  }
+ ],
+ "transaction_obligated_amount": 32224178.0,
+ "funding_agency": {
+  "id": 823,
+  "has_agency_page": true,
+  "toptier_agency": {
+   "name": "Department of Health and Human Services",
+   "code": "075",
+   "abbreviation": "HHS",
+   "slug": "department-of-health-and-human-services"
+  },
+  "subtier_agency": {
+   "name": "Substance Abuse and Mental Health Services Administration",
+   "code": "7522",
+   "abbreviation": "SAMHSA"
+  },
+  "office_agency_name": "SAMHSA CENTER FOR SUBSTANCE ABUSE TREATMENT"
+ },
+ "awarding_agency": {
+  "id": 823,
+  "has_agency_page": true,
+  "toptier_agency": {
+   "name": "Department of Health and Human Services",
+   "code": "075",
+   "abbreviation": "HHS",
+   "slug": "department-of-health-and-human-services"
+  },
+  "subtier_agency": {
+   "name": "Substance Abuse and Mental Health Services Administration",
+   "code": "7522",
+   "abbreviation": "SAMHSA"
+  },
+  "office_agency_name": "SAMHSA Division of Grants Management"
+ },
+ "period_of_performance": {
+  "start_date": "2024-09-30",
+  "end_date": "2027-09-29",
+  "last_modified_date": "2026-07-20"
+ },
+ "recipient": {
+  "recipient_hash": "199a39f3-9709-ea54-3ff2-8ec2a784e1d8-R",
+  "recipient_name": "UTAH DEPARTMENT OF HEALTH AND HUMAN SERVICES",
+  "recipient_uei": "N4KVG4UWSTH1",
+  "recipient_unique_id": null,
+  "parent_recipient_hash": null,
+  "parent_recipient_name": null,
+  "parent_recipient_uei": null,
+  "parent_recipient_unique_id": null,
+  "business_categories": [
+   "Government",
+   "U.S. Regional/State Government"
+  ],
+  "location": {
+   "location_country_code": "USA",
+   "country_name": "UNITED STATES",
+   "state_code": "UT",
+   "state_name": "UTAH",
+   "city_name": "SALT LAKE CITY",
+   "county_code": "035",
+   "county_name": "SALT LAKE",
+   "address_line1": "195 N 1950 W",
+   "address_line2": null,
+   "address_line3": null,
+   "congressional_code": "02",
+   "zip4": "3100",
+   "zip5": "84116",
+   "foreign_postal_code": null,
+   "foreign_province": null
+  }
+ },
+ "executive_details": {
+  "officers": [
+   {
+    "name": null,
+    "amount": null
+   },
+   {
+    "name": null,
+    "amount": null
+   },
+   {
+    "name": null,
+    "amount": null
+   },
+   {
+    "name": null,
+    "amount": null
+   },
+   {
+    "name": null,
+    "amount": null
+   }
+  ]
+ },
+ "place_of_performance": {
+  "location_country_code": "USA",
+  "country_name": "UNITED STATES",
+  "county_code": "035",
+  "county_name": "SALT LAKE",
+  "city_name": "SALT LAKE CITY",
+  "state_code": "UT",
+  "state_name": "UTAH",
+  "congressional_code": "02",
+  "zip4": "3231",
+  "zip5": "84116",
+  "address_line1": null,
+  "address_line2": null,
+  "address_line3": null,
+  "foreign_province": null,
+  "foreign_postal_code": null
+ },
+ "total_outlay": 18086926.82,
+ "funding_opportunity": {
+  "number": "TI-24-008",
+  "goals": "NOT APPLICABLE"
+ }
+}
