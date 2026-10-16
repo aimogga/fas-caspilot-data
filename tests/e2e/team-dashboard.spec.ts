@@ -29,8 +29,9 @@ for (const email of ["staff@example.test", "admin@example.test"] as const) {
     await expect(page.locator("[data-slot=sidebar] nav a[aria-current=page], [data-slot=crumbs]")).toHaveText(["Team dashboard", "Team dashboard"]);
     await expect(page.locator("[data-slot=page-header] > p:not([class])")).toHaveText(`${LABEL} · All counties · All referral sources`);
     const bar = page.locator("[data-slot=filter-bar]");
-    await expect(bar.getByLabel("Compare to prior quarter")).toBeChecked();
-    await bar.getByLabel("County").selectOption("49035");
+    // DS-15a added "About <label>" hint buttons beside each label, so labels are matched by role and exact name.
+    await expect(bar.getByRole("checkbox", { name: "Compare to prior quarter", exact: true })).toBeChecked();
+    await bar.getByRole("combobox", { name: "County", exact: true }).selectOption("49035");
     await bar.getByRole("button", { name: "Apply" }).click();
     await expect(page).toHaveURL(/county=49035/);
     await expect(page.locator("[data-slot=page-header] > p:not([class])")).toHaveText(`${LABEL} · Salt Lake County · All referral sources`);

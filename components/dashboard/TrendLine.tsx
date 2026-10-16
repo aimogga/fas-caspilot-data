@@ -1,14 +1,18 @@
+import { LineHover } from "@/components/charts/LineHover";
 import { TrendToggle } from "@/components/dashboard/TrendToggle";
 import { SuppressedCell } from "@/components/trust";
 import { quarterLabel } from "@/lib/dashboard/filters";
 import { num, quarterShort, trendSummary, type TrendPoint } from "@/lib/dashboard/format";
+import { trendChartPoints } from "@/lib/dashboard/words";
 const W = 320, H = 64, PAD = 8, stroke = { fill: "none", stroke: "var(--chart-1)", vectorEffect: "non-scaling-stroke" as const };
-/** Four quarters of the M1 median as an inline SVG (`--chart-1`, 64px tall, full width) with a text summary and a quarter-by-quarter table. */
+/** Four quarters of the M1 median as an inline SVG (`--chart-1`, 64px tall, full width) with a text summary and a quarter-by-quarter table.
+ * DS-15a: a `LineHover` beside the picture reads each quarter on pointer, arrow keys and a live region. */
 export function TrendLine({ points, label }: { points: TrendPoint[]; label: string }) {
   const known = points.map((p) => p.median).filter((m): m is number => m != null), [lo, hi] = [Math.min(...known), Math.max(...known)];
   const x = (i: number) => PAD + (i * (W - 2 * PAD)) / Math.max(points.length - 1, 1);
   const y = (v: number) => (hi === lo ? H / 2 : PAD + (H - 2 * PAD) * (1 - (v - lo) / (hi - lo)));
   const coords = points.flatMap((p, i) => (p.median == null ? [] : [`${x(i)},${y(p.median).toFixed(1)}`]));
+  const hover = trendChartPoints(points).map((p, i) => ({ ...p, x: (x(i) * 100) / W, y: p.value == null ? null : (y(p.value) * 100) / H }));
   const table = (
     <table className="w-full table-fixed text-sm">
       <caption className="sr-only">{label} by quarter</caption>
@@ -20,10 +24,13 @@ export function TrendLine({ points, label }: { points: TrendPoint[]; label: stri
   );
   return (
     <TrendToggle table={table}>
+      <div className="relative">
       <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img" aria-label={trendSummary(points)} className="h-16 w-full">
         {coords.length > 1 ? <polyline points={coords.join(" ")} strokeWidth={2} {...stroke} /> : null}
         {coords.map((c) => <polyline key={c} points={`${c} ${c}`} strokeWidth={6} strokeLinecap="round" {...stroke} />)}
       </svg>
+      <LineHover noun={label} unit=" days" points={hover} className="inset-x-0 top-0 h-16" />
+      </div>
       <div aria-hidden className="flex justify-between text-xs text-muted-foreground">{points.map((p) => <span key={p.period}>{quarterShort(p.period)}</span>)}</div>
     </TrendToggle>
   );
