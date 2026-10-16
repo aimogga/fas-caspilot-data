@@ -165,3 +165,134 @@ One PR (`ds-11a-need-map`). DS-11b follows on its own branch after this merges.
 3. **Cells below 44 px**: rows are ~38 px at 375. They are not controls, but a tap opens the card. If QA wants 44 px, `py-3` on stacked cells costs ~1 line and ~6 px per row.
 4. **Page footer** (`Public sources: … · Placeholder bins`) is still plain text; wrap in `Provenance` with the need-score version when DS-11b touches the legend.
 5. **DS-09 open question 1 (one `HATCH`)** still stands; not touched.
+
+---
+
+# DS-11b — County need map: the map explains itself (hover card, legend in words, ranked list at 375)
+Source docs: `docs/design/POLISH_PLAN.md` row DS-11b; `docs/design/targets/visual-direction.md` (County need map: Map / Ranked list / Table switch, ranked county tiles, legend in words, selected county panel); the supervisor's findings from the DS-11a after shots (`docs/design/reviews/DS-11a/after/`); D-040; `polish-bar.md` rows X1–X4, G1–G2, A2, A6, V1; `plain-language.md`; `docs/DESIGN.md` Part 2 need-map rules 2, 4, 5, 8.
+**Depends on:** DS-11a (merged #216: `ExplainBody`, `Hint`, `lib/trust/layer.ts` `cardPosition`, `lib/need-map/terms.ts`), DS-06 (`NeedMap`, `MapSelect`, `NeedTable`, `CountyPanel`). **Budget:** ≤ 400 hand-written lines (D-012); this PR is about 320.
+
+## Purpose and users
+After DS-11a every table cell and panel number explains itself, but the map, the thing a board member looks at first, still does not: a county shows only a colour, the legend reads "Lowest −1.40 to −0.80", and at phone width the page is a 48 700 px stacked table. This sub-packet gives the 29 counties one hover card (name, what the rank means in a sentence, rank, score, band, FAS county, the measure it stands out on, source), words on every legend line, rank numbers on the map from 1024, a 29-row ranked list below `md`, and a bordered scroll box for the table at 1024.
+
+| Reader | Gets |
+|---|---|
+| Board member on a laptop | Point at a county: its name, "A higher need score than 22 of the 25 other counties scored", the rank, the band in words, and which measure it stands out on |
+| Board member on a phone | A ranked list, highest need first: rank, county, score, band and the FAS badge; a tap opens the county's panel |
+| Keyboard and screen-reader users | Arrow keys move between neighbouring counties and the card follows; the path's `aria-label` already reads county, rank and score; legend hints open on Enter |
+
+## Audit (from the DS-11a after shots and the current code)
+- Mockup: `visual-direction.md` need-map section. Screen plan §4 P1-4. Existing spec: DS-11a above. Code: `NeedMap.tsx`, `MapSelect.tsx`, `NeedTable.tsx`, `CountyPanel.tsx`, `page.tsx`. Before shots: `docs/design/reviews/DS-11a/after/need-map-{1024,1440}[-hover].png` (375 was dropped at 48 700 px tall).
+
+### Numbers inventory
+| Element | Has hover card? | Term id | Source shown? | As-of shown? | Hidden reason wired? | Action |
+|---|---|---|---|---|---|---|
+| 29 county paths | no (only `aria-label`) | `county:<fips>` (new, `lib/need-map/words.ts`) | no | — | no | `MapHover`: one card on pointer over, focus and the selected county |
+| Rank labels on the map (≥ 1440 only) | n/a (aria-hidden) | — | — | — | — | shown from 1024 where the box is ≥ 24 px; about 13 px at both widths |
+| Legend band lines (`Lowest −1.40 to −0.80`) | no | `placeholder_bins` | — | — | — | words + count (`Lowest need · 7 counties`); `Hint` with the range and what a band is |
+| Legend `Not published` | no | `not_published` | — | — | no | `Hint` with the approved sentence; count added |
+| Legend `FAS county (outlined)` | no | `fas_county` | — | — | — | `Hint` with the glossary sentence |
+| Ranked list rows (new) | via the panel and the table | — | footer | footer | hatch + "Not published" / "No need score" | `aria-label` = `rowLabel`; a tap opens the panel |
+
+### Controls under 44 px below 1024
+| Control | Measured size at 375 | Fix |
+|---|---|---|
+| Legend lines | ~20 px text | `Hint` triggers (`min-h-11`) |
+| Ranked list rows | — (new) | `min-h-11` link rows |
+| County paths | by geometry (Daggett ≈ 38 × 17 px at 375) | unchanged: the ranked list is the 44 px path to every county |
+
+### Layout
+| Width | Horizontal scroll? | h1 left / content width | Reading order = visual order? | Notes |
+|---|---|---|---|---|
+| 375 | no | 16 / 343 | yes | stacked table 48 700 px tall → ranked list (29 × ~60 px) |
+| 1024 | no | 288 / 704 | yes | table scrolls sideways with no visible edge → bordered box |
+| 1440 | no | 288 / 1120 | yes | rank labels in mono read as technical → Inter, tabular |
+
+### States, accessibility, copy, tokens
+- States unchanged (empty, error, no version). Not published counties: hatched on the map, hatched rank slot + "Not published" + "No need score" in the list, "Why it's hidden" row on the card.
+- Accessibility review (WCAG 2.2 AA): the card has no role (hover face; the path's `aria-label` is the accessible name, 4.1.2); legend hints are buttons with `aria-haspopup` (2.1.1); list rows are links with a full-sentence label (2.4.4) at 44 px (2.5.8); card text uses `--popover-foreground` on `--popover` (1.4.3); the hover stroke is `--foreground` on the fills (1.4.11); focus stays where it was on hover (3.2.1).
+- Copy faults fixed: "Lowest −1.40 to −0.80" (bare range) → "Lowest need · 7 counties" with the range in the hint; the card never shows "—".
+- Tokens: `hover:stroke-foreground`, `bg-popover`, `border-border`, `shadow-md` (interactive face), the DS-06 `fillFor` ramp; no new token. The hatch stays the DS-06 `HATCH_CSS` (exported, reused by the list).
+
+### Mockup gaps (target doc)
+| Target element | In this sub-packet? | Packet |
+|---|---|---|
+| Name and "#rank" on the map | rank from 1024 (names would not fit the small counties at 0.64 px per unit) | — |
+| Legend in words (Lower need · Below average · Above average · Highest (top 7) · Not published) | yes, with the five placeholder bands' names and counts | — |
+| Selected county labelled on the map | yes: the card stays on the selected county | — |
+| Ranked list | yes, below `md` | — |
+| View switch Map · Ranked list · Table | no: a URL view model and the e2e row counts across widths would not fit the cap; the breakpoint rule ships alone | later |
+| Source line under the map with weights approval month | no (no stored approval month) | later |
+
+## Scope
+- `lib/need-map/words.ts` (new, pure): `bandName`, `legendBands` (name, range, count from the data), `bandHint`, `hoverWords` (the card's term, rows and hidden reason; nothing not stored).
+- `components/need-map/MapHover.tsx` (new, client): one card for every `path[data-fips]` inside it; `pointerover` → hover, `focusin` → focus, otherwise the selected county; positioned with `cardPosition` from the path's box, clamped to the figure; `pointer-events-none`.
+- `NeedMap.tsx`: wrapped in `MapHover`; paths get `cursor-pointer hover:stroke-2 hover:stroke-foreground`; rank labels `lg:block` where the box is ≥ 38 units (24 px at 1024), Inter tabular at about 13 px; legend lines are `Hint`s in words with counts; `HATCH_CSS`, `fillFor`, `Swatch` exported.
+- `components/need-map/RankedList.tsx` (new): `section` + `ol`, one 44 px link row per county (rank, name, score, band badge, FAS badge; hatch + "Not published" for no score), `md:hidden`, href `?county=<fips>[&fas=1]#county-panel`.
+- `NeedTable.tsx`: `hidden md:block`, `rounded-md border border-border bg-card`, sticky column `bg-card pl-3`. Columns are not trimmed (the chosen fix is the visible box).
+- `CountyPanel.tsx`: `id="county-panel"`. `page.tsx`: renders `RankedList` before `NeedTable`.
+- Out of scope: the view switch, county names on the map, the weights approval month, a live region for the map card (the path label speaks), `MapSelect.tsx` (unchanged: click/Enter select, arrows, Escape).
+
+## Layouts
+Unchanged shell geometry. The card is `absolute` inside `[data-slot=map-hover]` (`relative`), 20 rem wide, `max-w-full`, left clamped by `cardPosition`, so `scrollWidth` never grows. Rank labels: 20 viewBox units at 1024 (≈ 13 px at 0.64 px per unit), 16 units from 1440 (≈ 13 px at 0.84). Ranked list row: `grid-cols-[2.5rem_minmax(0,1fr)_auto]`, two text rows (name; band and FAS badges), rank and score spanning both.
+
+## Components (existing only)
+`ExplainBody`, `Hint` (DS-09); `cardPosition` (DS-11a); `Badge`, `Card`; `NeedCompare` (standout measure); `NeedMapQuery.rowLabel`; `whyHidden`, `GLOSSARY.fas_county`.
+
+## Exact copy
+- Card title: `<County name>`. Ranked sentence: `A higher need score than <scored − rank> of the <scored − 1> other counties scored. Relative ranking, not absolute need.` Unscored: `No need score, so no rank or band. Its public measures are still in the table.`
+- Card rows (only those present): `Rank · 20 of 26` · `Need score · −0.80` · `Band · Lowest need (1 of 5)` · `FAS county · Yes, FAS funds therapy here` · `Stands out on · Uninsured rate, 9.2%, above the state median of 8.1%` · `Source · Need score version v2` · `Why it's hidden · The source did not publish this for this county in that release.`
+- Band names (5): `Lowest need · Lower need · Middle · Higher need · Highest need`; 4: Lowest, Lower, Higher, Highest need; 3: Lowest need, Middle, Highest need; 2: Lower need, Higher need; 1: All scored.
+- Legend lines: `<Band name> · <n> counties`, `Not published · <n> counties`, `FAS county (outlined)`. Band hint: `Need scores +1.00 to +1.40, 5 counties. Band 5 of 5: equal-count placeholder bands until FAS sets the final weights.`
+- Ranked list: H2 `<n> counties, highest need first`; `<scored> of <n> have a need score. Tap a county to see why it ranks where it does.`; unscored rows `Not published` and `No need score`.
+
+## States
+- Nothing hovered, focused or selected: no card in the DOM (SSR markup has none).
+- Pointer over a county: the card under its box; leaving the figure removes it. Focus (Tab or arrows): same card; blur to a non-county removes it. Selected (`?county=`): the card stays on that county, so a tap (which selects) shows it.
+- Unscored county: hatch on the map and in the list; card ends with "Why it's hidden".
+- `?fas=1`: the list has the FAS rows only; non-FAS paths are grey but still carry their card.
+
+## Trust rules
+- Every card word also lives in the table (rank, score, band, status), the panel (standout measure, version) or the legend. Nothing invented: counts, ranges and the standout sentence come from `data.counties`, `data.columns` and the stored version.
+- Hidden is a visible state: hatch + words, never 0, never blank.
+
+## Accessibility
+- Paths keep `role="button"`, `aria-label`, `aria-pressed`, 2 px `--ring` focus outline; the card is not a dialog and adds no role (pointer, focus and tap show identical text).
+- Legend hints: 44 px below 1024, tooltip on hover/focus, popover dialog on Enter or tap (`Hint`).
+- Ranked list rows: links with a sentence label, `min-h-11`, visible focus ring; the list is hidden from `md` up and the table below `md` (`display: none`, out of the accessibility tree).
+- axe 0 serious or critical with the card open at 1440, 1024 and 375 (e2e).
+
+## Acceptance criteria → tests
+| # | Criterion | Test |
+|---|---|---|
+| 1 | Band names for 1–5 bands; legend bands carry name, range and count from the data; the band hint sentence | `lib/need-map/words.test.ts` |
+| 2 | `hoverWords`: title, the rank sentence, rows (rank, score, band, FAS, standout, source), no hidden row when ranked; an unscored county gets the no-score sentence, empty rows and the not-published reason | `lib/need-map/words.test.ts` |
+| 3 | Map markup: labels `lg:block` for the 26 scored counties, hover stroke and pointer class on 29 paths, `MapHover` wrapper, no card in SSR, legend lines are five band hints plus Not published and FAS | `lib/need-map/need-map-svg.test.ts` |
+| 4 | Ranked list markup: 29 link rows, `md:hidden`, rank/name/score/band/FAS, hatch and words for no score, `&fas=1` kept | `lib/need-map/need-map-svg.test.ts` "RankedList markup" |
+| 5 | Hover text == focus text on a county; the card follows ArrowRight; Enter still selects; hatched county explains why; legend hint words; rank labels visible at 1024 and 1440; card inside the figure; axe; scrollWidth | `tests/e2e/map.spec.ts` "map hover card" |
+| 6 | 375 with touch: tap selects and the card shows the same words; the ranked list has 29 rows ≥ 44 px, the table is hidden, `scrollWidth` ≤ 375, axe; a row tap opens the panel in view | `tests/e2e/map.spec.ts` "touch" |
+| 7 | 1024: the table box is `overflow-x: auto` with a 1 px border and scrolls; the ranked list is hidden | `tests/e2e/map.spec.ts` "1024: the table sits in a bordered box" |
+| 8 | Existing map, selection and explain-layer tests still pass (legend words, labels from 1024, table region visible from 768) | `tests/e2e/map.spec.ts` (updated) |
+| 9 | Hand-written diff ≤ 400, no line > 300 chars, progress entry last | `pnpm gate` |
+
+## Allowed files
+`lib/need-map/words.ts`, `words.test.ts`, `need-map-svg.test.ts`; `components/need-map/MapHover.tsx`, `RankedList.tsx`, `NeedMap.tsx`, `NeedTable.tsx`, `CountyPanel.tsx`; `app/(app)/need-map/page.tsx`; `tests/e2e/map.spec.ts`; `docs/design/specs/DS-11a.md`; `harness/progress.md`. Never: `app/globals.css`, `components/trust/**`, `harness/generated-files.json`, `components/staff/**`, `lib/staff/**`, `tests/e2e/home.spec.ts`, `app/(app)/board/**`, `components/board/**`, `lib/board/**`, `tests/e2e/board-dashboard.spec.ts`.
+
+## PR split
+One PR (`ds-11b-map-hover`).
+
+## Decisions
+1. The selected county keeps its card. Touch has no hover, and a tap selects, so the selected state is the tap's card; on a pointer device it doubles as the target's "selected" label. The card is `pointer-events-none`, so neighbours stay hoverable through it.
+2. The card has no live region: the path's `aria-label` already announces county, rank and score on focus; a second announcement would double-speak. The band and standout words are in the table and panel.
+3. The hover stroke is on the path itself (`hover:stroke-2 hover:stroke-foreground`), not a fourth outline pass: neighbours painted later cover the outer half, which still leaves a 1–2 px ink line and avoids 29 more path copies in the HTML.
+4. Rank labels are Inter tabular, not mono: numbers on a map for a board member should read as the rank, not as code.
+5. Below `md` the stacked table stays in the DOM (hidden) rather than being removed, so a later view switch can show it without rebuilding the stacked labels.
+6. 1024 fix: a visible box (border + `overflow-x: auto`) rather than trimming columns; every public measure stays reachable by scrolling, and the sticky County column keeps the row readable.
+7. Link rows carry `#county-panel` so a tap on a phone lands on the panel that sits above the list.
+
+## Open questions
+1. View switch (Map · Ranked list · Table) with a `?view=` param: deferred; the breakpoint rule ships alone.
+2. County names on the map: at 0.64 px per unit most counties cannot hold a name at 12 px; a tile cartogram or labels for the six largest only would be a design decision.
+3. The weights approval month for the source line under the map is not stored.
+4. `Lowest need · 7 counties` counts come from the data; if the seed changes, `LEGEND` in `map.spec.ts` follows.
+5. After shots at 375/1024/1440 (plus `--hover "path[data-fips='49011']"` and `--focus "path[data-fips='49011']"`) are taken by the supervisor from the preview; this shell has no Docker or preview access.
