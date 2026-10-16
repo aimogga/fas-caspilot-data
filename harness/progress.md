@@ -1221,3 +1221,10 @@ Did: migration `20261016015500_f508b_org_knowledge.sql`: `org_knowledge` (catego
 State: 25 knowledge unit tests + 1 synthetic test; `tests/db/org-knowledge.test.ts` 56 tests (RLS matrix: 6 actors × 2 tables × select/insert/update/delete, cross-org, versions/archive/citation resolution, backstop). Full `pnpm test:db` 933 green against local Supabase in this shell; lint, typecheck, 812 unit tests and gate green (D-012: 400). Branch `f508b-org-knowledge`.
 Left: #226 admin UI writes through `saveKnowledge`; F-508 citation validation calls `resolveCitation`. Direct PostgREST writes by an admin skip the TS guard (only the SSN/email/numbers backstop applies), so the UI must write through `lib/knowledge`. fas-dev migration is applied by the supervisor after QA PASS (D-014).
 Decisions: none new.
+
+---
+## 2026-10-16 03:20 (UTC) — Claude Code (cloud, Engineer) — Audit buildHealth names the failing test (tooling)
+Did: `checkBuild` in `scripts/nightly-audit.mjs` is exported and takes the command runner as an argument (default `execSync`). When lint, typecheck or test fails, it now adds up to 12 short lines (FAIL, ×, Error, ETIMEDOUT, ENOBUFS, Timed out; each trimmed to 200 chars, duplicates dropped) and the exit code/signal to the buildHealth details, instead of only "test failed". Three unit tests in `scripts/nightly-audit.test.mjs` (green, failing test named, timeout). Split out of #247, where the `audit` job failed intermittently with "test failed" and nothing to trace (`ci` and every local run passed).
+State: lint, typecheck and unit tests green; gate vs main green. Branch `tooling/audit-build-details` off main.
+Left: if #247's audit goes red again after this merges, the report names the test.
+Decisions: none new.
