@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { PageSkeleton } from "@/components/status/PageSkeleton";
 import { StatusCard } from "@/components/status/StatusCard";
 
-const ROUTES = ["staff", "dashboard", "need-map", "board", "staff/grants/matches"];
+const ROUTES = ["staff", "dashboard", "need-map", "board", "staff/grants/matches", "staff/intake", "staff/entry", "admin"]; // DS-14 five + DS-18a one + DS-18b two
 
 describe("DS-14 loading skeletons and status card", () => {
   it("PageSkeleton is a status region with one sr-only sentence, hidden bars sized by the blocks, and no pulse under reduced motion", () => {
@@ -17,7 +17,7 @@ describe("DS-14 loading skeletons and status card", () => {
     expect((m.match(/motion-reduce:animate-none/g) ?? []).length).toBe(11);
     expect(m).toContain('data-cols="3"');
   });
-  it("the five main routes ship a loading.tsx", () => {
+  it("the main routes (and the DS-18 upload, entry and admin pages) ship a loading.tsx", () => {
     for (const r of ROUTES) expect(existsSync(`${import.meta.dirname}/../../app/(app)/${r}/loading.tsx`), r).toBe(true);
   });
   it("StatusCard renders the 40 px glyph pattern and, with focusTitle, a focusable H1", () => {

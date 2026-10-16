@@ -33,7 +33,8 @@ async function saveCase(page: Page): Promise<string> {
 test("staff can open /staff/entry; board gets 403", async ({ page }) => {
   await signIn(page, "staff@example.test");
   expect((await page.goto("/staff/entry"))?.status()).toBe(200);
-  await expect(page.getByRole("heading", { level: 1, name: "Enter data" })).toBeVisible();
+  await expect(page.locator("[data-slot=page-header] p").first()).toHaveText("Enter data");
+  await expect(page.getByRole("heading", { level: 1, name: "Add one record at a time" })).toBeVisible();
   await page.context().clearCookies();
   await signIn(page, "board@example.test");
   expect((await page.goto("/staff/entry"))?.status()).toBe(403);
@@ -81,4 +82,23 @@ test("375 and 1024: no horizontal scroll, 44px targets, 16px inputs, axe clean",
     expect(fontPx).toBe("16px");
     if (width < 1024) expect(minTarget, `targets @ ${width}`).toBeGreaterThanOrEqual(44);
   }
+});
+
+test("every Case field explains itself: a plain sentence under the control, listed in aria-describedby (DS-18b)", async ({ page }) => {
+  await signIn(page, "staff@example.test");
+  await openEntry(page);
+  const fields = page.locator("[data-slot=entry-form] [data-slot=form-field]");
+  expect(await fields.count()).toBeGreaterThanOrEqual(8);
+  const rows = await fields.evaluateAll((els) => els.map((el) => {
+    const control = el.querySelector<HTMLElement>("input, select")!, hint = el.querySelector<HTMLElement>(`#${control.id}-hint`);
+    return { id: control.id, described: control.getAttribute("aria-describedby") ?? "", hint: hint?.innerText.trim() ?? "", px: hint ? parseFloat(getComputedStyle(hint).fontSize) : 0 };
+  }));
+  for (const r of rows) {
+    expect(r.described.split(" "), r.id).toContain(`${r.id}-hint`);
+    expect(r.hint, r.id).toMatch(/^[A-Z].*\.$/);
+    expect(r.hint, r.id).not.toMatch(/\b(FIPS|pct|M[1-6]|N\/A)\b|!/);
+    expect(r.px, r.id).toBeGreaterThanOrEqual(12);
+  }
+  await expect(page.locator("#entry-county_fips-hint")).toHaveText(/^The Utah county the family lives in\. Required;/);
+  await expect(page.locator("#entry-court_order_date-hint")).toContainText("like 2024-03-31. It must be on or before the referral date");
 });

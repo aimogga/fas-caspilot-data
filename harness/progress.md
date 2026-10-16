@@ -1082,6 +1082,86 @@ Left: nothing in DS-17; `loading.tsx` lands with #262. Open: outcome tiles keep 
 Decisions: none new (applies D-040).
 
 ---
+## 2026-10-16 04:20 (UTC) — Cloud Agent (Designer) — DS-15b: team dashboard M6 share bar and O1 rows under the explain layer, View as table hint, deltas audited
+Did: `lib/dashboard/words.ts` (pure, 3 new tests): seven terms (`m6_share`, `m6_rate`, `m6_dollars`, `m6_episodes`, `o1_mean`, `o1_improved`, `o1_n`), `m6Segment` (share and dollars in words, or the small-count sentence for a group under 11 and the complementary sentence for the share hidden with it), `m6Cell`, `o1Cell` (figure for the survey with the direction in words; a row under 11 pairs carries the privacy sentence and no value on every cell), `TABLE_HINT`. `M6Card`: one `ExplainLayer` in a keyboard region; the share phrases, the two bar segments (`role="img"`, labelled, 16 px) and the six cells are targets; Left/Right walk them. `OutcomesCard`: the same region and layer on mean, share and n. `TrendToggle`: an Info `Hint` (`About the table view`) beside `View as table`, `print:hidden`. `metric-props` passes `asOf` to both cards; `KEYS` exported from `M4Table`. Deltas audited: M1, M2, M3, M5 already carry `deltaHint`; the table cards show none; AC9 pins the count. Spec: `docs/design/specs/DS-15.md` DS-15b section appended.
+State: lint, typecheck, unit tests and `pnpm gate` green. No Docker, Supabase or preview here: `tests/e2e/dashboard.spec.ts` AC7–AC9 (segment hover = focus = Enter, Left/Right walk, Escape returns focus, O1 row words and hidden row, hint hover = focus, 44 px at 375, delta coverage, axe) run in CI. Before and after shots: the supervisor, from production and the preview. Branch `ds-15b-dashboard-m6-o1` off main.
+Left: nothing in DS-15. Open: the seed shows both M6 groups, so the hidden-share card is unit-tested only; `Avg rate per hour` header abbreviation is DS-07c copy pinned by its tests; the hint also reaches board and packet pictures through `ChartFrame`, check the glyph reads quiet on the board after shots.
+Decisions: none new (applies D-040; designer defaults listed in the spec's Decisions).
+
+---
+## 2026-10-16 03:10 (UTC) — Cloud Agent (Designer) — DS-18a: upload page error cells explain themselves, stepper and dropzone in tokens, batch statuses in words, loading skeleton (design)
+Did: `components/intake/UploadWizard.tsx`: preview error cells drop the native `title` for a kit `Hint` on the word `Error` (`aria-label` `Error: <reason>`, same words on hover, focus and tap; `data-error` kept); the stepper is three token-only discs (current filled in the accent with `aria-current="step"`, finished ticked with a lucide `Check`, upcoming muted, sr-only step words, `data-state` hooks); the file input sits in a dashed `data-slot=dropzone` card with one helper sentence wired through `aria-describedby`; step 2 reads `Match columns`; the preview helper no longer promises a tooltip. `components/intake/BatchList.tsx`: status badge and word in one `Hint` per row (`Saved` / `Rolled back` with a plain sentence, unknown statuses say `Recorded as "<status>"`), type in words (`Case records`, `Not recorded`), the reference carries a `Hint`, headers `Reference` and `Rows saved`, `data-slot=batch-row|batch-status`. `app/(app)/staff/intake/page.tsx`: serif headline in words `Add FAS records from a spreadsheet`, description ending on the trust rule; `loading.tsx` with `PageSkeleton`. Spec: `docs/design/specs/DS-18.md` (DS-18b appends).
+State: lint, typecheck, unit tests (skeleton route list extended) and `pnpm gate` green. No Docker, Supabase or preview in this shell: `tests/e2e/upload.spec.ts` updated (headline and dropzone, hint per error cell hover = focus with no `td[title]`, stepper done/current, batch status hint and type words, row ≥ 44 px at 375, axe and scrollWidth at 375/1024/1440) for CI. Before and after shots: the supervisor from production and the preview. Branch `ds-18a-intake` off main.
+Left: DS-18b (`/staff/entry`, `AggregateBadge`, nav icons) on its own branch. Open: the screen plan's five-step stepper, sample values and right rail wait for saved mappings; `rows_ok` null shows `0` as before.
+Decisions: none new (designer defaults in the spec: `Committed` reads `Saved` to match the button; eyebrow stays the shared `WORKSPACE`; one `Hint` per error cell rather than an `ExplainLayer`; no drag-and-drop script because the native input already accepts a drop).
+
+---
+## 2026-10-16 04:55 (UTC) — Cloud Agent (Engineer Supervisor) — DS-16b and DS-17 after shots; DS-17, DS-18a and DS-18b before shots (design)
+Did: from production main 923caad: `docs/design/reviews/DS-16b/after/methodology-{375,1024,1440}[-hover].png` (hover on a weight card label). Before shots for the open packets: `DS-17/before/staff-packets-*`, `DS-18a/before/staff-intake-*`, `DS-18b/before/staff-entry-*` and `admin-*` plus the 800 px nav rail `staff-entry-800.png`. After #274 landed: `DS-17/after/staff-packets-{375,1024,1440}[-hover].png` (hover on a figure tile), the Letter print sheet `staff-packets-816-print.png` and `.pdf`. Manifest rows for each.
+State: binary and manifest only. Branch `design/after-shots-day7`. All 375 shots under 10 000 px.
+Left: DS-15b, DS-18a and DS-18b after shots once #273, #276 and #277 are on production.
+Decisions: none new.
+
+---
+## 2026-10-16 04:40 (UTC) — Designer agent (DS-18b) — Enter data: a helper sentence under every field, twelve nav glyphs, skeletons for `/staff/entry` and `/admin`
+Did: `/staff/entry` header in words (eyebrow `Enter data`, H1 `Add one record at a time`, one sentence). New pure `lib/intake/words.ts`: `fieldHelp` gives every visible entry field one or two plain sentences (what to enter, the day or dollar format, the order or floor rule, what it later feeds: the wait to a first session, the time to a funding decision, the completion rate, the cost per completed episode); `hintFor` now returns them, so the form's existing `aria-describedby` wiring carries a sentence on every field without touching `components/intake`. The same module holds `aggregateCell` (the `m4Cell`-style attributes for one recent total) and `AGGREGATE_BADGE_HINT` for the follow-up. `components/shell/nav-icons.ts` maps all 12 hrefs to lucide glyphs; `ShellFrame` renders them at 16 px, `aria-hidden`. `loading.tsx` for `/staff/entry` (form-shaped) and `/admin` (home-shaped) through `PageSkeleton`. Spec `docs/design/specs/DS-18b.md`. Tests: `lib/intake/words.test.ts`, `lib/shell/nav-icons.test.ts`, skeleton routes, `tests/e2e/entry-forms.spec.ts` (+1 case, heading updated), new `tests/e2e/nav-admin.spec.ts` (glyphs at 1440/800/375, axe and overflow on both routes at three widths).
+State: lint, typecheck, 866 unit tests green; e2e runs in CI (no Supabase here). Branch `ds-18b-entry-admin-nav` off main 0de2ff2. Shots: supervisor, from production and the preview, plus the 800 rail.
+Left: wiring the Σ badge `Hint` and the recent-totals `ExplainLayer` into `components/intake/AggregateForm.tsx` (DS-18a owns `components/intake/**` this week; `components/trust/index.tsx` is kit-only) and its own `HINT` words; a two-to-three-line follow-up (DS-18c) once DS-18a merges, builders and tests already here. The `County code (Utah FIPS)` label is an F-302 schema string shared with the upload mapper (Open question 2).
+Decisions: none new (designer defaults in the spec: nav e2e in a new file because #251/#252 edit `shell.spec.ts`; admin H1 stays the DS-10a greeting; glyph choices listed).
+
+---
+
+## 2026-10-16 06:25 (UTC) — Cloud Agent (Engineer Supervisor) — Day-8 after shots for DS-15b and DS-18a (design)
+
+**Did:** merged #277 (DS-18b, f403333) and #279 (Day-7 shots, b4a1f79). Took "after" shots against the production deployment of b4a1f79 for DS-15b (`/dashboard` at 375/1024/1440, plus 1024 hovers on the first M6 share segment and an O1 row cell) and DS-18a (`/staff/intake` at 375/1024/1440, plus a 1024 hover on a batch status chip). Manifests deduplicated to one row per tag/route/width/variant.
+
+**Evidence:** `docs/design/reviews/DS-15b/after/*`, `docs/design/reviews/DS-18a/after/*`; review page republished.
+
+**Next:** DS-18b after shots (Day 8b) once the production build of f403333 is captured; DS-19 dark mode packet in flight on `ds-19-dark-mode`.
+
+---
+## 2026-10-15 23:55 (UTC) — Cloud Agent (Engineer) — design-shots: hover and focus shots wait for the explain face (fix)
+Did: `scripts/design-shots.mjs` took the hover and focus PNGs right after `page.hover` / `page.focus`, before the Radix HoverCard (`openDelay` 150 ms) or Hint tooltip had opened, so DS-10a's `staff-*-hover.png` were byte-identical to the base shots. New exported `waitForFace(page, { timeout 5 s, settle 250 ms, fallback 500 ms })` waits for `FACE` = `[data-slot=explain-content]:visible, [role=tooltip]:visible`, settles briefly when it shows, and falls back to the fixed wait (never throws) when the hovered element opens no face; both the hover and focus branches call it. Two unit tests with a page stub cover the shown and fallback paths and the selector/timeout arguments.
+State: lint, typecheck, 769 unit tests (97 files) green. Probe against a stub page with the pre-installed Chromium: a plain element falls back in ~500 ms, an explain trigger resolves once the face is visible. `docs/design/reviews/**` untouched.
+Left: re-run `pnpm shots --tag after --hover "[data-slot=home-tile] [data-slot=explain-trigger]"` for DS-10a so the hover shots differ from the base.
+Merge note: main gained a 3 s inline wait on the primitive slots (`tooling/shots-hover-wait`); merging main replaced it with `waitForFace`, whose `FACE` now covers the hover-card, tooltip, popover and explain-content slots plus `role=tooltip`, adding the settle and fallback waits and the unit tests.
+
+---
+## 2026-10-16 06:50 (UTC) — Designer agent (DS-19) — Dark mode: Appearance choice in the account menu, remembered on the device, no flash, every route checked on the dark surface
+Did: new pure `lib/shell/theme.ts` (`THEME_KEY` `fas-theme`, `parseTheme`, `serialiseTheme`, `resolveTheme(choice, systemPrefersDark)`, `applyTheme` = `.dark` class + `color-scheme`, and `THEME_BOOT_SCRIPT`, three dependency-free lines in `try`). `app/layout.tsx` runs the script inline in `<head>` before paint and sets `suppressHydrationWarning` on `<html>`. New `components/shell/ThemeMenu.tsx`: `role="group"` `Appearance` with three `aria-pressed` buttons `Light` / `Dark` / `Match device` (tick on the chosen row, one hint sentence under Match device, 44 px rows below 1024), the stored choice through `useSyncExternalStore` so hydration never disagrees with the boot script, listeners on `prefers-color-scheme` (Match device follows the device live), `matchMedia("print")` and `beforeprint`/`afterprint` (a dark page prints light and comes back). `ShellFrame` renders it between the role line and `Sign out`. Dark audit of charts, map, hatches and trust faces: all already on tokens, no fill or stroke changed; the one fault was the destructive `Button` (`text-white` on the light dark-mode red), now `text-destructive-foreground`. Spec `docs/design/specs/DS-19.md`. Tests: `lib/shell/theme.test.ts` (7, including the boot script run against a fake window for every stored value × device setting), `tests/e2e/theme.spec.ts` (toggle + reload, Match device live and after reload, keyboard + 44 px + print turns light, axe and overflow in dark on `/staff`, `/dashboard`, `/need-map`, `/board` at three widths, `/login` and `/403` dark before sign-in).
+State: lint, typecheck, unit tests and `pnpm gate` green. No Supabase here: the e2e runs in CI. Local proof with a Chromium probe against `pnpm dev`: `/login`, `/403` and the `/ui` gallery dark at 375 and 1024, axe 0 serious/critical, the stored choice already applied at `DOMContentLoaded`, Playwright media emulation fires both `matchMedia` change events the menu relies on. Dark after shots: the supervisor, `pnpm shots … --dark` on every route. Branch `ds-19-dark-mode` off main f403333.
+Left: nothing in DS-19 (the whole packet fit in a). Open: the shots script adds `.dark` by hand and could emulate the colour scheme instead (one line, optional); Word and PDF exports stay light by design, confirm.
+Decisions: none new; no token added or changed (designer defaults in the spec: `aria-pressed` rows rather than a radiogroup; only `light`/`dark` stored, Match device removes the key; print kept light by script because undoing the `.dark` tokens in CSS would restate every value in a kit-only file).
+
+---
+## 2026-10-16 06:50 (UTC) — Cloud Agent (Engineer Supervisor) — map.spec arrow-key step waits for hydration (fix)
+
+**Did:** `tests/e2e/map.spec.ts` county arrow-key step now retries focus + ArrowRight until focus moves (`toPass`, 15 s). The need-map page streams behind DS-14's skeleton, so the first key press could land before the map's key handler hydrated; the step flaked on #276 and #218 (three attempts each time, passed on re-run).
+
+**Evidence:** `pnpm gate` green; e2e runs in CI.
+
+**Next:** none; test-only change.
+
+---
+## 2026-10-16 07:00 (UTC) — Cloud Agent (Engineer Supervisor) — Day-8b after shots for DS-18b (design)
+
+**Did:** merged #218 (design-shots e2e fix, 45c7f8c) and #281 (Day-8 shots, 1beb6c0). Took "after" shots against the production deployment of f403333 for DS-18b: `/staff/entry` (staff) and `/admin` (admin) at 375/800/1024/1440. No hover shot: the entry form's helper sentences are visible text, not a hover face.
+
+**Evidence:** `docs/design/reviews/DS-18b/after/*`; review page republished (v12).
+
+**Next:** DS-19 dark mode (#282) and the map arrow-key test fix (#283) on CI; dark shots on every route after DS-19 merges.
+
+---
+
+## 2026-10-16 08:10 (UTC) — Cloud Agent (Engineer Supervisor) — Day-9 dark-mode shots on every route (DS-19 evidence)
+
+**Did:** merged #282 (DS-19 dark mode, 49f22b0), #283 (map arrow-key test retry, 371b196) and #284 (DS-18b after shots, c028345). Took DS-19 "after" shots against the production deployment of 49f22b0 on all thirteen routes at 375/1024/1440 in dark and light, plus one 1024 dark shot of `/staff` with the account menu open showing the Appearance rows. `docs/design/reviews/DS-19/manifest.json` is listed in `harness/generated-files.json` (it is written by `scripts/design-shots.mjs`; D-012).
+
+**Evidence:** `docs/design/reviews/DS-19/after/*`; review page republished (v13) with a dark row per route.
+
+**Next:** none planned in the design lane; George reviews the page and anything he dislikes becomes the next packet.
+
+---
 
 ## 2026-10-16 03:20 (UTC) — Claude Code (cloud, Engineer) — Audit buildHealth names the failing test (tooling)
 Did: `checkBuild` in `scripts/nightly-audit.mjs` is exported and takes the command runner as an argument (default `execSync`). When lint, typecheck or test fails, it now adds up to 12 short lines (FAIL, ×, Error, ETIMEDOUT, ENOBUFS, Timed out; each trimmed to 200 chars, duplicates dropped) and the exit code/signal to the buildHealth details, instead of only "test failed". Three unit tests in `scripts/nightly-audit.test.mjs` (green, failing test named, timeout). Split out of #247, where the `audit` job failed intermittently with "test failed" and nothing to trace (`ci` and every local run passed).

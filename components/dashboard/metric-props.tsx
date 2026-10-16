@@ -30,8 +30,8 @@ export function metricProps(id: string, x: DashboardMetrics | null, f: Filters, 
     case "m3": return fas(x?.m3, NO_CASES, (v) => ({ value: pct(v.share), subline: v.topReason ? `Top reason: ${reasonLabel(v.topReason)}` : null, muted: "No session within 60 days of approval" }));
     case "m5": return fas(x?.m5, NO_EPISODES, (v) => ({ value: money(v.costPerCompleted), subline: `Program total ÷ completed: ${money(v.programPerCompleted)}` }));
     case "m4": return fas(x?.m4, NO_EPISODES, (v) => ({ body: <M4Table data={v} asOf={v.asOf} />, footer: footer(v, v.includesHiddenBands ? HIDDEN_BANDS : "") }));
-    case "m6": return fas(x?.m6, NO_EPISODES, (v) => ({ body: <M6Card data={v} /> }));
-    case "o1": return fas(x?.o1, NO_SCORES, (v) => ({ body: <OutcomesCard data={v} /> }));
+    case "m6": return fas(x?.m6, NO_EPISODES, (v) => ({ body: <M6Card data={v} asOf={v.asOf} /> }));
+    case "o1": return fas(x?.o1, NO_SCORES, (v) => ({ body: <OutcomesCard data={v} asOf={v.asOf} /> }));
     default: return {};
   }
 }
