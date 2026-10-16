@@ -48,20 +48,43 @@ for (const email of ["board@example.test", "staff@example.test", "admin@example.
     await expect(face).toHaveText(hovered ?? "");
     expect(hovered).toContain("Completion rate by income band");
     await page.keyboard.press("Escape");
-    expect(await page.locator("[data-slot=kpi-row]").evaluate((el) => el.compareDocumentPosition(document.querySelector("[data-slot=board-pictures], [data-slot=metric-card]") as Element) & Node.DOCUMENT_POSITION_FOLLOWING)).toBeTruthy();
+    expect(await page.locator("[data-slot=kpi-row]").evaluate((el) => el.compareDocumentPosition(document.querySelector("[data-slot=board-section]") as Element) & Node.DOCUMENT_POSITION_FOLLOWING)).toBeTruthy();
     await expect(page.locator("[data-slot=crumbs]")).toHaveText("Board dashboard");
-    const summary = page.locator("[data-slot=board-summary]");
-    // Seed (DS-07c): GAD-7 has 3 follow-ups → worded "fewer than 11"; M4 total 25 of 29 is shown; the paragraph ends with its as-of date.
-    await expect(summary).toContainText(/fewer than 11/i);
-    await expect(summary).toContainText("86% of closed cases finished therapy (25 of 29)");
-    await expect(summary).toContainText(/Data as of \w{3} \d{4}\.$/);
-    await expect(summary).not.toContainText(/\$0|NaN|undefined|null/);
-    const cards = page.locator("[data-slot=metric-card]");
-    await expect(cards).toHaveCount(7);
-    for (const c of await cards.all()) await expect(c.locator("[data-slot=source-footer]")).toContainText(/FAS records · .* · n = \d+ · (as of |date not available yet)/);
-    await expect(page.locator("[data-slot=metric-card] tbody tr[data-suppressed]:not([data-complementary])").first()).not.toContainText("%");
-    await expect(page.getByRole("heading", { level: 2, name: "Public data freshness" })).toBeVisible();
-    await expect(page.locator("[data-slot=board-note]")).toHaveText(/^Counts under 11 are hidden to protect families' privacy\. Dates are shown by quarter\. Data (as of \w{3} \d{4}|date not available yet)\. FAS Evidence\.$/);
+    // DS-13b: the H1 keeps the full row at 1024 (two lines at most) with the actions on their own row under it; the seven-sentence paragraph is one lead sentence.
+    expect((await page.getByRole("heading", { level: 1 }).boundingBox())!.height).toBeLessThan(90);
+    await expect(page.locator("[data-slot=board-lead]")).toHaveText(/^Four pictures tell the quarter: .*counties we serve\.$/);
+    await expect(page.locator("[data-slot=board-summary], [data-slot=metric-card], [data-slot=freshness-widget]")).toHaveCount(0);
+    // Four numbered sections in words, each opening with its sentence; section 1 words the seed's M4 total (25 of 29) and keeps the completion picture with View as table.
+    const sections = page.locator("[data-slot=board-section]");
+    await expect(sections.locator("> p").first()).toHaveText("1 · Did families improve?");
+    await expect(sections.locator("> p")).toHaveText(["1 · Did families improve?", "2 · How long families waited", "3 · Where our therapy dollars went", "4 · Need in the counties we serve"]);
+    expect(await sections.evaluateAll((els) => els.map((e) => e.getAttribute("data-state")))).not.toContain("error");
+    for (const s of await sections.all()) { await expect(s.locator("h2")).toHaveText(/.+\.$/); await expect(s).not.toContainText(/\$0\b|NaN|undefined|null/); }
+    const improve = sections.nth(0);
+    await expect(improve.locator("h2")).toContainText("86% of closed cases finished therapy (25 of 29)");
+    await expect(improve.locator("[data-picture=completion] [data-slot=source-footer]")).toContainText(/FAS records · .* · n = \d+ · as of \w{3} \d{4}/);
+    await improve.locator("[data-picture=completion]").getByRole("button", { name: "View as table" }).click();
+    await expect(improve.locator("[data-picture=completion] table")).toBeVisible();
+    // Section 4: FAS counties from the need-map data; a rank cell shows the same explain words on hover and on focus; the map link is verb-first.
+    const need = sections.nth(3);
+    await expect(need.locator("h2")).toHaveText(/(has the highest need of the \d+ counties we serve, ranked \d+(st|nd|rd|th) of \d+ statewide|not available yet|no published need score)/i);
+    await expect(need.getByRole("link", { name: "Open the county need map" })).toHaveAttribute("href", "/need-map?fas=1");
+    const rank = need.locator("[data-term=rank]").first(), layer = need.locator("[data-slot=explain-layer-card]");
+    if (await rank.count()) {
+      await rank.hover();
+      await expect(layer).toBeVisible();
+      const hovered = await layer.textContent();
+      await page.mouse.move(0, 0);
+      await rank.focus();
+      await expect(layer).toHaveText(hovered ?? "");
+      expect(hovered).toContain("Rank");
+      await page.keyboard.press("Escape");
+    }
+    // Packet card: no invented date or page count; sources paragraph built from the footers.
+    await expect(page.locator("[data-slot=packet-card] h2")).toHaveText(/^A saved packet for [A-Z][a-z]+–[A-Z][a-z]+ \d{4} is not available yet\.$/);
+    await expect(page.locator("[data-slot=packet-card]")).not.toContainText(/\d+ pages|Generated/);
+    await expect(page.locator("[data-slot=board-sources]")).toContainText(/^Sources\. FAS records for [A-Z][a-z]+–[A-Z][a-z]+ \d{4}, as of \w{3} \d{4}: .*\(n = \d+\).* County need: .* Dates are shown by quarter\./);
+    await expect(page.locator("[data-slot=board-sources] [data-slot=explain-trigger]")).toHaveCount(1);
     await expect(page.locator("[data-slot=filter-bar]")).toHaveCount(0);
     expect(await axe(page)).toEqual([]);
   });
@@ -90,9 +113,16 @@ test("board dashboard prints without the shell or buttons and reads at 375/1024/
   await expect(page.locator("[data-slot=sidebar]")).toBeHidden();
   await expect(page.locator("[data-slot=topbar]")).toBeHidden();
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(page.locator("[data-slot=metric-card]")).toHaveCount(7);
-  for (const c of await page.locator("[data-slot=metric-card]").all()) await expect(c).toBeVisible();
-  expect(await page.locator("[data-slot=metric-card]").first().evaluate((el) => getComputedStyle(el).breakInside)).toBe("avoid");
+  // DS-13b print: the four sections, the sources paragraph and the running footer print; the packet card, map link and View as table do not.
+  await expect(page.locator("[data-slot=board-section]")).toHaveCount(4);
+  for (const s of await page.locator("[data-slot=board-section]").all()) await expect(s.locator("h2")).toBeVisible();
+  expect(await page.locator("[data-slot=board-section]").first().evaluate((el) => getComputedStyle(el).breakInside)).toBe("avoid");
+  await expect(page.locator("[data-slot=board-sources] p").first()).toBeVisible();
+  await expect(page.locator("[data-slot=board-page-footer]")).toHaveText(/^FAS Evidence · Board summary · [A-Z][a-z]+–[A-Z][a-z]+ \d{4} · County totals only$/);
+  expect(await page.locator("[data-slot=board-page-footer]").evaluate((el) => getComputedStyle(el).position)).toBe("fixed");
+  await expect(page.locator("[data-slot=packet-card]")).toBeHidden();
+  await expect(page.locator("[data-slot=open-map]")).toBeHidden();
+  await expect(page.getByRole("button", { name: "View as table" }).first()).toBeHidden();
   expect(await page.locator("h1").evaluate((el) => getComputedStyle(el).color)).toBe("rgb(0, 0, 0)");
   // DS-13a print: Letter sheet with 22 pt serif H1 and 11 pt body, the KPI row three across, no explain face left open.
   expect(await page.locator("h1").evaluate((el) => [getComputedStyle(el).fontSize, getComputedStyle(el).fontFamily.includes("Source Serif")])).toEqual(["29.3333px", true]);
