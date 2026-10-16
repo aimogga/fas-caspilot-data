@@ -994,6 +994,6 @@ Decisions: none new (designer defaults listed in the spec).
 
 ## 2026-10-15 23:58 (UTC) — Claude Code (cloud) — pr-gate base for stacked PRs (D-028, D-032)
 Did: `scripts/pr-gate.mjs` exports `resolveBase()`: `--base`, else `PR_GATE_BASE`, else `git config branch.<current>.gateBase` (an `origin/*` branch only; ignored on a detached HEAD; git called with an argument list, never a shell string), else `origin/main`; the CLI prints `base: <ref> (<where from>)` above the rows. `scripts/pr-gate-hook.mjs` passes `process.env` to `pnpm gate` explicitly. Five unit tests in `scripts/pr-gate.test.mjs` (precedence, detached/no repo, non-origin and shell-shaped values refused, CLI reads the env var, hook hands the env var to a stub `pnpm`). D-028 gains a dated note and AGENTS.md the command for a train branch. Supersedes #239 (same feature; its key name, origin/* guard and argument-list git calls are folded in here).
-State: lint, typecheck, 782 unit tests green; `pnpm gate` green. Tooling only. Branch `claude/keen-knuth-r3wiq5`.
+State: lint, typecheck, 803 unit tests green; `pnpm gate` green. Tooling only. Branch `claude/keen-knuth-r3wiq5`.
 Left: nothing. A train branch sets `git config branch.<branch>.gateBase origin/<parent>` before its first push (F-508a1 needed a manual override for this).
 Decisions: none new (note on D-028).
