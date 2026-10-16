@@ -4,7 +4,7 @@ import type { SimilarAward } from '../grants/award-history';
 import { LlmError, type generateJson, type LlmMeta } from '../llm';
 import { RESOLVERS } from './citations';
 import {
-  analyzeWinners, APPLICATIONS_NOT_PUBLIC, extractCriteria, overlapScores, registerWinnerResolvers, tableExists, WINNER_RESOLVERS, type WinnerAnalysis, type WinnerInput,
+  analyzeWinners, APPLICATIONS_NOT_PUBLIC, dbLoaders, extractCriteria, overlapScores, registerWinnerResolvers, tableExists, WINNER_RESOLVERS, type WinnerAnalysis, type WinnerInput,
 } from './winners';
 
 // Fictional NOFO excerpts and synthetic rows only; the adapter is mocked, so no network call is made.
@@ -113,12 +113,22 @@ describe('winner analysis (F-508d)', () => {
   it('registers each resolver only when its table exists', async () => {
     try {
       Object.keys(WINNER_RESOLVERS).forEach((k) => RESOLVERS.delete(k));
-      expect(await registerWinnerResolvers(async (t) => t !== 'org_knowledge_version')).toEqual(['recipient_profile', 'award_abstract']);
+      expect(await registerWinnerResolvers(async (t) => t !== 'org_knowledge_version')).toEqual([]);
+      expect(['recipient_profile', 'award_abstract'].every((k) => RESOLVERS.has(k))).toBe(true); // on the base: registered at import
       await expect(analyzeWinners(input(), mockGen(good))).rejects.toThrow(/unregistered kind org_knowledge/);
       const client = (code: string | null) => ({ from: () => ({ select: () => ({ limit: async () => ({ error: code && { code } }) }) }) }) as unknown as SupabaseClient;
       expect(await tableExists(client('PGRST205'))('recipient_profile')).toBe(false);
       expect(await tableExists(client('42501'))('recipient_profile')).toBe(true);
       expect(await tableExists(client(null))('recipient_profile')).toBe(true);
     } finally { await registerWinnerResolvers(async () => true); }
+  });
+
+  it('db loaders read recipient_profile and award_abstract for the given awards only', async () => {
+    const calls: [string, string, string, string[]][] = [];
+    const client = { from: (t: string) => ({ select: (cols: string) => ({ in: async (col: string, ids: string[]) => (calls.push([t, cols, col, ids]), { data: [], error: null }) }) }) };
+    const l = dbLoaders(client as unknown as SupabaseClient);
+    expect([await l.profiles([AWARD]), await l.abstracts([AWARD]), await l.profiles([]), await l.knowledge()]).toEqual([[], [], [], []]);
+    expect(calls.map(([t, , col, ids]) => [t, col, ids])).toEqual([['recipient_profile', 'award_history_id', [AWARD]], ['award_abstract', 'award_history_id', [AWARD]]]);
+    expect(calls[0]![1]).not.toMatch(/ein|matched_name|source_url/);
   });
 });

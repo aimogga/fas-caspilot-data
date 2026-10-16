@@ -131,12 +131,15 @@ export async function analyzeWinners(x: WinnerInput, generate: typeof generateJs
 }
 
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+const isUuid: Resolver = (ref) => new RegExp(`^${UUID}$`, 'i').test(ref);
+// recipient_profile (#228) and award_abstract (#229) are on this branch's base: their kinds resolve from import.
+registerResolver('recipient_profile', isUuid);
+registerResolver('award_abstract', isUuid);
+/** Kinds whose table may not exist yet. org_knowledge cites the immutable version a citation quotes. */
 export const WINNER_RESOLVERS: Record<string, [table: string, Resolver]> = {
-  recipient_profile: ['recipient_profile', (ref) => new RegExp(`^${UUID}$`, 'i').test(ref)],
-  award_abstract: ['award_abstract', (ref) => new RegExp(`^${UUID}$`, 'i').test(ref)],
-  org_knowledge: ['org_knowledge_version', (ref) => new RegExp(`^${UUID}@v[1-9]\\d*$`, 'i').test(ref)], // the immutable version a citation quotes
+  org_knowledge: ['org_knowledge_version', (ref) => new RegExp(`^${UUID}@v[1-9]\\d*$`, 'i').test(ref)],
 };
-/** Registers each kind only once its table exists. TODO(#228, #229, #225): register unconditionally after those PRs merge. */
+/** Registers each pending kind only once its table exists. TODO(#225): register org_knowledge unconditionally after it merges. */
 export async function registerWinnerResolvers(tableExists: (table: string) => Promise<boolean>): Promise<string[]> {
   const done: string[] = [];
   for (const [kind, [table, r]] of Object.entries(WINNER_RESOLVERS)) if (await tableExists(table)) { registerResolver(kind, r); done.push(kind); }
@@ -149,13 +152,17 @@ export const tableExists = (client: SupabaseClient) => async (table: string): Pr
 };
 
 export type WinnerLoaders = { profiles(awardIds: string[]): Promise<ProfileRow[]>; abstracts(awardIds: string[]): Promise<AbstractRow[]>; knowledge(): Promise<KnowledgeRow[]> };
-/** The recipient_profile, award_abstract and org_knowledge tables are not on this branch yet, so these load nothing.
- * TODO(#228): read recipient_profile where award_history_id in awardIds. TODO(#229): read award_abstract where award_history_id in awardIds.
- * TODO(#225): lib/knowledge/store listApproved(). */
-export const PENDING_LOADERS: WinnerLoaders = { profiles: async () => [], abstracts: async () => [], knowledge: async () => [] };
+/** Reads under the caller's RLS (admin/staff SELECT) for the given awards. TODO(#225): knowledge via lib/knowledge/store listApproved(); nothing until then. */
+export const dbLoaders = (client: SupabaseClient): WinnerLoaders => ({
+  profiles: async (ids) => (ids.length ? must(await client.from('recipient_profile').select(PROFILE_COLS).in('award_history_id', ids)) as ProfileRow[] : []),
+  abstracts: async (ids) => (ids.length ? must(await client.from('award_abstract').select(ABSTRACT_COLS).in('award_history_id', ids)) as AbstractRow[] : []),
+  knowledge: async () => [],
+});
+const PROFILE_COLS = 'id,award_history_id,recipient,ntee_code,ruling_year,latest_tax_year,total_revenue,total_expenses,program_service_expenses,contributions_share,match_confidence';
+const ABSTRACT_COLS = 'id,award_history_id,source,status,text,word_count,reason';
 
-/** Reads under the caller's RLS: the opportunity's NOFO text, its top 5 similar awards, FAS-county indicators, then the injected loaders. */
-export async function loadWinnerInput(client: SupabaseClient, opportunityId: string, loaders: WinnerLoaders = PENDING_LOADERS, now = new Date()): Promise<WinnerInput> {
+/** Reads under the caller's RLS: the opportunity's NOFO text, its top 5 similar awards, FAS-county indicators, then recipient_profile and award_abstract rows for those awards (loaders injectable). */
+export async function loadWinnerInput(client: SupabaseClient, opportunityId: string, loaders: WinnerLoaders = dbLoaders(client), now = new Date()): Promise<WinnerInput> {
   const opportunity = must(await client.from('opportunity').select('id,description').eq('id', opportunityId).single()) as WinnerInput['opportunity'];
   const [{ similar }, indicators] = await Promise.all([AwardHistoryQuery.forOpportunity(client, opportunityId, 5), loadServiceIndicators(client)]);
   const ids = similar.map((w) => w.id), [profiles, abstracts, knowledge] = await Promise.all([loaders.profiles(ids), loaders.abstracts(ids), loaders.knowledge()]);
