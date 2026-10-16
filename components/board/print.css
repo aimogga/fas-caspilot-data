@@ -24,7 +24,8 @@
   [data-slot=page-header] h1 { font-size: 22pt; font-family: var(--font-serif); }
   [data-slot=grid] { display: block !important; }
   [data-slot=grid] > * { margin-bottom: 8pt; }
-  [data-slot=metric-card], [data-slot=freshness-widget], [data-slot=board-section] [data-slot=card], [data-slot=packet-pictures] [data-slot=card], [data-slot=board-section] > h2, [data-slot=board-lead], [data-slot=packet-card], [data-slot=board-sources] { break-inside: avoid; page-break-inside: avoid; }
+  [data-slot=metric-card], [data-slot=freshness-widget], [data-slot=board-section] [data-slot=card], [data-slot=packet-pictures] [data-slot=card] { break-inside: avoid; page-break-inside: avoid; }
+  [data-slot=board-section] > h2, [data-slot=board-lead], [data-slot=board-sources] { break-inside: avoid; page-break-inside: avoid; }
   [data-slot=metric-card] [data-slot=card], [data-slot=freshness-widget] [data-slot=card], [data-slot=board-section] [data-slot=card], [data-slot=packet-pictures] [data-slot=card] { border: 1px solid #000; box-shadow: none; }
   [data-slot=suppressed] { background: none; border: 1px dashed #000; }
   a[href] { text-decoration: none; }
