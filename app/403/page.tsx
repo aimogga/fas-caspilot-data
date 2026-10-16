@@ -11,6 +11,9 @@ export const dynamic = "force-dynamic";
 
 /** One line on the role name: what a role is and who changes it. No claim of logging: nothing writes an audit row on a 403. */
 const roleHint = (label: string): string => `${label} is the role on your account. It decides which areas you can open; an FAS admin can change it.`;
+/** Role names in words for this page; the nav keeps its short labels. */
+const ROLE_WORDS: Record<string, string> = { admin: "FAS admin", staff: "Staff member", board_viewer: "Board member" };
+const roleWords = (role: string): string => ROLE_WORDS[role] ?? roleLabel(role);
 const ROLE = "underline decoration-dotted underline-offset-4";
 
 export default async function ForbiddenPage({ searchParams }: { searchParams: Promise<{ from?: string }> }) {
@@ -44,7 +47,7 @@ export default async function ForbiddenPage({ searchParams }: { searchParams: Pr
         footnote={from ? <>Requested path: <code>{from}</code></> : null}
         focusTitle
       >
-        {viewer.role ? <p data-slot="status-role">You&apos;re signed in as <Hint text={roleHint(roleLabel(viewer.role))} className={ROLE}>{roleLabel(viewer.role)}</Hint>.</p> : null}
+        {viewer.role ? <p data-slot="status-role">You&apos;re signed in as <Hint text={roleHint(roleWords(viewer.role))} className={ROLE}>{roleWords(viewer.role)}</Hint>.</p> : null}
         <p data-slot="status-guidance">Ask your FAS admin to change your role.</p>
       </StatusCard>
     </StatusFrame>
