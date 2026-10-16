@@ -44,7 +44,7 @@ for (const [email, admin] of [["staff@example.test", false], ["admin@example.tes
     const ranks = statuses.map((s) => ["failed", "stale", "not_published", "current"].indexOf(s));
     expect(ranks, "rows sorted Failed → Stale → Not published → Current").toEqual([...ranks].sort((a, b) => a - b));
     // DS-16a AC4: every status is a glyph, a word and a date, inside one hint trigger.
-    const STATUS = /^Status:\s*\W*(Current\s*·\s*loaded \w{3} \d{1,2}, \d{4}|Stale since \w{3} \d{1,2}, \d{4}\s*·\s*\d+ days?|Failed( on \w{3} \d{1,2}, \d{4})?|Not published\s*·\s*no load yet)$/;
+    const STATUS = /^Status:\s*\W*(Current\s*(·\s*)?loaded \w{3} \d{1,2}, \d{4}|Stale since \w{3} \d{1,2}, \d{4}\s*(·\s*)?\d+ days?|Failed(\s*on \w{3} \d{1,2}, \d{4})?|Not published\s*(·\s*)?no load yet)$/; // the badge word and the dated words are sibling elements: the middot is dropped in the chip
     for (const row of await page.locator("tbody tr").all()) {
       await expect(row.locator("[data-slot=status]")).toHaveText(STATUS);
       await expect(row.locator("[data-slot=status] [data-slot=hint-trigger]")).toHaveCount(1);
