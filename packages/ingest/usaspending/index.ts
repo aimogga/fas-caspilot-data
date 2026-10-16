@@ -16,6 +16,8 @@ export type AwardRow = {
   source: 'usaspending'; external_id: string; funder: string | null; recipient: string; recipient_state: string | null; recipient_type: string | null;
   amount: number; fiscal_year: number | null; assistance_listing: string | null; description: string | null; raw: Raw;
 };
+export type AwardDetail = { external_id: string; fain: string | null; description: string | null; period_start: string | null; period_end: string | null;
+  agency: string | null; sub_agency: string | null; source_url: string };
 /** Federal fiscal year (Oct–Sep) of a date; FY2025 = 2024-10-01..2025-09-30. */
 export const fiscalYear = (iso: string): number => Number(iso.slice(0, 4)) + (Number(iso.slice(5, 7)) >= 10 ? 1 : 0);
 /** The three most recently completed federal fiscal years as of `now` (the running FY is skipped as incomplete). */
@@ -54,6 +56,17 @@ export class UsaSpending {
         recipient_state: str(pick(FIELDS.state))?.toUpperCase() ?? null, recipient_type: recipientType(recipient, first(pick(FIELDS.recipientType))),
         fiscal_year: start ? fiscalYear(start) : null, assistance_listing: first(pick(FIELDS.aln)), description: str(pick(FIELDS.description))?.slice(0, 500) ?? null, raw: o };
     });
+  }
+  static readonly DETAIL_API = 'https://api.usaspending.gov/api/v2/awards/';
+  static detailUrl(generatedId: string): string { return `${UsaSpending.DETAIL_API}${encodeURIComponent(generatedId)}/`; }
+  /** F-506c: `GET /api/v2/awards/<generated_unique_award_id>/` → full description, period of performance and the awarding agency (VERIFIED 2026-10-15
+   * against two live awards, saved as tests/fixtures/usaspending/award-detail-*.json). Fails closed when the id is missing. */
+  static parseDetail(json: unknown): AwardDetail {
+    const o = (json ?? {}) as Raw, pop = (o.period_of_performance ?? {}) as Raw, ag = (o.awarding_agency ?? {}) as Raw;
+    const [top, sub] = [(ag.toptier_agency ?? {}) as Raw, (ag.subtier_agency ?? {}) as Raw], external_id = str(o.generated_unique_award_id);
+    if (!external_id) throw new Error(`USAspending detail: unknown shape keys ${Object.keys(o).sort().join(',')}`);
+    return { external_id, fain: str(o.fain), description: str(o.description), period_start: date(pop.start_date), period_end: date(pop.end_date),
+      agency: str(top.abbreviation), sub_agency: str(sub.abbreviation), source_url: UsaSpending.detailUrl(external_id) };
   }
   /** First occurrence per external_id wins (an award can match more than one window). */
   static dedupe(rows: AwardRow[]): AwardRow[] { const seen = new Set<string>(); return rows.filter((r) => !seen.has(r.external_id) && seen.add(r.external_id)); }
