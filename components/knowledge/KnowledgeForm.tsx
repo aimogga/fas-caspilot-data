@@ -8,8 +8,7 @@ import { CATEGORIES } from "@/lib/knowledge/guard";
 import type { Status } from "@/lib/knowledge/store";
 import { CATEGORY_LABEL, CONFIRM_LABEL, type ListRow } from "@/lib/knowledge/view";
 
-const Message = ({ state }: { state: ActionState }) =>
-  <p role="status" data-slot="knowledge-message" className={state && !state.ok ? "text-destructive" : "text-muted-foreground"}>{state?.message ?? ""}</p>;
+const Message = ({ state }: { state: ActionState }) => <p role="status" data-slot="knowledge-message" className={state && !state.ok ? "text-destructive" : "text-muted-foreground"}>{state?.message ?? ""}</p>;
 
 /** Submit without React's automatic form reset, so a refused entry keeps the admin's typing; a successful add clears the form. */
 function useSubmit(action: (s: ActionState, f: FormData) => Promise<ActionState>, resetOnOk: boolean) {
