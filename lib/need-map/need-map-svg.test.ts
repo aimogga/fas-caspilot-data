@@ -87,7 +87,8 @@ describe('NeedMap markup', () => {
     expect(out).toMatch(/<path [^>]*data-fips="49011"[^>]*data-selected="true"[^>]*aria-pressed="true"/);
     expect(out).toMatch(/<path [^>]*data-selected-outline="49011" fill="none" stroke="var\(--ring\)" stroke-width="3" pointer-events="none" aria-hidden="true"/);
     expect(svgOf(out).indexOf('data-selected-outline=')).toBeGreaterThan(svgOf(out).lastIndexOf('data-fas-outline='));
-    expect(out).toMatch(/<\/figcaption><\/figure><div class="lg:col-span-5 lg:sticky lg:top-4 lg:self-start"><div[^>]*data-slot="county-panel"[^>]*>[^]*Davis County[^]*<button[^>]*>20th highest need<\/button> of 26 counties scored · Lowest need band[^]*Need score <button[^>]*>−0\.80<\/button>[^]*<\/div><\/div><\/div>$/);
+    expect(out).toMatch(/<\/figcaption><\/figure><div class="lg:col-span-5 lg:sticky lg:top-4 lg:self-start"><div[^>]*data-slot="county-panel"[^>]*>[^]*Davis County[^]*<\/div><\/div><\/div>$/);
+    expect(out).toMatch(/<button[^>]*>20th highest need<\/button> of 26 counties scored · Lowest need band[^]*Need score <button[^>]*>−0\.80<\/button>/);
     expect(out).not.toContain(TOP_PROMPT);
   });
 
