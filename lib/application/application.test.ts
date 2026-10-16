@@ -5,6 +5,12 @@ import type { StrategyDraft } from '../strategy/schema';
 import type { Snapshot } from '../strategy/snapshot';
 import { createApplicationDraft, NOT_APPROVED, QUOTA_MESSAGE, startFromStrategy, writeSections } from './generate';
 import { batchPlan, parseLimits, planSections } from './sections';
+import { strFromU8, unzipSync } from 'fflate';
+import { assertPacket } from '../packets/assert';
+import { packetToDocx } from '../packets/docx';
+import { applicationPacket, HEADER, NOT_APPROVED_EXPORT } from './docx';
+import { applyEdit, approvalBlockers, reviewSection, UNCITED } from './review';
+import type { Section } from './generate';
 
 // Synthetic fixtures only; the adapter is mocked, so no network call is made.
 const OPP = '10101010-1010-1010-1010-101010101010', IND = '40404040-4040-4040-4040-404040404040', C = (n: number) => `2020202${n}-2020-2020-2020-202020202020`;
@@ -101,5 +107,35 @@ describe('application writer (F-508g)', () => {
       ? { select: () => ({ eq: () => ({ single: async () => ({ data: row('approved'), error: null }) }) }) } : { insert }) } as unknown as SupabaseClient;
     expect(await createApplicationDraft(client, 's1', mockGen(err))).toEqual({ error: QUOTA_MESSAGE });
     expect(insert).not.toHaveBeenCalled();
+  });
+});
+
+describe('application editor and Word export (F-508h)', () => {
+  const words = (n: number) => Array.from({ length: n }, () => 'word').join(' ');
+  const base = (): Section[] => planSections(strategy, snapshot).map((p) => ({ ...sec(p.key, OK[p.key as keyof typeof OK]), heading: p.heading, criterion: p.criterion, points: p.points, limit: p.limit, status: 'ok', reasons: [] }));
+  const app = (status: 'DRAFT' | 'approved', sections = base()) => ({ title: 'Synthetic Family Fund', snapshot, draft: { id: 'a1', org_id: 'o', opportunity_id: OPP, strategy_draft_id: 's1', status, sections, approved_at: '2026-10-16T00:00:00Z', created_at: '' } });
+
+  it('an edit that adds an uncited number warns and blocks approval; over-limit and needs_edit block too; a clean draft is approvable', () => {
+    expect(approvalBlockers(base(), snapshot)).toEqual([]);
+    const edited = applyEdit(base(), 's2', 'We pay licensed therapists directly for 900 families.', snapshot);
+    expect([reviewSection(edited[1]!, snapshot).uncited, edited[1]!.status, UNCITED]).toEqual([[900], 'needs_edit', 'This number has no source. Add a source or remove it before approval.']);
+    expect(approvalBlockers(edited, snapshot)).toEqual(['Approach still needs an edit.']);
+    const long = applyEdit(base(), 's1', words(60), snapshot);
+    expect(reviewSection(long[0]!, snapshot)).toMatchObject({ words: '60 of 50 words', over: ['60 words is over the 50-word limit'], blocked: true });
+    expect(reviewSection(base()[2]!, snapshot).words).toBe('4 words · No limit stated');
+    expect(applyEdit(edited, 's2', 'We pay therapists.', snapshot)[1]).toMatchObject({ status: 'ok', reasons: [] });
+  });
+
+  it('DOCX: refused unless approved; header on every page, sections under the funder headings, Sources and Assumptions appendices', async () => {
+    const now = new Date('2026-10-16T00:00:00Z');
+    expect(() => applicationPacket(app('DRAFT'), now)).toThrow(NOT_APPROVED_EXPORT);
+    const withAssumption = base().map((x, i) => (i === 2 ? { ...x, assumptions: ['A partner clinic hosts sessions.'] } : x));
+    const p = applicationPacket(app('approved', withAssumption), now);
+    expect(p.sections.map((x) => x.title)).toEqual(['Need for the project', 'Approach', 'Budget', 'Sources', 'Assumptions']);
+    expect(p.sections[3]!.figures).toEqual([{ label: 'Uninsured rate, county FIPS 49035, 2023', value: `id public_indicator:${IND}`, kind: 'value', sourceLabel: 'census-sahie 2023', asOf: 'Oct 2026' }]);
+    expect([p.sections[4]!.paragraphs, assertPacket(p)]).toEqual([['Budget: A partner clinic hosts sessions.'], []]);
+    const files = unzipSync(await packetToDocx(p)), xml = (f: string) => strFromU8(files[f]!);
+    expect(Object.keys(files).filter((f) => /word\/header\d\.xml/.test(f)).map(xml).join()).toContain(HEADER);
+    for (const t of ['Need for the project', 'Sources', 'Assumptions', `id public_indicator:${IND}`, 'census-sahie 2023']) expect(xml('word/document.xml')).toContain(t);
   });
 });
