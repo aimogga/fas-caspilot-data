@@ -3,15 +3,14 @@
 import { useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, House, LayoutDashboard, Menu, Shield, type LucideIcon } from "lucide-react";
+import { Menu } from "lucide-react";
 import { AggregateFreshnessChip } from "@/components/freshness/AggregateFreshnessChip";
 import type { TopBarChip } from "@/lib/freshness/status";
 import { Page } from "@/components/layout";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ORGANIZATION_NAME, PRODUCT_NAME } from "@/lib/branding";
 import { crumbFor, navForRole, PREVIEW_FOOTER, type NavGroup } from "@/lib/shell/nav";
-
-const ICONS: Record<string, LucideIcon> = { "/staff": House, "/admin": Shield, "/board": LayoutDashboard, "/methodology": BookOpen };
+import { NAV_ICONS } from "./nav-icons";
 
 export function Wordmark() {
   return (
@@ -29,10 +28,10 @@ function NavLinks({ groups, pathname, onNavigate }: { groups: NavGroup[]; pathna
     <div key={group.label} data-slot="nav-group">
       <p data-rail="hide">{group.label}</p>
       {group.items.map((item) => {
-        const Icon = ICONS[item.href] ?? House;
+        const Icon = NAV_ICONS[item.href] ?? Menu; // every href has a glyph (unit-tested); the fallback only guards a future route
         return (
           <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined} aria-label={item.label} onClick={onNavigate}>
-            <Icon aria-hidden /><span data-rail="hide">{item.label}</span>
+            <Icon aria-hidden className="size-4 shrink-0" /><span data-rail="hide">{item.label}</span>
           </Link>
         );
       })}
