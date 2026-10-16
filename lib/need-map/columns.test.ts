@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { KEY_CODES, ORDER, header, needMapHref, orderColumns, parseCols, plainCell, rankNumber } from './columns';
+import { KEY_CODES, ORDER, header, isMissing, needMapHref, orderColumns, parseCols, plainCell, rankNumber } from './columns';
 import { NOT_PUBLISHED, NOT_YET, type Column, type CountyRow } from './query';
 
 const col = (code: string, unit = 'count'): Column => ({ code, label: code, note: 'Census ACS 5-year 2023', unit });
@@ -35,6 +35,17 @@ describe('DS-20c: table columns', () => {
     expect(plainCell(row(), col('uninsured_count'))).toBe('3,090');
     expect(plainCell(row(), col('poverty_count'))).toBe(NOT_PUBLISHED);
     expect(plainCell(row(), col('veteran_population'))).toBe(NOT_YET);
+  });
+
+  it('a missing value is flagged so the cell shows a dash, not a sentence', () => {
+    expect([isMissing(row(), col('uninsured_count')), isMissing(row(), col('poverty_count')), isMissing(row(), col('veteran_population'))]).toEqual([false, true, true]);
+  });
+
+  it('court filings sit after the census measures in All, with short headers', () => {
+    const codes = ['court_filings_total', 'veteran_population', 'court_filings_district', 'uninsured_rate'];
+    expect(orderColumns(codes.map((c) => col(c)), 'all').map((c) => c.code)).toEqual(['uninsured_rate', 'veteran_population', 'court_filings_total', 'court_filings_district']);
+    expect(orderColumns(codes.map((c) => col(c)), 'key').map((c) => c.code)).toEqual(['uninsured_rate']);
+    expect(header(col('court_filings_district'))).toBe('Court filings (district)');
   });
 
   it('rank is the number alone, null when unranked', () => {

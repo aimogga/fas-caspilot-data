@@ -6,7 +6,7 @@ import { HATCH_CSS, Swatch, fillFor } from "@/components/need-map/NeedMap";
 import { ExplainCard } from "@/components/trust/explain";
 import { ExplainLayer } from "@/components/trust/explain-layer";
 import { Badge } from "@/components/ui/badge";
-import { header, needMapHref, orderColumns, plainCell, rankNumber, type ColumnMode } from "@/lib/need-map/columns";
+import { header, isMissing, needMapHref, orderColumns, plainCell, rankNumber, type ColumnMode } from "@/lib/need-map/columns";
 import { NOT_PUBLISHED, NeedMapQuery, type NeedTableData } from "@/lib/need-map/query";
 import { FAS_BADGE, NEED_TERMS, indicatorCell, needTerm, scoreCell, type CellData } from "@/lib/need-map/terms";
 import { bandName } from "@/lib/need-map/words";
@@ -72,7 +72,7 @@ export function NeedTable({ data, fas = false, cols = "key", selected = null }: 
                   <Cell data={{ ...score, "data-value": row.binNo ? `${row.score} · ${bandName(row.binNo, k)} band (${row.bin})` : score["data-value"] }}>
                     <span className="inline-flex items-center gap-1.5">{row.binNo ? <Swatch style={{ background: fillFor(row.binNo) }} /> : row.score === NOT_PUBLISHED ? <Swatch style={HATCH_CSS} /> : null}{row.score}</span>
                   </Cell>
-                  {columns.map((c) => <Cell key={c.code} data={indicatorCell(row, c, source(c.code))}>{plainCell(row, c)}</Cell>)}
+                  {columns.map((c) => <Cell key={c.code} data={indicatorCell(row, c, source(c.code))}>{isMissing(row, c) ? <><span aria-hidden="true" className="text-muted-foreground">—</span><span className="sr-only">{plainCell(row, c)}</span></> : plainCell(row, c)}</Cell>)}
                 </tr>
               );
             })}
