@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // pr-gate (D-028): the deterministic PR checks QA applies, as a script instead of an instruction.
 // Usage: node scripts/pr-gate.mjs [--base origin/main] [--skip-tests]   (pnpm gate)
-// Base when --base is absent: $PR_GATE_BASE, else `git config branch.<current>.gate-base`, else origin/main (D-032 stacks).
+// Base when --base is absent: $PR_GATE_BASE, else `git config branch.<current>.gateBase`, else origin/main (D-032 stacks).
 // Rows print as `step | requirement | verdict | evidence`; exit 1 when any row fails.
-import { execSync, spawnSync } from 'node:child_process';
+import { execFileSync, execSync, spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { checkSecretScanTree, secretsOnlyExit } from './nightly-audit.mjs';
@@ -73,20 +73,26 @@ function changedFiles(exec, base) {
   return Object.fromEntries(names.map((n) => [n, readFileSync(n, 'utf-8')]));
 }
 
-/** The ref D-012 and the other diff rows measure against, and where it came from: --base > PR_GATE_BASE > branch gate-base > origin/main. */
-export function resolveBase({ argv = [], env = {}, exec = execSync } = {}) {
+const gitArgs = (args) => execFileSync('git', args, { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] });
+
+/** The ref D-012 and the other diff rows measure against, and where it came from: --base > PR_GATE_BASE > branch gateBase > origin/main.
+ * A configured gateBase must be an `origin/*` branch (always a pushed parent). git gets an argument list, never a shell string: a branch name may hold `;` or `$(…)`. */
+export function resolveBase({ argv = [], env = {}, git = gitArgs } = {}) {
   const i = argv.indexOf('--base');
   if (i !== -1 && argv[i + 1]) return { base: argv[i + 1], from: '--base' };
   if (env.PR_GATE_BASE?.trim()) return { base: env.PR_GATE_BASE.trim(), from: 'PR_GATE_BASE' };
+  let key = '';
+  let set = '';
   try {
-    const branch = exec('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
-    const key = `branch.${branch}.gate-base`;
-    const set = branch && branch !== 'HEAD' ? exec(`git config --get ${key}`, { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() : '';
-    if (set) return { base: set, from: `git config ${key}` };
+    const branch = git(['rev-parse', '--abbrev-ref', 'HEAD']).trim();
+    key = `branch.${branch}.gateBase`;
+    if (branch && branch !== 'HEAD') set = git(['config', '--get', key]).trim();
   } catch {
     // unset key (git exits 1) or no repo: fall through to the default
   }
-  return { base: 'origin/main', from: 'default' };
+  if (!set) return { base: 'origin/main', from: 'default' };
+  if (!/^origin\/[\w./-]+$/.test(set)) throw new Error(`${key} must be an origin/* branch, got ${set}`);
+  return { base: set, from: `git config ${key}` };
 }
 
 export function run({ base = 'origin/main', skipTests = false, exec = execSync, spawn = spawnSync, read = readFileSync } = {}) {

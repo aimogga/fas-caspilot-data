@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Grid, PageHeader, Stack } from "@/components/layout";
 import { HomeTiles } from "@/components/staff/HomeTiles";
+import { TodoList } from "@/components/staff/TodoList";
 import { FreshnessChip } from "@/components/trust";
 import { Hint } from "@/components/trust/explain";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NOT_AVAILABLE } from "@/lib/dashboard/cards";
 import { latestCompleteQuarter } from "@/lib/dashboard/filters";
 import type { FreshnessPageView } from "@/lib/freshness/query";
-import { dateEyebrow, firstName, greeting, StaffHome, summary, type StaffHomeData } from "@/lib/staff/home";
+import { dateEyebrow, firstName, greeting, sourceName, StaffHome, summary, vintageWords, type StaffHomeData } from "@/lib/staff/home";
 import { createClient } from "@/lib/supabase/server";
 import { GLOSSARY } from "@/lib/trust/glossary";
 import { cn } from "@/lib/utils";
@@ -27,12 +28,12 @@ function PublicSources({ view }: { view: FreshnessPageView | null }) {
         {!view ? <p className="font-medium">{NOT_AVAILABLE}</p> : view.rows.length === 0 ? <p className="text-sm text-muted-foreground">No sources registered yet</p> : (
           <ul className="divide-y">
             {view.rows.slice(0, 5).map((r) => (
-              <li key={r.name} data-status={r.status} className="flex min-h-11 flex-wrap items-center gap-x-3 gap-y-1 py-2 text-sm">
-                <span className="font-medium">{r.name}</span>
-                <span className="text-muted-foreground">Latest {r.latestVintage}</span>
-                <span className="ml-auto">{r.status === "not_published"
+              <li key={r.name} data-status={r.status} className="grid min-h-11 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 py-1 text-sm">
+                <span className="font-medium">{sourceName(r.name)}</span>
+                <span className="row-span-2 justify-self-end">{r.status === "not_published"
                   ? <Hint text={GLOSSARY.not_published.plain} className="rounded-full"><Badge variant="muted" className="border-dashed border-border" prefix={<span aria-hidden>○</span>}>Not published</Badge></Hint>
                   : <FreshnessChip status={r.status} />}</span>
+                <span data-slot="vintage" className="text-muted-foreground"><Hint text={vintageWords(r.latestVintage).hint} className="underline decoration-dotted underline-offset-4">{vintageWords(r.latestVintage).text}</Hint></span>
               </li>
             ))}
           </ul>
@@ -53,7 +54,8 @@ export async function HomePage({ heading, links, actions, tag }: Props) {
     if (client) {
       const user = (await client.auth.getUser()).data.user;
       name = firstName(user?.user_metadata);
-      data = await StaffHome.load(client, now, typeof user?.app_metadata?.role === "string" ? user.app_metadata.role : null);
+      const meta = user?.app_metadata ?? {};
+      data = await StaffHome.load(client, now, typeof meta.role === "string" ? meta.role : null, typeof meta.org_id === "string" ? meta.org_id : null);
     }
   } catch (e) {
     console.error(`[${tag}] load failed`, { message: e instanceof Error ? e.message : "unknown" });
@@ -61,14 +63,12 @@ export async function HomePage({ heading, links, actions, tag }: Props) {
   const [[secondaryLabel, secondaryHref], [primaryLabel, primaryHref]] = actions, period = data?.period ?? latestCompleteQuarter(now), id = `${tag}-links`;
   return (
     <Stack gap={8}>
-      <Stack gap={3}>
-        <PageHeader eyebrow={dateEyebrow(now)} title={greeting(now, name)} actions={<>
-          <Link href={secondaryHref} className={buttonVariants({ variant: "outline" })}>{secondaryLabel}</Link>
-          <Link href={primaryHref} className={buttonVariants()}>{primaryLabel}</Link>
-        </>} />
-        <p data-slot="home-summary" className="max-w-prose font-serif text-xl leading-snug lg:text-2xl">{summary(data?.metrics ?? null)}</p>
-      </Stack>
+      <PageHeader eyebrow={dateEyebrow(now)} title={greeting(now, name)} actions={<>
+        <Link href={secondaryHref} className={buttonVariants({ variant: "outline" })}>{secondaryLabel}</Link>
+        <Link href={primaryHref} className={buttonVariants()}>{primaryLabel}</Link>
+      </>} description={<span data-slot="home-summary" className="block max-w-prose font-serif text-xl leading-snug lg:text-2xl">{summary(data?.metrics ?? null)}</span>} />
       <HomeTiles cards={StaffHome.cards(data?.metrics ?? null, period)} period={period} href={`/${tag}`} />
+      <TodoList view={data?.todo ?? null} />
       <Grid cols={2}>
         <PublicSources view={data?.freshness ?? null} />
         <section aria-labelledby={id}><Card className="h-full">

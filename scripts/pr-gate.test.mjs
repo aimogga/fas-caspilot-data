@@ -72,24 +72,34 @@ describe('run and CLI', () => {
 });
 
 describe('resolveBase (D-032 stacked PRs)', () => {
-  const git = (branch, gateBase) => (cmd) => {
-    if (cmd.startsWith('git rev-parse')) return `${branch}\n`;
-    if (cmd === `git config --get branch.${branch}.gate-base` && gateBase) return `${gateBase}\n`;
+  const git = (branch, gateBase) => (args) => {
+    expect(Array.isArray(args)).toBe(true);
+    if (args[0] === 'rev-parse') return `${branch}\n`;
+    if (args[2] === `branch.${branch}.gateBase` && gateBase) return `${gateBase}\n`;
     throw new Error('exit 1');
   };
 
-  it('prefers --base, then PR_GATE_BASE, then the branch gate-base, then origin/main', () => {
-    const exec = git('f-508a1', 'origin/f-508a');
-    expect(resolveBase({ argv: ['--base', 'origin/x'], env: { PR_GATE_BASE: 'origin/y' }, exec })).toEqual({ base: 'origin/x', from: '--base' });
-    expect(resolveBase({ env: { PR_GATE_BASE: ' origin/y ' }, exec })).toEqual({ base: 'origin/y', from: 'PR_GATE_BASE' });
-    expect(resolveBase({ env: {}, exec })).toEqual({ base: 'origin/f-508a', from: 'git config branch.f-508a1.gate-base' });
-    expect(resolveBase({ env: { PR_GATE_BASE: '' }, exec: git('ds-10a', null) })).toEqual({ base: 'origin/main', from: 'default' });
+  it('prefers --base, then PR_GATE_BASE, then the branch gateBase, then origin/main', () => {
+    const g = git('f-508a1', 'origin/f-508a');
+    expect(resolveBase({ argv: ['--base', 'origin/x'], env: { PR_GATE_BASE: 'origin/y' }, git: g })).toEqual({ base: 'origin/x', from: '--base' });
+    expect(resolveBase({ env: { PR_GATE_BASE: ' origin/y ' }, git: g })).toEqual({ base: 'origin/y', from: 'PR_GATE_BASE' });
+    expect(resolveBase({ env: {}, git: g })).toEqual({ base: 'origin/f-508a', from: 'git config branch.f-508a1.gateBase' });
+    expect(resolveBase({ env: { PR_GATE_BASE: '' }, git: git('ds-10a', null) })).toEqual({ base: 'origin/main', from: 'default' });
   });
 
   it('ignores git config on a detached HEAD and outside a repo', () => {
-    const detached = (cmd) => (cmd.startsWith('git rev-parse') ? 'HEAD\n' : 'origin/never');
-    expect(resolveBase({ exec: detached }).base).toBe('origin/main');
-    expect(resolveBase({ exec: () => { throw new Error('not a git repository'); } }).base).toBe('origin/main');
+    const detached = (args) => (args[0] === 'rev-parse' ? 'HEAD\n' : 'origin/never');
+    expect(resolveBase({ git: detached }).base).toBe('origin/main');
+    expect(resolveBase({ git: () => { throw new Error('not a git repository'); } }).base).toBe('origin/main');
+  });
+
+  it('refuses a configured base that is not an origin/* branch, and never passes the branch through a shell', () => {
+    expect(() => resolveBase({ git: git('child', 'HEAD') })).toThrow(/origin\/\*/);
+    expect(() => resolveBase({ git: git('child', 'origin/x;rm -rf .') })).toThrow(/origin\/\*/);
+    const calls = [];
+    const spy = (args) => (calls.push(args), args[0] === 'rev-parse' ? 'feature;id;#\n' : 'origin/p\n');
+    expect(resolveBase({ git: spy }).base).toBe('origin/p');
+    expect(calls[1]).toEqual(['config', '--get', 'branch.feature;id;#.gateBase']);
   });
 
   it('CLI reads PR_GATE_BASE when --base is absent', () => {
