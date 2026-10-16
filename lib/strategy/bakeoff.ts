@@ -125,7 +125,9 @@ const pct = (x: number | null) => (x === null ? '—' : `${(x * 100).toFixed(1)}
 export function markdown(r: Report): string {
   const rows = PROVIDERS.map((p) => {
     const s = r.providers[p];
-    return `| ${p} | ${s.runs} | ${s.skipped} | ${s.schema_valid}/${s.runs} | ${s.drafts_ok} | ${pct(s.citation_accuracy)} (${s.numbers_resolving}/${s.numbers_present}) | ${s.copy_hits} | ${s.inferences_separated} / ${s.inferences_misplaced} | ${s.mean_latency_ms ?? '—'} | ${s.input_tokens} / ${s.output_tokens} |`;
+    const cells = [p, s.runs, s.skipped, `${s.schema_valid}/${s.runs}`, s.drafts_ok, `${pct(s.citation_accuracy)} (${s.numbers_resolving}/${s.numbers_present})`,
+      s.copy_hits, `${s.inferences_separated} / ${s.inferences_misplaced}`, s.mean_latency_ms ?? '—', `${s.input_tokens} / ${s.output_tokens}`];
+    return `| ${cells.join(' | ')} |`;
   });
   const skipped = r.runs.filter((x) => x.skipped).map((x) => `- ${x.provider} · ${x.key}: skipped (${'reason' in x ? x.reason : ''})`);
   return [`# LLM bake-off ${r.date} (F-508i, D-003)`, '', `Decision rule: ${r.decision_rule}`, `Automatic leader: ${r.automatic_leader ?? 'none (tie or no data): the rubric mean decides'}`, '',
