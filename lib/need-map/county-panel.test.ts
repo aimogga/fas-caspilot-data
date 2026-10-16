@@ -1,8 +1,10 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CountyPanel, SELECT_PROMPT, TOP_PROMPT } from '@/components/need-map/CountyPanel';
 import type { Column, CountyRow } from './query';
+
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: () => undefined }), usePathname: () => '/need-map', useSearchParams: () => new URLSearchParams() }));
 
 const SAIPE = { name: 'Census SAIPE', vintage: '2023', asOf: 'Sep 2026' };
 const columns: Column[] = [{ code: 'child_poverty_rate', label: 'Child poverty rate', note: 'Census SAIPE 2023', unit: 'percent' }, { code: 'poverty_count', label: 'In poverty', note: 'Census SAIPE 2023', unit: 'count' },
@@ -22,6 +24,16 @@ describe('CountyPanel', () => {
     expect(out).toContain('data-slot="county-panel"');
     expect(out).toContain('aria-labelledby="county-panel-title"');
     expect(out).not.toContain('Rank ');
+  });
+
+  it('DS-22: the picker sits above the name in both states, labelled, with the selected county as its value', () => {
+    const options = [{ value: '49001', label: 'Beaver County' }, { value: '49035', label: 'Salt Lake County' }];
+    const render = (county: CountyRow | null) => renderToStaticMarkup(createElement(CountyPanel, { county, columns, version: 'v2', rankedCount: 26, sources, counties, options }));
+    for (const county of [null, row()]) {
+      const out = render(county);
+      expect(out).toMatch(/data-slot="county-picker"[^]*<label for="county-picker"[^>]*>Choose a county<\/label><select id="county-picker"[^>]*><option value=""[^>]*>Select a county…<\/option><option value="49001"[^>]*>Beaver County<\/option>[^]*<h2 id="county-panel-title"/);
+    }
+    expect(render(row())).toMatch(/<option value="49035" selected=""/);
   });
 
   it('DS-20b: the header says the rank in words with the band, the rank and score explain themselves, and the FAS badge stays', () => {
