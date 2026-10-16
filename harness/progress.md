@@ -1055,9 +1055,10 @@ Left: DS-12b, DS-14 and DS-15a/16a after shots once those packets merge.
 Decisions: none new.
 
 ---
-## 2026-10-16 03:55 (UTC) — Cloud Agent (Engineer Supervisor) — DS-12b and DS-15a after shots; DS-14 403, DS-15a and DS-16a before shots (design)
-Did: captured from the merged previews `docs/design/reviews/DS-12b/after/staff-grants-matches-{375,1024,1440}[-hover].png` plus a 1440 `-panel` shot with the "How we matched" aside open, and `docs/design/reviews/DS-15a/after/dashboard-{375,1024,1440}[-hover].png` (hover on an M4 completed cell). Before shots from production main for the next packets: `DS-15a/before/dashboard-*`, `DS-16a/before/data-freshness-*` and `DS-14/before/403-from-%2Fstaff-*` (as board). Manifest rows for each.
-State: binary and manifest only. Branch `design/after-shots-day5`. The 1440 panel shot shows four of the six parts (viewport capture); the 375 full-page shot has the whole panel. 375 shots stay under 10 000 px.
-Left: DS-14 after shots (`/login` signed out, `/403` as board) and DS-16a after shots once #262 and #266 merge; DS-16b before/after once #271 merges.
+## 2026-10-16 04:30 (UTC) — Cloud Agent (Engineer Supervisor) — Day-5/6 design shots: DS-12b, DS-14, DS-15a, DS-16a after; DS-14 403, DS-15a, DS-16a, DS-16b before (design)
+Did: captured from the merged previews and production main: `docs/design/reviews/DS-12b/after/staff-grants-matches-{375,1024,1440}[-hover].png` plus a 1440 `-panel` shot with the "How we matched" aside open; `DS-15a/after/dashboard-*[-hover]` (hover on an M4 completed cell); `DS-14/after/403-from-%2Fstaff-*[-hover]` as board (hover on the role hint) and `DS-14/after/login-{375,1024,1440}.png` + `login-1440-hover.png` taken signed out; `DS-16a/after/data-freshness-*[-hover]` as staff (hover on the cadence hint) and `-admin` variants showing the "Latest load" column. Before shots from production main for the next packets: `DS-15a/before/dashboard-*`, `DS-16a/before/data-freshness-*`, `DS-14/before/403-from-%2Fstaff-*`, `DS-16b/before/methodology-*`. Manifest rows for each (three shots branches merged; duplicate rows dropped).
+State: binary and manifest only. Branch `design/after-shots-day5`. The DS-12b 1440 panel shot shows four of the six parts (viewport capture); the 375 full-page shot has the whole panel. All 375 shots stay under 10 000 px.
+Left: DS-16b, DS-15b and DS-17 after shots once #271, #273 and #274 are on production; DS-18a/b before and after shots.
+Decisions: none new.
 
 ---
