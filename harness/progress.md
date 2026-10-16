@@ -1054,5 +1054,10 @@ Did: `lib/dashboard/words.ts` (pure, 3 new tests): seven terms (`m6_share`, `m6_
 State: lint, typecheck, unit tests and `pnpm gate` green. No Docker, Supabase or preview here: `tests/e2e/dashboard.spec.ts` AC7–AC9 (segment hover = focus = Enter, Left/Right walk, Escape returns focus, O1 row words and hidden row, hint hover = focus, 44 px at 375, delta coverage, axe) run in CI. Before and after shots: the supervisor, from production and the preview. Branch `ds-15b-dashboard-m6-o1` off main.
 Left: nothing in DS-15. Open: the seed shows both M6 groups, so the hidden-share card is unit-tested only; `Avg rate per hour` header abbreviation is DS-07c copy pinned by its tests; the hint also reaches board and packet pictures through `ChartFrame`, check the glyph reads quiet on the board after shots.
 Decisions: none new (applies D-040; designer defaults listed in the spec's Decisions).
+## 2026-10-16 02:25 (UTC) — Cloud Agent (Engineer Supervisor) — DS-13b after shots and DS-14 login before shots (design)
+Did: captured the DS-13b "after" evidence from the `ds-13b-board-sections` preview: `docs/design/reviews/DS-13b/after/board-{375,1024,1440}[-hover].png` (hover on a county rank cell in section 4), the Letter print sheet `board-816-print.png` and the four-page `board-816-print.pdf`, with manifest rows. Retook the DS-14 "before" shots of `/login` signed out (`docs/design/reviews/DS-14/before/login-{375,1024,1440}.png`): the first set had followed the sign-in redirect and showed `/board`; manifest rows updated.
+State: binary and manifest only. Branch `design/after-shots-day4`. The 375 board shot is about 4 900 px (kept). Seen on the print PDF: the fixed footer repeats "Page N of 4" at the bottom of each page as intended; in the full-page PNG the fixed footer renders mid-page, which is a screenshot artefact, not a layout fault.
+Left: DS-12b, DS-14 and DS-15a/16a after shots once those packets merge.
+Decisions: none new.
 
 ---
