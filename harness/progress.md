@@ -1053,5 +1053,10 @@ Did: `lib/methodology/words.ts` (pure, tests): `STAT_TERMS` (z-score, statewide 
 State: lint, typecheck, unit tests and `pnpm gate` green. No Docker, Supabase or preview here: `tests/e2e/methodology.spec.ts` carries AC1–AC4 (weight card hover = focus = Enter words, Escape returns focus; inputs provenance and indicator words; five hints in the paragraph; eyebrow + serif h2 per section, summary visible, axe and `scrollWidth` at 375/1024/1440, 44 px triggers at 375) for CI. Before and after shots: the supervisor, from production and the preview. Branch `ds-16b-methodology` off main.
 Left: `app/(app)/methodology/loading.tsx` waits for `components/status/PageSkeleton.tsx` (#262). Open: `need_score_config` has no rationale column, so no "why this weight" sentence is shown (George: schema decision); the multi-input headline is unit-tested only until a multi-input version is approved; inline 44 px hint buttons make the paragraph's lines taller below 1024 (kit precedent).
 Decisions: none new (applies D-040; DESIGN.md need score rule 1 for points out of 100).
+## 2026-10-16 02:25 (UTC) — Cloud Agent (Engineer Supervisor) — DS-13b after shots and DS-14 login before shots (design)
+Did: captured the DS-13b "after" evidence from the `ds-13b-board-sections` preview: `docs/design/reviews/DS-13b/after/board-{375,1024,1440}[-hover].png` (hover on a county rank cell in section 4), the Letter print sheet `board-816-print.png` and the four-page `board-816-print.pdf`, with manifest rows. Retook the DS-14 "before" shots of `/login` signed out (`docs/design/reviews/DS-14/before/login-{375,1024,1440}.png`): the first set had followed the sign-in redirect and showed `/board`; manifest rows updated.
+State: binary and manifest only. Branch `design/after-shots-day4`. The 375 board shot is about 4 900 px (kept). Seen on the print PDF: the fixed footer repeats "Page N of 4" at the bottom of each page as intended; in the full-page PNG the fixed footer renders mid-page, which is a screenshot artefact, not a layout fault.
+Left: DS-12b, DS-14 and DS-15a/16a after shots once those packets merge.
+Decisions: none new.
 
 ---

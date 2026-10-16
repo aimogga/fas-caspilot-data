@@ -21,7 +21,9 @@ async function checkLayout(page: Page, name: string) {
     const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).exclude("nextjs-portal").analyze();
     expect(axe.violations, `${name} axe @ ${width}`).toEqual([]);
     expect(await page.evaluate(() => document.documentElement.scrollWidth), `${name} scroll @ ${width}`).toBeLessThanOrEqual(width);
-    for (const box of await card.locator("a, button").evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height))) {
+    // 44 px targets below 1024 (D-040); from 1024 the kit's inline hint triggers sit in the text at line height.
+    const targets = width >= 1024 ? "a, button:not([data-slot=hint-trigger])" : "a, button";
+    for (const box of await card.locator(targets).evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height))) {
       expect(box, `${name} target @ ${width}`).toBeGreaterThanOrEqual(44);
     }
     await page.screenshot({ path: `${SHOTS}/${name}-${width}.png`, fullPage: true });
@@ -68,6 +70,21 @@ test("403 for board on /staff shows plain-text guidance in the shell", async ({ 
   await expect(card.locator("[data-slot=status-footnote] code")).toHaveText("/staff");
   await expect(page.locator("[data-slot=app-shell]")).toBeVisible();
   expect(await card.innerText()).not.toMatch(LEAKS);
+  // DS-14: the H1 takes focus on load, the role name explains itself the same way on hover and focus, no claim the app cannot keep.
+  await expect(card.locator("h1")).toBeFocused();
+  expect(await card.innerText()).not.toMatch(/logged/i);
+  const glyph = await card.locator("[data-slot=status-glyph] svg").evaluate((el) => el.getBoundingClientRect().width);
+  expect(glyph).toBe(40);
+  const role = card.locator("[data-slot=status-role] [data-slot=hint-trigger]");
+  await expect(role).toHaveText("Board member");
+  const tip = page.locator("[data-slot=tooltip-content]").first();
+  await role.hover();
+  await expect(tip).toHaveText("Board member is the role on your account. It decides which areas you can open; an FAS admin can change it.");
+  const hovered = await tip.textContent();
+  await page.mouse.move(0, 0);
+  await role.focus();
+  await expect(tip).toHaveText(hovered ?? "");
+  await page.keyboard.press("Escape");
   await checkLayout(page, "403");
 });
 
