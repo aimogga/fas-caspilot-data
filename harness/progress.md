@@ -1096,3 +1096,10 @@ Left: DS-18b (`/staff/entry`, `AggregateBadge`, nav icons) on its own branch. Op
 Decisions: none new (designer defaults in the spec: `Committed` reads `Saved` to match the button; eyebrow stays the shared `WORKSPACE`; one `Hint` per error cell rather than an `ExplainLayer`; no drag-and-drop script because the native input already accepts a drop).
 
 ---
+## 2026-10-16 04:55 (UTC) — Cloud Agent (Engineer Supervisor) — DS-16b and DS-17 after shots; DS-17, DS-18a and DS-18b before shots (design)
+Did: from production main 923caad: `docs/design/reviews/DS-16b/after/methodology-{375,1024,1440}[-hover].png` (hover on a weight card label). Before shots for the open packets: `DS-17/before/staff-packets-*`, `DS-18a/before/staff-intake-*`, `DS-18b/before/staff-entry-*` and `admin-*` plus the 800 px nav rail `staff-entry-800.png`. After #274 landed: `DS-17/after/staff-packets-{375,1024,1440}[-hover].png` (hover on a figure tile), the Letter print sheet `staff-packets-816-print.png` and `.pdf`. Manifest rows for each.
+State: binary and manifest only. Branch `design/after-shots-day7`. All 375 shots under 10 000 px.
+Left: DS-15b, DS-18a and DS-18b after shots once #273, #276 and #277 are on production.
+Decisions: none new.
+
+---
