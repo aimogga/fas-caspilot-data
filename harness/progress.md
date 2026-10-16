@@ -959,3 +959,9 @@ Did: `/admin/knowledge` (admin only): add form (category, title, body, source, a
 State: lint, typecheck, unit tests green. Local Supabase + `pnpm dev` ran in this shell; `tests/e2e/knowledge.spec.ts`, shell, layout-parity, route-guards and auth-roles e2e green with the pre-installed Chromium. Split for D-012: part 2 (stacked PR, branch `f508c2-knowledge-staff`) adds the staff read-only `/staff/knowledge`, its nav entry and e2e, and the 375/1024/1440 shots. Branch `f508c-knowledge-admin`, stacked on `f508b-org-knowledge`.
 Left: part 2; no user directory table, so "last editor" cannot show a name.
 Decisions: an edit returns the row to draft until re-approved (the old approved version stays citable).
+
+## 2026-10-16 01:05 (UTC) — Cloud Agent (Engineer) — F-508c part 2: staff read-only FAS knowledge and evidence shots (F-508)
+Did: `/staff/knowledge` lists approved entries and approved versions only, with no edit, status or add controls (RLS already hides drafts and archived rows from staff); the loader moved to `lib/knowledge/load.ts` and is shared with `/admin/knowledge`. Staff nav gets a "Grant writing" group with "FAS knowledge"; crumb added; layout-parity covers the route. e2e: an admin approves a fictional entry in its own context, staff see it with no controls and the status hint on focus, board gets 403. After shots in `docs/design/reviews/F-508c/after/` (admin 375/1024/1440 + hover, staff 375/1024/1440) from the synthetic seed on local Supabase.
+State: lint, typecheck, unit tests and knowledge/shell/layout-parity e2e green locally. Branch `f508c2-knowledge-staff`, stacked on `f508c-knowledge-admin`.
+Left: nothing for #226.
+Decisions: none new.
