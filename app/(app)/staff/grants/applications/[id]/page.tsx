@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ApplicationSection } from "@/components/grants/ApplicationSection";
 import { Cluster, ErrorState, PageHeader, Section, Stack } from "@/components/layout";
 import { Hint } from "@/components/trust/explain";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { HEADER } from "@/lib/application/docx";
 import { loadApplication, type LoadedApplication } from "@/lib/application/query";
 import { approvalBlockers, PORTAL_NOTE, reviewSection } from "@/lib/application/review";
@@ -34,7 +34,7 @@ export default async function ApplicationPage({ params }: { params: Promise<{ id
           {open && role === "admin" ? <form action={approveDraft}><input type="hidden" name="id" value={draft.id} /><Button type="submit" disabled={blockers.length > 0}>Approve draft</Button></form> : null}
           {open && role !== "admin" ? <p className="text-sm text-muted-foreground">An admin approves this draft once every section is ready.</p> : null}
           {!open ? <form action={newVersion}><input type="hidden" name="id" value={draft.id} /><Button type="submit" variant="outline">Start a new version to edit</Button></form> : null}
-          {approved ? <Button asChild variant="outline"><a href={`/api/grants/applications/${draft.id}/docx`} download>Download Word</a></Button>
+          {approved ? <a href={`/api/grants/applications/${draft.id}/docx`} download className={buttonVariants({ variant: "outline" })}>Download Word</a>
             : <Hint text={DOWNLOAD_OFF}><span data-slot="download-off" className="inline-flex min-h-11 items-center rounded-md border border-border px-4 text-sm text-muted-foreground" aria-disabled="true">Download Word</span></Hint>}
         </Cluster>
         {open && blockers.length ? <ul data-slot="blockers" aria-label="Before approval" className="list-disc pl-5 text-sm">{blockers.map((b) => <li key={b}>{b}</li>)}</ul> : null}
