@@ -1143,3 +1143,12 @@ Decisions: none new; no token added or changed (designer defaults in the spec: `
 **Next:** none; test-only change.
 
 ---
+## 2026-10-16 07:00 (UTC) — Cloud Agent (Engineer Supervisor) — Day-8b after shots for DS-18b (design)
+
+**Did:** merged #218 (design-shots e2e fix, 45c7f8c) and #281 (Day-8 shots, 1beb6c0). Took "after" shots against the production deployment of f403333 for DS-18b: `/staff/entry` (staff) and `/admin` (admin) at 375/800/1024/1440. No hover shot: the entry form's helper sentences are visible text, not a hover face.
+
+**Evidence:** `docs/design/reviews/DS-18b/after/*`; review page republished (v12).
+
+**Next:** DS-19 dark mode (#282) and the map arrow-key test fix (#283) on CI; dark shots on every route after DS-19 merges.
+
+---
