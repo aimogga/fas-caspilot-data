@@ -8,6 +8,11 @@ export type HoverRow = [string, string | undefined];
 export type HoverWords = { term: Term; rows: HoverRow[]; hidden?: string };
 const NAMES: string[][] = [[], ['All scored'], ['Lower need', 'Higher need'], ['Lowest need', 'Middle', 'Highest need'], ['Lowest need', 'Lower need', 'Higher need', 'Highest need'], ['Lowest need', 'Lower need', 'Middle', 'Higher need', 'Highest need']];
 const RELATIVE = 'Relative ranking, not absolute need.';
+/** The one note under the legend strip (DS-20a): replaces the legend title suffix, the two legend lines and the footer suffix. Keeps "placeholder" visible (DESIGN need-map rule 4). */
+export const LEGEND_NOTE = 'Relative ranking · placeholder bands until FAS sets the weights.';
+
+/** The first `n` ranked rows, in rank order. `rows` already honours the FAS filter and is sorted by rank, so with `?fas=1` these are the top FAS counties. */
+export const topCounties = (rows: CountyRow[], n = 5): CountyRow[] => rows.filter((r) => r.status === 'Ranked').slice(0, n);
 
 /** Band `binNo` of `k` in words; `Band n` only when the data has more bands than we have names for. */
 export const bandName = (binNo: number, k: number): string => NAMES[k]?.[binNo - 1] ?? `Band ${binNo}`;
@@ -30,7 +35,7 @@ export const bandHint = (band: Band, binNo: number, k: number): string =>
 export function hoverWords(county: CountyRow, counties: CountyRow[], columns: Column[], version: string | null): HoverWords {
   const k = Math.max(0, ...counties.map((c) => c.binNo ?? 0)), [rank, scored] = county.rank.split(' of ').map(Number);
   const ranked = county.binNo !== null && rank !== undefined && scored !== undefined && !Number.isNaN(rank);
-  const plain = ranked ? `A higher need score than ${scored - rank} of the ${scored - 1} other counties scored. ${RELATIVE}` : 'No need score, so no rank or band. Its public measures are still in the table.';
+  const plain = ranked ? `A higher need score than ${scored - rank} of the ${scored - 1} other counties scored. ${RELATIVE}` : 'No need score, so no rank or band. Its public measures are in the county panel.';
   const top = [...NeedCompare.rows(county, counties, columns)].sort((a, b) => b.higherThan / b.of - a.higherThan / a.of)[0];
   const rows: HoverRow[] = [
     ['Rank', ranked ? county.rank : undefined], ['Need score', ranked ? county.score : undefined], ['Band', ranked ? `${bandName(county.binNo as number, k)} (${county.bin})` : undefined],
