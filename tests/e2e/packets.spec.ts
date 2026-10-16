@@ -100,12 +100,17 @@ const PRIVACY = "Fewer than 11 families, so the number is hidden to protect priv
 // The first pointer action can land before hydration on CI, so the first hover re-tries until its face appears.
 const hoverUntil = (target: ReturnType<Page["locator"]>, face: ReturnType<Page["locator"]>) =>
   expect(async () => { await target.hover(); await expect(face).toBeVisible({ timeout: 1500 }); }).toPass({ timeout: 30_000 });
+// `app/(app)/staff/loading.tsx` (#262) streams the page behind a skeleton, so `goto` can resolve while the packet still sits in the hidden streaming container; wait for it.
+const open = async (page: Page, url: string) => {
+  expect((await page.goto(url))?.status()).toBe(200);
+  await expect(page.locator("[data-slot=packet]")).toBeVisible();
+};
 
 test("AC2: figure tiles share one explain layer; hover, focus and Enter show the same words; a hidden tile says why with no value; Escape returns focus", async ({ page }) => {
   await signIn(page, "staff@example.test");
   await page.setViewportSize({ width: 1024, height: 900 });
-  expect((await page.goto("/staff/packets?variant=grant&county=49035"))?.status()).toBe(200);
-  const packet = page.locator("[data-slot=packet]"), card = packet.locator("[data-slot=explain-layer-card]");
+  await open(page, "/staff/packets?variant=grant&county=49035");
+  const packet =page.locator("[data-slot=packet]"), card = packet.locator("[data-slot=explain-layer-card]");
   await expect(packet.locator("[data-slot=explain-layer]")).toHaveCount(1);
   const tiles = packet.locator("[data-slot=packet-figure]");
   expect(await tiles.count()).toBeGreaterThan(0);
@@ -143,8 +148,8 @@ test("AC2: figure tiles share one explain layer; hover, focus and Enter show the
 test("AC3: Variant, County and both downloads carry hints that read the same on hover and on focus; 44 px triggers at 375", async ({ page }) => {
   await signIn(page, "staff@example.test");
   await page.setViewportSize({ width: 1440, height: 900 });
-  expect((await page.goto("/staff/packets?variant=grant&county=49035"))?.status()).toBe(200);
-  const controls = page.locator("[data-slot=packet-controls]"), tip = page.locator("[data-slot=tooltip-content]").first();
+  await open(page, "/staff/packets?variant=grant&county=49035");
+  const controls =page.locator("[data-slot=packet-controls]"), tip = page.locator("[data-slot=tooltip-content]").first();
   await expect(controls.locator("[data-slot=hint-trigger]")).toHaveCount(4);
   const same = async (name: string, pattern: RegExp) => {
     const trigger = controls.getByRole("button", { name: `About ${name}`, exact: true });
@@ -163,8 +168,11 @@ test("AC3: Variant, County and both downloads carry hints that read the same on 
   await same("Download CSV appendix", /^A spreadsheet of the figures only.*month or quarter only\.$/);
   await expect(page.locator("#variant")).toHaveAccessibleName("Variant");
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto("/staff/packets?variant=grant&county=49035");
-  for (const t of await controls.locator("[data-slot=hint-trigger]").all()) {
+  await open(page, "/staff/packets?variant=grant&county=49035");
+  const triggers = controls.locator("[data-slot=hint-trigger]");
+  await expect(triggers).toHaveCount(4);
+  for (const t of await triggers.all()) {
+    await expect(t).toBeVisible();
     const b = (await t.boundingBox())!;
     expect(Math.min(b.width, b.height)).toBeGreaterThanOrEqual(44);
   }
@@ -173,8 +181,8 @@ test("AC3: Variant, County and both downloads carry hints that read the same on 
 test("AC4: each section shows an eyebrow with its number and title and a serif headline in words", async ({ page }) => {
   await signIn(page, "admin@example.test");
   await page.setViewportSize({ width: 1024, height: 900 });
-  expect((await page.goto("/staff/packets?variant=board"))?.status()).toBe(200);
-  const sections = page.locator("[data-slot=packet-section]");
+  await open(page, "/staff/packets?variant=board");
+  const sections =page.locator("[data-slot=packet-section]");
   await expect(sections).toHaveCount(6);
   for (const [i, s] of (await sections.all()).entries()) {
     await expect(s.locator("[data-slot=section-eyebrow]")).toHaveText(`Section ${i + 1} of 6 · ${ORDER[i]}`);
@@ -190,8 +198,8 @@ test("AC4: each section shows an eyebrow with its number and title and a serif h
 test("AC5 -print: hints, tooltips and the layer card never print; the footer is fixed at the foot of every sheet; sections start a page; tiles do not split", async ({ page }) => {
   await signIn(page, "staff@example.test");
   await page.setViewportSize({ width: 816, height: 1056 });
-  expect((await page.goto("/staff/packets?variant=grant&county=49035"))?.status()).toBe(200);
-  const tile = page.locator("[data-slot=packet-figure]").first(), card = page.locator("[data-slot=explain-layer-card]");
+  await open(page, "/staff/packets?variant=grant&county=49035");
+  const tile =page.locator("[data-slot=packet-figure]").first(), card = page.locator("[data-slot=explain-layer-card]");
   await hoverUntil(tile, card);
   await page.emulateMedia({ media: "print" });
   await expect(card).toBeHidden();
@@ -210,7 +218,7 @@ test("AC6: axe 0 serious or critical at 375, 1024 and 1440 with no horizontal ov
   await signIn(page, "staff@example.test");
   for (const width of [375, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
-    expect((await page.goto("/staff/packets?variant=grant&county=49035"))?.status()).toBe(200);
+    await open(page, "/staff/packets?variant=grant&county=49035");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth), `scroll @ ${width}`).toBeLessThanOrEqual(width);
     expect(await axe(page), `axe @ ${width}`).toEqual([]);
