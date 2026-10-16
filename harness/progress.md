@@ -1103,6 +1103,30 @@ Left: DS-15b, DS-18a and DS-18b after shots once #273, #276 and #277 are on prod
 Decisions: none new.
 
 ---
+## 2026-10-16 04:40 (UTC) — Designer agent (DS-18b) — Enter data: a helper sentence under every field, twelve nav glyphs, skeletons for `/staff/entry` and `/admin`
+Did: `/staff/entry` header in words (eyebrow `Enter data`, H1 `Add one record at a time`, one sentence). New pure `lib/intake/words.ts`: `fieldHelp` gives every visible entry field one or two plain sentences (what to enter, the day or dollar format, the order or floor rule, what it later feeds: the wait to a first session, the time to a funding decision, the completion rate, the cost per completed episode); `hintFor` now returns them, so the form's existing `aria-describedby` wiring carries a sentence on every field without touching `components/intake`. The same module holds `aggregateCell` (the `m4Cell`-style attributes for one recent total) and `AGGREGATE_BADGE_HINT` for the follow-up. `components/shell/nav-icons.ts` maps all 12 hrefs to lucide glyphs; `ShellFrame` renders them at 16 px, `aria-hidden`. `loading.tsx` for `/staff/entry` (form-shaped) and `/admin` (home-shaped) through `PageSkeleton`. Spec `docs/design/specs/DS-18b.md`. Tests: `lib/intake/words.test.ts`, `lib/shell/nav-icons.test.ts`, skeleton routes, `tests/e2e/entry-forms.spec.ts` (+1 case, heading updated), new `tests/e2e/nav-admin.spec.ts` (glyphs at 1440/800/375, axe and overflow on both routes at three widths).
+State: lint, typecheck, 866 unit tests green; e2e runs in CI (no Supabase here). Branch `ds-18b-entry-admin-nav` off main 0de2ff2. Shots: supervisor, from production and the preview, plus the 800 rail.
+Left: wiring the Σ badge `Hint` and the recent-totals `ExplainLayer` into `components/intake/AggregateForm.tsx` (DS-18a owns `components/intake/**` this week; `components/trust/index.tsx` is kit-only) and its own `HINT` words; a two-to-three-line follow-up (DS-18c) once DS-18a merges, builders and tests already here. The `County code (Utah FIPS)` label is an F-302 schema string shared with the upload mapper (Open question 2).
+Decisions: none new (designer defaults in the spec: nav e2e in a new file because #251/#252 edit `shell.spec.ts`; admin H1 stays the DS-10a greeting; glyph choices listed).
+
+---
+
+## 2026-10-16 06:25 (UTC) — Cloud Agent (Engineer Supervisor) — Day-8 after shots for DS-15b and DS-18a (design)
+
+**Did:** merged #277 (DS-18b, f403333) and #279 (Day-7 shots, b4a1f79). Took "after" shots against the production deployment of b4a1f79 for DS-15b (`/dashboard` at 375/1024/1440, plus 1024 hovers on the first M6 share segment and an O1 row cell) and DS-18a (`/staff/intake` at 375/1024/1440, plus a 1024 hover on a batch status chip). Manifests deduplicated to one row per tag/route/width/variant.
+
+**Evidence:** `docs/design/reviews/DS-15b/after/*`, `docs/design/reviews/DS-18a/after/*`; review page republished.
+
+**Next:** DS-18b after shots (Day 8b) once the production build of f403333 is captured; DS-19 dark mode packet in flight on `ds-19-dark-mode`.
+
+---
+## 2026-10-15 23:55 (UTC) — Cloud Agent (Engineer) — design-shots: hover and focus shots wait for the explain face (fix)
+Did: `scripts/design-shots.mjs` took the hover and focus PNGs right after `page.hover` / `page.focus`, before the Radix HoverCard (`openDelay` 150 ms) or Hint tooltip had opened, so DS-10a's `staff-*-hover.png` were byte-identical to the base shots. New exported `waitForFace(page, { timeout 5 s, settle 250 ms, fallback 500 ms })` waits for `FACE` = `[data-slot=explain-content]:visible, [role=tooltip]:visible`, settles briefly when it shows, and falls back to the fixed wait (never throws) when the hovered element opens no face; both the hover and focus branches call it. Two unit tests with a page stub cover the shown and fallback paths and the selector/timeout arguments.
+State: lint, typecheck, 769 unit tests (97 files) green. Probe against a stub page with the pre-installed Chromium: a plain element falls back in ~500 ms, an explain trigger resolves once the face is visible. `docs/design/reviews/**` untouched.
+Left: re-run `pnpm shots --tag after --hover "[data-slot=home-tile] [data-slot=explain-trigger]"` for DS-10a so the hover shots differ from the base.
+Merge note: main gained a 3 s inline wait on the primitive slots (`tooling/shots-hover-wait`); merging main replaced it with `waitForFace`, whose `FACE` now covers the hover-card, tooltip, popover and explain-content slots plus `role=tooltip`, adding the settle and fallback waits and the unit tests.
+
+---
 
 ## 2026-10-16 04:15 (UTC) — Claude Code (cloud, Engineer) — pr-gate PR_GATE_BASE override (D-028, D-032)
 Did: `resolveBase` in `scripts/pr-gate.mjs` (from #239) also reads `PR_GATE_BASE`, after `--base` and before `branch.<name>.gateBase`. Like `gateBase`, it must be an `origin/*` branch: a shared `originRef` check throws `PR_GATE_BASE must be an origin/* branch` otherwise. It is for a one-off or CI run against a parent without setting git config. The push hook runs `pnpm gate`, which inherits the env. The usage line documents it. 1 new unit test (precedence and refusal); the CLI was checked with `PR_GATE_BASE=origin/main` (base printed) and `=HEAD` (refused).
