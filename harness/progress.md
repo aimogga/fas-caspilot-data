@@ -1110,3 +1110,13 @@ Left: wiring the Σ badge `Hint` and the recent-totals `ExplainLayer` into `comp
 Decisions: none new (designer defaults in the spec: nav e2e in a new file because #251/#252 edit `shell.spec.ts`; admin H1 stays the DS-10a greeting; glyph choices listed).
 
 ---
+
+## 2026-10-16 06:25 (UTC) — Cloud Agent (Engineer Supervisor) — Day-8 after shots for DS-15b and DS-18a (design)
+
+**Did:** merged #277 (DS-18b, f403333) and #279 (Day-7 shots, b4a1f79). Took "after" shots against the production deployment of b4a1f79 for DS-15b (`/dashboard` at 375/1024/1440, plus 1024 hovers on the first M6 share segment and an O1 row cell) and DS-18a (`/staff/intake` at 375/1024/1440, plus a 1024 hover on a batch status chip). Manifests deduplicated to one row per tag/route/width/variant.
+
+**Evidence:** `docs/design/reviews/DS-15b/after/*`, `docs/design/reviews/DS-18a/after/*`; review page republished.
+
+**Next:** DS-18b after shots (Day 8b) once the production build of f403333 is captured; DS-19 dark mode packet in flight on `ds-19-dark-mode`.
+
+---
