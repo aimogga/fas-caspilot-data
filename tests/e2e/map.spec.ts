@@ -44,7 +44,7 @@ for (const [email, eyebrow] of [["staff@example.test", "WORKSPACE"], ["admin@exa
       for (const [i, name] of ["Daggett", "Piute", "Wayne"].entries()) {
         await expect(rows.nth(26 + i)).toContainText(new RegExp(`${name} County.*Not published.*Not published`));
       }
-      await expect(page.locator("[data-slot=source-footer]")).toContainText(/^Public sources: .+ · Need score version \S+ · as of \w+ \d{4} · Placeholder bins$/);
+      await expect(page.locator("[data-slot=source-footer]")).toContainText(/^Public sources: .+ · Need score version \S+ · as of \w+ \d{4}$/);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
       const violations = (await new AxeBuilder({ page }).analyze()).violations.filter((v) => v.impact === "serious" || v.impact === "critical");
       expect(violations).toEqual([]);
@@ -83,8 +83,8 @@ test("board: FAS county badges, and the switch filters to seeded FAS counties vi
   }
 });
 
-const LEGEND = ["Need score (version v2-synthetic) · Placeholder bins", "Lowest need · 7 counties", "Highest need · 5 counties", "Not published · 3 counties", "FAS county (outlined)",
-  "Placeholder bins (5 equal-count groups) until need-score weights are set.", "Relative ranking, not absolute need."];
+const LEGEND = ["Need score, version v2-synthetic", "Lower need", "Higher need", "Not published · 3 counties", "FAS county (outlined)", "Relative ranking · placeholder bands until FAS sets the weights."];
+const TOP_PROMPT = "Select any county on the map or in the table to see why it ranks where it does.";
 
 test("map: 29 county paths above the table, legend copy, FAS outlines, hatch; light and dark screenshots", async ({ page }) => {
   await signIn(page, "board@example.test");
@@ -99,9 +99,20 @@ test("map: 29 county paths above the table, legend copy, FAS outlines, hatch; li
       await expect(map.locator("path[data-bin='0']")).toHaveCount(3);
       await expect(map.locator("path[data-fips='49009']")).toHaveAttribute("aria-label", "Daggett County, not published");
       await expect(map.locator("path[data-fips='49011']")).toHaveAttribute("aria-label", "Davis County, rank 20 of 26, need score −0.80, FAS county");
-      for (const text of LEGEND) await expect(page.locator("[data-slot=map-legend]")).toContainText(text);
+      const legend = page.locator("[data-slot=map-legend]"), swatches = legend.locator("[data-slot=legend-ramp] [data-slot=hint-trigger]");
+      for (const text of LEGEND) await expect(legend).toContainText(text);
+      // DS-20a: one strip directly under the map (same column), five band swatches named with their counts; "placeholder" said once in the map region (the table header goes in DS-20c).
+      await expect(swatches).toHaveCount(5);
+      await expect(swatches.first()).toHaveAttribute("aria-label", "Lowest need · 7 counties");
+      await expect(swatches.last()).toHaveAttribute("aria-label", "Highest need · 5 counties");
+      await expect(map.getByText(/placeholder/i)).toHaveCount(1);
+      // The county map itself, not the FAS pin icons in the panel's "Highest need" rows.
+      const chart = map.getByRole("group", { name: "Utah county need map" });
+      const [mapBox, legendBox] = [await chart.boundingBox(), await legend.boundingBox()];
+      expect(legendBox!.y - (mapBox!.y + mapBox!.height)).toBeLessThanOrEqual(32);
+      expect(Math.abs(legendBox!.x - mapBox!.x)).toBeLessThanOrEqual(8);
       await expect(map.locator("text").first()).toBeVisible({ visible: width >= 1024 });
-      const svg = await map.locator("svg").boundingBox();
+      const svg = await chart.boundingBox();
       expect(svg?.height ?? 0).toBeLessThanOrEqual(640);
       expect(svg?.width ?? 0).toBeLessThanOrEqual(width === 375 ? 343 : 696);
       // The map sits above the county rows: the table from 768, the ranked list below it (DS-11b).
@@ -127,7 +138,11 @@ test("county selection: click or ?county= selects, panel copy, table link, arrow
   for (const width of [375, 800, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/need-map");
-    await expect(panel).toContainText("Select a county on the map or in the table.");
+    // DS-20a: before a pick the panel answers the page's question with the five highest-need counties.
+    await expect(heading).toHaveText("Highest need");
+    await expect(panel.locator("[data-slot=top-counties] li[data-fips]")).toHaveCount(5);
+    await expect(panel.locator("[data-slot=top-counties] li[data-fips]").first()).toContainText(/^1\s*Rich County\s*\+1\.40$/);
+    await expect(panel).toContainText(TOP_PROMPT);
     await page.locator("path[data-fips='49035']").click();
     await expect(page).toHaveURL(/\/need-map\?county=49035$/);
     await expect(heading).toContainText("Salt Lake County");
@@ -142,6 +157,12 @@ test("county selection: click or ?county= selects, panel copy, table link, arrow
     expect(violations).toEqual([]);
     await page.screenshot({ path: `${ART_B}/need-map-selected-${width}.png`, fullPage: true });
   }
+  await page.goto("/need-map?fas=1");
+  await expect(heading).toHaveText("Highest need among FAS counties");
+  await expect(panel.locator("[data-slot=top-counties] li[data-fips]").first()).toContainText(/Tooele County.*FAS county/);
+  await panel.locator("[data-slot=top-counties] li[data-fips='49045'] a").click();
+  await expect(page).toHaveURL(/\?county=49045&fas=1$/);
+  await expect(heading).toContainText("Tooele County");
   await page.goto("/need-map?fas=1&county=49011");
   await expect(heading).toContainText("Davis County");
   await page.locator("tr[data-fips='49049'] a").click();
@@ -162,7 +183,7 @@ test("county selection: click or ?county= selects, panel copy, table link, arrow
   await page.locator("path[data-fips='49051']").focus();
   await page.keyboard.press("Escape");
   await expect(page).toHaveURL(/\/need-map$/);
-  await expect(panel).toContainText("Select a county on the map or in the table.");
+  await expect(heading).toHaveText("Highest need");
   await expect(page.locator("path[aria-pressed='true']")).toHaveCount(0);
 });
 
@@ -198,6 +219,12 @@ test("explain layer: hover, focus and Enter show the same words on a cell; Esc c
     await expect(card).toContainText("County need score");
     await page.locator("tr[data-fips='49009'] td[data-term='rank']").hover();
     await expect(card).toContainText("The source did not publish this for this county in that release.");
+    await page.locator("tr[data-fips='49035'] [data-slot=badge][data-term='fas_county']").hover();
+    await expect(card).toContainText("A county where FAS currently funds therapy.");
+    await page.goto("/need-map");
+    await page.locator("[data-slot=top-counties] li[data-fips='49033'] [data-term='need_score']").hover();
+    await expect(card).toContainText(/County need score.*\+1\.40.*Need score version/s);
+    await page.goto("/need-map?county=49035");
     await page.locator("tr[data-fips='49035'] [data-slot=badge][data-term='fas_county']").hover();
     await expect(card).toContainText("A county where FAS currently funds therapy.");
     await page.mouse.move(0, 0);

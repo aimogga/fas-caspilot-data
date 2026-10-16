@@ -66,10 +66,11 @@ describe('NeedMapQuery.build', () => {
   it('notes `<source> <vintage>` per column; the footer lists used sources once and their latest success month', () => {
     expect(data.columns).toEqual([{ code: 'uninsured_rate', label: 'Uninsured rate', note: 'Census SAHIE 2024', unit: 'percent' }]);
     expect(data.sources).toEqual([{ code: 'uninsured_rate', name: 'Census SAHIE', vintage: '2024', asOf: 'Oct 2026' }]);
-    expect(data.footer).toBe('Public sources: Census SAHIE · Need score version v2 · as of Oct 2026 · Placeholder bins');
+    // DS-20a: the placeholder note lives once, under the legend; the footer no longer repeats it.
+    expect(data.footer).toBe('Public sources: Census SAHIE · Need score version v2 · as of Oct 2026');
     expect(NeedMapQuery.columnSource({ ...ind('1', 1), source_id: 'nope' }, [])).toEqual({ code: 'uninsured_rate', name: 'Unknown source', vintage: '2024', asOf: NOT_YET });
     const two = NeedMapQuery.build(input({ indicators: [ind('49035', 9.2), { ...ind('49035', 5, '2023', 'count'), source_id: 's9', indicator_code: 'poverty_count' }] }));
-    expect([two.columns[0].note, two.footer]).toEqual(['Census SAIPE 2023', 'Public sources: Census SAIPE, Census SAHIE · Need score version v2 · as of Jan 2027 · Placeholder bins']);
+    expect([two.columns[0].note, two.footer]).toEqual(['Census SAIPE 2023', 'Public sources: Census SAIPE, Census SAHIE · Need score version v2 · as of Jan 2027']);
   });
 
   it('says Not available yet everywhere when no version is approved', () => {
@@ -77,13 +78,13 @@ describe('NeedMapQuery.build', () => {
     expect(none.version).toBeNull();
     expect(none.hasData).toBe(true);
     expect(none.rows.every((r) => r.rank === NOT_YET && r.score === NOT_YET && r.bin === NOT_YET && r.status === NOT_YET)).toBe(true);
-    expect(none.footer).toBe('Public sources: Census SAHIE · Need score version Not available yet · as of Oct 2026 · Placeholder bins');
+    expect(none.footer).toBe('Public sources: Census SAHIE · Need score version Not available yet · as of Oct 2026');
   });
 
   it('reports no data when nothing is loaded', () => {
     const empty = NeedMapQuery.build(input({ scores: [], indicators: [] }));
     expect(empty.hasData).toBe(false);
-    expect(empty.footer).toBe(`Public sources: ${NOT_YET} · Need score version v2 · date not available yet · Placeholder bins`);
+    expect(empty.footer).toBe(`Public sources: ${NOT_YET} · Need score version v2 · date not available yet`);
   });
 
   it('marks FAS counties, filters to them on request and keeps the statewide rank', () => {

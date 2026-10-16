@@ -100,7 +100,7 @@ export class NeedMapQuery {
   /** `latest` is the newest `last_success_at` among the sources in use (ISO). */
   static footer(version: string | null, sources: ColumnSource[], latest: string | null): string {
     const names = [...new Set(sources.map((s) => s.name))].join(', ') || NOT_YET;
-    return `Public sources: ${names} · Need score version ${version ?? NOT_YET} · ${latest ? `as of ${NeedMapQuery.monthYear(latest)}` : 'date not available yet'} · Placeholder bins`;
+    return `Public sources: ${names} · Need score version ${version ?? NOT_YET} · ${latest ? `as of ${NeedMapQuery.monthYear(latest)}` : 'date not available yet'}`;
   }
 
   /** All 29 counties; `opts.fas` keeps FAS service counties only, each with its statewide rank. */
