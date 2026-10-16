@@ -3,6 +3,7 @@ import { CountyPanel } from "@/components/need-map/CountyPanel";
 import { MapHover } from "@/components/need-map/MapHover";
 import { Hint } from "@/components/trust/explain";
 import { NeedMapQuery, type CountyRow, type NeedTableData } from "@/lib/need-map/query";
+import { pickerOptions } from "@/lib/need-map/picker";
 import { LEGEND_NOTE, bandHint, hoverWords, legendBands, topCounties } from "@/lib/need-map/words";
 import { GLOSSARY, whyHidden } from "@/lib/trust/glossary";
 import geo from "@/public/geo/utah-counties.json";
@@ -85,7 +86,7 @@ export function NeedMap({ data, fas = false, selected = null }: { data: NeedTabl
       </figure>
       {/* Panel: the right column from 1024 (sticky); below 1024 it follows the legend. */}
       <div className="lg:col-span-5 lg:sticky lg:top-4 lg:self-start">
-        <CountyPanel county={selected} columns={data.columns} version={data.version} rankedCount={counties.filter((c) => c.status === "Ranked").length} sources={data.sources} counties={counties} top={topCounties(data.rows)} fas={fas} />
+        <CountyPanel county={selected} columns={data.columns} version={data.version} rankedCount={counties.filter((c) => c.status === "Ranked").length} sources={data.sources} counties={counties} top={topCounties(data.rows)} fas={fas} options={pickerOptions(data.rows, selected)} />
       </div>
     </div>
     </MapHover>

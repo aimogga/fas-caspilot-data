@@ -63,6 +63,11 @@ describe('NeedMapQuery.build', () => {
     expect(NeedMapQuery.cell({ ...ind('1', 0.1, '2024', 'rate'), moe: null })).toBe('0.1');
   });
 
+  it('names the court filing indicators and the courts source in plain words (DS-22)', () => {
+    expect(['court_filings_total', 'court_filings_district', 'court_filings_justice', 'court_filings_juvenile'].map(NeedMapQuery.label)).toEqual(['Court filings (all courts)', 'Court filings (district)', 'Court filings (justice)', 'Court filings (juvenile)']);
+    expect(NeedMapQuery.columnSource({ ...ind('1', 1), source_id: 's', indicator_code: 'court_filings_total' }, [{ id: 's', name: 'ut_courts', last_success_at: null } as never]).name).toBe('Utah State Courts');
+  });
+
   it('notes `<source> <vintage>` per column; the footer lists used sources once and their latest success month', () => {
     expect(data.columns).toEqual([{ code: 'uninsured_rate', label: 'Uninsured rate', note: 'Census SAHIE 2024', unit: 'percent' }]);
     expect(data.sources).toEqual([{ code: 'uninsured_rate', name: 'Census SAHIE', vintage: '2024', asOf: 'Oct 2026' }]);

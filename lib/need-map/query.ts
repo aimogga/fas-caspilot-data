@@ -35,8 +35,12 @@ const INDICATORS: Record<string, { label: string; noun?: string }> = {
   single_parent_households: { label: 'Single-parent households (count)', noun: 'households' },
   no_vehicle_pct: { label: 'No-vehicle households' },
   no_vehicle_households: { label: 'No-vehicle households (count)', noun: 'households' },
+  court_filings_total: { label: 'Court filings (all courts)', noun: 'filings' },
+  court_filings_district: { label: 'Court filings (district)', noun: 'filings' },
+  court_filings_justice: { label: 'Court filings (justice)', noun: 'filings' },
+  court_filings_juvenile: { label: 'Court filings (juvenile)', noun: 'filings' },
 };
-const SOURCES: Record<string, string> = { 'census-sahie': 'Census SAHIE', 'census-saipe': 'Census SAIPE', 'census-acs': 'Census ACS 5-year' };
+const SOURCES: Record<string, string> = { 'census-sahie': 'Census SAHIE', 'census-saipe': 'Census SAIPE', 'census-acs': 'Census ACS 5-year', ut_courts: 'Utah State Courts' };
 
 export class NeedMapQuery {
   static label(code: string): string {

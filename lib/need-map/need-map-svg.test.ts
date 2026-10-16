@@ -1,6 +1,6 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { TOP_PROMPT } from '@/components/need-map/CountyPanel';
 import { NeedMap, summary } from '@/components/need-map/NeedMap';
 import { RankedList } from '@/components/need-map/RankedList';
@@ -8,6 +8,8 @@ import { COUNTIES } from '../synthetic/generate';
 import { NeedBins } from './bins';
 import { NeedMapQuery, type NeedInput } from './query';
 import { LEGEND_NOTE } from './words';
+
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: () => undefined }), usePathname: () => '/need-map', useSearchParams: () => new URLSearchParams() }));
 
 const UNPUBLISHED = ['49009', '49031', '49055'];
 /** Seed-shaped scores (supabase/seed.sql): 26 scored, Davis tied with Cache, 3 not published, 5 FAS counties. */
