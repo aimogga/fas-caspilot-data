@@ -5,11 +5,10 @@ import { EmptyState, ErrorState, FormField, PageHeader, Section, Stack } from "@
 import { buttonVariants } from "@/components/ui/button";
 import { CATEGORIES } from "@/lib/knowledge/guard";
 import { loadPage } from "@/lib/knowledge/load";
-import { applyFilters, CATEGORY_LABEL, type Filters, parseFilters, STATUS_WORDS, STATUSES } from "@/lib/knowledge/view";
+import { applyFilters, CATEGORY_LABEL, type Filters, FIRST_STEPS, parseFilters, STATUS_WORDS, STATUSES } from "@/lib/knowledge/view";
 
 export const dynamic = "force-dynamic";
 const DESCRIPTION = "What the grant writer may say about FAS. Only approved entries are quoted, and every quote cites the version it used.";
-const FIRST_STEPS = "Start with your mission. Then add each program, then eligibility facts: the year FAS became a 501(c)(3), UEI status and the latest audit. Add outcomes last, each with its source and as-of date.";
 
 function FilterForm({ f }: { f: Filters }) {
   const opts = (all: string, list: readonly string[], label: (v: string) => string) => [<option key="all" value="all">{all}</option>, ...list.map((v) => <option key={v} value={v}>{label(v)}</option>)];

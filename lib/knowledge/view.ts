@@ -12,6 +12,8 @@ export const STATUS_WORDS: Record<Status, { label: string; hint: string }> = {
   archived: { label: 'Archived', hint: 'Archived: kept for the record and old citations, never quoted again.' },
 };
 export const CONFIRM_LABEL = 'This text contains no client or family information.';
+/** Empty-state guidance on the admin screen: what to add first, in order (#226 criterion 5). */
+export const FIRST_STEPS = 'Start with your mission. Then add your programs, then eligibility facts: the year FAS became a 501(c)(3), UEI status and the latest audit. Add outcomes last, each with its source and as-of date.';
 
 export type Version = { knowledge_id: string; version: number; status: Status; title: string; body: string; edited_by: string | null; recorded_at: string };
 export type ListRow = KnowledgeRow & { status: Status; updated_at: string; history: Version[] };
