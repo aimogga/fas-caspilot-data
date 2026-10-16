@@ -35,7 +35,7 @@ export const bandHint = (band: Band, binNo: number, k: number): string =>
 export function hoverWords(county: CountyRow, counties: CountyRow[], columns: Column[], version: string | null): HoverWords {
   const k = Math.max(0, ...counties.map((c) => c.binNo ?? 0)), [rank, scored] = county.rank.split(' of ').map(Number);
   const ranked = county.binNo !== null && rank !== undefined && scored !== undefined && !Number.isNaN(rank);
-  const plain = ranked ? `A higher need score than ${scored - rank} of the ${scored - 1} other counties scored. ${RELATIVE}` : 'No need score, so no rank or band. Its public measures are still in the table.';
+  const plain = ranked ? `A higher need score than ${scored - rank} of the ${scored - 1} other counties scored. ${RELATIVE}` : 'No need score, so no rank or band. Its public measures are in the county panel.';
   const top = [...NeedCompare.rows(county, counties, columns)].sort((a, b) => b.higherThan / b.of - a.higherThan / a.of)[0];
   const rows: HoverRow[] = [
     ['Rank', ranked ? county.rank : undefined], ['Need score', ranked ? county.score : undefined], ['Band', ranked ? `${bandName(county.binNo as number, k)} (${county.bin})` : undefined],

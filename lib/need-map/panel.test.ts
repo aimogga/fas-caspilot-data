@@ -35,6 +35,8 @@ describe('county panel words (DS-20b)', () => {
       ['Poverty', 'Census SAIPE 2023', ['poverty_rate', 'child_poverty_rate', 'child_poverty_count']],
       ['Households and population', 'Census ACS 5-year 2023', ['single_parent_pct', 'no_vehicle_pct', 'veteran_rate', 'total_population']],
       ['VA VetPop', 'VA VetPop 2023', ['x_rate']]]);
+    const courts = measureGroups([col('court_filings_total', 'count'), col('court_filings_district', 'count')], [src('court_filings_total', 'Utah State Courts', '2019'), src('court_filings_district', 'Utah State Courts', '2019')]);
+    expect(courts.map((g) => [g.topic, g.columns.length])).toEqual([['Court filings', 2]]);
     expect(measureGroups([col('a'), col('b')], [src('a', 'Census SAIPE', '2022'), src('b', 'Census SAIPE')]).map((g) => g.source.vintage)).toEqual(['2022', '2023']);
     expect(measureGroups([col('a')], [])[0]).toMatchObject({ topic: 'Unknown source', source: { name: 'Unknown source', vintage: 'Not published', asOf: 'Not available yet' } });
   });
