@@ -55,8 +55,6 @@ test("admin adds, edits, approves and archives a fictional entry; the guard refu
 
 test("staff and board get 403 on the admin screen, so they cannot edit (F-508c)", async ({ browser }) => {
   for (const email of ["staff@example.test", "board@example.test"]) {
-    const page = await (await browser.newContext()).newPage();
-    await signIn(page, email);
-    expect((await page.goto("/admin/knowledge"))?.status()).toBe(403);
+    const page = await (await browser.newContext()).newPage(); await signIn(page, email); expect((await page.goto("/admin/knowledge"))?.status()).toBe(403);
   }
 });

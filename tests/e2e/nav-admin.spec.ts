@@ -23,9 +23,9 @@ test("admin: every sidebar link has one 16 px hidden glyph at 1440; the 800 rail
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/admin");
   const wide = await linkFacts(page, "[data-slot=sidebar]");
-  expect(wide).toHaveLength(7);
+  expect(wide).toHaveLength(8);
   for (const l of wide) expect(l, l.href ?? "").toMatchObject({ svgs: 1, hidden: "true", w: 16, h: 16, labelWide: true });
-  expect(new Set(await page.locator("[data-slot=sidebar] nav a svg").evaluateAll((els) => els.map((e) => e.innerHTML))).size, "seven different glyphs").toBe(7);
+  expect(new Set(await page.locator("[data-slot=sidebar] nav a svg").evaluateAll((els) => els.map((e) => e.innerHTML))).size, "eight different glyphs").toBe(8);
   await page.setViewportSize({ width: 800, height: 900 });
   await page.goto("/admin");
   const rail = await linkFacts(page, "[data-slot=sidebar]");
@@ -35,7 +35,7 @@ test("admin: every sidebar link has one 16 px hidden glyph at 1440; the 800 rail
   await page.goto("/admin");
   await page.getByRole("button", { name: "Open navigation" }).click();
   const sheet = await linkFacts(page, "#nav-sheet");
-  expect(sheet).toHaveLength(7);
+  expect(sheet).toHaveLength(8);
   for (const l of sheet) expect(l, l.href ?? "").toMatchObject({ svgs: 1, hidden: "true", w: 16, labelWide: true });
   expect(Math.min(...sheet.map((l) => l.tall))).toBeGreaterThanOrEqual(44);
 });
