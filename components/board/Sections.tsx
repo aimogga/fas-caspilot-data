@@ -51,7 +51,7 @@ export function Sections({ sections, metrics, counties, period }: { sections: Bo
         const pics = pictures.filter((p) => s.pictures.includes(p.id));
         return (
           <section key={s.id} data-slot="board-section" data-section={s.id} data-state={s.state} aria-labelledby={`section-${s.id}`} className="flex flex-col gap-4 border-t border-border pt-8">
-            <p className={EYEBROW}><span className="tabular-nums">{s.no}</span> · {s.question}</p>
+            <p data-slot="section-eyebrow" className={EYEBROW}><span className="tabular-nums">{s.no}</span> · {s.question}</p>
             <h2 id={`section-${s.id}`} className="max-w-prose font-serif text-2xl font-semibold leading-snug">{s.finding}</h2>
             {s.state === "error" ? <ErrorState message="Couldn't load this section" referenceId={`board-${s.id}`} href="/board">{s.support}</ErrorState> : s.support ? <p data-slot="section-support" className={MUTED}>{s.support}</p> : null}
             {pics.length ? (

@@ -56,8 +56,9 @@ for (const email of ["board@example.test", "staff@example.test", "admin@example.
     await expect(page.locator("[data-slot=board-summary], [data-slot=metric-card], [data-slot=freshness-widget]")).toHaveCount(0);
     // Four numbered sections in words, each opening with its sentence; section 1 words the seed's M4 total (25 of 29) and keeps the completion picture with View as table.
     const sections = page.locator("[data-slot=board-section]");
-    await expect(sections.locator("> p").first()).toHaveText("1 · Did families improve?");
-    await expect(sections.locator("> p")).toHaveText(["1 · Did families improve?", "2 · How long families waited", "3 · Where our therapy dollars went", "4 · Need in the counties we serve"]);
+    const eyebrows = sections.locator("[data-slot=section-eyebrow]");
+    await expect(eyebrows.first()).toHaveText("1 · Did families improve?");
+    await expect(eyebrows).toHaveText(["1 · Did families improve?", "2 · How long families waited", "3 · Where our therapy dollars went", "4 · Need in the counties we serve"]);
     expect(await sections.evaluateAll((els) => els.map((e) => e.getAttribute("data-state")))).not.toContain("error");
     for (const s of await sections.all()) { await expect(s.locator("h2")).toHaveText(/.+\.$/); await expect(s).not.toContainText(/\$0\b|NaN|undefined|null/); }
     const improve = sections.nth(0);
