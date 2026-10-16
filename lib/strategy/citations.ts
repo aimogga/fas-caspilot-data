@@ -33,9 +33,9 @@ export function numbersIn(text: string): number[] {
   return out;
 }
 
-/** A written number matches a stored value at its own rounding (or 0.5%); rates also match as percents. */
+/** A written number matches a stored value at its own rounding (or 0.5%); fractions (rates, |v| ≤ 1) also match as percents. */
 const matches = (n: number, facts: Fact[]) => facts.some((f) => Object.values(f.values).some((v) => v !== null &&
-  [v, v * 100].some((c) => Math.abs(n - c) <= Math.max(0.005 * Math.abs(c), 0.5 * (Number.isInteger(n) ? 1 : 0.1)))));
+  (Math.abs(v) <= 1 ? [v, v * 100] : [v]).some((c) => Math.abs(n - c) <= Math.max(0.005 * Math.abs(c), 0.5 * (Number.isInteger(n) ? 1 : 0.1)))));
 
 /** 12+ consecutive words shared with a stored award description or abstract. */
 export function copyHits(texts: { path: string; text: string }[], abstracts: Snapshot['abstracts'], n = 12): CitationReport['copied'] {
