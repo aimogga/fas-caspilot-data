@@ -1153,6 +1153,16 @@ Decisions: none new; no token added or changed (designer defaults in the spec: `
 
 ---
 
+## 2026-10-16 08:10 (UTC) — Cloud Agent (Engineer Supervisor) — Day-9 dark-mode shots on every route (DS-19 evidence)
+
+**Did:** merged #282 (DS-19 dark mode, 49f22b0), #283 (map arrow-key test retry, 371b196) and #284 (DS-18b after shots, c028345). Took DS-19 "after" shots against the production deployment of 49f22b0 on all thirteen routes at 375/1024/1440 in dark and light, plus one 1024 dark shot of `/staff` with the account menu open showing the Appearance rows. `docs/design/reviews/DS-19/manifest.json` is listed in `harness/generated-files.json` (it is written by `scripts/design-shots.mjs`; D-012).
+
+**Evidence:** `docs/design/reviews/DS-19/after/*`; review page republished (v13) with a dark row per route.
+
+**Next:** none planned in the design lane; George reviews the page and anything he dislikes becomes the next packet.
+
+---
+
 ## 2026-10-16 02:40 (UTC) — Claude Code (cloud, Engineer) — F-508a2: durable LLM quota store (#224)
 Did: migration `20261016050000_f508a2_llm_quota.sql`: `llm_quota` (provider, window_kind minute|day, window_start, count; PK on the three), RLS on and forced, no anon/authenticated policy or grant (one `TO service_role` policy so the catalog guard sees a policy). `llm_reserve(p_provider, p_rpm_limit, p_daily_limit, p_now default now())`: SECURITY DEFINER, `search_path = pg_catalog, pg_temp`, upserts and locks the UTC-day then the UTC-minute row, returns false without incrementing when either is at its limit, drops minute rows older than an hour; execute revoked from PUBLIC/anon/authenticated, granted to service_role. `lib/llm/quota-store.ts`: `SupabaseQuotaStore` (rpc through the service-role client, DB clock, throws on any error) and `defaultQuotaStore()` (Postgres with URL + service key, else `MemoryQuotaStore`); the default guard uses it. `OpenRouterGuard.admit` fails closed: a store error is the new skip `openrouter_quota_unavailable`, never an uncounted call.
 State: lint, typecheck, unit tests (8 new) and `pnpm test:db` (15 files, 915 tests, new `tests/db/llm-quota.test.ts`: catalog, deny for anon/admin/staff on table and function, minute and day caps, 30 parallel calls vs 18 → exactly 18, UTC rollover) green; local Supabase started in this cloud shell. Branch `f508a2-llm-quota-store`, started on `f508a1-openrouter-guard`; #233 squash-merged during the session, so main is merged in and the PR targets main. Migration not applied to fas-dev (parent session, with George's approval).
