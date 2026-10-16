@@ -106,11 +106,13 @@ test("map: 29 county paths above the table, legend copy, FAS outlines, hatch; li
       await expect(swatches.first()).toHaveAttribute("aria-label", "Lowest need · 7 counties");
       await expect(swatches.last()).toHaveAttribute("aria-label", "Highest need · 5 counties");
       await expect(map.getByText(/placeholder/i)).toHaveCount(1);
-      const [mapBox, legendBox] = [await map.locator("svg").boundingBox(), await legend.boundingBox()];
+      // The county map itself, not the FAS pin icons in the panel's "Highest need" rows.
+      const chart = map.getByRole("group", { name: "Utah county need map" });
+      const [mapBox, legendBox] = [await chart.boundingBox(), await legend.boundingBox()];
       expect(legendBox!.y - (mapBox!.y + mapBox!.height)).toBeLessThanOrEqual(32);
       expect(Math.abs(legendBox!.x - mapBox!.x)).toBeLessThanOrEqual(8);
       await expect(map.locator("text").first()).toBeVisible({ visible: width >= 1024 });
-      const svg = await map.locator("svg").boundingBox();
+      const svg = await chart.boundingBox();
       expect(svg?.height ?? 0).toBeLessThanOrEqual(640);
       expect(svg?.width ?? 0).toBeLessThanOrEqual(width === 375 ? 343 : 696);
       // The map sits above the county rows: the table from 768, the ranked list below it (DS-11b).
