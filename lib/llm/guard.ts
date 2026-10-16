@@ -9,12 +9,17 @@ export const DEFAULT_RPM_LIMIT = 18;
 export const DEFAULT_DAILY_LIMIT = 45;
 export const DEFAULT_COOLDOWN_MS = 60_000;
 
-export type GuardSkip = 'paid_model_refused' | 'openrouter_quota_exhausted' | 'openrouter_cooldown' | 'openrouter_disabled_today';
+export type GuardSkip =
+  | 'paid_model_refused'
+  | 'openrouter_quota_exhausted'
+  | 'openrouter_quota_unavailable'
+  | 'openrouter_cooldown'
+  | 'openrouter_disabled_today';
 
 export const isFreeModel = (model: string) => model.endsWith(':free');
 export const utcDay = (now: number) => new Date(now).toISOString().slice(0, 10);
 
-/** Counters behind the caps. In memory here (per server instance); the durable Postgres store is #224. */
+/** Counters behind the caps: in memory per server instance here, or durable in Postgres (`SupabaseQuotaStore`, #224). */
 export interface QuotaStore {
   /** Takes one slot for `provider` at `now` if the minute and the UTC day both have one left. */
   reserve(provider: Provider, now: number): boolean | Promise<boolean>;
@@ -85,7 +90,13 @@ export class OpenRouterGuard {
     const t = this.now();
     if (this.disabledDay === utcDay(t)) return 'openrouter_disabled_today';
     if (t < this.cooldownUntil) return 'openrouter_cooldown';
-    return (await this.store.reserve('openrouter', t)) ? null : 'openrouter_quota_exhausted';
+    let reserved: boolean;
+    try {
+      reserved = await this.store.reserve('openrouter', t);
+    } catch {
+      return 'openrouter_quota_unavailable'; // fail closed: an uncounted call could pass the free-tier cap
+    }
+    return reserved ? null : 'openrouter_quota_exhausted';
   }
 
   /** 429 starts a cooldown; 402 (negative balance) turns OpenRouter off until the next UTC day. */

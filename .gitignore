@@ -38,3 +38,6 @@ harness/audits/*
 
 # Claude Code subagent worktrees (never committed)
 .claude/worktrees/
+
+# F-508b2: private org-knowledge import files (real FAS text) must never be committed
+*.knowledge.json
