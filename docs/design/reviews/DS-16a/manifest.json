@@ -1,0 +1,32 @@
+[
+  {
+    "id": "DS-16a",
+    "tag": "before",
+    "route": "/data-freshness",
+    "width": 375,
+    "variant": "base",
+    "host": "fas-caspilot-data-9x8in7y2u-aimoggas-projects.vercel.app",
+    "sha": "e44aa85",
+    "at": "2026-10-16T03:29:52.501Z"
+  },
+  {
+    "id": "DS-16a",
+    "tag": "before",
+    "route": "/data-freshness",
+    "width": 1024,
+    "variant": "base",
+    "host": "fas-caspilot-data-9x8in7y2u-aimoggas-projects.vercel.app",
+    "sha": "e44aa85",
+    "at": "2026-10-16T03:29:53.893Z"
+  },
+  {
+    "id": "DS-16a",
+    "tag": "before",
+    "route": "/data-freshness",
+    "width": 1440,
+    "variant": "base",
+    "host": "fas-caspilot-data-9x8in7y2u-aimoggas-projects.vercel.app",
+    "sha": "e44aa85",
+    "at": "2026-10-16T03:29:55.823Z"
+  }
+]
