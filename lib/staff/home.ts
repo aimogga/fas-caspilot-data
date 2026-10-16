@@ -8,6 +8,7 @@ import { priorQuarter, quarterLabel } from '../dashboard/filters';
 import { days, pct, quarterPoints } from '../dashboard/format';
 import { MetricsQuery, type DashboardMetrics, type Loaded, type Wired } from '../dashboard/metrics-query';
 import { FreshnessPage, type FreshnessPageView } from '../freshness/query';
+import { Todo, type TodoView } from './todo';
 
 const DENVER = 'America/Denver';
 export type KpiId = 'm1' | 'm2' | 'm4';
@@ -17,7 +18,19 @@ export type Kpi = {
   id: KpiId; title: string; noun: string; unit: string; goodWhen: 'up' | 'down'; state: KpiState; value: string | null; valueText: string | null;
   chip: Chip | null; points: ChartPoint[]; n: number; asOf: string; noData: string;
 };
-export type StaffHomeData = { period: string; metrics: DashboardMetrics; freshness: FreshnessPageView | null };
+export type StaffHomeData = { period: string; metrics: DashboardMetrics; freshness: FreshnessPageView | null; todo: TodoView | null };
+/** Registry codes in words for the Public sources card; an unknown code is shown as stored rather than guessed. */
+const SOURCE_NAMES: Record<string, string> = {
+  'census-sahie': 'Census SAHIE', 'census-saipe': 'Census SAIPE', 'census-acs': 'Census American Community Survey', 'cdc-places': 'CDC PLACES',
+  'hrsa-hpsa-mh': 'HRSA mental-health shortage areas', 'va-vetpop': 'VA veteran population', 'propublica_990': 'ProPublica nonprofit filings',
+  grants_gov: 'Grants.gov', usaspending: 'USAspending federal awards', ut_courts: 'Utah State Courts',
+};
+export const sourceName = (code: string): string => SOURCE_NAMES[code] ?? code;
+/** The vintage column in words: `Latest 2024` with what a vintage is, or `No load yet` when nothing from the source has been stored. */
+export const vintageWords = (vintage: string): { text: string; hint: string } =>
+  vintage && vintage !== '—'
+    ? { text: `Latest ${vintage}`, hint: 'The newest release of this source we have loaded. The source labels releases by year or month.' }
+    : { text: 'No load yet', hint: 'Nothing from this source has been stored yet. The release label appears after the first successful run.' };
 type Pick = (m: Wired & Record<string, unknown>) => number | null;
 const SPEC: { id: KpiId; noun: string; unit: string; goodWhen: 'up' | 'down'; fmt: (x: number | null) => string | null; noData: string; pick: Pick }[] = [
   { id: 'm1', noun: 'Days to first session', unit: ' days', goodWhen: 'down', fmt: days, noData: 'No closed cases this quarter', pick: (m) => m.median as number | null },
@@ -72,13 +85,12 @@ export const StaffHome = {
       };
     });
   },
-  /** Metrics and the public-source list load side by side; a freshness failure only drops that card. */
-  async load(client: SupabaseClient, now: Date, role: string | null | undefined): Promise<StaffHomeData> {
-    const f = boardFilters(now);
-    const [metrics, freshness] = await Promise.all([
-      MetricsQuery.load(client, f),
-      FreshnessPage.load(client, now, role).catch((e: unknown) => { console.error('[home] freshness failed', { message: e instanceof Error ? e.message : 'unknown' }); return null; }),
+  /** Metrics, the public-source list and the to-do list load side by side; a freshness or to-do failure only drops that card. */
+  async load(client: SupabaseClient, now: Date, role: string | null | undefined, orgId: string | null = null): Promise<StaffHomeData> {
+    const f = boardFilters(now), dropped = (what: string) => (e: unknown) => { console.error(`[home] ${what} failed`, { message: e instanceof Error ? e.message : 'unknown' }); return null; };
+    const [metrics, freshness, todo] = await Promise.all([
+      MetricsQuery.load(client, f), FreshnessPage.load(client, now, role).catch(dropped('freshness')), Todo.load(client, now, orgId).catch(dropped('to-do')),
     ]);
-    return { period: f.period, metrics, freshness };
+    return { period: f.period, metrics, freshness, todo };
   },
 };

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DashboardMetrics } from '@/lib/dashboard/metrics-query';
-import { chip, dateEyebrow, firstName, greeting, StaffHome, summary } from './home';
+import { chip, dateEyebrow, firstName, greeting, sourceName, StaffHome, summary, vintageWords } from './home';
 const w = <T>(v: T, n: number, delta: string | null = null) => ({ n, rows: n, viewRows: n, asOf: 'Jul 2026', delta, ...v });
 const q = (vals: (number | null)[]) => ['2025-Q4', '2026-Q1', '2026-Q2', '2026-Q3'].map((period, i) => ({ period, value: vals[i] ?? null }));
 const metrics = (m1: object, m2: object = w({ median: null }, 4), m4: object = w({ total: { rate: 0.71 } }, 29, '↑ 3 pts higher than Q2')) => ({
@@ -41,5 +41,11 @@ describe('StaffHome (DS-10a)', () => {
     const states = StaffHome.cards(metrics(w({ median: null }, 0), { error: true }, w({ total: null }, 0)), '2026-Q3');
     expect(states.map((k) => [k.state, k.value, k.noData])).toEqual([['no-data', null, 'No closed cases this quarter'], ['error', null, 'No closed cases this quarter'], ['no-data', null, 'Not enough closed episodes']]);
     expect(StaffHome.cards(null, '2026-Q3').map((k) => [k.state, k.points, k.asOf, k.chip])).toEqual(Array(3).fill(['not-available', [], 'Not available yet', null]));
+  });
+  it('names public sources in words, never a registry code, and explains the vintage column or its absence (DS-10b)', () => {
+    expect(['cdc-places', 'propublica_990', 'hrsa-hpsa-mh', 'va-vetpop', 'census-acs', 'example-monthly-source'].map(sourceName))
+      .toEqual(['CDC PLACES', 'ProPublica nonprofit filings', 'HRSA mental-health shortage areas', 'VA veteran population', 'Census American Community Survey', 'example-monthly-source']);
+    expect(vintageWords('2024')).toMatchObject({ text: 'Latest 2024' });
+    expect([vintageWords('—').text, vintageWords('').text, vintageWords('—').hint]).toEqual(['No load yet', 'No load yet', expect.stringContaining('first successful run')]);
   });
 });
