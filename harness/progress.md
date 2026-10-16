@@ -1048,6 +1048,13 @@ Left: `app/(app)/data-freshness/loading.tsx` once `PageSkeleton` (#262) is on ma
 Decisions: none new (designer defaults listed in the spec: chip word stays `Current`; the run cell uses the `ExplainCard` face because `Provenance` has no started/finished rows and the kit is read-only).
 
 ---
+## 2026-10-16 02:25 (UTC) — Cloud Agent (Engineer Supervisor) — DS-13b after shots and DS-14 login before shots (design)
+Did: captured the DS-13b "after" evidence from the `ds-13b-board-sections` preview: `docs/design/reviews/DS-13b/after/board-{375,1024,1440}[-hover].png` (hover on a county rank cell in section 4), the Letter print sheet `board-816-print.png` and the four-page `board-816-print.pdf`, with manifest rows. Retook the DS-14 "before" shots of `/login` signed out (`docs/design/reviews/DS-14/before/login-{375,1024,1440}.png`): the first set had followed the sign-in redirect and showed `/board`; manifest rows updated.
+State: binary and manifest only. Branch `design/after-shots-day4`. The 375 board shot is about 4 900 px (kept). Seen on the print PDF: the fixed footer repeats "Page N of 4" at the bottom of each page as intended; in the full-page PNG the fixed footer renders mid-page, which is a screenshot artefact, not a layout fault.
+Left: DS-12b, DS-14 and DS-15a/16a after shots once those packets merge.
+Decisions: none new.
+
+---
 
 ## 2026-10-15 23:58 (UTC) — Claude Code (cloud) — pr-gate base for stacked PRs (D-028, D-032)
 Did: `scripts/pr-gate.mjs` exports `resolveBase()`: `--base`, else `PR_GATE_BASE`, else `git config branch.<current>.gateBase` (an `origin/*` branch only; ignored on a detached HEAD; git called with an argument list, never a shell string), else `origin/main`; the CLI prints `base: <ref> (<where from>)` above the rows. `scripts/pr-gate-hook.mjs` passes `process.env` to `pnpm gate` explicitly. Five unit tests in `scripts/pr-gate.test.mjs` (precedence, detached/no repo, non-origin and shell-shaped values refused, CLI reads the env var, hook hands the env var to a stub `pnpm`). D-028 gains a dated note and AGENTS.md the command for a train branch. Builds on #239 (merged first): same key name, origin/* guard and argument-list git calls; this PR adds PR_GATE_BASE, the `from` label and the hook test.
