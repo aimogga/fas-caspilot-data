@@ -3,8 +3,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { z, ZodError } from 'zod';
 import { AwardHistoryQuery, keywords, type SimilarAward } from '../grants/award-history';
+import { listApproved, parseSourceRef } from '../knowledge/store';
 import { generateJson, LlmError, type LlmMeta } from '../llm';
-import { copyHits, matches, numbersIn, registerResolver, resolveFact, type CitationReport, type ClaimCheck, type Resolver } from './citations';
+import { copyHits, matches, numbersIn, registerResolver, resolveFact, type CitationReport, type ClaimCheck } from './citations';
 import { assertPrivate, indicatorFacts, loadServiceIndicators, must, type Fact, type IndicatorRow, type Snapshot } from './snapshot';
 
 /** Column subsets of recipient_profile (#228), award_abstract (#229) and org_knowledge (#225), named as on those branches. */
@@ -130,34 +131,16 @@ export async function analyzeWinners(x: WinnerInput, generate: typeof generateJs
   }
 }
 
-const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
-// recipient_profile (#228) and award_abstract (#229) resolve through the base RESOLVERS in citations.ts.
-/** Kinds whose table may not exist yet. org_knowledge cites the immutable version a citation quotes. */
-export const WINNER_RESOLVERS: Record<string, [table: string, Resolver]> = {
-  org_knowledge: ['org_knowledge_version', (ref) => new RegExp(`^${UUID}@v[1-9]\\d*$`, 'i').test(ref)],
-};
-/** Registers each pending kind only once its table exists (org_knowledge: #238). */
-export async function registerWinnerResolvers(tableExists: (table: string) => Promise<boolean>): Promise<string[]> {
-  const done: string[] = [];
-  for (const [kind, [table, r]] of Object.entries(WINNER_RESOLVERS)) if (await tableExists(table)) { registerResolver(kind, r); done.push(kind); }
-  return done;
-}
-/** PostgREST answers PGRST205 (or Postgres 42P01) for a table that is not in the schema; anything else, an RLS refusal included, means it exists. */
-export const tableExists = (client: SupabaseClient) => async (table: string): Promise<boolean> => {
-  const { error } = await client.from(table).select('*', { head: true, count: 'exact' }).limit(1);
-  return !(error && ['PGRST205', '42P01'].includes(error.code));
-};
+// recipient_profile (#228) and award_abstract (#229) resolve through the base RESOLVERS; org_knowledge (#238) cites the exact version quoted.
+registerResolver('org_knowledge', (ref) => parseSourceRef(`org_knowledge:${ref}`) !== null);
 
 export type WinnerLoaders = { profiles(awardIds: string[]): Promise<ProfileRow[]>; abstracts(awardIds: string[]): Promise<AbstractRow[]>; knowledge(): Promise<KnowledgeRow[]> };
-/** Reads under the caller's RLS (admin/staff SELECT): profiles and abstracts for the given awards; approved org_knowledge rows of the caller's org once
- * #238's tables exist (nothing before). Same columns and `org_knowledge:<id>@v<version>` citation as lib/knowledge/store listApproved (#238). */
+/** Reads under the caller's RLS (admin/staff SELECT): profiles and abstracts for the given awards, and approved org_knowledge of the caller's org (#238). */
 export const dbLoaders = (client: SupabaseClient): WinnerLoaders => ({
   profiles: async (ids) => (ids.length ? must(await client.from('recipient_profile').select(PROFILE_COLS).in('award_history_id', ids)) as ProfileRow[] : []),
   abstracts: async (ids) => (ids.length ? must(await client.from('award_abstract').select(ABSTRACT_COLS).in('award_history_id', ids)) as AbstractRow[] : []),
-  knowledge: async () => ((await registerWinnerResolvers(tableExists(client))).includes('org_knowledge')
-    ? must(await client.from('org_knowledge').select(KNOWLEDGE_COLS).eq('status', 'approved')) as KnowledgeRow[] : []),
+  knowledge: () => listApproved(client),
 });
-const KNOWLEDGE_COLS = 'id,category,title,body,source,as_of,version';
 const PROFILE_COLS = 'id,award_history_id,recipient,ntee_code,ruling_year,latest_tax_year,total_revenue,total_expenses,program_service_expenses,contributions_share,match_confidence';
 const ABSTRACT_COLS = 'id,award_history_id,source,status,text,word_count,reason';
 

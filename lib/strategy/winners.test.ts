@@ -1,10 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { SimilarAward } from '../grants/award-history';
 import { LlmError, type generateJson, type LlmMeta } from '../llm';
 import { RESOLVERS } from './citations';
 import {
-  analyzeWinners, APPLICATIONS_NOT_PUBLIC, dbLoaders, extractCriteria, overlapScores, registerWinnerResolvers, tableExists, WINNER_RESOLVERS, type WinnerAnalysis, type WinnerInput,
+  analyzeWinners, APPLICATIONS_NOT_PUBLIC, dbLoaders, extractCriteria, overlapScores, type WinnerAnalysis, type WinnerInput,
 } from './winners';
 
 // Fictional NOFO excerpts and synthetic rows only; the adapter is mocked, so no network call is made.
@@ -46,9 +46,6 @@ const META: LlmMeta = { provider: 'gemini', model: 'test-model', attempts: 1, in
 const mockGen = (out: unknown) => vi.fn(async () => { if (out instanceof Error) throw out; return { data: out, meta: META }; }) as unknown as typeof generateJson & ReturnType<typeof vi.fn>;
 const pattern = (statement: string, citation_ids: string[]): WinnerAnalysis => ({ ...good, patterns: [{ label: 'INFERENCE', statement, citation_ids }] });
 const problems = async (out: unknown) => (await analyzeWinners(input(), mockGen(out))).report.claims.flatMap((c) => c.problems);
-
-beforeAll(() => registerWinnerResolvers(async () => true));
-afterAll(() => Object.keys(WINNER_RESOLVERS).forEach((k) => RESOLVERS.delete(k)));
 
 describe('winner analysis (F-508d)', () => {
   it('extracts headings, points, word and page limits with line references from fixture NOFOs', () => {
@@ -110,31 +107,25 @@ describe('winner analysis (F-508d)', () => {
     expect(copy).toMatchObject({ status: 'rejected', report: { copied: [expect.objectContaining({ citation_id: `award_abstract:${ABS}` })] } });
   });
 
-  it('registers each resolver only when its table exists', async () => {
-    try {
-      Object.keys(WINNER_RESOLVERS).forEach((k) => RESOLVERS.delete(k));
-      expect(await registerWinnerResolvers(async (t) => t !== 'org_knowledge_version')).toEqual([]);
-      expect(['recipient_profile', 'award_abstract'].every((k) => RESOLVERS.has(k))).toBe(true); // on the base: registered at import
-      await expect(analyzeWinners(input(), mockGen(good))).rejects.toThrow(/unregistered kind org_knowledge/);
-      const client = (code: string | null) => ({ from: () => ({ select: () => ({ limit: async () => ({ error: code && { code } }) }) }) }) as unknown as SupabaseClient;
-      expect(await tableExists(client('PGRST205'))('recipient_profile')).toBe(false);
-      expect(await tableExists(client('42501'))('recipient_profile')).toBe(true);
-      expect(await tableExists(client(null))('recipient_profile')).toBe(true);
-    } finally { await registerWinnerResolvers(async () => true); }
+  it('org_knowledge resolves only a versioned ref; without the resolver its facts are refused', async () => {
+    const r = RESOLVERS.get('org_knowledge')!, fact = input().knowledge[0]!;
+    expect([r(`${K}@v2`, fact as never), r(K, fact as never), r(`${K}@v0`, fact as never)]).toEqual([true, false, false]);
+    RESOLVERS.delete('org_knowledge');
+    try { await expect(analyzeWinners(input(), mockGen(good))).rejects.toThrow(/unregistered kind org_knowledge/); } finally { RESOLVERS.set('org_knowledge', r); }
   });
 
-  it('db loaders read recipient_profile and award_abstract for the given awards, and approved org_knowledge once its table exists', async () => {
+  it('db loaders read recipient_profile and award_abstract for the given awards, and approved org_knowledge via listApproved', async () => {
     const calls: [string, string, string, unknown][] = [], krow = input().knowledge[0]!;
-    const client = (missing: boolean) => ({ from: (t: string) => ({ select: (cols: string) => ({
+    const sorted = { order: () => ({ order: async () => ({ data: [krow], error: null }) }) };
+    const client = { from: (t: string) => ({ select: (cols: string) => ({
       in: async (col: string, ids: string[]) => (calls.push([t, cols, col, ids]), { data: [], error: null }),
-      limit: async () => ({ error: missing ? { code: 'PGRST205' } : null }),
-      eq: async (col: string, v: string) => (calls.push([t, cols, col, v]), { data: [krow], error: null }),
-    }) }) }) as unknown as SupabaseClient;
-    const l = dbLoaders(client(false));
-    expect([await l.profiles([AWARD]), await l.abstracts([AWARD]), await l.profiles([]), await l.knowledge()]).toEqual([[], [], [], [krow]]);
+      eq: (col: string, v: string) => (calls.push([t, cols, col, v]), sorted),
+    }) }) } as unknown as SupabaseClient;
+    const l = dbLoaders(client);
+    expect([await l.profiles([AWARD]), await l.abstracts([AWARD]), await l.profiles([])]).toEqual([[], [], []]);
+    expect(await l.knowledge()).toEqual([{ ...krow, source_ref: `org_knowledge:${K}@v2` }]);
     expect(calls.map(([t, , col, v]) => [t, col, v])).toEqual([['recipient_profile', 'award_history_id', [AWARD]], ['award_abstract', 'award_history_id', [AWARD]],
       ['org_knowledge', 'status', 'approved']]);
     expect(calls[0]![1]).not.toMatch(/ein|matched_name|source_url/);
-    expect(await dbLoaders(client(true)).knowledge()).toEqual([]);
   });
 });
