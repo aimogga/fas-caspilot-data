@@ -222,7 +222,7 @@ test("AC9: the View as table toggle has an Info hint that reads the same on hove
   expect(await hints.count()).toBeGreaterThan(0);
   expect(await hints.count()).toBe(await page.getByRole("button", { name: "View as table", exact: true }).count());
   await hoverUntil(hints.first(), tip);
-  await expect(tip).toHaveText(/^Shows the same numbers as the picture in a table, one row per period, with hidden values marked\.$/);
+  await expect(tip).toHaveText(/^Shows the same numbers as the picture in a table, one row per bar or point, with hidden values marked\.$/);
   const hovered = await tip.textContent();
   await hints.first().focus();
   await expect(tip).toHaveText(hovered ?? "");

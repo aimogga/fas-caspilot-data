@@ -25,7 +25,7 @@ export const DASH_TERMS: Record<string, Term> = {
   m4_closed: t('m4_closed', 'Closed', 'How many families in this income band had their therapy close this quarter, whether or not they finished it.'),
   m4_rate: t('m4_rate', 'Completion rate', 'Completed divided by closed, for this income band. Higher is better.'),
   m6_share: t('m6_share', 'Share of therapy dollars', 'The share of everything FAS paid for therapy this quarter that went to this group of providers. The two groups add up to all of it.'),
-  m6_rate: t('m6_rate', 'Average rate per hour', 'What this group of providers charged per hour of therapy on average, weighted by the hours they delivered this quarter.'),
+  m6_rate: t('m6_rate', 'Average rate per hour', 'What this group of providers charged per hour of therapy on average, weighted by the units of therapy authorized this quarter.'),
   m6_dollars: t('m6_dollars', 'Dollars paid', 'The total FAS paid to this group of providers for therapy this quarter.'),
   m6_episodes: t('m6_episodes', 'Episodes', 'How many courses of therapy this group of providers delivered this quarter. One episode is one family\'s course of therapy.'),
   o1_mean: t('o1_mean', 'Mean change', 'The average change in survey score from the start of therapy to the end, in points. On a distress scale a negative number means families felt better.'),
@@ -74,7 +74,7 @@ export function o1Cell(kind: O1Kind, m: O1Measure, asOf: string): CellData {
   return { 'data-term': `o1_${kind}`, 'data-value': words, 'data-source': FAS, 'data-asof': asOf, 'data-hidden': words == null ? whyHidden('suppressed') : undefined };
 }
 /** The sentence beside the `View as table` toggle under every chart. */
-export const TABLE_HINT = 'Shows the same numbers as the picture in a table, one row per period, with hidden values marked.';
+export const TABLE_HINT = 'Shows the same numbers as the picture in a table, one row per bar or point, with hidden values marked.';
 
 /** One sentence beside each filter label. */
 export const FILTER_HINTS: Record<string, string> = {
