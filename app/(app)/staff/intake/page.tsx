@@ -5,7 +5,7 @@ import { ErrorState, PageHeader, Stack } from "@/components/layout";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
-const DESCRIPTION = "CSV only for now. Download a template, fill it in, upload it, map the columns and check the preview before anything is saved.";
+const DESCRIPTION = "CSV only for now. Download a template, fill it in, upload it, match the columns and check the preview. Nothing is saved until you choose Save.";
 
 /** F-301 part 2: county codes come from `geo_county` so the browser-side validation matches the database. */
 async function loadCountyFips(): Promise<string[] | null> {
@@ -32,7 +32,7 @@ export default async function IntakePage() {
   const [countyFips, batches] = await Promise.all([loadCountyFips(), loadBatches()]);
   return (
     <Stack gap={6}>
-      <PageHeader eyebrow="WORKSPACE" title="Upload data" description={DESCRIPTION} />
+      <PageHeader eyebrow="WORKSPACE" title="Add FAS records from a spreadsheet" description={DESCRIPTION} />
       {countyFips && countyFips.length ? (
         <UploadWizard countyFips={countyFips} />
       ) : (

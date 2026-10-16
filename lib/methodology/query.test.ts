@@ -20,7 +20,8 @@ describe('F-210 methodology query', () => {
     expect(view?.version).toBe('v2-synthetic');
     expect([view?.approvedLabel, view?.synthetic, view?.singleInput]).toEqual(['Oct 2026', true, true]);
     expect(view?.inputs).toEqual([{ key: 'uninsured', label: 'Uninsured rate', known: true, source: 'Census SAHIE', vintage: '2023', asOf: 'Oct 2026', status: 'current' }]);
-    expect([view?.weights, view?.sum, view?.mismatch]).toEqual([[{ key: 'uninsured', label: 'Uninsured rate', known: true, weight: '1', share: '100%' }], '1', null]);
+    expect([view?.weights, view?.sum, view?.mismatch]).toEqual([[{ key: 'uninsured', label: 'Uninsured rate', known: true, weight: '1', share: '100%', points: 100 }], '1', null]);
+    expect([view?.scored, view?.counties]).toEqual([26, 29]);
     expect(view?.notPublished).toBe('3 of 29 counties are Not published for this version.');
     expect(view?.footer).toBe('Public sources: Census SAHIE · Need score version v2-synthetic · as of Oct 2026 · Synthetic data');
     expect(view?.draft).toEqual({ version: 'v3-draft', createdLabel: 'Oct 2026' });
@@ -41,7 +42,7 @@ describe('F-210 methodology query', () => {
     const view = MethodologyQuery.build(input, 'production');
     expect([view?.synthetic, MethodologyQuery.build(input, 'preview')?.synthetic]).toEqual([false, true]);
     expect([view?.sum, view?.mismatch]).toEqual(['0.8', 'Weights in this version do not sum to 1 (sum = 0.8).']);
-    expect(view?.weights.map((w) => w.share)).toEqual(['75%', '25%']);
+    expect(view?.weights.map((w) => [w.share, w.points])).toEqual([['75%', 75], ['25%', 25]]);
     expect(view?.inputs[1]).toMatchObject({ key: 'mystery', label: 'mystery', known: false, source: '—', vintage: '—', status: 'not_published' });
     expect(view?.notPublished).toBe('29 of 29 counties are Not published for this version.');
     expect(view?.footer).toBe('Public sources: Census SAHIE · Need score version v2-real · as of Oct 2026');

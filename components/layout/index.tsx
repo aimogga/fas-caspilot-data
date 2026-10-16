@@ -14,7 +14,7 @@ export function Page({ id, children, className }: { id?: string; children: React
   return <main id={id} data-slot="page" className={cn(className)}>{children}</main>;
 }
 
-export function PageHeader({ eyebrow, title, description, actions }: { eyebrow?: string; title: string; description?: string; actions?: ReactNode }) {
+export function PageHeader({ eyebrow, title, description, actions }: { eyebrow?: string; title: string; description?: ReactNode; actions?: ReactNode }) {
   return (
     <header data-slot="page-header">
       {eyebrow ? <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{eyebrow}</p> : null}

@@ -1,23 +1,33 @@
 /* F-402 board dashboard print sheet: letter-size, black on white, no shell, cards never split across pages. */
 @media print {
-  @page { margin: 16mm; }
+  /* DS-13b page numbers: engines with margin boxes print "Page n of N"; Chromium ignores @bottom-center, so the running footer below repeats the title on every sheet. */
+  @page { size: letter; margin: 16mm 16mm 20mm; @bottom-center { content: "Page " counter(page) " of " counter(pages); font-size: 9pt; } }
+  [data-slot=board-page-footer] { display: block !important; position: fixed; bottom: 0; left: 0; right: 0; font-size: 9pt; text-align: center; }
+  [data-slot=board-section] { break-inside: avoid; page-break-inside: avoid; border-color: #000; padding-top: 10pt; }
+  [data-slot=board-section] > h2 { font-size: 15pt; font-family: var(--font-serif); }
+  [data-slot=board-section] [data-slot=grid] { display: grid !important; grid-template-columns: repeat(2, 1fr); gap: 8pt; }
+  [data-slot=board-section] [data-slot=grid][data-cols="1"] { grid-template-columns: 1fr; }
+  [data-slot=open-map], [data-slot=packet-card] { display: none !important; }
+  [data-slot=board-sources] { border-color: #000; font-size: 9pt; }
   [data-slot=sidebar], [data-slot=topbar], [data-slot=skip], [data-slot=actions], [data-slot=print-button], [data-slot=sheet-content], button { display: none !important; }
-  html, body, [data-slot=column], [data-slot=page], [data-slot=metric-card] [data-slot=card], [data-slot=freshness-widget] [data-slot=card], [data-slot=board-pictures] [data-slot=card], [data-slot=packet-pictures] [data-slot=card] { background: #fff !important; }
+  /* DS-13a: the explain faces never print; their words live in the footers. Explain triggers print as plain text; the KPI row keeps three across. */
+  [data-slot=popover-content], [data-slot=hover-card-content], [data-slot=tooltip-content] { display: none !important; }
+  [data-slot=explain-trigger], [data-slot=hint-trigger] { display: inline !important; min-height: 0; text-decoration: none; }
+  [data-slot=explain-trigger] > svg { display: none; }
+  [data-slot=kpi-row] { display: grid !important; grid-template-columns: repeat(3, 1fr); border-color: #000; }
+  [data-slot=kpi] { border-color: #000; break-inside: avoid; page-break-inside: avoid; }
+  [data-slot=board-asof] { break-inside: avoid; page-break-inside: avoid; }
+  html, body, [data-slot=column], [data-slot=page], [data-slot=metric-card] [data-slot=card], [data-slot=freshness-widget] [data-slot=card], [data-slot=board-section] [data-slot=card], [data-slot=packet-pictures] [data-slot=card] { background: #fff !important; }
   body, body * { color: #000 !important; }
   [data-slot=column] > [data-slot=page] { max-width: none; padding: 0; font-size: 11pt; }
   [data-slot=page-header] { display: flex; flex-direction: column; gap: 6pt; }
-  [data-slot=page-header] h1 { font-size: 22pt; }
+  [data-slot=page-header] h1 { font-size: 22pt; font-family: var(--font-serif); }
   [data-slot=grid] { display: block !important; }
   [data-slot=grid] > * { margin-bottom: 8pt; }
-  [data-slot=metric-card], [data-slot=freshness-widget], [data-slot=board-pictures] [data-slot=card], [data-slot=packet-pictures] [data-slot=card], [data-slot=board-summary], [data-slot=board-note] { break-inside: avoid; page-break-inside: avoid; }
-  [data-slot=metric-card] [data-slot=card], [data-slot=freshness-widget] [data-slot=card], [data-slot=board-pictures] [data-slot=card], [data-slot=packet-pictures] [data-slot=card] { border: 1px solid #000; box-shadow: none; }
+  [data-slot=metric-card], [data-slot=freshness-widget], [data-slot=board-section] [data-slot=card], [data-slot=packet-pictures] [data-slot=card] { break-inside: avoid; page-break-inside: avoid; }
+  [data-slot=board-section] > h2, [data-slot=board-lead], [data-slot=board-sources] { break-inside: avoid; page-break-inside: avoid; }
+  [data-slot=metric-card] [data-slot=card], [data-slot=freshness-widget] [data-slot=card], [data-slot=board-section] [data-slot=card], [data-slot=packet-pictures] [data-slot=card] { border: 1px solid #000; box-shadow: none; }
   [data-slot=suppressed] { background: none; border: 1px dashed #000; }
   a[href] { text-decoration: none; }
-  /* F-403 evidence packet: controls hidden, each section on its own page, running footer on every printed page. */
-  [data-slot=packet-controls] { display: none !important; }
-  [data-slot=packet-section] { break-before: page; page-break-before: always; }
-  [data-slot=packet-cover] { min-height: 40vh; }
-  [data-slot=packet-footer] { position: fixed; bottom: 0; left: 0; right: 0; font-size: 9pt; text-align: center; }
-  [data-slot=packet-figures] { display: block !important; }
-  [data-slot=packet-figures] > * { break-inside: avoid; border: 1px solid #000; margin-bottom: 6pt; }
+  /* The evidence packet print rules live in components/packets/print.css (DS-17). */
 }

@@ -14,10 +14,10 @@ describe('FreshnessPage.build (DS-05a)', () => {
   it('sorts worst first then A–Z, formats each column, and aggregates to the worst status', () => {
     const view = FreshnessPage.build(sources, runs, indicators, NOW, 'admin');
     expect(view.rows.map((r) => `${r.name}:${r.status}`)).toEqual(['broken:failed', 'old:stale', 'never:not_published', 'alpha:current', 'zeta:current']);
-    expect(view.rows[0]).toMatchObject({ runId: 'bad-run', cadence: 'Quarterly', lastSuccess: runDateOf(10), latestVintage: '—', staleDays: null, paused: false, owner: 'Census' });
+    expect(view.rows[0]).toMatchObject({ run: { id: 'bad-run', status: 'failed', startedAt: daysAgo(1), finishedAt: null, rowsLoaded: null }, cadence: 'Quarterly', cadenceRaw: 'quarterly', lastSuccess: runDateOf(10), latestVintage: '—', staleDays: null, paused: false, owner: 'Census' });
     expect(view.rows[1]).toMatchObject({ paused: true, latestVintage: '2023', staleDays: 60, cadence: 'Monthly' });
-    expect(view.rows[2]).toMatchObject({ lastSuccess: 'Never', latestVintage: '—', cadence: '—', owner: null, runId: null, staleDays: null });
-    expect(view.rows[3]).toMatchObject({ latestVintage: '2024', runId: 'run-alpha' });
+    expect(view.rows[2]).toMatchObject({ lastSuccess: 'No load yet', latestVintage: '—', cadence: '—', cadenceRaw: null, owner: null, run: null, staleDays: null });
+    expect(view.rows[3]).toMatchObject({ latestVintage: '2024', run: { id: 'run-alpha' } });
     expect(view).toMatchObject({ aggregate: 'failed', asOf: runDateOf(1), chip: { status: 'failed', label: 'Last run failed' }, showRun: true });
   });
 
