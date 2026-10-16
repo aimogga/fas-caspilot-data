@@ -3,11 +3,16 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { checkEligibility, fromMatchFlags } from './eligibility';
 import { loadOrgProfile } from './profile';
 import { type Component, type MatchConfig, scoreOpportunity, toMatchResultRow } from './score';
+import { awardRange } from './terms';
 import type { Flag, OpportunityInput } from './types';
 
-export type MatchFlags = { eligible: boolean | 'unknown'; flags: Flag[] }; export type MatchItem = { id: string; title: string; funder: string; closes: string; score: number; eligibility: string; components: Component[]; flags: Flag[] };
+export type MatchFlags = { eligible: boolean | 'unknown'; flags: Flag[] };
+/** `award` and `status` (DS-12a) read stored `opportunity.award_*` and `pipeline_status.status`; `status` is null when nobody has moved the opportunity. */
+export type MatchItem = { id: string; title: string; funder: string; closes: string; award: string; status: string | null; score: number; eligibility: string; components: Component[]; flags: Flag[] };
 export type MatchList = { config: { id: string; draft: boolean } | null; asOf: string | null; rows: MatchItem[] };
-type ResultRow = { id: string; score: number | string | null; components: unknown; flags: unknown; computed_at: string; opportunity: { title: string; funder: string | null; close_date: string | null } | null };
+type Opp = { title: string; funder: string | null; close_date: string | null; award_floor: number | string | null; award_ceiling: number | string | null };
+type ResultRow = { id: string; opportunity_id: string; score: number | string | null; components: unknown; flags: unknown; computed_at: string; opportunity: Opp | null };
+const num = (v: number | string | null) => (v === null ? null : Number(v));
 const OPP_COLS = 'id,source,title,funder,assistance_listing,posted_date,close_date,award_floor,award_ceiling,eligibility,description,raw';
 const today = (now: Date) => now.toISOString().slice(0, 10); const fmt = (iso: string, opts: Intl.DateTimeFormatOptions) => new Date(iso).toLocaleDateString('en-US', { ...opts, timeZone: 'UTC' });
 
@@ -44,14 +49,18 @@ export class MatchQuery {
   static async list(client: SupabaseClient, orgId: string, now: Date): Promise<MatchList> {
     const config = await MatchQuery.config(client);
     if (config === null) return { config: null, asOf: null, rows: [] };
-    const { data, error } = await client.from('match_result').select('id,score,components,flags,computed_at,opportunity(title,funder,close_date)').eq('org_id', orgId).eq('config_id', config.id);
+    const { data, error } = await client.from('match_result').select('id,opportunity_id,score,components,flags,computed_at,opportunity(title,funder,close_date,award_floor,award_ceiling)').eq('org_id', orgId).eq('config_id', config.id);
     if (error) throw new Error(error.message);
+    const pipe = await client.from('pipeline_status').select('opportunity_id,status').eq('org_id', orgId);
+    if (pipe.error) throw new Error(pipe.error.message);
+    const status = new Map(((pipe.data ?? []) as { opportunity_id: string; status: string }[]).map((p) => [p.opportunity_id, p.status]));
     const open = ((data ?? []) as unknown as ResultRow[]).filter((r) => r.opportunity && (r.opportunity.close_date === null || r.opportunity.close_date >= today(now)));
     const rows = open.map((r): MatchItem => {
       let flags: MatchFlags = { eligible: 'unknown', flags: [] };
       try { flags = fromMatchFlags(r.flags); } catch { /* malformed stored flags read as unknown */ }
       const o = r.opportunity as NonNullable<ResultRow['opportunity']>;
-      return { id: r.id, title: o.title, funder: o.funder ?? 'Funder not recorded', closes: o.close_date ? fmt(o.close_date, { month: 'short', day: 'numeric', year: 'numeric' }) : 'No close date', score: Number(r.score ?? 0),
+      return { id: r.id, title: o.title, funder: o.funder ?? 'Funder not recorded', closes: o.close_date ? `closes ${fmt(o.close_date, { month: 'short', day: 'numeric', year: 'numeric' })}` : 'no close date',
+        award: awardRange(num(o.award_floor), num(o.award_ceiling)), status: status.get(r.opportunity_id) ?? null, score: Number(r.score ?? 0),
         eligibility: MatchQuery.eligibilityLabel(flags), components: Array.isArray(r.components) ? (r.components as Component[]) : [], flags: flags.flags };
     }).sort((a, b) => b.score - a.score || a.title.localeCompare(b.title));
     const newest = open.map((r) => r.computed_at).sort().at(-1);
