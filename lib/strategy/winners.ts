@@ -136,7 +136,7 @@ const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 export const WINNER_RESOLVERS: Record<string, [table: string, Resolver]> = {
   org_knowledge: ['org_knowledge_version', (ref) => new RegExp(`^${UUID}@v[1-9]\\d*$`, 'i').test(ref)],
 };
-/** Registers each pending kind only once its table exists. TODO(#225): register org_knowledge unconditionally after it merges. */
+/** Registers each pending kind only once its table exists (org_knowledge: #238). */
 export async function registerWinnerResolvers(tableExists: (table: string) => Promise<boolean>): Promise<string[]> {
   const done: string[] = [];
   for (const [kind, [table, r]] of Object.entries(WINNER_RESOLVERS)) if (await tableExists(table)) { registerResolver(kind, r); done.push(kind); }
@@ -149,12 +149,15 @@ export const tableExists = (client: SupabaseClient) => async (table: string): Pr
 };
 
 export type WinnerLoaders = { profiles(awardIds: string[]): Promise<ProfileRow[]>; abstracts(awardIds: string[]): Promise<AbstractRow[]>; knowledge(): Promise<KnowledgeRow[]> };
-/** Reads under the caller's RLS (admin/staff SELECT) for the given awards. TODO(#225): knowledge via lib/knowledge/store listApproved(); nothing until then. */
+/** Reads under the caller's RLS (admin/staff SELECT): profiles and abstracts for the given awards; approved org_knowledge rows of the caller's org once
+ * #238's tables exist (nothing before). Same columns and `org_knowledge:<id>@v<version>` citation as lib/knowledge/store listApproved (#238). */
 export const dbLoaders = (client: SupabaseClient): WinnerLoaders => ({
   profiles: async (ids) => (ids.length ? must(await client.from('recipient_profile').select(PROFILE_COLS).in('award_history_id', ids)) as ProfileRow[] : []),
   abstracts: async (ids) => (ids.length ? must(await client.from('award_abstract').select(ABSTRACT_COLS).in('award_history_id', ids)) as AbstractRow[] : []),
-  knowledge: async () => [],
+  knowledge: async () => ((await registerWinnerResolvers(tableExists(client))).includes('org_knowledge')
+    ? must(await client.from('org_knowledge').select(KNOWLEDGE_COLS).eq('status', 'approved')) as KnowledgeRow[] : []),
 });
+const KNOWLEDGE_COLS = 'id,category,title,body,source,as_of,version';
 const PROFILE_COLS = 'id,award_history_id,recipient,ntee_code,ruling_year,latest_tax_year,total_revenue,total_expenses,program_service_expenses,contributions_share,match_confidence';
 const ABSTRACT_COLS = 'id,award_history_id,source,status,text,word_count,reason';
 

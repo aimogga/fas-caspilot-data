@@ -123,12 +123,18 @@ describe('winner analysis (F-508d)', () => {
     } finally { await registerWinnerResolvers(async () => true); }
   });
 
-  it('db loaders read recipient_profile and award_abstract for the given awards only', async () => {
-    const calls: [string, string, string, string[]][] = [];
-    const client = { from: (t: string) => ({ select: (cols: string) => ({ in: async (col: string, ids: string[]) => (calls.push([t, cols, col, ids]), { data: [], error: null }) }) }) };
-    const l = dbLoaders(client as unknown as SupabaseClient);
-    expect([await l.profiles([AWARD]), await l.abstracts([AWARD]), await l.profiles([]), await l.knowledge()]).toEqual([[], [], [], []]);
-    expect(calls.map(([t, , col, ids]) => [t, col, ids])).toEqual([['recipient_profile', 'award_history_id', [AWARD]], ['award_abstract', 'award_history_id', [AWARD]]]);
+  it('db loaders read recipient_profile and award_abstract for the given awards, and approved org_knowledge once its table exists', async () => {
+    const calls: [string, string, string, unknown][] = [], krow = input().knowledge[0]!;
+    const client = (missing: boolean) => ({ from: (t: string) => ({ select: (cols: string) => ({
+      in: async (col: string, ids: string[]) => (calls.push([t, cols, col, ids]), { data: [], error: null }),
+      limit: async () => ({ error: missing ? { code: 'PGRST205' } : null }),
+      eq: async (col: string, v: string) => (calls.push([t, cols, col, v]), { data: [krow], error: null }),
+    }) }) }) as unknown as SupabaseClient;
+    const l = dbLoaders(client(false));
+    expect([await l.profiles([AWARD]), await l.abstracts([AWARD]), await l.profiles([]), await l.knowledge()]).toEqual([[], [], [], [krow]]);
+    expect(calls.map(([t, , col, v]) => [t, col, v])).toEqual([['recipient_profile', 'award_history_id', [AWARD]], ['award_abstract', 'award_history_id', [AWARD]],
+      ['org_knowledge', 'status', 'approved']]);
     expect(calls[0]![1]).not.toMatch(/ein|matched_name|source_url/);
+    expect(await dbLoaders(client(true)).knowledge()).toEqual([]);
   });
 });
