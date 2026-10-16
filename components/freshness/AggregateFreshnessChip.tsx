@@ -3,7 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import type { FreshnessStatus, TopBarChip } from "@/lib/freshness/status";
 
 /** Glyph + badge variant per status; mirrors `FreshnessChip` (DS-01c) so the chip is never colour alone. */
-const CHROME: Readonly<Record<FreshnessStatus, { glyph: string; variant: "success" | "warning" | "destructive" | "muted" }>> = {
+/** Exported for the data-freshness table (DS-16a) so a status is never redrawn by colour alone. */
+export const CHROME: Readonly<Record<FreshnessStatus, { glyph: string; variant: "success" | "warning" | "destructive" | "muted" }>> = {
   current: { glyph: "●", variant: "success" },
   stale: { glyph: "◐", variant: "warning" },
   failed: { glyph: "✕", variant: "destructive" },
