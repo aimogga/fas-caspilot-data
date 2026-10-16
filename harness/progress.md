@@ -1190,6 +1190,40 @@ State: lint, typecheck and `pnpm test` green (902 unit tests). No Supabase here:
 Left: dead-code cleanup packet (delete `NeedTable.tsx`, `RankedList.tsx`, `indicatorCell`, their tests); PR not opened (caller opens it). Open: the menu URL is `?fas=1&county=<fips>` (query order follows the current URL); at 375 the "Highest need" rows truncate FAS county names beside the badge (DS-20a detail); `DS-20.md` still describes the dropped table (DS-20c, PR #292).
 Decisions: none new (designer defaults in the spec: native select, placeholder always the first option, non-FAS pick stays listed).
 
+## 2026-10-16 (UTC) — Claude Code (design) — DS-21b: County need map is the first Insights tab, Team dashboard the second
+Did: George asked for the map first and the dashboard second. `lib/shell/sections.ts` lists Insights as `County need map` · `Team dashboard`, so the Insights sidebar link (a section link opens its first tab) now opens `/need-map`. `components/shell/nav-icons.ts` loses the `/dashboard` glyph (the dashboard is only a tab now; Insights carries the map glyph). Tests updated: `sections.test.ts`, `nav.test.ts`, `nav-icons.test.ts` (8 hrefs); the e2e specs read `SECTIONS`, so they follow the order. Spec `docs/design/specs/DS-21.md` updated. No URL, guard or role change.
+State: lint, typecheck, unit tests green; e2e runs in CI. Branch `ds-21b-insights-order` off main 4bd6c08.
+Left: nothing.
+Decisions: none new.
+
+---
+## 2026-10-16 17:30 (UTC) — Designer agent (DS-23) — Need map: the picked county stands out, the map follows the scroll
+Did: George asked for the selected county to be highlighted and for the map to move with the scroll. `NeedMap`: with a county picked (map or menu) the other 28 paths get `data-dimmed` (55% opacity, 150 ms, none under reduced motion), the picked one keeps full strength with a two-stroke outline in the third pass (6 px `--background` under 3 px `--foreground`, above the FAS outlines; `data-selected-halo`, `data-selected-outline`); counties `?fas=1` already mutes are not dimmed twice; ranks on dimmed counties read in `--foreground`; the sr-only summary adds `Selected: <County>.`. From 1024 the figure (map + legend) is `sticky` at `top-[4.5rem]`, `self-start`, the map height is `min(640px, 100dvh - 19.5rem)` so the block fits and does not ride up at the page end; the panel is no longer sticky. Spec `docs/design/specs/DS-23.md`.
+State: lint, typecheck, unit tests green; e2e runs in CI (no Supabase here): new cases in `tests/e2e/map.spec.ts` (map top within 2 px while scrolling at 1440x900 and 1024x768, selected stroke and dim opacity light and dark, 375 not sticky). Local synthetic render through a scratch `/ui` page with the real shell (restored): map top 72 px at every scroll step, map 588 px at 1440x900 and 456 px at 1024x768, legend inside the viewport, hover card correct after scrolling, no sideways scroll, axe 0 serious/critical light and dark. Shots `docs/design/reviews/DS-23/{before,after}/`. Branch `ds-23-sticky-map` stacked on `ds-22-county-picker` (gateBase set, D-032).
+Left: nothing in DS-23. Open: on phones the menu sits below the map, so choosing a county means scrolling back up; the picker could also appear above the map below 1024 (George to decide).
+Decisions: none new (designer defaults in the spec: opacity on the path, map height reserves legend and page-bottom space).
+
+---
+## 2026-10-16 (UTC) — Claude Code (design planning) — Plan for DS-20 (need map declutter) and DS-21 (sidebar sections with tabs)
+Did: audited `/need-map` rendered locally from main with 13 synthetic indicators at 1440 and 375 (18-column table with sideways scroll, 2–3 line cells repeating nouns and margins, a source note under every header, a 1,100 px county panel with a source line per measure, the legend pushed below the panel, 5,660 px at 375). Wrote `docs/design/PLAN_DS-20_DS-21.md`: DS-20a layout and legend, DS-20b county panel, DS-20c table (5 scored rates by default, "All measures" switch, one-line cells); DS-21 cuts Workspace from 10 links to 5 sections (Home, Insights, Data, Grants, Evidence packets) with link tabs to the existing routes, so no auth or route changes.
+State: plan only, no code. Docs-only diff.
+Left: George's four answers at the end of the plan; then specs and PRs in the order listed there.
+Decisions: none new (proposed only).
+
+---
+## 2026-10-16 (UTC) — Claude Code (design planning) — DS-20/DS-21 open questions decided
+Did: at George's request, made the four open calls in `docs/design/PLAN_DS-20_DS-21.md` with the reason for each: sections Home · Insights · Data · Grants · Evidence packets (Methodology is the last Data tab); the need-map table opens on the 5 scored rates with a Key | All switch in `?cols=all`; the panel shows the source once per group; the table stays visible under the map. Added four house rules for later data pages.
+State: plan decided, no code. All four packets unblocked: DS-21a ∥ DS-20a, then DS-20b, then DS-20c.
+Decisions: the four above, recorded in the plan (designer defaults George delegated; no acceptance criterion changed).
+
+## 2026-10-16 00:20 (UTC) — Cloud Agent (Engineer) — F-508b FAS knowledge store: org_knowledge, RLS, citable reads (F-508)
+Did: migration `20261016015500_f508b_org_knowledge.sql`: `org_knowledge` (category and status CHECKs, body ≤ 8,000, `version`, server stamps for version/created_by/approved_by/timestamps) and `org_knowledge_version` (one immutable snapshot per version, written only by a SECURITY DEFINER trigger). RLS forced, deny by default: admin select/insert/update in own org, staff select approved rows in own org (both tables), board/anon/no-role nothing, no delete for anyone (REVOKE DELETE too). DB backstop CHECKs: SSN/email patterns; numbers in outcome/budget need source + as_of. `lib/knowledge/guard.ts` (`checkKnowledgeText`, `checkKnowledge`: SSN, DOB, phone, email, street address incl. Utah grid, case/docket numbers, empty, length, needs_source; names the rule, never echoes text) and `lib/knowledge/store.ts` (`listApproved`, `resolveCitation` against the approved snapshot, `sourceRef`/`parseSourceRef` for `org_knowledge:<id>@v<n>`, guarded `saveKnowledge` for insert/edit/archive). Four fictional "Bluebird Family Fund" rows in `lib/synthetic/knowledge.ts`, appended to `pnpm seed:synthetic` (`ON CONFLICT DO NOTHING`).
+State: 25 knowledge unit tests + 1 synthetic test; `tests/db/org-knowledge.test.ts` 56 tests (RLS matrix: 6 actors × 2 tables × select/insert/update/delete, cross-org, versions/archive/citation resolution, backstop). Full `pnpm test:db` 933 green against local Supabase in this shell; lint, typecheck, 812 unit tests and gate green (D-012: 400). Branch `f508b-org-knowledge`.
+Left: #226 admin UI writes through `saveKnowledge`; F-508 citation validation calls `resolveCitation`. Direct PostgREST writes by an admin skip the TS guard (only the SSN/email/numbers backstop applies), so the UI must write through `lib/knowledge`. fas-dev migration is applied by the supervisor after QA PASS (D-014).
+Decisions: none new.
+
+---
+
 ## 2026-10-16 04:15 (UTC) — Claude Code (cloud, Engineer) — pr-gate PR_GATE_BASE override (D-028, D-032)
 Did: `resolveBase` in `scripts/pr-gate.mjs` (from #239) also reads `PR_GATE_BASE`, after `--base` and before `branch.<name>.gateBase`. Like `gateBase`, it must be an `origin/*` branch: a shared `originRef` check throws `PR_GATE_BASE must be an origin/* branch` otherwise. It is for a one-off or CI run against a parent without setting git config. The push hook runs `pnpm gate`, which inherits the env. The usage line documents it. 1 new unit test (precedence and refusal); the CLI was checked with `PR_GATE_BASE=origin/main` (base printed) and `=HEAD` (refused).
 State: lint, typecheck, unit tests and `pnpm gate` green. Branch `tooling/pr-gate-env-base`. Supersedes nothing; #258 (an earlier duplicate of #239) was closed.

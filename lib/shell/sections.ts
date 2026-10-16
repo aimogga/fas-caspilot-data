@@ -5,7 +5,7 @@ export type SectionTab = { label: string; href: string };
 export type Section = { label: string; tabs: SectionTab[] };
 
 export const SECTIONS: readonly Section[] = [
-  { label: "Insights", tabs: [{ label: "Team dashboard", href: "/dashboard" }, { label: "County need map", href: "/need-map" }] },
+  { label: "Insights", tabs: [{ label: "County need map", href: "/need-map" }, { label: "Team dashboard", href: "/dashboard" }] },
   {
     label: "Data",
     tabs: [
