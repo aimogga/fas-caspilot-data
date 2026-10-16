@@ -15,9 +15,11 @@ const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const USAGE = 'Usage: pnpm knowledge:import <file.json> --org <org id or name> --approver <admin email> [--dry-run] [--archive-missing] [--allow-host <host>]';
 const FIELDS = ['category', 'title', 'body', 'source', 'as_of', 'status'];
 const KEY = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,99}$/;
+const PAGE = 1000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const isDate = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v)) && new Date(v).toISOString().startsWith(v);
 
+/** Flags to options; throws the usage line when file, --org or --approver is missing or a flag lacks its value. */
 export function parseArgs(argv) {
   const out = { file: null, org: null, approver: null, dryRun: false, archiveMissing: false, allowHost: null };
   const value = (i) => { if (!argv[i] || argv[i].startsWith('--')) throw new Error(USAGE); return argv[i]; };
@@ -118,12 +120,21 @@ export function supabaseDb(client) {
         if (hit || users.length < 1000) return hit ?? null;
       }
     },
-    listImported: async (orgId) => must(await client.from('org_knowledge').select(`id,import_key,${FIELDS.join(',')}`).eq('org_id', orgId).not('import_key', 'is', null)) ?? [],
+    async listImported(orgId) { // every page: PostgREST caps a response (1,000 rows on Supabase), and a missed row would re-insert or skip archiving
+      const rows = [];
+      for (let from = 0; ; from += PAGE) {
+        const page = must(await client.from('org_knowledge').select(`id,import_key,${FIELDS.join(',')}`).eq('org_id', orgId)
+          .not('import_key', 'is', null).order('id').range(from, from + PAGE - 1)) ?? [];
+        rows.push(...page);
+        if (page.length < PAGE) return rows;
+      }
+    },
     insert: async (row) => must(await client.from('org_knowledge').insert(row).select('id').single()),
     update: async (id, fields) => must(await client.from('org_knowledge').update(fields).eq('id', id).select('id').single()),
   };
 }
 
+/** CLI entry: path, env and host guards first, then the import; prints keys and rule names only, never entry text. */
 export async function run(argv, env = process.env, log = console.log) {
   const args = parseArgs(argv);
   const file = assertOutsideRepo(args.file);

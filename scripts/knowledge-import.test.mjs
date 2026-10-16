@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { assertHost, assertOutsideRepo, FAS_DEV_HOST, importKnowledge, parseArgs, run, validate } from './knowledge-import.mjs';
+import { assertHost, assertOutsideRepo, FAS_DEV_HOST, importKnowledge, parseArgs, run, supabaseDb, validate } from './knowledge-import.mjs';
 
 const FIXTURE = 'tests/fixtures/knowledge/bluebird-import.json';
 const doc = () => JSON.parse(readFileSync(FIXTURE, 'utf8'));
@@ -90,6 +90,17 @@ describe('importKnowledge', () => {
     const db = mockDb();
     expect(await importKnowledge(db, doc(), { ...OPTS, dryRun: true, archiveMissing: true })).toMatchObject({ dryRun: true, created: 3, archived: 0 });
     expect(db.writes).toEqual([]);
+  });
+});
+
+describe('supabaseDb', () => {
+  it('listImported reads every page, not just the first 1,000 rows', async () => {
+    const all = Array.from({ length: 2500 }, (_, i) => ({ id: `k${i}`, import_key: `key-${i}` })), ranges = [];
+    const q = { select: () => q, eq: () => q, not: () => q, order: () => q,
+      range: async (a, b) => { ranges.push([a, b]); return { data: all.slice(a, b + 1), error: null }; } };
+    const rows = await supabaseDb({ from: () => q }).listImported(ORG);
+    expect(rows).toHaveLength(2500);
+    expect(ranges).toEqual([[0, 999], [1000, 1999], [2000, 2999]]);
   });
 });
 
