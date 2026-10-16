@@ -39,8 +39,8 @@ test("staff sees seeded matches by score and the How we matched panel shows only
     await flag.hover();
     const card = page.locator("[data-slot=hover-card-content] [data-slot=explain-content]");
     await expect(card).toContainText("stops FAS applying as things stand, so the fit score is capped at 0");
-    await expect(card).toContainText("Stored reason Only state governments may apply");
-    await expect(card).toContainText("Checked from Grant listing · applicant types");
+    await expect(card).toContainText(/Stored reason\s*Only state governments may apply/);
+    await expect(card).toContainText(/Checked from\s*Grant listing · applicant types/);
     await page.mouse.move(0, 0);
     await expect(card).toHaveCount(0);
     const tile = rows.nth(1).locator("[data-slot=explain-trigger]").first();
