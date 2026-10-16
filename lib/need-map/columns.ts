@@ -5,7 +5,9 @@ export type ColumnMode = 'key' | 'all';
 /** The five rates that make up the need score (DESIGN need score rule 3), in table order. */
 export const KEY_CODES: readonly string[] = ['uninsured_rate', 'poverty_rate', 'child_poverty_rate', 'single_parent_pct', 'no_vehicle_pct'];
 /** Topic order for "All measures": the rates first, then the counts by the same topics, then the county totals. */
-export const ORDER: readonly string[] = [...KEY_CODES, 'uninsured_count', 'poverty_count', 'child_poverty_count', 'single_parent_households', 'no_vehicle_households', 'total_population', 'total_households', 'veteran_population', 'court_filings_total', 'court_filings_district', 'court_filings_justice', 'court_filings_juvenile'];
+const COUNTS = ['uninsured_count', 'poverty_count', 'child_poverty_count', 'single_parent_households', 'no_vehicle_households', 'total_population', 'total_households', 'veteran_population'];
+const COURTS = ['court_filings_total', 'court_filings_district', 'court_filings_justice', 'court_filings_juvenile'];
+export const ORDER: readonly string[] = [...KEY_CODES, ...COUNTS, ...COURTS];
 /** Short headers with the unit in them, so cells carry the number only (house rule 1). */
 const HEADERS: Record<string, string> = {
   uninsured_rate: 'Uninsured\u00a0%', poverty_rate: 'Poverty\u00a0%', child_poverty_rate: 'Child poverty\u00a0%', single_parent_pct: 'Single-parent\u00a0%', no_vehicle_pct: 'No-vehicle\u00a0%',
