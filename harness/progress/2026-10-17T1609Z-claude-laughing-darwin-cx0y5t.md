@@ -1,0 +1,5 @@
+## 2026-10-17 16:09 (UTC) — Claude Code (cloud, Engineer) — gate flake: CLI tests hit vitest's 5 s default timeout
+Did: reproduced the intermittent `pnpm gate` failure of `CLI --skip-tests exits 0 on this repo` (`scripts/pr-gate.test.mjs`). Logged the full `unit tests` stdout (temporary, not committed) while the CPU was loaded and the page cache cold. The hidden message is `Test timed out in 5000ms`, and the gate's last-6-lines evidence shows only the code frame. The nested CLI scans every tracked file (~1,140 files, ~68 MB including PNGs) while the suite runs in parallel; it took ~1.8 s idle and ~5.4–5.8 s under load. `CLI --secrets-only exits 0 on this repo` (`scripts/nightly-audit.test.mjs`) runs the same scan and failed in the same run. Fix: each `it(...)` gets a timeout equal to its `spawnSync` budget (60 s and 15 s). Under the same load both now pass at ~5.3 s.
+State: lint, typecheck, unit tests green.
+Left: nothing. Possible follow-up (not done): the secret scan decodes binaries (PNG/PDF) as UTF-8; skipping `BINARY` paths would make it faster.
+Decisions: none new.

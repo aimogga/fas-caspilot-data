@@ -268,10 +268,11 @@ describe('checkSecretScanTree', () => {
       status: 'RED', findings: ['secret scan could not run'], details: [],
     });
   });
+  // Same full-tree scan as the pr-gate CLI test: the vitest timeout matches the spawn budget, not the 5 s default.
   it('CLI --secrets-only exits 0 on this repo', () => {
     const r = spawnSync(process.execPath, ['scripts/nightly-audit.mjs', '--secrets-only'], {encoding: 'utf8', timeout: 15000});
     expect(r.status).toBe(0);
-  });
+  }, 15000);
 });
 describe('checkDeps', () => {
   it.each([

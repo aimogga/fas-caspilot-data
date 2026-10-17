@@ -79,11 +79,14 @@ describe('run and CLI', () => {
     expect(loadGenerated(() => { throw new Error('ENOENT'); })).toEqual([]);
   });
 
+  // The CLI scans every tracked file while the rest of the suite runs in parallel; under `pnpm gate` load that can pass
+  // vitest's 5 s default, so the test gets the same budget as the spawn.
+  const CLI_BUDGET_MS = 60000;
   it('CLI --skip-tests exits 0 on this repo (base HEAD: CI checkouts have no origin/main)', () => {
-    const r = spawnSync(process.execPath, ['scripts/pr-gate.mjs', '--skip-tests', '--base', 'HEAD'], { encoding: 'utf8', timeout: 60000 });
+    const r = spawnSync(process.execPath, ['scripts/pr-gate.mjs', '--skip-tests', '--base', 'HEAD'], { encoding: 'utf8', timeout: CLI_BUDGET_MS });
     expect(r.stdout).toContain('secret scan | ');
     expect(r.status).toBe(0);
-  });
+  }, CLI_BUDGET_MS);
 });
 
 describe('resolveBase (D-032 stacked branches)', () => {
