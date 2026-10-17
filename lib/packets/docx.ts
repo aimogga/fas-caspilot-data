@@ -16,7 +16,7 @@ export const FIGURE_HEADER = ['Figure', 'Value', 'Source · as of'];
 
 /** The document in reading order: cover, then each section (heading, paragraphs, one row per figure, its pictures with a caption, source line), then the running footer. */
 export function docxBlocks(p: Packet): DocxBlock[] {
-  const out: DocxBlock[] = [{ kind: 'ribbon', text: [p.ribbon] }, { kind: 'title', text: [p.title] }, { kind: 'subtitle', text: [`${p.prepared} · ${p.asOf}`] }];
+  const out: DocxBlock[] = [{ kind: 'ribbon', text: [p.ribbon] }, { kind: 'title', text: [p.title] }, { kind: 'subtitle', text: [`${p.prepared} · ${p.asOf}`] }, ...(p.preparedFor ? [{ kind: 'subtitle' as const, text: [p.preparedFor] }] : [])];
   for (const s of p.sections) {
     out.push({ kind: 'heading', text: [s.title] }, ...s.paragraphs.map((t) => ({ kind: 'paragraph' as const, text: [t] })));
     out.push(...s.figures.map((f) => ({ kind: 'row' as const, text: [f.label, f.value, `${f.sourceLabel} · ${asOfNote(f.asOf)}`] })));

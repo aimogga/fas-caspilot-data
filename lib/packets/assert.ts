@@ -14,7 +14,8 @@ export const CASE_FIELDS = /\b(case_id|client_name|first_name|last_name|zip(_cod
 const COUNTS = /\bn = (\d+)\b|\((\d+) of (\d+)\)/g;
 const AS_OF = /^(\w{3} \d{4}|Not available yet)$/;
 
-/** Flattens the packet to the strings a reader would see, in reading order. */
+/** Flattens the packet to the strings a reader would see, in reading order. `preparedFor` is left out: it is the funder's public listing text (F-403b),
+ * whose words ("address", a due date) are not FAS data and must not block an export; its close date is already month-level. */
 export function renderText(p: Packet): string[] {
   const section = (s: PacketSection) => [s.title, ...s.paragraphs, ...s.figures.map((f) => `${f.label}: ${f.value} · ${f.sourceLabel} · ${asOfNote(f.asOf)}`), s.source];
   return [p.title, p.scopeLabel, p.prepared, p.asOf, p.ribbon, ...p.sections.flatMap(section), ...p.pictures.map(pictureCaption), p.footer];

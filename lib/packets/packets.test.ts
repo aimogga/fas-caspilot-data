@@ -9,7 +9,7 @@ import { pictureCaption } from '@/lib/charts/svg';
 import { docxText, packetToDocx } from './docx';
 import { exportFilename, renderExport } from './export';
 import { aggregateTotals } from '@/lib/dashboard/aggregates';
-import { AGGREGATE_NOTE, AGGREGATE_PREFIX, buildPacket, PICTURE_SECTION, scopeLabel, type Packet, type PacketInput } from './model';
+import { AGGREGATE_NOTE, AGGREGATE_PREFIX, buildPacket, PICTURE_SECTION, preparedFor, scopeLabel, type Packet, type PacketInput } from './model';
 import { PacketQuery, parsePacketParams } from './query';
 type Rec = Record<string, unknown>;
 const s = (v: unknown) => (v == null ? null : String(v)), NOW = new Date('2024-11-01T00:00:00Z');
@@ -153,5 +153,37 @@ describe('F-303c: aggregate totals in the packet', () => {
   it('without totals the packet is unchanged', () => {
     expect(buildPacket(input({ aggregates: null }))).toEqual(buildPacket(input()));
     expect(buildPacket(input({ aggregates: { lines: [], entries: 0, asOf: 'Not available yet' } }))).toEqual(buildPacket(input()));
+  });
+});
+
+describe('F-403b: a grant packet prepared for one grant', () => {
+  const ID = '6f1c2b8e-3d4a-4e5f-9a0b-1c2d3e4f5a6b', grant = { title: 'Programs to address family stress', funder: 'Synthetic Foundation', close_date: '2026-11-30' };
+  it('parses a UUID opportunity for the grant variant only', () => {
+    expect([parsePacketParams({ opportunity: ID, county: '49035' }), parsePacketParams({ variant: 'board', opportunity: ID }), parsePacketParams({ opportunity: "x' or 1=1" })])
+      .toEqual([{ variant: 'grant', scope: { county: '49035', opportunity: ID } }, { variant: 'board', scope: {} }, { variant: 'grant', scope: {} }]);
+  });
+  it('the cover and DOCX carry the grant line in month words; the board packet and a packet without a grant are unchanged; the CSV is figures only', async () => {
+    expect([preparedFor(grant), preparedFor({ title: 'T', funder: null, close_date: null })]).toEqual(['Prepared for Programs to address family stress · Synthetic Foundation · closes Nov 2026', 'Prepared for T · Funder not recorded · no close date']);
+    const p = buildPacket(input({ grant }));
+    expect([p.preparedFor, assertPacket(p)]).toEqual(['Prepared for Programs to address family stress · Synthetic Foundation · closes Nov 2026', []]); // "address" is the funder's word, not a case field
+    expect(docxText(p)).toContain('Prepared for Programs to address family stress · Synthetic Foundation · closes Nov 2026');
+    expect((await packetToDocx(p)).byteLength).toBeGreaterThan(0);
+    expect(packetToCsv(p)).toBe(packetToCsv(buildPacket(input())));
+    expect(buildPacket(input({ variant: 'board', grant })).preparedFor).toBeUndefined();
+    expect(buildPacket(input({ grant: null }))).toEqual(buildPacket(input()));
+  });
+  it('load reads the opportunity by id and keeps it in the recorded scope; an unknown id or a failed read names no grant', async () => {
+    const inserts: Rec[] = [], eqs: string[] = [];
+    const client = (opp: unknown, fail = false) => ({ from: (table: string) => {
+      const c: Record<string, unknown> = { then: (res: (v: unknown) => void) => res({ data: table === 'export_job' ? { id: 'job-1' } : [], error: null }) };
+      for (const k of ['select', 'gte', 'lte', 'order', 'limit', 'single']) c[k] = () => c;
+      c.eq = (col: string, v: string) => { eqs.push(`${table}.${col}=${v}`); return c; };
+      c.maybeSingle = async () => (fail ? { data: null, error: { message: 'boom' } } : { data: opp, error: null });
+      c.insert = (row: Rec) => { inserts.push({ table, ...row }); return c; };
+      return c;
+    } }) as never;
+    const now = new Date('2026-10-14T00:00:00Z'), p = await PacketQuery.load(client(grant), 'grant', { opportunity: ID }, now, { userId: 'u1', orgId: 'o1' }, 'preview');
+    expect([p.preparedFor, p.scope, eqs.includes(`opportunity.id=${ID}`), (inserts[0]?.params as Rec).scope]).toEqual([preparedFor(grant), { opportunity: ID }, true, { opportunity: ID }]);
+    for (const c of [client(null), client(grant, true)]) { const q = await PacketQuery.load(c, 'grant', { opportunity: ID }, now, null, 'preview'); expect([q.scope, 'preparedFor' in q]).toEqual([{}, false]); }
   });
 });

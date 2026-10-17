@@ -18,6 +18,7 @@ export function PacketView({ packet }: { packet: Packet }) {
         <p data-slot="packet-ribbon" className="text-sm font-semibold uppercase tracking-wide text-warning">{packet.ribbon}</p>
         <p data-slot="packet-title" className="font-serif text-2xl font-semibold">{packet.title}</p>
         <p className="text-sm text-muted-foreground">{packet.prepared} · {packet.asOf}</p>
+        {packet.preparedFor ? <p data-slot="packet-for" className="text-sm font-medium break-words">{packet.preparedFor}</p> : null}
         <ol className="list-decimal pl-5 text-sm">{packet.sections.map((s) => <li key={s.id}>{SECTION_TITLES[s.id]}</li>)}</ol>
       </header>
       <p className="sr-only">{KEYS}</p>

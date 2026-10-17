@@ -30,7 +30,8 @@ function Sources({ refs }: { refs: string[] }) {
 }
 
 /** One score part: label (explain card), points of max as text, a bar that only illustrates, the stored reason, the sources; the evidence part adds where to go next (F-504f). */
-function Part({ c, asOf }: { c: Component; asOf?: string }) {
+function Part({ c, asOf, opportunityId }: { c: Component; asOf?: string; opportunityId?: string }) {
+  const links = evidenceLinks(c, opportunityId);
   const term = COMPONENT[c.key] ?? { id: c.key, title: c.label, plain: "One part of the fit score, as the matching rules stored it." };
   const width = c.max > 0 ? `${Math.round((c.points / c.max) * 100)}%` : "0%";
   return (
@@ -42,9 +43,9 @@ function Part({ c, asOf }: { c: Component; asOf?: string }) {
       <span aria-hidden className="relative h-2 overflow-hidden rounded-r-[4px] bg-muted"><span className="absolute inset-y-0 left-0 bg-chart-1" style={{ width }} /></span>
       <p className="text-sm text-muted-foreground">{c.reason}</p>
       <Sources refs={c.source_refs} />
-      {evidenceLinks(c).length ? (
+      {links.length ? (
         <ul data-slot="evidence-links" className="flex flex-wrap gap-x-4 text-sm">
-          {evidenceLinks(c).map((l) => <li key={l.href}><Link href={l.href} className="inline-flex min-h-11 items-center underline underline-offset-4 lg:min-h-0">{l.label}</Link></li>)}
+          {links.map((l) => <li key={l.href}><Link href={l.href} className="inline-flex min-h-11 items-center underline underline-offset-4 lg:min-h-0">{l.label}</Link></li>)}
         </ul>
       ) : null}
     </li>
@@ -77,7 +78,7 @@ export function MatchPanel({ id, row, asOf, onClose, focus = true }: { id: strin
           {row.band ? <FitBandBadge band={row.band} /> : null}
         </div>
       </div>
-      <ul data-slot="match-components" className="flex flex-col gap-4">{parts.map((c) => <Part key={c.key} c={c} asOf={asOf} />)}</ul>
+      <ul data-slot="match-components" className="flex flex-col gap-4">{parts.map((c) => <Part key={c.key} c={c} asOf={asOf} opportunityId={row.opportunityId} />)}</ul>
       {caps.map((c) => <p key={c.key} data-slot="match-cap" className="text-sm"><ExplainCard term={CAP[c.key]} source={FIT_SOURCE} asOf={asOf} className="font-medium">{CAP[c.key].title}</ExplainCard>: {c.reason}</p>)}
       <div className="flex flex-col gap-2">
         <h4 className="text-sm font-medium">Eligibility checks</h4>

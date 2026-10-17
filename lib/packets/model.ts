@@ -14,13 +14,15 @@ import { NeedMapQuery } from '../need-map/query';
 import { COUNTIES } from '../synthetic/generate';
 
 export type PacketVariant = 'grant' | 'board';
-export type PacketScope = { county?: string };
+/** `opportunity` (F-403b): the stored `opportunity.id` a grant packet is prepared for; kept in `export_job.params` with the rest of the scope. */
+export type PacketScope = { county?: string; opportunity?: string };
 export type SectionId = 'need-profile' | 'fas-results' | 'outcomes' | 'methodology-sources' | 'suppression-note' | 'related-party';
 export type Figure = { label: string; value: string; kind: 'count' | 'value'; sourceLabel: string; asOf: string };
 export type PacketSection = { id: SectionId; title: string; paragraphs: string[]; figures: Figure[]; source: string };
 export type Packet = {
   variant: PacketVariant; scope: PacketScope; title: string; scopeLabel: string; prepared: string; asOf: string; period: string; ribbon: string; footer: string; sections: PacketSection[];
   /** Running page header on every DOCX page (F-508h application export); packets leave it unset. */ header?: string;
+  /** F-403b: "Prepared for <grant> · <funder> · closes <month>" from the stored `opportunity` row; unset when the packet names no grant. */ preparedFor?: string;
   /** The board's pictures (F-402), drawn inside the section each one belongs to on the page and in the DOCX (SVG + caption); empty when no metric loaded. The CSV carries figures only. */ pictures: Picture[];
 };
 /** Which section each picture sits in. */
@@ -29,7 +31,12 @@ export type PacketInput = {
   variant: PacketVariant; scope: PacketScope; now: Date; period: string; asOf: string;
   metrics: DashboardMetrics | null; need: NeedTableData | null; method: MethodologyView | null; serviceCounties: string[];
   /** F-303c: the quarter's totals FAS entered as totals (`lib/dashboard/aggregates.ts`), already suppressed; absent or empty adds nothing. */ aggregates?: AggregateTotals | null;
+  /** F-403b: the grant this packet is prepared for, as stored in `opportunity`; null or absent names none. */ grant?: PacketGrant | null;
 };
+export type PacketGrant = { title: string; funder: string | null; close_date: string | null };
+/** The grant line in month words only (no day-level date in a packet); a missing funder or close date is said, never guessed. */
+export const preparedFor = (g: PacketGrant): string =>
+  `Prepared for ${g.title} · ${g.funder ?? 'Funder not recorded'} · ${g.close_date ? `closes ${NeedMapQuery.monthYear(`${g.close_date.slice(0, 10)}T12:00:00Z`)}` : 'no close date'}`;
 export const AGGREGATE_PREFIX = 'Σ Aggregate · ', AGGREGATE_NOTE = 'Figures marked Σ Aggregate are totals FAS entered as totals, not built from individual records, and are listed apart from the numbers above.';
 export const VARIANT_LABEL: Record<PacketVariant, string> = { grant: 'Grant attachment', board: 'Board packet' }, RIBBON = 'DRAFT · for review';
 export const SECTION_TITLES: Record<SectionId, string> = {
@@ -103,5 +110,6 @@ export function buildPacket(x: PacketInput): Packet {
     variant: x.variant, scope: x.scope, title: `FAS Evidence packet · ${VARIANT_LABEL[x.variant]} · ${scope}`, scopeLabel: scope, prepared: `Prepared ${prepared}`, asOf: asOfLabel(x.asOf),
     period: x.period, ribbon: RIBBON, footer: `FAS Evidence · Counts under 11 are hidden · ${prepared}`,
     sections: [needProfile(x), fasResults(x), outcomes(x), methodologySources(x), suppression, relatedParty(x)], pictures: boardPictures(x.metrics),
+    ...(x.variant === 'grant' && x.grant ? { preparedFor: preparedFor(x.grant) } : {}),
   };
 }
