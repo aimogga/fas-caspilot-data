@@ -8,8 +8,8 @@ import { assertPacket, type Violation } from './assert';
 import type { PacketScope, PacketVariant } from './model';
 import { PacketQuery } from './query';
 
-/** Tables and views the packet reads that carry `org_id` (lib/dashboard/metrics-query.ts VIEWS + the service-county read in query.ts). */
-export const ORG_TABLES = ['case', 'outcome_measure', 'm1_court_to_first_session', 'm2_application_to_decision', 'm3_never_started', 'm4_m5_m6_episodes'];
+/** Tables and views the packet reads that carry `org_id` (lib/dashboard/metrics-query.ts VIEWS, the service-county read and the aggregate totals in query.ts). */
+export const ORG_TABLES = ['case', 'outcome_measure', 'aggregate_submission', 'm1_court_to_first_session', 'm2_application_to_decision', 'm3_never_started', 'm4_m5_m6_episodes'];
 export type PacketFinding = Violation & { packet: string };
 export type PacketAudit = { checked: string[]; findings: PacketFinding[] };
 

@@ -8,7 +8,8 @@ import { BOM, CSV_HEADER, csvCell, csvRows, packetToCsv } from './csv';
 import { pictureCaption } from '@/lib/charts/svg';
 import { docxText, packetToDocx } from './docx';
 import { exportFilename, renderExport } from './export';
-import { buildPacket, PICTURE_SECTION, scopeLabel, type Packet, type PacketInput } from './model';
+import { aggregateTotals } from '@/lib/dashboard/aggregates';
+import { AGGREGATE_NOTE, AGGREGATE_PREFIX, buildPacket, PICTURE_SECTION, scopeLabel, type Packet, type PacketInput } from './model';
 import { PacketQuery, parsePacketParams } from './query';
 type Rec = Record<string, unknown>;
 const s = (v: unknown) => (v == null ? null : String(v)), NOW = new Date('2024-11-01T00:00:00Z');
@@ -129,5 +130,28 @@ describe('DOCX and CSV exports (F-404)', () => {
     expect([exportFilename(g, 'docx', now), exportFilename(b, 'csv', now)]).toEqual(['fas-evidence-packet-grant-salt-lake-county-2026-10.docx', 'fas-evidence-packet-board-statewide-2026-10.csv']);
     const csv = await renderExport(g, 'csv', now), docx = await renderExport(g, 'docx', now);
     expect([csv.mime, new TextDecoder('utf-8', { ignoreBOM: true }).decode(csv.body).startsWith(BOM), docx.mime.includes('wordprocessingml'), docx.body[0]]).toEqual(['text/csv; charset=utf-8', true, true, 0x50]);
+  });
+});
+describe('F-303c: aggregate totals in the packet', () => {
+  const agg = aggregateTotals([
+    { metric_code: 'families_served', value: 14, county_fips: '49035', created_at: '2024-09-20T10:00:00Z' },
+    { metric_code: 'episodes_completed', value: 6, county_fips: null, created_at: '2024-09-02T10:00:00Z' },
+    { metric_code: 'dollars_paid', value: 4200.5, county_fips: '49035', created_at: '2024-08-02T10:00:00Z' },
+  ], 'all');
+  it('FAS results lists each total after the record-based figures under the Σ Aggregate label, hides counts under 11, keeps dollars, adds the note, and passes the export checks', () => {
+    const p = buildPacket(input({ aggregates: agg })), s = p.sections[1]!;
+    expect(s.figures.filter((f) => f.label.startsWith(AGGREGATE_PREFIX))).toEqual([
+      { label: 'Σ Aggregate · Families served', value: '14', kind: 'count', sourceLabel: 'FAS aggregate total, entered by staff · Jul–Sep 2024 (Q3)', asOf: 'Sep 2024' },
+      { label: 'Σ Aggregate · Episodes completed', value: 'fewer than 11', kind: 'count', sourceLabel: 'FAS aggregate total, entered by staff · Jul–Sep 2024 (Q3)', asOf: 'Sep 2024' },
+      { label: 'Σ Aggregate · Dollars paid to providers', value: '$4,200.50', kind: 'value', sourceLabel: 'FAS aggregate total, entered by staff · Jul–Sep 2024 (Q3)', asOf: 'Sep 2024' },
+    ]);
+    expect(s.paragraphs.at(-1)).toBe(AGGREGATE_NOTE);
+    expect([assertPacket(p), packetToCsv(p).includes('Σ Aggregate · Families served')]).toEqual([[], true]);
+    expect(buildPacket(input({ aggregates: { ...agg, lines: [{ ...agg.lines[0]!, shown: '7' }] } })).sections[1]!.figures.at(-1)).toMatchObject({ value: '7', kind: 'count' });
+    expect(assertPacket(buildPacket(input({ aggregates: { ...agg, lines: [{ ...agg.lines[0]!, shown: '7' }] } }))).map((v) => v.rule)).toEqual(['small-cell']);
+  });
+  it('without totals the packet is unchanged', () => {
+    expect(buildPacket(input({ aggregates: null }))).toEqual(buildPacket(input()));
+    expect(buildPacket(input({ aggregates: { lines: [], entries: 0, asOf: 'Not available yet' } }))).toEqual(buildPacket(input()));
   });
 });

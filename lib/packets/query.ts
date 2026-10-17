@@ -2,6 +2,7 @@
  * profile and sources, and FAS service counties (county names only). A staff/admin render also writes an `export_job` + `audit_log` row. */
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { boardAsOf, boardFilters } from '../board/query';
+import { aggregateTotals, AggregatesQuery } from '../dashboard/aggregates';
 import { ALL } from '../dashboard/filters';
 import { MetricsQuery } from '../dashboard/metrics-query';
 import { MethodologyQuery } from '../methodology/query';
@@ -22,13 +23,14 @@ export function parsePacketParams(params: Record<string, string | string[] | und
 export const PacketQuery = {
   async load(client: SupabaseClient, variant: PacketVariant, scope: PacketScope, now: Date, actor: Actor | null = null, env = process.env.NEXT_PUBLIC_ENV): Promise<Packet> {
     const f = { ...boardFilters(now), county: variant === 'grant' && scope.county ? scope.county : ALL };
-    const [metrics, need, method, cases] = await Promise.all([
+    const [metrics, need, method, cases, aggRows] = await Promise.all([
       MetricsQuery.load(client, f), NeedMapQuery.load(client).catch(warn('need map')), MethodologyQuery.load(client, env).catch(warn('methodology')),
       client.from('case').select('county_fips').then((r) => (r.error ? warn('service counties')(new Error(r.error.message)) : (r.data as { county_fips: string | null }[])), warn('service counties')),
+      AggregatesQuery.load(client, f.period).catch(warn('aggregate totals')), // F-303c: RLS limits these to admin and staff; a board reader gets none
     ]);
     const fips = [...new Set((cases ?? []).map((c) => c.county_fips).filter((x): x is string => !!x))];
     const serviceCounties = COUNTIES.filter((c) => fips.includes(c.fips)).map((c) => c.name);
-    const packet = buildPacket({ variant, scope: f.county === ALL ? {} : scope, now, period: f.period, asOf: boardAsOf(metrics), metrics, need, method, serviceCounties });
+    const packet = buildPacket({ variant, scope: f.county === ALL ? {} : scope, now, period: f.period, asOf: boardAsOf(metrics), metrics, need, method, serviceCounties, aggregates: aggRows ? aggregateTotals(aggRows, f.county) : null });
     if (actor) await PacketQuery.record(client, packet, actor).catch(warn('export_job'));
     return packet;
   },
