@@ -2,6 +2,7 @@
 
 // F-508f: generate (staff and admin) and review (admin only). RLS from #231 enforces the same rules in the database.
 import { redirect } from "next/navigation";
+import { startOrOpen } from "@/lib/application/handoff";
 import { createStrategyDraft } from "@/lib/strategy/generate";
 import { fakeEnabled, fakeGenerate } from "@/lib/strategy/fake";
 import { createClient } from "@/lib/supabase/server";
@@ -30,4 +31,14 @@ export async function reviewStrategy(id: string, status: "approved" | "rejected"
   const failed = !!error || !data?.length;
   if (failed) console.error("[strategy] review failed", { message: error?.message ?? "no row updated" });
   redirect(`/staff/grants/strategy/${id}${failed ? "?review=failed" : ""}`);
+}
+
+/** F-508j: write the application from an approved strategy, or open its newest draft (never a duplicate). Refusals come back in plain words. */
+export async function writeApplication(_prev: GenerateState, form: FormData): Promise<GenerateState> {
+  const { client, role } = await caller(), strategyId = String(form.get("strategyId") ?? "");
+  if (!client || (role !== "staff" && role !== "admin")) return { error: "Only staff and admins can write an application." };
+  const r = await startOrOpen(client, strategyId, fakeEnabled() ? fakeGenerate : undefined)
+    .catch((e: unknown) => ({ error: (console.error("[application] start failed", { message: e instanceof Error ? e.message : "unknown" }), "Couldn't write the application. Try again.") }));
+  if ("error" in r) return { error: r.error };
+  redirect(`/staff/grants/applications/${r.id}`);
 }
