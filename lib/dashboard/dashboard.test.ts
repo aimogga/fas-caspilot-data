@@ -34,6 +34,7 @@ describe("DS-07a team dashboard (F-401)", () => {
       "Completion rate by income band",
       "Where therapy dollars went",
       "Outcome change",
+      "Totals entered as totals",
       "Public data freshness",
       "Grant pipeline",
     ]);
@@ -52,7 +53,7 @@ describe("DS-07a team dashboard (F-401)", () => {
   it("each card is a section labelled by its h2", async () => {
     const markup = await page();
     const sections = [...markup.matchAll(/<section aria-labelledby="([^"]+)"/g)].map((match) => match[1]);
-    expect(sections).toHaveLength(9);
+    expect(sections).toHaveLength(10);
     for (const id of sections) {
       expect(markup).toContain(`<h2 id="${id}"`);
     }

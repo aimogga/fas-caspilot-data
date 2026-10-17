@@ -134,3 +134,32 @@ test("DS-25: a recent total explains itself through one layer: hover, focus and 
   await expect(total).toBeFocused();
   expect(await axe(page)).toEqual([]);
 });
+
+test("F-303: totals saved on Enter data show on the Team dashboard under Σ Aggregate; under 11 is hidden; a county view keeps its own totals", async ({ page }) => {
+  await signIn(page, "staff@example.test");
+  // 2025-Q4 is used by no other spec. CI retries can save again, so values are checked by shape: 14 per save stays ≥ 11, 3 per save stays < 11.
+  const save = async (metric: string, value: string, county: string | null) => {
+    await openAggregate(page);
+    await page.fill("#agg-period", "2025-Q4"); await page.selectOption("#agg-metric", metric); await page.fill("#agg-value", value);
+    if (county) await page.selectOption("#agg-county_fips", county);
+    await page.getByRole("button", { name: "Save total" }).click();
+    await expect(page.locator("[data-slot=entry-saved]")).toContainText("Saved aggregate total", { timeout: 20_000 });
+  };
+  await save("families_served", "14", "49035");
+  await save("episodes_completed", "3", null);
+  expect((await page.goto("/dashboard?period=2025-Q4"))?.status()).toBe(200);
+  const card = page.locator("[data-slot=aggregate-totals]");
+  await expect(card.getByRole("heading", { level: 2 })).toHaveText("Totals entered as totals");
+  await expect(card.locator("[data-slot=badge]")).toHaveAttribute("aria-label", "Aggregate submission");
+  await expect(card.locator("li[data-metric=families_served]")).toHaveText(/^Families served\s*(14|28|42)$/);
+  await expect(card.locator("li[data-metric=episodes_completed] [data-slot=suppressed]")).toBeVisible();
+  await expect(card.locator("[data-slot=source-footer]")).toContainText(/FAS aggregate total, entered by staff · Oct–Dec 2025 \(Q4\), all counties · n \d+ · as of \w{3} \d{4}/);
+  // Salt Lake only: its own families total; the org-wide episodes total belongs to All counties.
+  await page.goto("/dashboard?period=2025-Q4&county=49035");
+  await expect(card.locator("li[data-metric=families_served]")).toHaveText(/(14|28|42)$/);
+  await expect(card.locator("li[data-metric=episodes_completed]")).toHaveCount(0);
+  // Another county with nothing entered says so and links to Enter data.
+  await page.goto("/dashboard?period=2025-Q4&county=49049");
+  await expect(card.locator("[data-slot=aggregate-empty]")).toContainText("No totals were entered for Oct–Dec 2025 (Q4) in Utah County.");
+  expect(await axe(page)).toEqual([]);
+});
