@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { writeFileSync, mkdirSync, readFileSync, existsSync, readdirSync } from 'fs';
 import { join } from 'path';
+import { register } from 'node:module';
 import { execSync } from 'child_process';
 const DATE = new Date().toISOString().split('T')[0];
 export function parseAgentsCommands(md) {
@@ -490,6 +491,41 @@ export async function checkGrantsAndRls(rest = supabaseRest(), now = new Date())
   return {grants, rls};
 }
 
+// F-601 check 4: the suppression suite. Builds every evidence packet per org with the app's own builders (lib/packets/audit.ts) and runs the export
+// assertions on it. Findings name the packet, rule and place only, never the value, so the report itself cannot carry a small count.
+const PRIVACY_RULES = ['small-cell', 'exact-date', 'case-field'];
+export function evalSuppression({checked, findings}) {
+  if (!checked.length) return {status: 'YELLOW', findings: ['suppression suite: no org to check'], details: []};
+  const lines = findings.map(f => `Packet ${f.packet}: ${f.rule} at ${f.where}`);
+  const status = findings.some(f => PRIVACY_RULES.includes(f.rule)) ? 'RED' : findings.length ? 'YELLOW' : 'GREEN';
+  return {status, findings: lines, details: status === 'GREEN' ? [`Suppression suite: ${checked.length} packets, no cell under 11, no exact date, no case field`] : []};
+}
+async function loadPacketAudit(url, key, now) {
+  const root = pathToFileURL(join(import.meta.dirname, '..') + '/').href;
+  const hook = `export async function resolve(spec, ctx, next) {
+  if (spec.startsWith('@/')) spec = ${JSON.stringify(root)} + spec.slice(2);
+  if (!/^(\\.\\.?\\/|file:)/.test(spec) || /\\.[cm]?[jt]s$/.test(spec)) return next(spec, ctx);
+  try { return await next(spec, ctx); } catch (e) {
+    if (e?.code === 'ERR_UNSUPPORTED_DIR_IMPORT') return next(spec + '/index.ts', ctx);
+    if (e?.code !== 'ERR_MODULE_NOT_FOUND') throw e;
+    return next(spec + '.ts', ctx);
+  }
+}`; // as in llm-bakeoff.mjs: extensionless and '@/' imports in lib/ resolve to their .ts files
+  register(`data:text/javascript,${encodeURIComponent(hook)}`, pathToFileURL(import.meta.filename));
+  const {createClient} = await import('@supabase/supabase-js');
+  const {auditPackets} = await import('../lib/packets/audit.ts');
+  const client = createClient(url, key, {auth: {persistSession: false}});
+  const orgs = await client.from('org').select('id');
+  if (orgs.error) throw new Error(`org: ${orgs.error.message}`);
+  return auditPackets(client, orgs.data.map(o => o.id), now);
+}
+export async function checkSuppression(env = process.env, load = loadPacketAudit, now = new Date()) {
+  const url = env.SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL, key = env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return {status: 'SKIPPED', reason: 'needs SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY', findings: [], details: []};
+  try { return evalSuppression(await load(url, key, now)); }
+  catch (e) { return {status: 'YELLOW', findings: [`suppression suite: could not build packets (${e.message})`], details: []}; }
+}
+
 export async function checkMainCi(env = process.env, httpFetch = fetch) {
   if (!env.GITHUB_TOKEN || !env.GITHUB_REPOSITORY) return {status: 'SKIPPED', findings: [], details: ['main CI: needs GITHUB_TOKEN']};
   try {
@@ -645,14 +681,14 @@ export async function main(opts = {}) {
   res.checks.grants = grants;
   if (grants.status !== 'SKIPPED') res.overall = worst(res.overall, grants.status);
 
-  const sec = secretScan();
-  const priv = worst(sec.status, rls.status === 'SKIPPED' ? 'GREEN' : rls.status);
+  const sec = secretScan(), sup = await (opts.suppression || checkSuppression)();
+  const priv = [rls, sup].reduce((s, c) => worst(s, c.status === 'SKIPPED' ? 'GREEN' : c.status), sec.status);
   res.checks.privacy = {
     status: priv,
-    impl: ['Secret scan', ...(rls.status === 'SKIPPED' ? [] : ['RLS + view security_invoker guard'])],
-    todo: ['Suppression suite / no cell < 11 (no board/export views or suppression module yet)', ...(rls.status === 'SKIPPED' ? ['RLS (needs Supabase secrets)'] : [])],
-    findings: [...sec.findings, ...rls.findings],
-    details: [...sec.details, ...rls.details]
+    impl: ['Secret scan', ...(rls.status === 'SKIPPED' ? [] : ['RLS + view security_invoker guard']), ...(sup.status === 'SKIPPED' ? [] : ['Suppression suite: no cell < 11 in board/export packets'])],
+    todo: [...(sup.status === 'SKIPPED' ? ['Suppression suite (needs Supabase secrets)'] : []), ...(rls.status === 'SKIPPED' ? ['RLS (needs Supabase secrets)'] : [])],
+    findings: [...sec.findings, ...rls.findings, ...sup.findings],
+    details: [...sec.details, ...rls.details, ...sup.details]
   };
   if (priv !== 'GREEN') res.overall = worst(res.overall, priv);
   
