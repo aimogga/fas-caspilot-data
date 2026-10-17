@@ -5,7 +5,7 @@ import { Ban, Check, CircleDot, CircleHelp, TriangleAlert } from "lucide-react";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 import { DraftStrategyButton } from "@/components/grants/DraftStrategyButton";
 import { FitBandBadge } from "@/components/grants/FitBandBadge";
-import { EMPTY_PANEL, MatchPanel } from "@/components/grants/MatchPanel";
+import { MatchPanel } from "@/components/grants/MatchPanel";
 import { ExplainCard, Hint } from "@/components/trust/explain";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,26 +55,33 @@ function Badges({ row }: { row: MatchItem }) {
   );
 }
 
-/** `ol > li[data-match]`, best fit first (the query sorts), ten at a time. One "How we matched" panel open at a time: a sticky aside at ≥ 1024, inside the card below. */
+// A click on a card's own controls (buttons, links, hover cards, the strategy form) keeps its own meaning; anywhere else on the card picks it.
+const OWN_CONTROL = "button, a, input, form, [data-slot=explain-trigger]";
+
+/** `ol > li[data-match]`, best fit first (the query sorts), ten at a time. The whole card picks a match. At ≥ 1024 the sticky aside
+ * always shows one "How we matched" panel: the top match until another card is picked. Below 1024 the panel opens inside the picked card. */
 export function MatchList({ rows, asOf }: { rows: MatchItem[]; asOf?: string }) {
   const [open, setOpen] = useState<string | null>(null), [shown, setShown] = useState(PAGE), lg = useLg();
-  const visible = rows.slice(0, shown), current = rows.find((r) => r.id === open) ?? null, left = rows.length - shown;
+  const visible = rows.slice(0, shown), left = rows.length - shown;
+  const current = rows.find((r) => r.id === open) ?? (lg ? rows[0] ?? null : null), expanded = (id: string) => current?.id === id;
   const close = (id: string) => { setOpen(null); document.querySelector<HTMLElement>(`[aria-controls="match-${id}"]`)?.focus(); };
-  const panel = (r: MatchItem) => <MatchPanel id={`match-${r.id}`} row={r} asOf={asOf} onClose={() => close(r.id)} />;
+  const pick = (id: string) => (lg ? setOpen(id) : expanded(id) ? close(id) : setOpen(id));
+  const panel = (r: MatchItem) => <MatchPanel id={`match-${r.id}`} row={r} asOf={asOf} focus={open !== null} onClose={lg ? undefined : () => close(r.id)} />;
   return (
     <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)] lg:items-start lg:gap-6">
       <div className="flex flex-col gap-4">
         <ol data-slot="match-list" className="flex flex-col gap-4">
           {visible.map((r) => (
-            <li key={r.id} data-match={r.id} className="grid gap-4 rounded-lg border border-border bg-card p-4 shadow-sm lg:grid-cols-[auto_1fr] lg:gap-6 lg:p-6">
+            <li key={r.id} data-match={r.id} data-selected={expanded(r.id) || undefined} onClick={(e) => { if (!(e.target as HTMLElement).closest(OWN_CONTROL)) pick(r.id); }}
+              className="grid cursor-pointer gap-4 rounded-lg border border-border bg-card p-4 shadow-sm transition-colors hover:border-foreground/30 data-selected:border-primary lg:grid-cols-[auto_1fr] lg:gap-6 lg:p-6">
               <div className="flex flex-wrap items-center gap-2 lg:flex-col lg:items-start"><FitTile row={r} asOf={asOf} />{r.band ? <FitBandBadge band={r.band} /> : null}</div>
               <div className="flex min-w-0 flex-col gap-3">
                 <h3 className="text-base font-medium leading-snug break-words">{r.title}</h3>
                 <p data-slot="match-meta" className="text-sm text-muted-foreground">{r.funder} · {r.closes} · <span className="tabular-nums">{r.award}</span></p>
                 <Badges row={r} />
-                <div className="flex flex-wrap items-start gap-2"><Button type="button" variant="outline" size="sm" aria-expanded={open === r.id} aria-controls={`match-${r.id}`} onClick={() => (open === r.id ? close(r.id) : setOpen(r.id))}>How we matched</Button>
+                <div className="flex flex-wrap items-start gap-2"><Button type="button" variant="outline" size="sm" aria-expanded={expanded(r.id)} aria-controls={`match-${r.id}`} onClick={() => pick(r.id)}>How we matched</Button>
                   {r.opportunityId ? <DraftStrategyButton opportunityId={r.opportunityId} /> : null}</div>
-                {!lg && open === r.id ? panel(r) : null}
+                {!lg && expanded(r.id) ? panel(r) : null}
               </div>
             </li>
           ))}
@@ -86,7 +93,7 @@ export function MatchList({ rows, asOf }: { rows: MatchItem[]; asOf?: string }) 
           </div>
         ) : null}
       </div>
-      {lg ? <div data-slot="match-aside" className="lg:sticky lg:top-20">{current ? panel(current) : <p className="rounded-lg border border-dashed border-border p-6 text-sm text-muted-foreground">{EMPTY_PANEL}</p>}</div> : null}
+      {lg && current ? <div data-slot="match-aside" className="lg:sticky lg:top-20">{panel(current)}</div> : null}
     </div>
   );
 }

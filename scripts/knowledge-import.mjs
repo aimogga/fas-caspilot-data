@@ -7,7 +7,7 @@ import { createClient } from '@supabase/supabase-js';
 import { readFileSync, realpathSync } from 'node:fs';
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { CATEGORIES, checkKnowledge } from '../lib/knowledge/guard.ts';
+import { CATEGORIES, checkKnowledge, checkKnowledgeText } from '../lib/knowledge/guard.ts';
 
 export const FAS_DEV_HOST = 'zlizvzpatfyhdydfmxef.supabase.co';
 const LOCAL = new Set(['127.0.0.1', 'localhost', '[::1]']);
@@ -70,6 +70,9 @@ export function validate(doc) {
     if (row.title.trim().length > 200) rules.push('title_too_long');
     const guard = checkKnowledge({ ...row, as_of: isDate(row.as_of) ? row.as_of : null });
     if (!guard.ok) for (const r of guard.rules) if (!rules.includes(r)) rules.push(r);
+    // The source line is stored and cited too, so it gets the same text rules; a blank source is needs_source's job.
+    const src = typeof row.source === 'string' && row.source.trim() ? checkKnowledgeText(row.source) : { ok: true };
+    if (!src.ok) for (const r of src.rules) rules.push(`source:${r}`);
     if (rules.length) failures.push({ key, rules });
     else rows.push({ import_key: key, ...row });
   });

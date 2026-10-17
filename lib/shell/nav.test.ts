@@ -74,7 +74,7 @@ describe("DS-21 section links", () => {
   const active = (role: string, path: string) => navForRole(role).groups.flatMap((g) => g.items).filter((i) => navActive(role, i, path)).map((i) => i.label);
 
   it("each section link opens its first tab", () => {
-    expect(["Insights", "Data", "Grants"].map((l) => item("staff", l).href)).toEqual(["/need-map", "/staff/intake", "/staff/grants"]);
+    expect(["Insights", "Data", "Grants"].map((l) => item("staff", l).href)).toEqual(["/need-map", "/staff/intake", "/staff/grants/matches"]);
   });
 
   it("exactly one sidebar link is active on every page, and a section link is active on all of its tabs", () => {

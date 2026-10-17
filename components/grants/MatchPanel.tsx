@@ -18,7 +18,6 @@ const GLYPH: Record<CheckStatus | "blocker", ReactNode> = {
   unclear: <CircleHelp aria-hidden className={`${ICON} text-muted-foreground`} />, blocker: <Ban aria-hidden className={`${ICON} text-destructive`} />,
 };
 const AWARDS = "Counted from public award records for the same Assistance Listing. The middle award means half were smaller, half larger.";
-export const EMPTY_PANEL = "Open How we matched on any row to see its six parts and the eligibility checks here.";
 
 /** The stored source refs as chips in words (`FAS settings · program themes`), each with a hint; the path itself never shows. */
 function Sources({ refs }: { refs: string[] }) {
@@ -57,9 +56,10 @@ function CheckItem({ row }: { row: CheckRow }) {
   );
 }
 
-export function MatchPanel({ id, row, asOf, onClose }: { id: string; row: MatchItem; asOf?: string; onClose: () => void }) {
+/** `onClose` adds a Close button (below 1024, where the panel sits inside its card). `focus` moves focus to the heading on open or switch; off for the default top match. */
+export function MatchPanel({ id, row, asOf, onClose, focus = true }: { id: string; row: MatchItem; asOf?: string; onClose?: () => void; focus?: boolean }) {
   const heading = useRef<HTMLHeadingElement>(null);
-  useEffect(() => { heading.current?.focus(); }, [row.id]);
+  useEffect(() => { if (focus) heading.current?.focus(); }, [row.id, focus]);
   const parts = row.components.filter((c) => !(c.key in CAP)), caps = row.components.filter((c) => c.key in CAP);
   return (
     <aside id={id} data-slot="match-panel" aria-labelledby={`${id}-title`} className="flex flex-col gap-6 rounded-lg border border-border bg-card p-4 shadow-sm lg:p-6">
@@ -82,7 +82,7 @@ export function MatchPanel({ id, row, asOf, onClose }: { id: string; row: MatchI
           <Hint text={AWARDS} className="underline decoration-dotted underline-offset-4">Past winners on this listing: {row.awards.count} awards{row.awards.median !== null ? `, the middle one ${usd(row.awards.median)}` : ""}.</Hint> Full winning applications are not public.
         </p>
       ) : null}
-      <div><Button type="button" variant="outline" size="sm" onClick={onClose}>Close</Button></div>
+      {onClose ? <div><Button type="button" variant="outline" size="sm" onClick={onClose}>Close</Button></div> : null}
     </aside>
   );
 }
