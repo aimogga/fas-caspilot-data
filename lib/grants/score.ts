@@ -5,9 +5,9 @@ import type { EligibilityResult, Flag, OpportunityInput, OrgProfile } from './ty
 
 // F-504b params (all optional; v0-draft sets none, so its maths is unchanged): `floor_components` names components whose genuine 0 caps the total at 0
 // ("could not score" never caps); `award_too_small_value` scores an award below the worth-applying minimum; `min_days_to_close` zeroes effort under it;
-// `max_cost_share_pct` zeroes award fit when the required match exceeds it.
+// `max_cost_share_pct` zeroes award fit when the required match exceeds it. F-504d: `band_strong` / `band_look` only name the score bands (`./band`).
 export type MatchParams = { prep_days?: number; themes_for_full_credit?: number; evidence_available?: string[];
-  floor_components?: string[]; award_too_small_value?: number; min_days_to_close?: number; max_cost_share_pct?: number };
+  floor_components?: string[]; award_too_small_value?: number; min_days_to_close?: number; max_cost_share_pct?: number; band_strong?: number; band_look?: number };
 export type MatchConfig = { id: string; weights: Record<string, number>; params: MatchParams; created_at: string; approved_by: string | null };
 export type Component = { key: string; label: string; weight: number; value: number; points: number; max: number; reason: string; source_refs: string[] };
 export type MatchScore = { score: number; configId: string; components: Component[] };

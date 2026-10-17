@@ -28,6 +28,13 @@ export const CAP: Record<string, Term> = {
   floor_cap: t("floor_cap", "Capped at 0 by a floor", "One part the matching rules treat as essential scored 0, so the whole score is 0."),
 };
 
+/** F-504d: the decision word beside every fit score. Edges come from the approved matching rules; the defaults are named so the word never needs a lookup. */
+export const BAND: Record<"strong" | "look" | "pass", Term> = {
+  strong: t("band_strong", "Strong fit", "The score is at or above the strong-fit line in the matching rules (75 unless an admin changed it). Worth starting a proposal."),
+  look: t("band_look", "Worth a look", "The score clears the weekly digest line (60 unless an admin changed it) but not the strong-fit line. Read the six parts before deciding."),
+  pass: t("band_pass", "Pass", "The score is under the weekly digest line, or a blocker or floor capped it at 0. Not worth the work as things stand."),
+};
+
 /** Flag severities as words for the badge hint; the badge itself shows the stored message. */
 export const SEVERITY: Record<FlagSeverity, Term> = {
   blocker: t("blocker", "Blocker", "Something in the rules stops FAS applying as things stand, so the fit score is capped at 0."),
@@ -65,7 +72,7 @@ export function awardRange(floor: number | null, ceiling: number | null): string
   return ceiling !== null ? `up to ${usd(ceiling)}` : floor !== null ? `from ${usd(floor)}` : "award not stated";
 }
 
-export const GRANT_TERMS: Term[] = [FIT_SCORE, ...Object.values(COMPONENT), ...Object.values(CAP), ...Object.values(SEVERITY), ...Object.values(ELIGIBILITY), NOT_TRACKED, ...STAGES.map((s) => stageTerm(s))];
+export const GRANT_TERMS: Term[] = [FIT_SCORE, ...Object.values(COMPONENT), ...Object.values(CAP), ...Object.values(BAND), ...Object.values(SEVERITY), ...Object.values(ELIGIBILITY), NOT_TRACKED, ...STAGES.map((s) => stageTerm(s))];
 
 // DS-12b: the ten eligibility checks, stored flags and source refs in words. Column paths never reach the badge; the stored string stays in the hover card.
 /** One name per `FLAG_CODES` code, in the order `lib/grants/eligibility.ts` runs them. */
