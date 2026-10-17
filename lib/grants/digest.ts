@@ -37,7 +37,8 @@ export function buildDigest(rows: DigestRow[], now: Date, params: unknown, days 
   const line = (r: DigestRow) => `${r.title} · ${r.funder ?? 'Funder not recorded'} · closes ${r.closeDate ? fmt(r.closeDate) : 'no close date'} · fit ${Math.round(r.score)} · ${r.eligibility}`;
   const intro = `New grant matches scoring ${threshold} or higher since ${fmt(since)}.`;
   const none = 'No new matches above the threshold this week.';
-  const text = [subject, '', intro, '', ...(picked.length ? groups.flatMap((g, i) => [...(i ? [''] : []), `${g.label} (${g.rows.length})`, ...g.rows.map((r) => `- ${line(r)}`)]) : [none]), '', 'Open the Grant matches page for the reasons behind each score. FAS Evidence · synthetic or public data only.'].join('\n');
+  const body = picked.length ? groups.flatMap((g, i) => [...(i ? [''] : []), `${g.label} (${g.rows.length})`, ...g.rows.map((r) => `- ${line(r)}`)]) : [none];
+  const text = [subject, '', intro, '', ...body, '', 'Open the Grant matches page for the reasons behind each score. FAS Evidence · synthetic or public data only.'].join('\n');
   const items = groups.map((g) => `<h3>${esc(g.label)} (${g.rows.length})</h3><ul>${g.rows.map((r) => `<li>${esc(line(r))}</li>`).join('')}</ul>`).join('');
   const html = `<h2>${esc(subject)}</h2><p>${esc(intro)}</p>${picked.length ? items : `<p>${none}</p>`}<p>Open the Grant matches page for the reasons behind each score.</p>`;
   return { subject, text, html, count: picked.length, threshold, since, rows: picked, groups };

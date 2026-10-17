@@ -66,7 +66,10 @@ export function MatchPanel({ id, row, asOf, onClose }: { id: string; row: MatchI
       <div className="flex flex-col gap-2">
         <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">How we matched</p>
         <h3 id={`${id}-title`} ref={heading} tabIndex={-1} className="font-serif text-xl leading-snug font-semibold break-words">{row.title}</h3>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2"><p className="flex items-baseline gap-2"><span data-slot="panel-score" className="text-4xl leading-none font-semibold tabular-nums">{row.score}</span><span className="text-sm text-muted-foreground">of 100 fit</span></p>{row.band ? <FitBandBadge band={row.band} /> : null}</div>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <p className="flex items-baseline gap-2"><span data-slot="panel-score" className="text-4xl leading-none font-semibold tabular-nums">{row.score}</span><span className="text-sm text-muted-foreground">of 100 fit</span></p>
+          {row.band ? <FitBandBadge band={row.band} /> : null}
+        </div>
       </div>
       <ul data-slot="match-components" className="flex flex-col gap-4">{parts.map((c) => <Part key={c.key} c={c} asOf={asOf} />)}</ul>
       {caps.map((c) => <p key={c.key} data-slot="match-cap" className="text-sm"><ExplainCard term={CAP[c.key]} source={FIT_SOURCE} asOf={asOf} className="font-medium">{CAP[c.key].title}</ExplainCard>: {c.reason}</p>)}
