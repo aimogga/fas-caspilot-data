@@ -68,8 +68,9 @@ test("staff: five workspace links; a section link opens its first tab and the ta
   await expect(page).toHaveURL(/\/methodology$/);
   await expect(page.locator("[data-slot=sidebar] nav a[aria-current=page]")).toHaveText("Data");
   await page.locator("[data-slot=sidebar] nav a", { hasText: "Grants" }).click();
-  await tabs(page).getByRole("link", { name: "Matches" }).click();
   await expect(page).toHaveURL(/\/staff\/grants\/matches$/);
+  await tabs(page).getByRole("link", { name: "Foundation grants" }).click();
+  await expect(page).toHaveURL(/\/staff\/grants$/);
 });
 
 test("admin: every tab route names its section, marks one tab current, and is clean at 375, 1024 and 1440", async ({ page }) => {

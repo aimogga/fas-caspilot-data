@@ -49,14 +49,22 @@ test("staff sees seeded matches by score and the How we matched panel shows only
     await expect(card.locator("dd").last()).toHaveText("Score capped at 0: Only state governments may apply");
     await page.keyboard.press("Escape");
     await expect(page.locator("[data-slot=source-footer]")).toHaveText("Grants.gov · open opportunities · n 2 · as of Oct 2026");
-    // The panel: focus lands on its heading; six parts as label, points, reason and sources in words; ten checks; Close returns focus.
+    // The panel: from 1024 the top match shows in the aside before any click and focus stays put; below, the button opens it in the card.
+    // Six parts as label, points, reason and sources in words; ten checks.
     const buttons = page.getByRole("button", { name: "How we matched" });
-    await expect(buttons.first()).toHaveAttribute("aria-expanded", "false");
-    await buttons.first().click();
-    await expect(buttons.first()).toHaveAttribute("aria-expanded", "true");
     const panel = page.locator("[data-slot=match-panel]");
+    if (width < 1024) {
+      await expect(buttons.first()).toHaveAttribute("aria-expanded", "false");
+      await expect(panel).toHaveCount(0);
+      await buttons.first().click();
+      await expect(panel.locator("h3")).toBeFocused();
+    } else {
+      await expect(panel).toHaveCount(1);
+      await expect(panel.locator("h3")).not.toBeFocused();
+      await expect(rows.nth(0)).toHaveAttribute("data-selected", "true");
+    }
+    await expect(buttons.first()).toHaveAttribute("aria-expanded", "true");
     await expect(panel).toHaveCount(1);
-    await expect(panel.locator("h3")).toBeFocused();
     await expect(panel.locator("[data-slot=panel-score]")).toHaveText("100");
     await expect(rows.nth(0).locator("[data-slot=match-panel]")).toHaveCount(width < 1024 ? 1 : 0);
     await expect(page.locator("[data-slot=match-aside] [data-slot=match-panel]")).toHaveCount(width < 1024 ? 0 : 1);
@@ -68,15 +76,21 @@ test("staff sees seeded matches by score and the How we matched panel shows only
     await expect(panel.locator("[data-slot=match-check][data-status=pass]")).toHaveCount(10);
     await expect(panel.locator("[data-slot=match-cap]")).toHaveCount(0);
     await expect(panel).not.toContainText(/org\.|opportunity\./);
-    await buttons.nth(1).click();
+    // Clicking anywhere on another card (here its title) picks it; the panel switches and its heading takes focus.
+    await rows.nth(1).locator("h3").click();
     await expect(buttons.first()).toHaveAttribute("aria-expanded", "false");
+    await expect(buttons.nth(1)).toHaveAttribute("aria-expanded", "true");
+    await expect(panel.locator("h3")).toBeFocused();
     await expect(panel.locator("[data-slot=panel-score]")).toHaveText("0");
     await expect(panel.locator("[data-slot=match-cap]")).toHaveText(CAP_NOTE);
     await expect(panel.locator("[data-slot=match-check]").first()).toHaveText(/Who may apply · Only state governments may apply$/);
     await expect(panel.locator("[data-slot=match-check][data-status=flagged]")).toHaveCount(1);
-    await panel.getByRole("button", { name: "Close", exact: true }).click();
-    await expect(panel).toHaveCount(0);
-    await expect(buttons.nth(1)).toBeFocused();
+    if (width < 1024) {
+      // Close sits in the card below 1024 and returns focus to its button; from 1024 the aside always shows a match, with no Close.
+      await panel.getByRole("button", { name: "Close", exact: true }).click();
+      await expect(panel).toHaveCount(0);
+      await expect(buttons.nth(1)).toBeFocused();
+    } else await expect(panel.getByRole("button", { name: "Close", exact: true })).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
     expect((await new AxeBuilder({ page }).analyze()).violations.filter((v) => v.impact === "serious" || v.impact === "critical")).toEqual([]);
   }
