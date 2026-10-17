@@ -32,11 +32,11 @@ describe("DS-12b MatchList and MatchPanel", () => {
     expect(text(panel)).toMatch(/0 of 100 fit Pass: blocker/);
     expect(renderToStaticMarkup(<MatchList rows={[item(1)]} />)).not.toContain("fit-band");
   });
-  it("DS-12c: the card stays one column until xl, so its buttons fit at 1024; a long flag is a squarer badge with a first-line glyph", () => {
+  it("DS-12c: the card goes two-column only in a list ≥ 42rem wide (container query), so its buttons fit at 1024; a long flag is a squarer badge with a first-line glyph", () => {
     const flag = { code: "award_size" as const, severity: "info" as const, message: "Could not check award size: opportunity.award_floor missing", source_ref: "opportunity.award_floor" };
     const html = renderToStaticMarkup(<MatchList rows={[item(1, { flags: [flag] })]} />);
     const card = /<li[^>]*data-match="r1"[^>]*class="([^"]*)"/.exec(html)?.[1] ?? "";
-    expect([card.includes("xl:grid-cols-[auto_1fr]"), /(^| )lg:grid-cols/.test(card)]).toEqual([true, false]);
+    expect([card.includes("@2xl:grid-cols-[auto_1fr]"), /(^| )lg:grid-cols/.test(card), html.includes('data-slot="match-list" class="@container')]).toEqual([true, false, true]);
     const cls = (/<span data-slot="flag"[^>]*class="([^"]*)"/.exec(html)?.[1] ?? "").split(" ");
     expect([cls.includes("rounded-md"), cls.includes("items-start"), cls.includes("rounded-full")]).toEqual([true, true, false]);
   });

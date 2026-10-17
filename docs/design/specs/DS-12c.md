@@ -14,8 +14,8 @@ No number, hover card, term or data changes. Controls stay `size="sm"` (44 px be
 ## Change
 | Element | Before | After |
 |---|---|---|
-| Card grid | two columns from `lg` | one column until `xl` (1280): score tile and band badge in a row on top, text full width below; two columns from `xl` |
-| Score tile column | stacked from `lg` | stacked from `xl` |
+| Card grid | two columns from `lg` | a container query on the list (`@container` on `ol`): two columns only when the list is ≥ 42rem (`@2xl`) wide, so at 1440 it stays two-column, beside the 1024 aside it stacks (score tile and band badge in a row on top, text full width), and from 768 to 1023 (no aside) it is two-column. The theme defines only `md` and `lg`, so `xl:` would never apply |
+| Score tile column | stacked from `lg` | stacked at `@2xl` |
 | Flag badge | `rounded-full`, centred glyph | `rounded-md`, glyph on the first line (`items-start`, `mt-0.5`, `shrink-0`) |
 
 ## Tests

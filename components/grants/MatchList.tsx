@@ -60,7 +60,8 @@ function Badges({ row }: { row: MatchItem }) {
 // A click on a card's own controls (buttons, links, hover cards, the strategy form) keeps its own meaning; anywhere else on the card picks it.
 const OWN_CONTROL = "button, a, input, form, [data-slot=explain-trigger]";
 
-/** `ol > li[data-match]`, best fit first (the query sorts), ten at a time. The whole card picks a match. At ≥ 1024 the sticky aside
+/** `ol > li[data-match]`, best fit first (the query sorts), ten at a time. DS-12c: a card goes two-column only when the list itself is ≥ 42rem wide
+ * (a container query), so beside the 1024 aside it stays stacked and its buttons fit. The whole card picks a match. At ≥ 1024 the sticky aside
  * always shows one "How we matched" panel: the top match until another card is picked. Below 1024 the panel opens inside the picked card. */
 export function MatchList({ rows, asOf }: { rows: MatchItem[]; asOf?: string }) {
   const [open, setOpen] = useState<string | null>(null), [shown, setShown] = useState(PAGE), lg = useLg();
@@ -72,11 +73,11 @@ export function MatchList({ rows, asOf }: { rows: MatchItem[]; asOf?: string }) 
   return (
     <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)] lg:items-start lg:gap-6">
       <div className="flex flex-col gap-4">
-        <ol data-slot="match-list" className="flex flex-col gap-4">
+        <ol data-slot="match-list" className="@container flex flex-col gap-4">
           {visible.map((r) => (
             <li key={r.id} data-match={r.id} data-selected={expanded(r.id) || undefined} onClick={(e) => { if (!(e.target as HTMLElement).closest(OWN_CONTROL)) pick(r.id); }}
-              className="grid cursor-pointer gap-4 rounded-lg border border-border bg-card p-4 shadow-sm transition-colors hover:border-foreground/30 data-selected:border-primary lg:p-6 xl:grid-cols-[auto_1fr] xl:gap-6">
-              <div className="flex flex-wrap items-center gap-2 xl:flex-col xl:items-start"><FitTile row={r} asOf={asOf} />{r.band ? <FitBandBadge band={r.band} /> : null}</div>
+              className="grid cursor-pointer gap-4 rounded-lg border border-border bg-card p-4 shadow-sm transition-colors hover:border-foreground/30 data-selected:border-primary lg:p-6 @2xl:grid-cols-[auto_1fr] @2xl:gap-6">
+              <div className="flex flex-wrap items-center gap-2 @2xl:flex-col @2xl:items-start"><FitTile row={r} asOf={asOf} />{r.band ? <FitBandBadge band={r.band} /> : null}</div>
               <div className="flex min-w-0 flex-col gap-3">
                 <h3 className="text-base font-medium leading-snug break-words">{r.title}</h3>
                 <p data-slot="match-meta" className="text-sm text-muted-foreground">{r.funder} · {r.closes} · <span className="tabular-nums">{r.award}</span></p>
