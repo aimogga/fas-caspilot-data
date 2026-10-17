@@ -3,6 +3,7 @@
 // DS-12a/b: the grant matches list. One card per stored match_result; every number, badge and status explains itself (D-040). Renders stored values only.
 import { Ban, Check, CircleDot, CircleHelp, TriangleAlert } from "lucide-react";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
+import { DraftStrategyButton } from "@/components/grants/DraftStrategyButton";
 import { EMPTY_PANEL, MatchPanel } from "@/components/grants/MatchPanel";
 import { ExplainCard, Hint } from "@/components/trust/explain";
 import { Badge } from "@/components/ui/badge";
@@ -70,7 +71,8 @@ export function MatchList({ rows, asOf }: { rows: MatchItem[]; asOf?: string }) 
                 <h3 className="text-base font-medium leading-snug break-words">{r.title}</h3>
                 <p data-slot="match-meta" className="text-sm text-muted-foreground">{r.funder} · {r.closes} · <span className="tabular-nums">{r.award}</span></p>
                 <Badges row={r} />
-                <div><Button type="button" variant="outline" size="sm" aria-expanded={open === r.id} aria-controls={`match-${r.id}`} onClick={() => (open === r.id ? close(r.id) : setOpen(r.id))}>How we matched</Button></div>
+                <div className="flex flex-wrap items-start gap-2"><Button type="button" variant="outline" size="sm" aria-expanded={open === r.id} aria-controls={`match-${r.id}`} onClick={() => (open === r.id ? close(r.id) : setOpen(r.id))}>How we matched</Button>
+                  {r.opportunityId ? <DraftStrategyButton opportunityId={r.opportunityId} /> : null}</div>
                 {!lg && open === r.id ? panel(r) : null}
               </div>
             </li>

@@ -1,0 +1,16 @@
+## 2026-10-16 01:10 (UTC) — Claude Code (cloud, Engineer) — F-508f: strategy draft screen, generate, review, approve (#232)
+Did: "Draft a response strategy" on each grant match card (`DraftStrategyButton`, `useActionState` with a status line while the server snapshots, drafts and checks citations), then `/staff/grants/strategy/[id]`: sticky DRAFT banner, criteria map (criterion, FAS position, evidence with citation chips, gaps, confidence), suggested ask with its basis chips, risks, narrative outline, a dashed "Inferences (not facts)" section, footer with provider · model, generated date and review state. Chips are `ExplainCard`s built from the stored snapshot fact (title, plain words per kind, value, source id or kind source, vintage or snapshot month). Failed rows show the citation report in plain words (`reportLines`) and never render the draft; unparseable rows show `ErrorState`. Approve/reject are admin-only server actions (`reviewStrategy`) on top of the #231 RLS and trigger; staff see no buttons; board gets 403 from the `/staff` guard. Pure helpers in `lib/strategy/view.ts`; `MatchItem` gains `opportunityId`. E2e uses `lib/strategy/fake.ts` (only when `STRATEGY_FAKE_LLM=1`, set by `playwright.config.ts`, never in production) and one seeded failed draft.
+State: lint, typecheck, 814 unit tests and `pnpm gate` (against the merged base) green; D-012: 397 hand-written lines. Built on `origin/f508a-llm-adapter` merged in (it carries main's DS-12a, 89f9450) because `f508e-strategy-storage` did not yet. No Supabase here, so `tests/e2e/strategy.spec.ts` and the 375/1024/1440 shots run in CI / from the preview.
+Left: shots from the preview (supervisor). Open: approver shown as "you" / "an admin" (no user names table yet); export is packet 5; no layout-parity row because the route is dynamic.
+Decisions: none new.
+
+## 2026-10-16 (UTC) — Claude Code (cloud, Engineer) — F-508f QA fix: 1440 width and screenshots (packet #232 criterion 6)
+Did: `tests/e2e/strategy.spec.ts` now checks widths 375, 1024 and 1440 (no horizontal scroll + axe) and saves a full-page shot per width to `test-results/strategy-${width}.png`; the failed-draft test runs axe and saves `test-results/strategy-failed-${width}.png` at the same three widths. Line-neutral: D-012 stays at 399.
+State: lint, typecheck, unit tests and `pnpm gate` (base `origin/f508e-strategy-storage`) green; e2e runs in CI (no local Supabase here). Branch `f508f-strategy-screen`.
+Left: QA re-check of #232 criterion 6. Also carried the parent's 04:50 F-508e entry into progress.md so the file stays append-only vs the parent.
+
+## 2026-10-16 20:15 (UTC) — Claude Code (cloud, Engineer) — F-508f: parent merge, D-041 progress file
+Did: merged `origin/f508e-strategy-storage` at 9d7cfa3 (main's DS-12b matches list, DS-21 sections). Re-applied the two F-508f touches on the new `MatchList`/`MatchQuery`: `opportunityId` on `MatchItem` and "Draft a response strategy" beside "How we matched" in each card. The progress entries moved here from `harness/progress.md` (D-041). No nav link added, so `lib/shell/sections.ts` is untouched.
+State: lint, typecheck, unit tests and `pnpm gate` (gateBase `origin/f508e-strategy-storage`) green.
+Left: QA FAIL at 23de209 asked for the six strategy-page shots in a reviewable place; see the PR for how they are published.
+Decisions: none new.

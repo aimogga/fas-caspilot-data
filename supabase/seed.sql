@@ -172,3 +172,8 @@ INSERT INTO match_result (id, org_id, opportunity_id, score, config_id, model_ve
 -- DS-06a2: synthetic FAS service counties (5 fips) until FAS provides the real list.
 INSERT INTO fas_service_county (fips) VALUES ('49035'), ('49049'), ('49011'), ('49057'), ('49045')
 ON CONFLICT (fips) DO NOTHING;
+-- F-508f: one synthetic failed strategy draft (local/CI only) so e2e can show the citation report; failed drafts never render as usable.
+INSERT INTO strategy_draft (id, org_id, opportunity_id, snapshot, output, citation_report, model_meta, status, created_by) VALUES
+  ('50505050-5050-5050-5050-505050505053', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '10101010-1010-1010-1010-101010101012', '{"opportunity_id":"10101010-1010-1010-1010-101010101012","built_at":"2026-10-16T00:00:00Z","facts":[],"abstracts":[]}', NULL,
+   '{"ok":false,"rounds":2,"copied":[],"claims":[{"path":"criteria_map[0].evidence[0].claim","text":"Uninsured rate of 99% in the county.","citation_ids":["opportunity:10101010-1010-1010-1010-101010101012"],"numbers":[99],"problems":["99 has no matching cited value"]}]}',
+   '[{"provider":"gemini","model":"synthetic-model","attempts":1,"input_tokens":null,"output_tokens":null,"latency_ms":0}]', 'failed', '22222222-2222-2222-2222-222222222222');

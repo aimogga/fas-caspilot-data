@@ -8,5 +8,5 @@ export default defineConfig({
   // reducedMotion: axe must not sample colours mid-transition after a colour-scheme switch (flaky contrast failures in CI).
   use: { baseURL: 'http://127.0.0.1:3000', trace: 'on-first-retry', reducedMotion: 'reduce' },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-  webServer: { command: 'pnpm dev', url: 'http://127.0.0.1:3000', reuseExistingServer: !process.env.CI },
+  webServer: { command: 'pnpm dev', env: { STRATEGY_FAKE_LLM: '1' }, url: 'http://127.0.0.1:3000', reuseExistingServer: !process.env.CI },
 });
