@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { AwardHistoryQuery, type StoredAward, summarize } from './award-history';
 import { type FitBand, fitBand } from './band';
 import { checkEligibility, fromMatchFlags } from './eligibility';
+import { loadedEvidence } from './evidence';
 import { loadOrgProfile } from './profile';
 import { type Component, type MatchConfig, scoreOpportunity, toMatchResultRow } from './score';
 import { awardRange } from './terms';
@@ -35,8 +36,10 @@ export class MatchQuery {
 
   /** Scores every open opportunity (close_date null or ≥ today) for the org against the approved config; writes nothing without one. */
   static async recompute(client: SupabaseClient, orgId: string, now: Date): Promise<{ scored: number; configId: string | null; reason?: string }> {
-    const config = await MatchQuery.config(client);
-    if (config === null) return { scored: 0, configId: null, reason: 'no approved config' };
+    const approved = await MatchQuery.config(client);
+    if (approved === null) return { scored: 0, configId: null, reason: 'no approved config' };
+    // F-504e: evidence readiness reads which kinds of evidence this org's own records hold, on top of the config's hand-set list.
+    const config = { ...approved, params: { ...approved.params, evidence_loaded: await loadedEvidence(client, orgId, now).catch(() => []) } };
     const org = await loadOrgProfile(client, orgId);
     if (org === null) return { scored: 0, configId: config.id, reason: 'org profile missing' };
     const opps = await client.from('opportunity').select(OPP_COLS).or(`close_date.is.null,close_date.gte.${today(now)}`);
