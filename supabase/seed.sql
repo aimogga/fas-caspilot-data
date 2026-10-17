@@ -25,7 +25,8 @@ FROM auth.users
 WHERE email LIKE '%@example.test';
 
 INSERT INTO geo_county (fips, name, state, population_latest) VALUES
-  ('49035', 'Salt Lake', 'UT', 1181857), ('49049', 'Utah', 'UT', 702100);
+  ('49035', 'Salt Lake', 'UT', 1181857), ('49049', 'Utah', 'UT', 702100)
+ON CONFLICT (fips) DO UPDATE SET population_latest = EXCLUDED.population_latest; -- F-604: the 29 counties now come from a migration
 INSERT INTO source_registry (id, name, owner, url, license, commercial_ok, cadence, status) VALUES
   ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'census-sahie', 'Census', 'https://api.census.gov/data/timeseries/healthins/sahie', 'public-domain', true, 'annual', 'active')
 ON CONFLICT (id) DO UPDATE SET url = EXCLUDED.url;
