@@ -12,7 +12,7 @@ LICENSE / TERMS: CC0 1.0 (metadata "License: https://creativecommons.org/publicd
 REQUIRED NOTICES: None required by CC0; attribute VA and don't use VA marks.
 FIELDS WE USE: date, fips, county_state, age_group, sex, veterans
 KNOWN LIMITS: projections; "Rounding to the nearest 1,000 is always appropriate"; must filter by date
-SAMPLE CALL: https://www.data.va.gov/resource/jrjd-qghv.json?$select=fips,county_state,sum(veterans) as v&$where=starts_with(fips,'49') AND date='2026-09-30T00:00:00.000'&$group=fips,county_state
+SAMPLE CALL: curl -sG https://www.data.va.gov/resource/jrjd-qghv.json --data-urlencode '$select=fips,county_state,sum(veterans) as v' --data-urlencode "\$where=starts_with(fips,'49') AND date='2026-09-30T00:00:00.000'" --data-urlencode '$group=fips,county_state'
 ```
 1. **Endpoint (VERIFIED-direct):** `GET https://www.data.va.gov/resource/jrjd-qghv.json?$limit=5` returned **200 application/json**. Sample: `{"date":"2023-09-30T00:00:00.000","fips":"01001","county_state":"Autauga, AL","state":"Alabama","age_group":"17 to 44","sex":"Female","veterans":"382"}`.
 2. **Vintage (VERIFIED-direct, metadata `https://www.data.va.gov/api/views/jrjd-qghv.json`):**
@@ -28,3 +28,5 @@ SAMPLE CALL: https://www.data.va.gov/resource/jrjd-qghv.json?$select=fips,county
    - ⚠ **If you sum without filtering on `date`, the Utah total comes out as 3,371,140,** because all projection years get summed. **VERIFIED-direct.** Ingest must filter to a single date.
    - VA's own caveat: *"Rounding to the nearest 1,000 is always appropriate for VetPop estimates."* (dataset description, **VERIFIED-direct**). Small UT counties round to 0 (INFERENCE).
 6. **Changed vs doc:** the "Updated Aug 2026" claim is metadata only. Program ownership moved to OAS. The multi-year structure isn't mentioned in the doc.
+
+**Re-checked 2026-10-17 (VERIFIED-direct):** the sample call (curl `-G`; the bare URL has spaces and failed with 400) returned 29 Utah counties for FY2026, e.g. Summit 1,376, Rich 114. The ingest had been written against guessed column names, not the fields listed above, which caused alert #209. It now sums `age_group × sex` per county. Per George (2026-10-17) it loads every FY from FY2023 through the latest FY that has ended (FY2023–FY2026: 116 rows), never a projection.

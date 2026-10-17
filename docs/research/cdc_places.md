@@ -12,7 +12,7 @@ LICENSE / TERMS: Socrata license "Public Domain"; CDC: no logo, no endorsement  
 REQUIRED NOTICES: Attribute CDC; include a no-endorsement disclaimer; don't alter content; no CDC logo without written permission.
 FIELDS WE USE: measureid DEPRESSION, MHLTH (CrdPrv/AgeAdjPrv), data_value, CIs, locationid
 KNOWN LIMITS: model-based; CDC says don't rank, don't evaluate programs, don't trend
-SAMPLE CALL: https://data.cdc.gov/resource/swc5-untb.json?$where=stateabbr='UT' AND measureid in('DEPRESSION','MHLTH') AND datavaluetypeid='CrdPrv'&$limit=500
+SAMPLE CALL: curl -sG https://data.cdc.gov/resource/swc5-untb.json --data-urlencode "\$where=stateabbr='UT' AND measureid in('DEPRESSION','MHLTH') AND datavaluetypeid='AgeAdjPrv'" --data-urlencode '$limit=500'
 ```
 1. **Endpoint (VERIFIED-direct):** `GET https://data.cdc.gov/resource/swc5-untb.json?$where=stateabbr='UT'&$limit=5000&$select=locationname,measureid,data_value,year` returned **200 application/json;charset=utf-8**, 2,320 rows. Sample: `{"locationname":"Carbon","measureid":"ARTHRITIS","data_value":"30.3","year":"2023"}`. The mental-health query above returned 58 rows. Sample: `Piute | MHLTH | Crude prevalence 17.1% (CI 14.9–19.5) | totalpop18plus 1221 | locationid 49031`.
 2. **Vintage:**
@@ -29,3 +29,5 @@ SAMPLE CALL: https://data.cdc.gov/resource/swc5-untb.json?$where=stateabbr='UT' 
    - *"The current modeling procedure does not support using the estimates to track changes at the local level over time."*
    - These directly affect a "proof" product.
 7. **Changed vs doc:** none. The doc says "Public, no restrictions," which is accurate but should add the no-logo/no-endorsement conditions and the ranking/evaluation/trend caveats.
+
+**Re-checked 2026-10-17 (VERIFIED-direct):** the sample call (curl `-G` with `--data-urlencode`, because the bare URL has spaces) returned **200**. The 2025 release holds data year **2023** for MHLTH and DEPRESSION, 29 counties each. Asking for `year='2025'` returns `[]`, which caused alert #208. The ingest now sends no year filter and loads the year the release holds (58 rows, age-adjusted).

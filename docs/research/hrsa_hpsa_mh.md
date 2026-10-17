@@ -24,3 +24,9 @@ SAMPLE CALL: curl -sO https://data.hrsa.gov/DataDownload/DD_Files/BCD_HPSA_FCT_D
    - There is no suppression field, and small values are not blanked.
    - **Product implication (INFERENCE):** show Davis/Weber as "no current MH HPSA designation," not "missing data."
 6. **Changed vs doc:** none. Doc is accurate. Add a coverage note: 27/29 counties designated.
+
+**Re-checked 2026-10-17 (VERIFIED-direct):** the sample call returned 200, about 25 MB, 41,389 rows.
+- The header line ends with a **trailing comma** (65 cells, of which 64 are real columns).
+- Other states' facility HPSAs carry FIPS **`XXXXX`** (403 rows, none in Utah).
+
+Both made the ingest fail (alert #207); it now handles them. A live parse gives 87 rows (29 counties × 3 codes) and 0 rejects.
