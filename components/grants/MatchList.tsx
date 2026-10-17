@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import type { MatchItem } from "@/lib/grants/match-query";
 import { CAP, ELIGIBILITY, FIT_SCORE, FIT_SOURCE, flagWords, SEVERITY, sourceWords, stageTerm } from "@/lib/grants/terms";
 import type { Flag, FlagSeverity } from "@/lib/grants/types";
+import { useHydrated } from "@/lib/use-hydrated";
 
 type Variant = "success" | "warning" | "destructive" | "info" | "muted";
 const GLYPH: Record<FlagSeverity, ReactNode> = { blocker: <Ban aria-hidden />, warning: <TriangleAlert aria-hidden />, info: <CircleHelp aria-hidden /> };
@@ -67,7 +68,7 @@ const OWN_CONTROL = "button, a, input, form, [data-slot=explain-trigger]";
 /** `ol > li[data-match]`, best fit first (the query sorts), ten at a time. DS-26a: a card goes two-column (score beside the body) only from 1024 and when the list is ≥ 36 rem wide. The whole card picks a match. At ≥ 1024 the sticky aside
  * always shows one "How we matched" panel: the top match until another card is picked. Below 1024 the panel opens inside the picked card. */
 export function MatchList({ rows, asOf }: { rows: MatchItem[]; asOf?: string }) {
-  const [open, setOpen] = useState<string | null>(null), [shown, setShown] = useState(PAGE), lg = useLg();
+  const [open, setOpen] = useState<string | null>(null), [shown, setShown] = useState(PAGE), lg = useLg(), hydrated = useHydrated();
   const visible = rows.slice(0, shown), left = rows.length - shown;
   const current = rows.find((r) => r.id === open) ?? (lg ? rows[0] ?? null : null), expanded = (id: string) => current?.id === id;
   const close = (id: string) => { setOpen(null); document.querySelector<HTMLElement>(`[aria-controls="match-${id}"]`)?.focus(); };
@@ -76,7 +77,7 @@ export function MatchList({ rows, asOf }: { rows: MatchItem[]; asOf?: string }) 
   return (
     <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)] lg:items-start lg:gap-6">
       <div className="flex flex-col gap-4">
-        <ol data-slot="match-list" className="@container flex flex-col gap-4">
+        <ol data-slot="match-list" data-hydrated={hydrated || undefined} className="@container flex flex-col gap-4">
           {visible.map((r) => (
             <li key={r.id} data-match={r.id} data-selected={expanded(r.id) || undefined} onClick={(e) => { if (!(e.target as HTMLElement).closest(OWN_CONTROL)) pick(r.id); }}
               className="grid cursor-pointer gap-4 rounded-lg border border-border bg-card p-4 shadow-sm transition-colors hover:border-foreground/30 data-selected:border-primary lg:gap-6 lg:p-6 lg:@xl:grid-cols-[auto_1fr]">
