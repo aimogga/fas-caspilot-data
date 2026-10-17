@@ -5,6 +5,7 @@ import { MatchList } from "@/components/grants/MatchList";
 import { MatchPanel } from "@/components/grants/MatchPanel";
 import { fitBand } from "@/lib/grants/band";
 import type { MatchItem } from "@/lib/grants/match-query";
+import { ENTER_DATA_HREF, EVIDENCE_PACKET_HREF, evidenceLinks } from "@/lib/grants/terms";
 
 const text = (markup: string) => markup.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 const item = (i: number, extra: Partial<MatchItem> = {}): MatchItem => ({ id: `r${i}`, title: `Opportunity ${i}`, funder: "Synthetic funder", closes: "no close date", award: "award not stated", status: null, score: 100 - i, eligibility: "Eligible",
@@ -42,5 +43,19 @@ describe("DS-12b MatchList and MatchPanel", () => {
     expect(list).toMatch(/data-match="r1"[^>]*class="[^"]*lg:@xl:grid-cols-\[auto_1fr\]/);
     const button = renderToStaticMarkup(<DraftStrategyButton opportunityId="o1" />);
     expect([text(/<button[^>]*>.*?<\/button>/.exec(button)?.[0] ?? ""), button.includes("@max-[13rem]/body:sr-only")]).toEqual(["Draft a response strategy", true]);
+  });
+  it("F-504f: the evidence part links to the grant packet when FAS records were credited and to Enter data when evidence is missing; other parts get no links", () => {
+    const ev = (points: number, refs: string[]) => ({ key: "evidence_readiness", label: "Evidence readiness", weight: 0.15, value: points / 15, points, max: 15, reason: "Asks for outcomes, cost evidence", source_refs: ["opportunity.description", "match_config.params.evidence_available", ...refs] });
+    expect(evidenceLinks(ev(15, ["fas_records.outcomes"])).map((l) => l.href)).toEqual([EVIDENCE_PACKET_HREF]);
+    expect(evidenceLinks(ev(7.5, ["fas_records.outcomes"])).map((l) => l.href)).toEqual([EVIDENCE_PACKET_HREF, ENTER_DATA_HREF]);
+    expect(evidenceLinks(ev(0, [])).map((l) => l.href)).toEqual([ENTER_DATA_HREF]);
+    expect(evidenceLinks(ev(15, []))).toEqual([]);
+    expect(evidenceLinks({ ...ev(0, []), source_refs: ["opportunity.description"] })).toEqual([]); // could not check: no description, nothing to add
+    expect(evidenceLinks({ ...ev(0, ["fas_records.cost"]), key: "mission_fit" })).toEqual([]);
+    const panel = renderToStaticMarkup(<MatchPanel id="p" row={item(1, { components: [ev(7.5, ["fas_records.outcomes"])] })} />);
+    expect(panel).toContain('href="/staff/packets?variant=grant"');
+    expect(panel).toContain('href="/staff/entry"');
+    expect(text(panel)).toContain("FAS records · outcomes See these records in the grant evidence packet Add the missing records on Enter data");
+    expect(renderToStaticMarkup(<MatchPanel id="p" row={item(1)} />)).not.toContain("evidence-links");
   });
 });

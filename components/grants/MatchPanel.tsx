@@ -2,13 +2,14 @@
 
 // DS-12b: "How we matched". Every string comes from match_result.components / flags, opportunity and award_history; nothing is recomputed (F-504, D-040).
 import { Ban, Check, CircleHelp, TriangleAlert } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useRef, type ReactNode } from "react";
 import { FitBandBadge } from "@/components/grants/FitBandBadge";
 import { ExplainCard, Hint } from "@/components/trust/explain";
 import { Button } from "@/components/ui/button";
 import type { MatchItem } from "@/lib/grants/match-query";
 import type { Component } from "@/lib/grants/score";
-import { CAP, type CheckRow, checklist, COMPONENT, FIT_SOURCE, SEVERITY, sourceWords, usd } from "@/lib/grants/terms";
+import { CAP, type CheckRow, checklist, COMPONENT, evidenceLinks, FIT_SOURCE, SEVERITY, sourceWords, usd } from "@/lib/grants/terms";
 import type { CheckStatus } from "@/lib/grants/types";
 
 const CHIP = "rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground";
@@ -28,7 +29,7 @@ function Sources({ refs }: { refs: string[] }) {
   );
 }
 
-/** One score part: label (explain card), points of max as text, a bar that only illustrates, the stored reason, the sources. */
+/** One score part: label (explain card), points of max as text, a bar that only illustrates, the stored reason, the sources; the evidence part adds where to go next (F-504f). */
 function Part({ c, asOf }: { c: Component; asOf?: string }) {
   const term = COMPONENT[c.key] ?? { id: c.key, title: c.label, plain: "One part of the fit score, as the matching rules stored it." };
   const width = c.max > 0 ? `${Math.round((c.points / c.max) * 100)}%` : "0%";
@@ -41,6 +42,11 @@ function Part({ c, asOf }: { c: Component; asOf?: string }) {
       <span aria-hidden className="relative h-2 overflow-hidden rounded-r-[4px] bg-muted"><span className="absolute inset-y-0 left-0 bg-chart-1" style={{ width }} /></span>
       <p className="text-sm text-muted-foreground">{c.reason}</p>
       <Sources refs={c.source_refs} />
+      {evidenceLinks(c).length ? (
+        <ul data-slot="evidence-links" className="flex flex-wrap gap-x-4 text-sm">
+          {evidenceLinks(c).map((l) => <li key={l.href}><Link href={l.href} className="inline-flex min-h-11 items-center underline underline-offset-4 lg:min-h-0">{l.label}</Link></li>)}
+        </ul>
+      ) : null}
     </li>
   );
 }
