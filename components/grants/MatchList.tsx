@@ -22,6 +22,8 @@ const ELIGIBILITY_FACE: Record<keyof typeof ELIGIBILITY, [ReactNode, Variant]> =
 // The stored eligibility label from MatchQuery ("Flags: 2", "Unknown") as one of the four badge words.
 const eligibilityWord = (label: string): keyof typeof ELIGIBILITY => (label === "Eligible" || label === "Not eligible" ? label : label === "Unknown" ? "Could not check" : "Flagged");
 const TILE = "flex-col items-start gap-1 rounded-md border border-border bg-background px-3 py-2 no-underline lg:min-w-22";
+// DS-12c: a stored flag message can run to three lines; a squarer radius and a first-line glyph keep it from turning into a tall pill.
+const FLAG = "items-start whitespace-normal rounded-md text-left [&>svg]:mt-0.5 [&>svg]:shrink-0";
 const PAGE = 10;
 const LG = "(min-width: 1024px)";
 const subscribe = (cb: () => void) => { const m = window.matchMedia(LG); m.addEventListener("change", cb); return () => m.removeEventListener("change", cb); };
@@ -46,7 +48,7 @@ function Badges({ row }: { row: MatchItem }) {
       {row.flags.map((f) => (
         <li key={f.code}>
           <ExplainCard term={SEVERITY[f.severity]} rows={[["Stored reason", f.message], ["Checked from", sourceWords(f.source_ref).label]]} className="no-underline">
-            <Badge data-slot="flag" data-severity={f.severity} variant={SEVERITY_VARIANT[f.severity]} prefix={GLYPH[f.severity]} className="whitespace-normal text-left">{flagWords(f.code, f.message)}</Badge>
+            <Badge data-slot="flag" data-severity={f.severity} variant={SEVERITY_VARIANT[f.severity]} prefix={GLYPH[f.severity]} className={FLAG}>{flagWords(f.code, f.message)}</Badge>
           </ExplainCard>
         </li>
       ))}
@@ -73,8 +75,8 @@ export function MatchList({ rows, asOf }: { rows: MatchItem[]; asOf?: string }) 
         <ol data-slot="match-list" className="flex flex-col gap-4">
           {visible.map((r) => (
             <li key={r.id} data-match={r.id} data-selected={expanded(r.id) || undefined} onClick={(e) => { if (!(e.target as HTMLElement).closest(OWN_CONTROL)) pick(r.id); }}
-              className="grid cursor-pointer gap-4 rounded-lg border border-border bg-card p-4 shadow-sm transition-colors hover:border-foreground/30 data-selected:border-primary lg:grid-cols-[auto_1fr] lg:gap-6 lg:p-6">
-              <div className="flex flex-wrap items-center gap-2 lg:flex-col lg:items-start"><FitTile row={r} asOf={asOf} />{r.band ? <FitBandBadge band={r.band} /> : null}</div>
+              className="grid cursor-pointer gap-4 rounded-lg border border-border bg-card p-4 shadow-sm transition-colors hover:border-foreground/30 data-selected:border-primary lg:p-6 xl:grid-cols-[auto_1fr] xl:gap-6">
+              <div className="flex flex-wrap items-center gap-2 xl:flex-col xl:items-start"><FitTile row={r} asOf={asOf} />{r.band ? <FitBandBadge band={r.band} /> : null}</div>
               <div className="flex min-w-0 flex-col gap-3">
                 <h3 className="text-base font-medium leading-snug break-words">{r.title}</h3>
                 <p data-slot="match-meta" className="text-sm text-muted-foreground">{r.funder} · {r.closes} · <span className="tabular-nums">{r.award}</span></p>

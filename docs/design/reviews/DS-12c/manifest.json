@@ -1,0 +1,42 @@
+[
+  {
+    "id": "DS-12c",
+    "tag": "before",
+    "route": "/staff/grants/matches",
+    "width": 375,
+    "variant": "base",
+    "host": "fas-caspilot-data-git-main-aimoggas-projects.vercel.app",
+    "sha": "a8d0ef1",
+    "at": "2026-10-17T03:42:40.357Z"
+  },
+  {
+    "id": "DS-12c",
+    "tag": "before",
+    "route": "/staff/grants/matches",
+    "width": 1024,
+    "variant": "base",
+    "host": "fas-caspilot-data-git-main-aimoggas-projects.vercel.app",
+    "sha": "a8d0ef1",
+    "at": "2026-10-17T03:42:42.230Z"
+  },
+  {
+    "id": "DS-12c",
+    "tag": "before",
+    "route": "/staff/grants/matches",
+    "width": 1440,
+    "variant": "base",
+    "host": "fas-caspilot-data-git-main-aimoggas-projects.vercel.app",
+    "sha": "a8d0ef1",
+    "at": "2026-10-17T03:42:44.309Z"
+  },
+  {
+    "id": "DS-12c",
+    "tag": "before",
+    "route": "/staff/grants/matches",
+    "width": 1024,
+    "variant": "pass",
+    "host": "fas-caspilot-data-git-main-aimoggas-projects.vercel.app",
+    "sha": "a8d0ef1",
+    "at": "2026-10-17T03:44:32.632Z"
+  }
+]

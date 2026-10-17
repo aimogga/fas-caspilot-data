@@ -95,6 +95,9 @@ test("staff sees seeded matches by score and the How we matched panel shows only
       await expect(buttons.nth(1)).toBeFocused();
     } else await expect(panel.getByRole("button", { name: "Close", exact: true })).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+    // DS-12c: nothing in a card (buttons, badges) runs past the card's right edge; at 1024 "Draft a response strategy" used to.
+    expect(await rows.evaluateAll((cards) => cards.flatMap((c) => [...c.querySelectorAll("button, [data-slot=badge]")]
+      .filter((el) => el.getBoundingClientRect().right > c.getBoundingClientRect().right + 0.5).map((el) => el.textContent)))).toEqual([]);
     expect((await new AxeBuilder({ page }).analyze()).violations.filter((v) => v.impact === "serious" || v.impact === "critical")).toEqual([]);
   }
 });
