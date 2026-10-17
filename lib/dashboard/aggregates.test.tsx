@@ -43,5 +43,8 @@ describe("F-303 aggregate totals on the Team dashboard", () => {
     expect(text(empty)).toContain("No totals were entered for Jan–Mar 2026 (Q1) in Salt Lake County. Staff add them on Enter data");
     expect(empty).toContain('href="/staff/entry"');
     expect(text(renderToStaticMarkup(<AggregateTotals totals={null} period="2026-Q1" countyName={null} />))).toContain("Couldn&#x27;t load the entered totals.");
+    // F-303d: on the board the empty state names no page board viewers cannot open
+    const board = renderToStaticMarkup(<AggregateTotals totals={aggregateTotals([], "all")} period="2026-Q1" countyName={null} entryHref={null} />);
+    expect([text(board).includes("No totals were entered for Jan–Mar 2026 (Q1) in all counties."), board.includes("/staff/entry"), text(board).includes("Staff add them")]).toEqual([true, false, false]);
   });
 });

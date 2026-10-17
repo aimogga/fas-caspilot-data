@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import "@/components/board/print.css";
 import { KpiRow } from "@/components/board/KpiRow";
+import { AggregateTotals } from "@/components/dashboard/AggregateTotals";
 import { PrintButton } from "@/components/board/PrintButton";
 import { PacketCard, Sections } from "@/components/board/Sections";
 import { Sources } from "@/components/board/Sources";
@@ -12,10 +13,12 @@ import { boardKpis } from "@/lib/board/kpis";
 import { BoardQuery, boardFilters, type BoardData } from "@/lib/board/query";
 import { boardSections, LEAD } from "@/lib/board/sections";
 import { sourcesParagraph } from "@/lib/board/sources";
+import { aggregateTotals, AggregatesQuery, type AggregateTotals as Totals } from "@/lib/dashboard/aggregates";
 import { NOT_AVAILABLE } from "@/lib/dashboard/cards";
-import { quarterLabel } from "@/lib/dashboard/filters";
+import { ALL, quarterLabel } from "@/lib/dashboard/filters";
 import { quarterWords } from "@/lib/dashboard/format";
 import { NeedMapQuery, type NeedTableData } from "@/lib/need-map/query";
+import { orgScoped } from "@/lib/packets/audit";
 import { whyHidden } from "@/lib/trust/glossary";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -30,7 +33,7 @@ const warn = (what: string) => (e: unknown) => { console.error(`[board] ${what} 
 /** F-402 board dashboard: one screen, plain language, the quarter as four sections in words (DS-13b), the same suppressed aggregates as the team dashboard, print-friendly, as-of on every number. */
 export default async function BoardPage() {
   const now = new Date(), filters = boardFilters(now);
-  let data: BoardData | null = null, need: NeedTableData | null = null;
+  let data: BoardData | null = null, need: NeedTableData | null = null, aggregates: Totals | null | undefined;
   let errorId: string | undefined;
   try {
     // Board viewers cannot read FAS record rows (RLS: admin/staff only), so the aggregates are computed server-side with the
@@ -38,6 +41,9 @@ export default async function BoardPage() {
     const client = createServiceClient() ?? (await createClient());
     // The county need section loads beside the metrics; a failed need load only words that section as not available.
     [data, need] = client ? await Promise.all([BoardQuery.load(client, now), NeedMapQuery.load(client).catch(warn("county need"))]) : [null, null];
+    // F-303d: the quarter's totals entered as totals, read for the viewer's own org only (the service role sees every org), suppressed by aggregateTotals.
+    const orgId = (await (await createClient())?.auth.getUser())?.data.user?.app_metadata?.org_id;
+    if (client && typeof orgId === "string") aggregates = await AggregatesQuery.load(orgScoped(client, orgId), filters.period).then((rows) => (rows ? aggregateTotals(rows, ALL) : null), warn("aggregate totals"));
   } catch (e) {
     errorId = randomUUID();
     console.error("[board] load failed", { referenceId: errorId, message: e instanceof Error ? e.message : "unknown", stack: e instanceof Error ? e.stack : undefined });
@@ -60,6 +66,7 @@ export default async function BoardPage() {
       <p data-slot="board-lead" className="max-w-prose text-base leading-7">{LEAD}</p>
       <KpiRow kpis={boardKpis(metrics, filters.period)} period={filters.period} />
       <Sections sections={sections} metrics={metrics} counties={counties} period={filters.period} />
+      {aggregates !== undefined ? <AggregateTotals totals={aggregates} period={filters.period} countyName={null} entryHref={null} /> : null}
       <PacketCard when={when} />
       <Sources text={sourcesParagraph(metrics, filters.period, asOf, counties)} period={quarterLabel(filters.period)} n={n} asOf={asOf} footer={`FAS Evidence · Board summary · ${when} · County totals only`} />
     </Stack>
