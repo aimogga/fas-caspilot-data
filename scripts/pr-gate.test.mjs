@@ -79,11 +79,14 @@ describe('run and CLI', () => {
     expect(loadGenerated(() => { throw new Error('ENOENT'); })).toEqual([]);
   });
 
+  // The child gets 60 s; vitest's 5 s default cut it off when the first git and file scan after a fresh commit ran slow inside `pnpm gate`
+  // ("Test timed out in 5000ms", seen 2026-10-17), so the test's own limit matches the child's.
+  const CLI_MS = 60000;
   it('CLI --skip-tests exits 0 on this repo (base HEAD: CI checkouts have no origin/main)', () => {
-    const r = spawnSync(process.execPath, ['scripts/pr-gate.mjs', '--skip-tests', '--base', 'HEAD'], { encoding: 'utf8', timeout: 60000 });
+    const r = spawnSync(process.execPath, ['scripts/pr-gate.mjs', '--skip-tests', '--base', 'HEAD'], { encoding: 'utf8', timeout: CLI_MS });
     expect(r.stdout).toContain('secret scan | ');
     expect(r.status).toBe(0);
-  });
+  }, CLI_MS + 5000);
 });
 
 describe('resolveBase (D-032 stacked branches)', () => {
