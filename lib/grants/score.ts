@@ -7,7 +7,8 @@ import type { EligibilityResult, Flag, OpportunityInput, OrgProfile } from './ty
 // ("could not score" never caps); `award_too_small_value` scores an award below the worth-applying minimum; `min_days_to_close` zeroes effort under it;
 // `max_cost_share_pct` zeroes award fit when the required match exceeds it. F-504d: `band_strong` / `band_look` only name the score bands (`./band`).
 export type MatchParams = { prep_days?: number; themes_for_full_credit?: number; evidence_available?: string[];
-  floor_components?: string[]; award_too_small_value?: number; min_days_to_close?: number; max_cost_share_pct?: number; band_strong?: number; band_look?: number };
+  floor_components?: string[]; award_too_small_value?: number; min_days_to_close?: number; max_cost_share_pct?: number; band_strong?: number; band_look?: number;
+  /** F-504e: evidence kinds FAS's own records hold (`lib/grants/evidence.ts`); set at recompute, never stored in `match_config`. */ evidence_loaded?: string[] };
 export type MatchConfig = { id: string; weights: Record<string, number>; params: MatchParams; created_at: string; approved_by: string | null };
 export type Component = { key: string; label: string; weight: number; value: number; points: number; max: number; reason: string; source_refs: string[] };
 export type MatchScore = { score: number; configId: string; components: Component[] };
@@ -43,8 +44,9 @@ export const SCORERS: Record<string, (c: Ctx) => Part> = {
     const refs = ['opportunity.description', 'match_config.params.evidence_available'];
     const asked = Object.keys(EVIDENCE).filter((k) => EVIDENCE[k].test(text));
     if (!asked.length) return { value: 1, reason: 'The opportunity text names no outcome, cost or timeliness evidence', source_refs: refs };
-    const have = asked.filter((k) => (p.evidence_available ?? []).includes(k));
-    return { value: have.length / asked.length, reason: `Asks for ${asked.join(', ')} evidence; FAS has ${have.length ? have.join(', ') : 'none of it'} loaded (${have.length} of ${asked.length})`, source_refs: refs };
+    const loaded = p.evidence_loaded ?? [], have = asked.filter((k) => (p.evidence_available ?? []).includes(k) || loaded.includes(k));
+    const fromRecords = have.filter((k) => loaded.includes(k)).map((k) => `fas_records.${k}`);
+    return { value: have.length / asked.length, reason: `Asks for ${asked.join(', ')} evidence; FAS has ${have.length ? have.join(', ') : 'none of it'} loaded (${have.length} of ${asked.length})`, source_refs: [...refs, ...fromRecords] };
   },
   award_size_fit({ o, org, e, p }) {
     const f = e.flags.find((x) => x.code === 'award_size');

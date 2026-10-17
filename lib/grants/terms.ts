@@ -83,6 +83,7 @@ export const CHECK: Record<FlagCode, string> = {
 const WHERE: Record<string, [string, string]> = {
   opportunity: ["Grant listing", "the grant listing as the funder published it"], org: ["FAS settings", "the FAS facts an admin entered in settings"],
   match_config: ["Matching rules", "the approved matching rules"], eligibility: ["Eligibility checks", "the ten eligibility checks"],
+  fas_records: ["FAS records", "the FAS records loaded in the app (at least 11 in the last 12 months)"],
 };
 /** Why a check could not run, by the stored field path: what the listing does not state, or what FAS has not entered. */
 const MISSING: Record<string, string> = {
