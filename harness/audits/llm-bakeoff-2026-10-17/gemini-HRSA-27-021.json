@@ -1,0 +1,17 @@
+{
+ "status": "failed",
+ "output": null,
+ "citation_report": {
+  "ok": false,
+  "claims": [],
+  "copied": [],
+  "rounds": 2,
+  "error": [
+   {
+    "provider": "gemini",
+    "status": 400
+   }
+  ]
+ },
+ "model_meta": []
+}

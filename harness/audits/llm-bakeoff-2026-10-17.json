@@ -1,0 +1,284 @@
+{
+ "feature": "F-508i",
+ "date": "2026-10-17",
+ "decision_rule": "The provider with higher citation accuracy wins; a tie goes to the higher QA rubric mean (D-003 memo).",
+ "call_cap": 20,
+ "spacing_ms": 4000,
+ "providers": {
+  "gemini": {
+   "runs": 5,
+   "skipped": 0,
+   "schema_valid": 0,
+   "drafts_ok": 0,
+   "numbers_present": 0,
+   "numbers_resolving": 0,
+   "citation_accuracy": null,
+   "copy_hits": 0,
+   "inferences_separated": 0,
+   "inferences_misplaced": 0,
+   "mean_latency_ms": 0,
+   "input_tokens": 0,
+   "output_tokens": 0
+  },
+  "openrouter": {
+   "runs": 5,
+   "skipped": 0,
+   "schema_valid": 0,
+   "drafts_ok": 0,
+   "numbers_present": 0,
+   "numbers_resolving": 0,
+   "citation_accuracy": null,
+   "copy_hits": 0,
+   "inferences_separated": 0,
+   "inferences_misplaced": 0,
+   "mean_latency_ms": 0,
+   "input_tokens": 0,
+   "output_tokens": 0
+  }
+ },
+ "automatic_leader": null,
+ "opportunities": [
+  {
+   "key": "O-OJJDP-2026-172752",
+   "kind": "federal",
+   "source_url": "https://www.grants.gov/search-results-detail/364056",
+   "fetched_at": "2026-10-16"
+  },
+  {
+   "key": "HRSA-27-021",
+   "kind": "federal",
+   "source_url": "https://www.grants.gov/search-results-detail/363512",
+   "fetched_at": "2026-10-16"
+  },
+  {
+   "key": "HRSA-27-043",
+   "kind": "federal",
+   "source_url": "https://www.grants.gov/search-results-detail/363687",
+   "fetched_at": "2026-10-16"
+  },
+  {
+   "key": "UOVC-VOCA",
+   "kind": "utah",
+   "source_url": "https://crimevictim.utah.gov/providers/grants-program/voca/",
+   "fetched_at": "2026-10-16"
+  },
+  {
+   "key": "SORENSON-LEGACY",
+   "kind": "foundation",
+   "source_url": "https://sorensonlegacyfoundation.org/apply",
+   "fetched_at": "2026-10-16"
+  }
+ ],
+ "runs": [
+  {
+   "provider": "gemini",
+   "key": "O-OJJDP-2026-172752",
+   "kind": "federal",
+   "skipped": false,
+   "status": "failed",
+   "score": {
+    "schema_valid": false,
+    "numbers_present": 0,
+    "numbers_resolving": 0,
+    "citation_accuracy": null,
+    "copy_hits": 0,
+    "inferences_separated": 0,
+    "inferences_misplaced": 0,
+    "latency_ms": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "rounds": 2
+   },
+   "draft": "llm-bakeoff-2026-10-17/gemini-O-OJJDP-2026-172752.json"
+  },
+  {
+   "provider": "gemini",
+   "key": "HRSA-27-021",
+   "kind": "federal",
+   "skipped": false,
+   "status": "failed",
+   "score": {
+    "schema_valid": false,
+    "numbers_present": 0,
+    "numbers_resolving": 0,
+    "citation_accuracy": null,
+    "copy_hits": 0,
+    "inferences_separated": 0,
+    "inferences_misplaced": 0,
+    "latency_ms": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "rounds": 2
+   },
+   "draft": "llm-bakeoff-2026-10-17/gemini-HRSA-27-021.json"
+  },
+  {
+   "provider": "gemini",
+   "key": "HRSA-27-043",
+   "kind": "federal",
+   "skipped": false,
+   "status": "failed",
+   "score": {
+    "schema_valid": false,
+    "numbers_present": 0,
+    "numbers_resolving": 0,
+    "citation_accuracy": null,
+    "copy_hits": 0,
+    "inferences_separated": 0,
+    "inferences_misplaced": 0,
+    "latency_ms": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "rounds": 2
+   },
+   "draft": "llm-bakeoff-2026-10-17/gemini-HRSA-27-043.json"
+  },
+  {
+   "provider": "gemini",
+   "key": "UOVC-VOCA",
+   "kind": "utah",
+   "skipped": false,
+   "status": "failed",
+   "score": {
+    "schema_valid": false,
+    "numbers_present": 0,
+    "numbers_resolving": 0,
+    "citation_accuracy": null,
+    "copy_hits": 0,
+    "inferences_separated": 0,
+    "inferences_misplaced": 0,
+    "latency_ms": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "rounds": 2
+   },
+   "draft": "llm-bakeoff-2026-10-17/gemini-UOVC-VOCA.json"
+  },
+  {
+   "provider": "gemini",
+   "key": "SORENSON-LEGACY",
+   "kind": "foundation",
+   "skipped": false,
+   "status": "failed",
+   "score": {
+    "schema_valid": false,
+    "numbers_present": 0,
+    "numbers_resolving": 0,
+    "citation_accuracy": null,
+    "copy_hits": 0,
+    "inferences_separated": 0,
+    "inferences_misplaced": 0,
+    "latency_ms": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "rounds": 2
+   },
+   "draft": "llm-bakeoff-2026-10-17/gemini-SORENSON-LEGACY.json"
+  },
+  {
+   "provider": "openrouter",
+   "key": "O-OJJDP-2026-172752",
+   "kind": "federal",
+   "skipped": false,
+   "status": "failed",
+   "score": {
+    "schema_valid": false,
+    "numbers_present": 0,
+    "numbers_resolving": 0,
+    "citation_accuracy": null,
+    "copy_hits": 0,
+    "inferences_separated": 0,
+    "inferences_misplaced": 0,
+    "latency_ms": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "rounds": 2
+   },
+   "draft": "llm-bakeoff-2026-10-17/openrouter-O-OJJDP-2026-172752.json"
+  },
+  {
+   "provider": "openrouter",
+   "key": "HRSA-27-021",
+   "kind": "federal",
+   "skipped": false,
+   "status": "failed",
+   "score": {
+    "schema_valid": false,
+    "numbers_present": 0,
+    "numbers_resolving": 0,
+    "citation_accuracy": null,
+    "copy_hits": 0,
+    "inferences_separated": 0,
+    "inferences_misplaced": 0,
+    "latency_ms": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "rounds": 2
+   },
+   "draft": "llm-bakeoff-2026-10-17/openrouter-HRSA-27-021.json"
+  },
+  {
+   "provider": "openrouter",
+   "key": "HRSA-27-043",
+   "kind": "federal",
+   "skipped": false,
+   "status": "failed",
+   "score": {
+    "schema_valid": false,
+    "numbers_present": 0,
+    "numbers_resolving": 0,
+    "citation_accuracy": null,
+    "copy_hits": 0,
+    "inferences_separated": 0,
+    "inferences_misplaced": 0,
+    "latency_ms": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "rounds": 2
+   },
+   "draft": "llm-bakeoff-2026-10-17/openrouter-HRSA-27-043.json"
+  },
+  {
+   "provider": "openrouter",
+   "key": "UOVC-VOCA",
+   "kind": "utah",
+   "skipped": false,
+   "status": "failed",
+   "score": {
+    "schema_valid": false,
+    "numbers_present": 0,
+    "numbers_resolving": 0,
+    "citation_accuracy": null,
+    "copy_hits": 0,
+    "inferences_separated": 0,
+    "inferences_misplaced": 0,
+    "latency_ms": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "rounds": 2
+   },
+   "draft": "llm-bakeoff-2026-10-17/openrouter-UOVC-VOCA.json"
+  },
+  {
+   "provider": "openrouter",
+   "key": "SORENSON-LEGACY",
+   "kind": "foundation",
+   "skipped": false,
+   "status": "failed",
+   "score": {
+    "schema_valid": false,
+    "numbers_present": 0,
+    "numbers_resolving": 0,
+    "citation_accuracy": null,
+    "copy_hits": 0,
+    "inferences_separated": 0,
+    "inferences_misplaced": 0,
+    "latency_ms": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "rounds": 2
+   },
+   "draft": "llm-bakeoff-2026-10-17/openrouter-SORENSON-LEGACY.json"
+  }
+ ]
+}
