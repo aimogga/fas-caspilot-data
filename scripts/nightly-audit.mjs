@@ -143,7 +143,8 @@ function checkHarnessIntegrity() {
     else r.details.push(docCheck.detail);
     try {
       const yesterday = new Date(Date.now() - 86400000).toISOString();
-      const commits = execSync(`git log --since="${yesterday}" --format="%s"`, {encoding: 'utf-8'}).trim().split('\n').filter(c => c);
+      const commits = execSync(`git log --since="${yesterday}" --format="%H%x09%s"`, {encoding: 'utf-8'}).trim().split('\n').filter(c => c)
+        .map(line => { const [sha, ...subject] = line.split('\t'); return {subject: subject.join('\t'), changed: changedFiles(sha)}; });
       const progLog = checkProgressLog(commits, readProgressLog());
       if (progLog.missing.length) {
         r.status = worst(r.status, 'YELLOW');
@@ -169,14 +170,23 @@ export function readProgressLog(dir = 'harness/progress', exists = existsSync, r
   return [legacy, ...entries].join('\n');
 }
 
+/** Files a commit adds or modifies against its first parent (a merge or squash commit's whole PR). Empty when git cannot say. */
+export function changedFiles(sha, run = (cmd) => execSync(cmd, {encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore']})) {
+  try { return run(`git diff --name-only --diff-filter=AM ${sha}^1 ${sha}`).trim().split('\n').filter(f => f); } catch { return []; }
+}
+const PROGRESS_ENTRY = /^harness\/(progress\.md|progress\/[^/]+\.md)$/;
+
+/** A merged PR is documented when its merge commit adds a `harness/progress/*.md` entry (D-041: entries are written before the PR number exists) or
+ * updates `harness/progress.md` (before D-041), or when the log text names it (`PR #n`, `/pull/n`). `commits` are subjects, or `{subject, changed}`. */
 export function checkProgressLog(commits, progressText) {
-  const prNums = new Set();
+  const prs = new Map();
   commits.forEach(c => {
-    const m = c.match(/\(#(\d+)\)$/) || (c.startsWith('Merge pull request #') && c.match(/Merge pull request #(\d+)/));
-    if (m) prNums.add(m[1]);
+    const subject = typeof c === 'string' ? c : c.subject, changed = typeof c === 'string' ? [] : c.changed ?? [];
+    const m = subject.match(/\(#(\d+)\)$/) || (subject.startsWith('Merge pull request #') && subject.match(/Merge pull request #(\d+)/));
+    if (m) prs.set(m[1], (prs.get(m[1]) ?? false) || changed.some(f => PROGRESS_ENTRY.test(f)));
   });
   const found = [], missing = [];
-  prNums.forEach(n => (progressText.includes(`PR #${n}`) || progressText.includes(`/pull/${n}`) ? found : missing).push(n));
+  prs.forEach((hasEntry, n) => (hasEntry || progressText.includes(`PR #${n}`) || progressText.includes(`/pull/${n}`) ? found : missing).push(n));
   return {found, missing};
 }
 
