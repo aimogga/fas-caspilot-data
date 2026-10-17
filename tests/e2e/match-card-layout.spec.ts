@@ -9,11 +9,12 @@ async function signIn(page: Page) {
   await Promise.all([page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 10000 }), page.click("button[type=submit]")]);
 }
 
-/** Per card: text of any descendant wider than the card or past its right edge; plus whether the page scrolls sideways. */
+/** Per card: text of any descendant wider than the card or past its right edge; plus whether the page scrolls sideways.
+ * A truncated chip's text span reports its full text as scrollWidth by design (AC 2); it counts only if its box passes the card edge. */
 const overflow = (page: Page) => page.evaluate(() => ({
   cards: [...document.querySelectorAll<HTMLElement>("li[data-match]")].flatMap((card) => {
     const edge = card.getBoundingClientRect().right;
-    return [...card.querySelectorAll<HTMLElement>("*")].filter((e) => e.scrollWidth > card.clientWidth || e.getBoundingClientRect().right > edge + 0.5).map((e) => (e.textContent ?? "").trim().slice(0, 40));
+    return [...card.querySelectorAll<HTMLElement>("*")].filter((e) => (e.scrollWidth > card.clientWidth && getComputedStyle(e).textOverflow !== "ellipsis") || e.getBoundingClientRect().right > edge + 0.5).map((e) => (e.textContent ?? "").trim().slice(0, 40));
   }),
   page: document.documentElement.scrollWidth > document.documentElement.clientWidth,
 }));
