@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildDigest, digestThreshold, selectNew, sinceDate, type DigestRow } from './digest';
+import { buildDigest, digestThreshold, matchesUrl, packetUrl, selectNew, sinceDate, type DigestRow } from './digest';
 
 const NOW = new Date('2026-10-19T09:30:00Z');
 const row = (over: Partial<DigestRow>): DigestRow => ({ id: 'r', title: 'T', funder: 'F', closeDate: '2026-12-01', postedDate: '2026-10-15', computedAt: '2026-10-19T09:00:00Z', score: 70, eligibility: 'Eligible', ...over });
@@ -45,6 +45,18 @@ describe('buildDigest', () => {
     expect(d.html).toContain('<h3>Strong fit (2)</h3><ul><li>A · F'); expect(d.html).toContain('</ul><h3>Worth a look (2)</h3><ul><li>B · F');
     expect(buildDigest(rows, NOW, { band_strong: 95 }).groups.map((g) => g.label)).toEqual(['Worth a look']);
     expect(buildDigest(rows, NOW, { digest_threshold: 70, band_look: 60 }).rows.map((r) => r.id)).toEqual(['a', 'c', 'b']);
+  });
+  it('F-505b: with the app URL each match links to the packet prepared for its grant and the footer to Grant matches; without it nothing changes', () => {
+    const APP = 'https://fas.example.test', rows = [row({ id: 'a', opportunityId: 'opp-1', title: 'A', score: 90 }), row({ id: 'b', title: 'B', score: 74 })];
+    expect([packetUrl(APP, 'opp-1'), matchesUrl(APP)]).toEqual(['https://fas.example.test/staff/packets?variant=grant&opportunity=opp-1', 'https://fas.example.test/staff/grants/matches']);
+    const d = buildDigest(rows, NOW, {}, 7, APP);
+    expect(d.text).toContain('- A · F · closes Dec 1, 2026 · fit 90 · Eligible\n  Evidence packet: https://fas.example.test/staff/packets?variant=grant&opportunity=opp-1\n');
+    expect(d.text).toContain('Open the Grant matches page (https://fas.example.test/staff/grants/matches) for the reasons behind each score.');
+    expect(d.html).toContain('fit 90 · Eligible · <a href="https://fas.example.test/staff/packets?variant=grant&amp;opportunity=opp-1">Evidence packet</a></li>');
+    expect(d.html).toContain('<li>B · F · closes Dec 1, 2026 · fit 74 · Eligible</li>'); // no stored opportunity id → no link
+    expect(d.html).toContain('<a href="https://fas.example.test/staff/grants/matches">Grant matches page</a>');
+    const plain = buildDigest(rows, NOW, {}), before = buildDigest(rows.map((r) => ({ ...r, opportunityId: undefined })), NOW, {});
+    expect([plain.text, plain.html, plain.text.includes('http')]).toEqual([before.text, before.html, false]);
   });
   it('says so when nothing is new', () => {
     const d = buildDigest([row({ score: 10 })], NOW, {});
