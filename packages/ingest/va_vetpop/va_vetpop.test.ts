@@ -9,16 +9,27 @@ const row = (fips: string, veterans: unknown, extra: Record<string, unknown> = {
 describe('unit: VetPop parser with a fixture in the live jrjd-qghv shape', () => {
   const parsed = VaVetpop.parse(fixture);
   const by = (fips: string) => parsed.rows.find((r) => r.geo_fips === fips);
-  it('sums age × sex cells per county, fills to 29, rounds to the nearest thousand (half up), keeps the latest year, drops other states', () => {
+  it('sums age × sex cells per county, fills to 29, rounds to the nearest thousand (half up), drops years before FY2023 and other states', () => {
     expect(parsed.rejects).toEqual([]);
     expect(parsed.rows).toHaveLength(29);
-    expect(by('49035')?.value).toBe(61000); // 61,234 over two cells → 61,000 and the FY2022 cells (59,999) ignored
+    expect(by('49035')?.value).toBe(61000); // 61,234 over two cells → 61,000; the FY2022 cells (59,999) predate VetPop2023's base
     expect(by('49049')?.value).toBe(27000); // 26,500 → 27,000
     expect(by('49029')?.value).toBe(0); // 499 → 0 stays a published count
     expect(by('49009')).toEqual(expect.objectContaining({ value: null, unit: VaVetpop.NOT_PUBLISHED, vintage: '2023' }));
     expect(parsed.rows.every((r) => r.vintage === '2023' && r.indicator_code === 'veterans_count' && r.moe === null)).toBe(true);
     expect(parsed.rows.some((r) => r.geo_fips === '16001')).toBe(false);
     expect(VaVetpop.requireComplete(parsed)).toHaveLength(29);
+  });
+
+  it('keeps one full county set per fiscal year (George: FY2023 onward) and fails closed when a year asked for is missing', () => {
+    const year = (fy: string, v: string) => ['49035', '49057'].map((fips) => row(fips, v, { date: `${fy}-09-30T00:00:00.000` }));
+    const p = VaVetpop.parse([...year('2023', '1500'), ...year('2024', '2500'), ...year('2026', '700')]);
+    const at = (fy: string, fips: string) => p.rows.find((r) => r.vintage === fy && r.geo_fips === fips);
+    expect([p.rows.length, at('2023', '49035')?.value, at('2024', '49057')?.value, at('2026', '49035')?.value]).toEqual([87, 2000, 3000, 1000]);
+    expect(p.rows.every((r) => r.period === r.vintage)).toBe(true);
+    expect(VaVetpop.requireComplete(p)).toHaveLength(87);
+    expect(() => VaVetpop.requireComplete(p, '2023', '2026')).toThrow('VetPop missing fiscal years 2025');
+    expect(VaVetpop.requireComplete(VaVetpop.parse(year('2025', '1')), '2025')).toHaveLength(29);
   });
 
   it('a null cell makes the county not published rather than a partial sum', () => {
@@ -52,13 +63,14 @@ describe('unit: VetPop parser with a fixture in the live jrjd-qghv shape', () =>
     expect(() => VaVetpop.requireComplete(parsed)).toThrow(/rejected/);
   });
 
-  it('requests one fiscal year of Utah rows on the verified columns and never echoes the URL in errors', async () => {
-    const url = VaVetpop.requestUrl('2026');
+  it('requests a range of fiscal years of Utah rows on the verified columns and never echoes the URL in errors', async () => {
+    const url = VaVetpop.requestUrl('2023', '2026');
     expect(url.origin + url.pathname).toBe('https://www.data.va.gov/resource/jrjd-qghv.json');
-    expect([url.searchParams.get('$limit'), url.searchParams.get('$select')]).toEqual(['1000', 'state,fips,date,age_group,sex,veterans']);
-    expect(url.searchParams.get('$where')).toBe("state='Utah' AND date='2026-09-30T00:00:00.000'");
-    const err = await VaVetpop.fetch('2023', {}, async () => new Response('x', { status: 403 })).catch((e: Error) => e.message);
+    expect([url.searchParams.get('$limit'), url.searchParams.get('$select')]).toEqual(['5000', 'state,fips,date,age_group,sex,veterans']);
+    expect(url.searchParams.get('$where')).toBe("state='Utah' AND date between '2023-09-30T00:00:00.000' and '2026-09-30T00:00:00.000'");
+    expect(VaVetpop.requestUrl('2025').searchParams.get('$where')).toContain("between '2025-09-30T00:00:00.000' and '2025-09-30T00:00:00.000'");
+    const err = await VaVetpop.fetch('2023', '2023', {}, async () => new Response('x', { status: 403 })).catch((e: Error) => e.message);
     expect(err).toBe('VetPop fetch failed: 403');
-    await expect(VaVetpop.fetch('2023', {}, async () => new Response('{}'))).rejects.toThrow('VetPop response must be a JSON array');
+    await expect(VaVetpop.fetch('2023', '2023', {}, async () => new Response('{}'))).rejects.toThrow('VetPop response must be a JSON array');
   });
 });
