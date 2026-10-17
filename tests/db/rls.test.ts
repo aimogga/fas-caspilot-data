@@ -187,13 +187,12 @@ describe('rls', () => {
     }
   });
 
-  it('anon cannot execute rls_guard_violations', async () => {
-    const { error } = await clients.anon!.rpc('rls_guard_violations');
-    expect(error).toBeTruthy();
+  it('anon and signed-in users cannot execute rls_guard_violations (F-602: service role only)', async () => {
+    for (const who of ['anon', 'admin', 'staff'] as const) expect((await clients[who]!.rpc('rls_guard_violations')).error).toBeTruthy();
   });
 
   it('pg_catalog: public tables have RLS on and at least one policy', async () => {
-    const { data, error } = await clients.admin!.rpc('rls_guard_violations');
+    const { data, error } = await svc.rpc('rls_guard_violations');
     expect(error).toBeNull();
     expect(data).toEqual([]);
   });
@@ -201,14 +200,14 @@ describe('rls', () => {
   it('guard flags a public table with RLS off and one with no policy', async () => {
     try {
       sql('CREATE TABLE public._rls_guard_probe(id int); CREATE TABLE public._rls_guard_nopol(id int); ALTER TABLE public._rls_guard_nopol ENABLE ROW LEVEL SECURITY; CREATE TABLE public._rls_guard_part(id int) PARTITION BY RANGE (id)');
-      const { data, error } = await clients.admin!.rpc('rls_guard_violations');
+      const { data, error } = await svc.rpc('rls_guard_violations');
       expect(error).toBeNull();
       const names = (data ?? []).map((r: { relname: string }) => r.relname);
       expect(names).toEqual(expect.arrayContaining(['_rls_guard_probe', '_rls_guard_nopol', '_rls_guard_part']));
     } finally {
       sql('DROP TABLE IF EXISTS public._rls_guard_probe, public._rls_guard_nopol, public._rls_guard_part');
     }
-    const { data } = await clients.admin!.rpc('rls_guard_violations');
+    const { data } = await svc.rpc('rls_guard_violations');
     expect(data).toEqual([]);
   });
 
@@ -351,7 +350,7 @@ describe('rls', () => {
     const names = sql(`SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind='r' AND c.relrowsecurity
       AND EXISTS (SELECT 1 FROM pg_policy p WHERE p.polrelid=c.oid) AND c.relname IN (${[...ARCH].map((t) => `'${t}'`).join(',')}) ORDER BY 1`).trim().split('\n');
     expect(names).toEqual([...ARCH]);
-    const { data, error } = await clients.admin!.rpc('rls_guard_violations');
+    const { data, error } = await svc.rpc('rls_guard_violations');
     expect(error).toBeNull();
     expect(data).toEqual([]);
   });
@@ -361,7 +360,7 @@ describe('rls', () => {
       sql(`CREATE VIEW public._rls_guard_view AS SELECT 1 AS x; CREATE VIEW public._rls_guard_view_off WITH (security_invoker=false) AS SELECT 1 AS x;
         CREATE VIEW public._rls_guard_view_off2 WITH (security_invoker=off) AS SELECT 1 AS x; CREATE VIEW public._rls_guard_view_0 WITH (security_invoker=0) AS SELECT 1 AS x;
         CREATE VIEW public._rls_guard_view_no WITH (security_invoker=no) AS SELECT 1 AS x; CREATE VIEW public._rls_ok_view WITH (security_invoker=true) AS SELECT 1 AS x`);
-      const { data, error } = await clients.admin!.rpc('rls_guard_violations');
+      const { data, error } = await svc.rpc('rls_guard_violations');
       expect(error).toBeNull();
       const names = (data ?? []).map((r: { relname: string }) => r.relname);
       expect(names).toEqual(expect.arrayContaining(['_rls_guard_view', '_rls_guard_view_off', '_rls_guard_view_off2', '_rls_guard_view_0', '_rls_guard_view_no']));
@@ -374,7 +373,7 @@ describe('rls', () => {
   it('guard flags a public materialized view', async () => {
     try {
       sql('CREATE MATERIALIZED VIEW public._rls_guard_mat AS SELECT 1 AS x');
-      const { data, error } = await clients.admin!.rpc('rls_guard_violations');
+      const { data, error } = await svc.rpc('rls_guard_violations');
       expect(error).toBeNull();
       expect((data ?? []).map((r: { relname: string }) => r.relname)).toContain('_rls_guard_mat');
     } finally {

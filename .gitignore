@@ -35,6 +35,7 @@ next-env.d.ts
 harness/audits/*
 !harness/audits/llm-bakeoff-rubric.md
 !harness/audits/llm-bakeoff-*
+!harness/audits/security-review-*
 
 # Claude Code subagent worktrees (never committed)
 .claude/worktrees/
