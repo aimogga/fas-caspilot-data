@@ -135,3 +135,16 @@ test("board dashboard prints without the shell or buttons and reads at 375/1024/
   await page.screenshot({ path: `${ART}/board-print-1024.png`, fullPage: true });
   await page.pdf({ path: `${ART}/board-letter.pdf`, format: "Letter", printBackground: true });
 });
+
+test("board viewer sees the quarter's totals entered as totals under Σ Aggregate, with no link to staff pages (F-303d)", async ({ page }) => {
+  await signIn(page, "board@example.test");
+  expect((await page.goto("/board"))?.status()).toBe(200);
+  const card = page.locator("[data-slot=aggregate-totals]");
+  await expect(card.locator("h2")).toHaveText("Totals entered as totals");
+  await expect(card.locator("[data-slot=badge]")).toHaveAttribute("aria-label", "Aggregate submission");
+  await expect(card).not.toContainText("Couldn't load");
+  await expect(card.locator("a[href='/staff/entry']")).toHaveCount(0);
+  // Either the quarter has entries (each hidden under 11 or shown with a source footer) or the empty state names the quarter in words.
+  await expect(card.locator("[data-slot=aggregate-empty], [data-slot=source-footer]").first()).toBeVisible();
+  await expect(card).not.toContainText(/NaN|undefined|null/);
+});

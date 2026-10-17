@@ -8,8 +8,9 @@ import { AGGREGATE_BADGE_HINT, AGGREGATE_SOURCE } from "@/lib/intake/words";
 
 const entriesWords = (n: number) => `Added up from ${n} ${n === 1 ? "total" : "totals"} staff entered on the Enter data page.`;
 
-/** F-303: totals FAS entered as totals, always under the Σ Aggregate label and apart from the record-based metrics. `totals` null = read failed. */
-export function AggregateTotals({ totals, period, countyName }: { totals: Totals | null; period: string; countyName: string | null }) {
+/** F-303: totals FAS entered as totals, always under the Σ Aggregate label and apart from the record-based metrics. `totals` null = read failed.
+ * `entryHref` null (the board, F-303d) drops the Enter data link from the empty state: board viewers cannot open it. */
+export function AggregateTotals({ totals, period, countyName, entryHref = "/staff/entry" }: { totals: Totals | null; period: string; countyName: string | null; entryHref?: string | null }) {
   const where = countyName ? `${countyName} County` : "all counties";
   return (
     <section aria-labelledby="aggregate-title" data-slot="aggregate-totals">
@@ -24,7 +25,7 @@ export function AggregateTotals({ totals, period, countyName }: { totals: Totals
           <p className="text-sm text-muted-foreground">Kept apart from the numbers above, which are built from individual records. Totals under 11 are hidden to protect privacy.</p>
           {totals === null ? <p className="text-sm">Couldn&apos;t load the entered totals. Reload the page to try again.</p> : null}
           {totals && totals.lines.length === 0 ? (
-            <p data-slot="aggregate-empty" className="text-sm">No totals were entered for {quarterLabel(period)} in {where}. Staff add them on <Link href="/staff/entry" className="underline underline-offset-4">Enter data</Link>.</p>
+            <p data-slot="aggregate-empty" className="text-sm">No totals were entered for {quarterLabel(period)} in {where}.{entryHref ? <> Staff add them on <Link href={entryHref} className="underline underline-offset-4">Enter data</Link>.</> : null}</p>
           ) : null}
           {totals && totals.lines.length ? (
             <ul className="divide-y">
