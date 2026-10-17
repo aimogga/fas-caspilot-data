@@ -69,4 +69,13 @@ describe('integration: application_draft', () => {
     await c.admin!.from('application_draft').update({ status: 'archived' }).eq('id', id);
     expect((await c.staff!.from('application_draft_edit').insert(edit).select()).error).toBeTruthy();
   });
+
+  it('F-602: anon can neither write a draft nor read or write its edit history', async () => {
+    const anon = createClient(API, ANON, opts), id = (await insert('staff')).data!.id as string;
+    expect((await anon.from('application_draft').insert(draft()).select()).error).toBeTruthy();
+    expect((await anon.from('application_draft').update({ sections: [] }).eq('id', id).select()).data ?? []).toEqual([]);
+    const e = await c.staff!.from('application_draft_edit').insert({ org_id: ORG1, application_draft_id: id, section_key: 's1', before: 'synthetic', after: 'edited' }).select('id').single();
+    expect((await anon.from('application_draft_edit').select('id').eq('id', e.data!.id)).data ?? []).toEqual([]);
+    expect((await anon.from('application_draft_edit').insert({ org_id: ORG1, application_draft_id: id, section_key: 's1', before: 'a', after: 'b' }).select()).error).toBeTruthy();
+  });
 });
