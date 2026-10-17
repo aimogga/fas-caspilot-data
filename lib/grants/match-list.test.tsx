@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { DraftStrategyButton } from "@/components/grants/DraftStrategyButton";
 import { MatchList } from "@/components/grants/MatchList";
 import { MatchPanel } from "@/components/grants/MatchPanel";
 import { fitBand } from "@/lib/grants/band";
@@ -31,5 +32,15 @@ describe("DS-12b MatchList and MatchPanel", () => {
     const panel = renderToStaticMarkup(<MatchPanel id="p" row={{ ...capped, band: fitBand(0, {}, capped.components) }} onClose={() => undefined} />);
     expect(text(panel)).toMatch(/0 of 100 fit Pass: blocker/);
     expect(renderToStaticMarkup(<MatchList rows={[item(1)]} />)).not.toContain("fit-band");
+  });
+  it("DS-26a: flag chips stay one line and truncate, the card goes two-column only in a wide list, and the strategy button keeps its full name", () => {
+    const long = "Could not check award size: opportunity.award_ceiling missing";
+    const list = renderToStaticMarkup(<MatchList rows={[item(1, { eligibility: "Flags: 1", flags: [{ code: "award_size", severity: "info", message: long, source_ref: "opportunity.award_ceiling" }] })]} />);
+    const chip = /<span data-slot="flag"[^>]*class="([^"]*)"[^>]*>.*?<span class="truncate">(.*?)<\/span>/.exec(list);
+    expect([chip?.[1].includes("whitespace-normal"), chip?.[1].includes("max-w-full"), chip?.[2]]).toEqual([false, true, "Award size not checked: the listing does not state award ceiling"]);
+    expect(list).toMatch(/data-slot="match-list" class="@container /);
+    expect(list).toMatch(/data-match="r1"[^>]*class="[^"]*lg:@xl:grid-cols-\[auto_1fr\]/);
+    const button = renderToStaticMarkup(<DraftStrategyButton opportunityId="o1" />);
+    expect([text(/<button[^>]*>.*?<\/button>/.exec(button)?.[0] ?? ""), button.includes("@max-[13rem]/body:sr-only")]).toEqual(["Draft a response strategy", true]);
   });
 });
