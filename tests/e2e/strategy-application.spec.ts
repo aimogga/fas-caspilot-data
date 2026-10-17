@@ -37,6 +37,13 @@ test("an approved strategy writes the application once, staff reopen it, and the
   expect((await db().from("application_draft").select("id").eq("strategy_draft_id", id)).data).toHaveLength(1);
   for (const width of [375, 1024]) { await staff.setViewportSize({ width, height: 900 }); await staff.goto(`/staff/grants/strategy/${id}`);
     expect((await new AxeBuilder({ page: staff }).analyze()).violations.filter((v) => v.impact === "serious" || v.impact === "critical")).toEqual([]); }
+  // F-508k: the Applications tab lists the draft (month-only date) and opens it; no sideways scroll at 375.
+  for (const width of [375, 1024]) { await staff.setViewportSize({ width, height: 900 }); await staff.goto("/staff/grants/applications");
+    const row = staff.locator(`[data-slot=application-list] tr[data-application="${appId}"]`);
+    await expect(row).toContainText("Draft, open for edits"); await expect(row).toContainText(/Not yet/); await expect(row).toContainText(/[A-Z][a-z]{2} \d{4}/);
+    expect(await staff.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+    expect((await new AxeBuilder({ page: staff }).analyze()).violations.filter((v) => v.impact === "serious" || v.impact === "critical")).toEqual([]); }
+  await staff.locator(`tr[data-application="${appId}"] a`).click(); await staff.waitForURL(APP_URL); expect(APP_URL.exec(staff.url())![1]).toBe(appId);
 
   expect((await page.request.get(`/api/grants/applications/${appId}/docx`)).status()).toBe(409); // not approved: no file, no audit row
   await page.goto(`/staff/grants/applications/${appId}`); await page.getByRole("button", { name: "Approve draft" }).click();
@@ -47,8 +54,9 @@ test("an approved strategy writes the application once, staff reopen it, and the
   expect((await db().from("audit_log").select("id").eq("action", "application.download").eq("entity_id", jobs[0]!.id)).data).toHaveLength(1);
 });
 
-test("board gets 403 on the strategy screen and the application download", async ({ page }) => {
+test("board gets 403 on the strategy screen, the applications list and the application download", async ({ page }) => {
   const id = await seedStrategy(); await signIn(page, "board@example.test");
   expect((await page.goto(`/staff/grants/strategy/${id}`))?.status()).toBe(403);
+  expect((await page.goto("/staff/grants/applications"))?.status()).toBe(403);
   expect((await page.request.get("/api/grants/applications/00000000-0000-4000-8000-000000000000/docx")).status()).toBe(403);
 });

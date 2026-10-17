@@ -54,6 +54,7 @@ describe("shell breadcrumb", () => {
     expect(crumbFor("staff", "/staff", "FAS Evidence")).toBe("Home");
     expect(crumbFor("staff", "/staff/grants", "FAS Evidence")).toBe("Grants · Foundation grants");
     expect(crumbFor("staff", "/staff/grants/matches", "FAS Evidence")).toBe("Grants · Matches");
+    expect(crumbFor("staff", "/staff/grants/applications", "FAS Evidence")).toBe("Grants · Applications");
     expect(crumbFor("board_viewer", "/board", "FAS Evidence")).toBe("Board dashboard");
     expect(crumbFor("admin", "/%61dmin", "FAS Evidence")).toBe("Admin · Overview");
     expect(crumbFor("board_viewer", "/403", "FAS Evidence")).toBe("FAS Evidence");
