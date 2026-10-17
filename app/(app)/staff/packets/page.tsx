@@ -7,7 +7,9 @@ import { Hint } from "@/components/trust/explain";
 import { Label } from "@/components/ui/label";
 import { buttonVariants } from "@/components/ui/button";
 import { ALL, type SearchParams } from "@/lib/dashboard/filters";
+import { GrantAsks } from "@/components/packets/GrantAsks";
 import { PacketView } from "@/components/packets/PacketView";
+import { type GrantAsk, loadGrantAsks } from "@/lib/packets/asks";
 import { VARIANT_LABEL, type Packet } from "@/lib/packets/model";
 import { CONTROL_HINTS, DOWNLOAD_HINTS } from "@/lib/packets/words";
 import { PacketQuery, parsePacketParams } from "@/lib/packets/query";
@@ -33,12 +35,14 @@ export default async function PacketsPage({ searchParams }: { searchParams: Prom
   const now = new Date(), { variant, scope } = parsePacketParams(await searchParams);
   // The board packet is always statewide (scopeLabel), so the County menu only shows for the grant attachment.
   const county = variant === "grant" ? scope.county : undefined, opportunity = scope.opportunity; // F-403b: kept across Update and the downloads
-  let packet: Packet | null = null, errorId: string | undefined;
+  let packet: Packet | null = null, asks: GrantAsk[] | null = null, errorId: string | undefined;
   try {
     const client = await createClient(), user = client ? (await client.auth.getUser()).data.user : null;
     const meta = user?.app_metadata ?? {}, staff = meta.role === "admin" || meta.role === "staff";
     const actor = user && staff && typeof meta.org_id === "string" ? { userId: user.id, orgId: meta.org_id } : null;
     packet = client ? await PacketQuery.load(client, variant, scope, now, actor) : null;
+    // F-403c: only when the packet names a stored grant; a failed read leaves the note out, never the packet
+    if (client && actor && packet?.scope.opportunity) asks = await loadGrantAsks(client, packet.scope.opportunity, actor.orgId, now).catch(() => null);
   } catch (e) {
     errorId = randomUUID();
     console.error("[packets] load failed", { referenceId: errorId, message: e instanceof Error ? e.message : "unknown", stack: e instanceof Error ? e.stack : undefined });
@@ -55,6 +59,7 @@ export default async function PacketsPage({ searchParams }: { searchParams: Prom
           {download(variant, county, opportunity, "docx", "Download Word (.docx)")}{download(variant, county, opportunity, "csv", "Download CSV appendix")}
         </div>
       </form>
+      {asks ? <GrantAsks asks={asks} /> : null}
       {packet ? <PacketView packet={packet} /> : <ErrorState message="Couldn't build the packet" referenceId={errorId ?? randomUUID()} href="/staff/packets">Something went wrong on our side. Try again.</ErrorState>}
     </Stack>
   );

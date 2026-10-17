@@ -15,6 +15,8 @@ export type MatchScore = { score: number; configId: string; components: Componen
 type Part = { value: number; reason: string; source_refs: string[]; unknown?: true }; type Ctx = { o: OpportunityInput; org: OrgProfile; e: EligibilityResult; p: MatchParams; now: Date };
 
 const EVIDENCE: Record<string, RegExp> = { outcomes: /\boutcomes?\b/i, cost: /\bcost(?:s|-effective\w*)?\b/i, timeliness: /\b(?:timeliness|timely|wait(?:ing)? times?|days to)\b/i };
+/** The evidence kinds a listing's text asks for, in a fixed order (also read by the grant packet's "What this grant asks for" note, F-403c). */
+export const askedEvidence = (text: string): string[] => Object.keys(EVIDENCE).filter((k) => EVIDENCE[k].test(text));
 const REGIONAL = /\b(?:regional|region|neighboring states|mountain west|intermountain|western states)\b/i;
 const usd = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
 const cannot = (what: string, field: string): Part => ({ value: 0, reason: `Could not score ${what}: ${field} missing`, source_refs: [field], unknown: true });
@@ -42,7 +44,7 @@ export const SCORERS: Record<string, (c: Ctx) => Part> = {
     const text = opportunityText(o);
     if (!text) return cannot('evidence readiness', 'opportunity.description');
     const refs = ['opportunity.description', 'match_config.params.evidence_available'];
-    const asked = Object.keys(EVIDENCE).filter((k) => EVIDENCE[k].test(text));
+    const asked = askedEvidence(text);
     if (!asked.length) return { value: 1, reason: 'The opportunity text names no outcome, cost or timeliness evidence', source_refs: refs };
     const loaded = p.evidence_loaded ?? [], have = asked.filter((k) => (p.evidence_available ?? []).includes(k) || loaded.includes(k));
     const fromRecords = have.filter((k) => loaded.includes(k)).map((k) => `fas_records.${k}`);
