@@ -12,4 +12,12 @@ describe('csv', () => {
     expect(parseCsv('a,b\n\n1,2\n').records).toEqual([{ a: '1', b: '2' }]);
     expect(() => parseCsv('a,b\n1,2,3')).toThrow(/width mismatch/);
   });
+
+  it('treats a trailing comma on the header as a blank column (HRSA HPSA export): rows may carry or omit it', () => {
+    const { header, records } = parseCsv('a,b,\r\n1,2\r\n3,4,\r\n');
+    expect(header).toEqual(['a', 'b']);
+    expect(records).toEqual([{ a: '1', b: '2' }, { a: '3', b: '4' }]);
+    expect(() => parseCsv('a,b,\n1')).toThrow(/width mismatch/);
+    expect(() => parseCsv('a,b,\n1,2,x')).toThrow(/width mismatch/);
+  });
 });
