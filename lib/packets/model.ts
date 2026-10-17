@@ -2,11 +2,13 @@
  * strings only; values hidden by F-306 read `fewer than 11` (n under 11) or `hidden` (complementary suppression). Rendering and assertions sit on top. */
 import { boardPictures, type Picture } from '../board/pictures';
 import { sentences } from '../board/summary';
+import type { AggregateTotals } from '../dashboard/aggregates';
 import { asOfLabel, asOfNote, GROUP_LABELS, METRIC_CARDS, NOT_AVAILABLE } from '../dashboard/cards';
 import { quarterLabel } from '../dashboard/filters';
 import { days, money, pct, signed } from '../dashboard/format';
 import type { DashboardMetrics, Loaded, Wired } from '../dashboard/metrics-query';
 import type { MethodologyView } from '../methodology/query';
+import { metricFor } from '../intake/aggregate';
 import type { NeedTableData } from '../need-map/query';
 import { NeedMapQuery } from '../need-map/query';
 import { COUNTIES } from '../synthetic/generate';
@@ -26,7 +28,9 @@ export const PICTURE_SECTION: Record<Picture['id'], SectionId> = { wait: 'fas-re
 export type PacketInput = {
   variant: PacketVariant; scope: PacketScope; now: Date; period: string; asOf: string;
   metrics: DashboardMetrics | null; need: NeedTableData | null; method: MethodologyView | null; serviceCounties: string[];
+  /** F-303c: the quarter's totals FAS entered as totals (`lib/dashboard/aggregates.ts`), already suppressed; absent or empty adds nothing. */ aggregates?: AggregateTotals | null;
 };
+export const AGGREGATE_PREFIX = 'Σ Aggregate · ', AGGREGATE_NOTE = 'Figures marked Σ Aggregate are totals FAS entered as totals, not built from individual records, and are listed apart from the numbers above.';
 export const VARIANT_LABEL: Record<PacketVariant, string> = { grant: 'Grant attachment', board: 'Board packet' }, RIBBON = 'DRAFT · for review';
 export const SECTION_TITLES: Record<SectionId, string> = {
   'need-profile': 'County need profile', 'fas-results': 'FAS results', outcomes: 'Outcomes', 'methodology-sources': 'Methodology and sources', 'suppression-note': 'Suppression note', 'related-party': 'Related-party disclosure' };
@@ -68,7 +72,10 @@ export function fasResults(x: PacketInput): PacketSection {
   w('m1', m?.m1, (v) => days(v.median)); w('m2', m?.m2, (v) => days(v.median)); w('m3', m?.m3, (v) => pct(v.share)); w('m5', m?.m5, (v) => money(v.costPerCompleted));
   w('m4', m?.m4, (v) => pct(v.total?.rate)); w('m6', m?.m6, (v) => pct(v.affiliatedShare));
   const paragraphs = [sentences.m1(m?.m1), sentences.m2(m?.m2), sentences.m3(m?.m3), sentences.m5(m?.m5), sentences.m4(m?.m4), sentences.m6(m?.m6)].filter((s): s is string => !!s);
-  return { id: 'fas-results', title: SECTION_TITLES['fas-results'], paragraphs: paragraphs.length ? paragraphs : ['This quarter’s numbers are not available yet.'], figures: f, source: `${src} · ${asOfNote(x.asOf)}` };
+  const agg = x.aggregates?.lines ?? [], aggSrc = `FAS aggregate total, entered by staff · ${quarterLabel(x.period)}`;
+  for (const l of agg) f.push(fig(`${AGGREGATE_PREFIX}${l.label}`, l.shown ?? FEWER, x.aggregates?.asOf ?? NOT_AVAILABLE, aggSrc, metricFor(l.code)?.kind === 'count' ? 'count' : 'value'));
+  const body = paragraphs.length ? paragraphs : ['This quarter’s numbers are not available yet.'];
+  return { id: 'fas-results', title: SECTION_TITLES['fas-results'], paragraphs: agg.length ? [...body, AGGREGATE_NOTE] : body, figures: f, source: `${src} · ${asOfNote(x.asOf)}` };
 }
 export function outcomes(x: PacketInput): PacketSection {
   const o = x.metrics?.o1, src = `FAS records · ${quarterLabel(x.period)}`;
