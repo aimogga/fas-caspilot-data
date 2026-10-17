@@ -8,7 +8,8 @@ import { VaVetpop } from '../../packages/ingest/va_vetpop';
 import { VetpopHttp } from './vetpop-http';
 
 const table = (year: string, counties = COUNTIES): unknown =>
-  counties.map((c) => ({ state: 'UT', county: `${c.name} County`, fips: c.fips, fiscal_year: year, veterans: '1499' }));
+  counties.flatMap((c) => ['Male', 'Female'].map((sex, i) =>
+    ({ date: `${year}-09-30T00:00:00.000`, fips: c.fips, county_state: `${c.name}, UT`, state: 'Utah', age_group: '45 to 64', sex, veterans: i ? '499' : '1000' })));
 const ok = (body: unknown): typeof fetch => async () => new Response(JSON.stringify(body), { status: 200 });
 const client = {} as SupabaseClient;
 
@@ -35,17 +36,17 @@ describe('VetpopHttp', () => {
     expect(run.mock.calls[0]?.[0].year).toBe('2023');
   });
 
-  it('loads all 29 counties with source, checksum and the dataset year; no year means no year filter', async () => {
+  it('loads all 29 counties with source, checksum and the year; no year means the latest fiscal year that has ended', async () => {
     const spy = spyLoad();
     let requested = '';
     const httpFetch: typeof fetch = async (url) => { requested = String(url); return ok(table('2023'))(url); };
-    expect((await VetpopHttp.run({ env: {}, httpFetch, client, load: spy.load })).rowsLoaded).toBe(29);
-    expect(decodeURIComponent(requested)).toContain('$q=Utah&');
+    expect((await VetpopHttp.run({ env: {}, httpFetch, client, load: spy.load, now: new Date('2026-10-17T00:00:00Z') })).rowsLoaded).toBe(29);
+    expect(new URL(requested).searchParams.get('$where')).toContain("date='2026-09-30T00:00:00.000'");
     expect(spy.calls[0].name).toBe(VaVetpop.SOURCE_NAME);
     expect(spy.calls[0].checksum).toBe(VaVetpop.checksum(spy.calls[0].rows));
     expect(spy.calls[0].rows.every((r) => r.vintage === '2023' && r.value === 1000)).toBe(true);
     await VetpopHttp.run({ year: '2023', env: {}, httpFetch, client, load: spy.load });
-    expect(decodeURIComponent(requested)).toContain('$q=Utah+2023');
+    expect(new URL(requested).searchParams.get('$where')).toContain("date='2023-09-30T00:00:00.000'");
     await expect(VetpopHttp.run({ year: '23', env: {}, httpFetch, client, load: spy.load })).rejects.toThrow(/YYYY/);
   });
 

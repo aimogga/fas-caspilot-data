@@ -1,10 +1,11 @@
 import { VaVetpop } from '../../packages/ingest/va_vetpop';
 import { SahieHttp, type IngestHttpDeps, type SahieRunOpts } from './sahie-http';
 
-/** n8n entry: fetch → parse (fill) → requireComplete → load. No year means the dataset's latest fiscal year. */
+/** n8n entry: fetch → parse (fill) → requireComplete → load. No year means the latest fiscal year that has ended (never a projection). */
 export class VetpopHttp {
   static async run(opts: SahieRunOpts) {
-    const year = opts.year === undefined ? undefined : SahieHttp.year(opts.now ?? new Date(), opts.year);
+    const now = opts.now ?? new Date();
+    const year = opts.year === undefined ? VaVetpop.fiscalYear(now) : SahieHttp.year(now, opts.year);
     return SahieHttp.ingest(VaVetpop, opts, async (env) =>
       VaVetpop.requireComplete(VaVetpop.parse(await VaVetpop.fetch(year, env, opts.httpFetch))));
   }
