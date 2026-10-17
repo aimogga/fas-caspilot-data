@@ -8,7 +8,8 @@ import { VaVetpop } from '../../packages/ingest/va_vetpop';
 import { VetpopHttp } from './vetpop-http';
 
 const table = (year: string, counties = COUNTIES): unknown =>
-  counties.map((c) => ({ state: 'UT', county: `${c.name} County`, fips: c.fips, fiscal_year: year, veterans: '1499' }));
+  counties.flatMap((c) => ['Male', 'Female'].map((sex, i) =>
+    ({ date: `${year}-09-30T00:00:00.000`, fips: c.fips, county_state: `${c.name}, UT`, state: 'Utah', age_group: '45 to 64', sex, veterans: i ? '499' : '1000' })));
 const ok = (body: unknown): typeof fetch => async () => new Response(JSON.stringify(body), { status: 200 });
 const client = {} as SupabaseClient;
 
@@ -35,17 +36,23 @@ describe('VetpopHttp', () => {
     expect(run.mock.calls[0]?.[0].year).toBe('2023');
   });
 
-  it('loads all 29 counties with source, checksum and the dataset year; no year means no year filter', async () => {
+  it('no year loads FY2023 through the latest ended FY, one county set per year; a year loads just that year', async () => {
     const spy = spyLoad();
     let requested = '';
+    const all = [...(table('2023') as unknown[]), ...(table('2024') as unknown[]), ...(table('2025') as unknown[]), ...(table('2026') as unknown[])];
+    const range: typeof fetch = async (url) => { requested = String(url); return ok(all)(url); };
+    expect((await VetpopHttp.run({ env: {}, httpFetch: range, client, load: spy.load, now: new Date('2026-10-17T00:00:00Z') })).rowsLoaded).toBe(116);
+    expect(new URL(requested).searchParams.get('$where')).toContain("between '2023-09-30T00:00:00.000' and '2026-09-30T00:00:00.000'");
+    expect(new Set(spy.calls[0].rows.map((r) => r.vintage))).toEqual(new Set(['2023', '2024', '2025', '2026']));
+    const short: typeof fetch = async (url) => ok(all.slice(0, 58 * 3))(url);
+    await expect(VetpopHttp.run({ env: {}, httpFetch: short, client, load: spy.load, now: new Date('2026-10-17T00:00:00Z') })).rejects.toThrow('missing fiscal years 2026');
+    spy.calls.length = 0;
     const httpFetch: typeof fetch = async (url) => { requested = String(url); return ok(table('2023'))(url); };
-    expect((await VetpopHttp.run({ env: {}, httpFetch, client, load: spy.load })).rowsLoaded).toBe(29);
-    expect(decodeURIComponent(requested)).toContain('$q=Utah&');
+    expect((await VetpopHttp.run({ year: '2023', env: {}, httpFetch, client, load: spy.load })).rowsLoaded).toBe(29);
     expect(spy.calls[0].name).toBe(VaVetpop.SOURCE_NAME);
     expect(spy.calls[0].checksum).toBe(VaVetpop.checksum(spy.calls[0].rows));
     expect(spy.calls[0].rows.every((r) => r.vintage === '2023' && r.value === 1000)).toBe(true);
-    await VetpopHttp.run({ year: '2023', env: {}, httpFetch, client, load: spy.load });
-    expect(decodeURIComponent(requested)).toContain('$q=Utah+2023');
+    expect(new URL(requested).searchParams.get('$where')).toContain("between '2023-09-30T00:00:00.000' and '2023-09-30T00:00:00.000'");
     await expect(VetpopHttp.run({ year: '23', env: {}, httpFetch, client, load: spy.load })).rejects.toThrow(/YYYY/);
   });
 

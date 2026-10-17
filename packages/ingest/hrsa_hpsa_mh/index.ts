@@ -64,9 +64,11 @@ export class HrsaHpsaMh {
     const rejects: string[] = [];
     const byCounty = new Map<string, Hpsa[]>();
     for (const row of records) {
+      // The file is national; other states' facility HPSAs carry FIPS `XXXXX`. Only a Utah row without a FIPS is a reject.
+      if (cols.state && row[cols.state]?.trim().toUpperCase() !== 'UT') continue;
       const geo_fips = HrsaHpsaMh.fips(row, cols);
       if (!geo_fips) rejects.push('missing FIPS');
-      if (!geo_fips || !UTAH_COUNTY_FIPS.has(geo_fips) || (cols.state && row[cols.state]?.trim().toUpperCase() !== 'UT')) continue;
+      if (!geo_fips || !UTAH_COUNTY_FIPS.has(geo_fips)) continue;
       if ((cols.type && !/mental health/i.test(row[cols.type] ?? '')) || !HrsaHpsaMh.designated(row, cols)) continue;
       const score = CensusTable.num(row[cols.score ?? '']);
       const population = CensusTable.num(row[cols.population ?? '']);

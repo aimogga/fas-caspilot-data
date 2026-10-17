@@ -53,6 +53,13 @@ describe('unit: HRSA MH HPSA parser with hand-written fixture', () => {
     expect(() => HrsaHpsaMh.requireComplete(HrsaHpsaMh.fill(HrsaHpsaMh.parse(csv('A,Designated,27,10,49035'), NOW)))).toThrow(/rejected 1/);
   });
 
+  it('live export shape (#207): a trailing comma on the header, other states\' facility rows with FIPS XXXXX; a Utah row without FIPS still rejects', () => {
+    const hdr = 'HPSA Status,HPSA Score,HPSA Designation Population,Primary State Abbreviation,Common State County FIPS Code,';
+    const p = HrsaHpsaMh.parse(`${hdr}\r\nDesignated,10,500,UT,49035\r\nWithdrawn,0,0,TX,XXXXX\r\nProposed For Withdrawal,3,9,CT,XXXXX\r\n`, NOW);
+    expect([p.rows.map((r) => r.geo_fips), p.rejects]).toEqual([['49035', '49035', '49035'], []]);
+    expect(HrsaHpsaMh.parse(`${hdr}\nDesignated,10,500,UT,XXXXX\n`, NOW).rejects).toEqual(['missing FIPS']);
+  });
+
   it('fetch fails closed on non-2xx without echoing the URL', async () => {
     await expect(HrsaHpsaMh.fetch(async () => new Response('nope', { status: 403 }))).rejects.toThrow(/^HPSA fetch failed: 403$/);
     const seen: string[] = [];

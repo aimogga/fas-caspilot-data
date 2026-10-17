@@ -25,9 +25,12 @@ export function parseCsvRows(text: string): string[][] {
 
 export function parseCsv(text: string): { header: string[]; records: Record<string, string>[] } {
   const [first = [], ...body] = parseCsvRows(text.replace(/^\uFEFF/, ''));
+  // A trailing comma on the header line (HRSA's HPSA export) is a blank column, not a field: drop it, and let rows carry
+  // or omit matching empty cells. Any other width difference still fails closed.
   const header = first.map((h) => h.trim());
+  while (header.length > 1 && header[header.length - 1] === '') header.pop();
   const records = body.filter((r) => r.length > 1 || r[0] !== '').map((r) => {
-    if (r.length !== header.length) throw new Error(`csv row width mismatch: ${r.length} vs ${header.length}`);
+    if (r.length < header.length || r.slice(header.length).some((c) => c !== '')) throw new Error(`csv row width mismatch: ${r.length} vs ${header.length}`);
     return Object.fromEntries(header.map((h, i) => [h, r[i] ?? '']));
   });
   return { header, records };
