@@ -14,6 +14,17 @@
     "tests/fixtures/ojp_awards/award-broken-layout.html",
     "docs/design/reviews/DS-19/manifest.json",
     "tests/eval/llm/opportunities.json",
-    "tests/golden/need-score-v1-output.json"
+    "tests/golden/need-score-v1-output.json",
+    "harness/audits/llm-bakeoff-2026-10-17.json",
+    "harness/audits/llm-bakeoff-2026-10-17/gemini-O-OJJDP-2026-172752.json",
+    "harness/audits/llm-bakeoff-2026-10-17/gemini-HRSA-27-021.json",
+    "harness/audits/llm-bakeoff-2026-10-17/gemini-HRSA-27-043.json",
+    "harness/audits/llm-bakeoff-2026-10-17/gemini-UOVC-VOCA.json",
+    "harness/audits/llm-bakeoff-2026-10-17/gemini-SORENSON-LEGACY.json",
+    "harness/audits/llm-bakeoff-2026-10-17/openrouter-O-OJJDP-2026-172752.json",
+    "harness/audits/llm-bakeoff-2026-10-17/openrouter-HRSA-27-021.json",
+    "harness/audits/llm-bakeoff-2026-10-17/openrouter-HRSA-27-043.json",
+    "harness/audits/llm-bakeoff-2026-10-17/openrouter-UOVC-VOCA.json",
+    "harness/audits/llm-bakeoff-2026-10-17/openrouter-SORENSON-LEGACY.json"
   ]
 }
