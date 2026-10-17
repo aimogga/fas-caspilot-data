@@ -98,6 +98,7 @@ describe('F-210c params: z cap and reliability flag', () => {
   const withMoe = (moe: number | null): NeedIndicator[] => [{ ...ind('poverty_rate', 'a', 10), moe }, { ...ind('poverty_rate', 'b', 20), moe: null }];
 
   it('without z_cap the v1 output is byte-for-byte the pre-F-210c output', () => {
+    // Written by origin/main's NeedScore.compute (before F-210c) on the v1 fixture: JSON.stringify(output) + '\n'.
     const before = readFileSync('tests/golden/need-score-v1-output.json', 'utf8');
     expect(`${JSON.stringify(NeedScore.compute(v1, golden.indicators, golden.fips))}\n`).toBe(before);
     expect(`${JSON.stringify(NeedScore.compute(v1, golden.indicators, golden.fips, {}))}\n`).toBe(before);

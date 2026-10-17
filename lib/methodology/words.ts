@@ -57,9 +57,13 @@ export function summary(view: Pick<MethodologyView, 'version' | 'approvedLabel' 
 export function reliabilityWords(params: NeedParams): { cap: string; flag: string } {
   const cap = params.z_cap === undefined
     ? 'This version does not cap z-scores, so a county with an extreme value counts at its full distance from the average.'
-    : `This version caps every z-score at ${params.z_cap} standard deviations either side of the average. A small county with an extreme estimate would otherwise stretch the scale and pull every other county's score; with the cap it still counts, and is still ranked, but at most ${params.z_cap} steps out.`;
+    : `This version caps every z-score at ${params.z_cap} standard deviations either side of the average. `
+      + `A small county with an extreme estimate would otherwise stretch the scale and pull every other county's score; `
+      + `with the cap it still counts, and is still ranked, but at most ${params.z_cap} steps out.`;
   const flag = params.cv_flag_pct === undefined
     ? 'This version does not check how reliable each estimate is.'
-    : `We also check how noisy each estimate is. The Census publishes a margin of error; we turn it into a coefficient of variation (CV), the uncertainty as a share of the estimate: (margin ÷ 1.645) ÷ value × 100. When the CV is above ${params.cv_flag_pct}%, that county gets a "Low reliability" marker on that input. It is still scored and never hidden.`;
+    : 'We also check how noisy each estimate is. The Census publishes a margin of error; we turn it into a coefficient of variation (CV), '
+      + `the uncertainty as a share of the estimate: (margin ÷ 1.645) ÷ value × 100. When the CV is above ${params.cv_flag_pct}%, `
+      + 'that county gets a "Low reliability" marker on that input. It is still scored and never hidden.';
   return { cap, flag };
 }

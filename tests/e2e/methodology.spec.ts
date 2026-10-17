@@ -126,7 +126,8 @@ test("AC3: the statistics paragraph hints every term in plain words, the same on
 
 test("AC4: every section has an eyebrow and a serif headline in words; the summary shows at every width; axe clean; no sideways scroll; 44 px triggers at 375", async ({ page }) => {
   await signIn(page, "board@example.test");
-  const H2S = ["How we turn one public input into one county rank", "What goes into the score", "Uninsured rate carries all 100 points in this version.", "How we stop one county pulling the rest, and flag noisy estimates", "When each input was published and last loaded", "What this score cannot tell you"];
+  const H2S = ["How we turn one public input into one county rank", "What goes into the score", "Uninsured rate carries all 100 points in this version.",
+    "How we stop one county pulling the rest, and flag noisy estimates", "When each input was published and last loaded", "What this score cannot tell you"];
   for (const width of [375, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     expect((await page.goto("/methodology"))?.status()).toBe(200);
