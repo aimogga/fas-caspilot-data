@@ -15,7 +15,7 @@ export const SECTIONS: readonly Section[] = [
       { label: "Methodology", href: "/methodology" },
     ],
   },
-  { label: "Grants", tabs: [{ label: "Foundation grants", href: "/staff/grants" }, { label: "Matches", href: "/staff/grants/matches" }] },
+  { label: "Grants", tabs: [{ label: "Matches", href: "/staff/grants/matches" }, { label: "Foundation grants", href: "/staff/grants" }] },
 ];
 
 /** Board viewers keep their short direct list (Board dashboard, County need map, Methodology): /dashboard and the staff pages would 403 for them. */

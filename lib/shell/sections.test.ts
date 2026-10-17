@@ -6,7 +6,7 @@ describe("DS-21 sections", () => {
     expect(SECTIONS.map((s) => [s.label, s.tabs.map((t) => `${t.label} ${t.href}`)])).toEqual([
       ["Insights", ["County need map /need-map", "Team dashboard /dashboard"]],
       ["Data", ["Upload /staff/intake", "Enter by hand /staff/entry", "Freshness /data-freshness", "Methodology /methodology"]],
-      ["Grants", ["Foundation grants /staff/grants", "Matches /staff/grants/matches"]],
+      ["Grants", ["Matches /staff/grants/matches", "Foundation grants /staff/grants"]],
     ]);
   });
 
