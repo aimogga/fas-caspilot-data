@@ -28,6 +28,17 @@ describe('validate', () => {
     expect(failures).toEqual([]);
     expect(rows[0]).toMatchObject({ import_key: 'mission', source: 'Bluebird Family Fund narrative kit (fictional)', as_of: '2026-01-15' });
   });
+  it('runs the source line through the text rules, named as source:<rule>, never echoed', () => {
+    const d = doc();
+    d.entries[0].source = 'Call 801-555-0123 for the fictional report';
+    d.entries[1].source = '   ';
+    const { failures } = validate(d);
+    expect(failures).toEqual([{ key: 'mission', rules: ['source:phone'] }, { key: 'completion', rules: ['needs_source'] }]);
+    expect(JSON.stringify(failures)).not.toContain('555');
+    d.source_document = 'Ask jane@example.test';
+    d.entries[0].source = null;
+    expect(validate(d).failures).toContainEqual({ key: 'mission', rules: ['source:email'] });
+  });
   it('names key and rule for bad shape, duplicates and dates', () => {
     const d = doc();
     d.entries.push({ ...d.entries[0] }, { key: 'x', category: 'nope', status: 'final', title: 'T', body: 'ok', as_of: '2026-02-30' });
