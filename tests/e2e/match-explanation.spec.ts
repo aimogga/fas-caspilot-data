@@ -32,6 +32,7 @@ test("staff sees seeded matches by score and the How we matched panel shows only
     await expect(rows.nth(0).locator("[data-slot=fit-score]")).toHaveText("100");
     await expect(rows.nth(0).locator("[data-slot=match-badges] [data-variant]")).toHaveText(["Eligible", "Not tracked yet"]);
     await expect(rows.nth(1).locator("[data-slot=fit-score]")).toHaveText("0");
+    await expect(page.locator("[data-slot=match-list] [data-slot=fit-band]")).toHaveText(["Strong fit", "Pass: blocker"]); // F-504d: band word beside the score
     await expect(rows.nth(1).locator("[data-slot=match-badges] [data-variant]")).toHaveText(["Not eligible", "Only state governments may apply", "Not tracked yet"]);
     await expect(page.locator("[data-slot=match-count]")).toHaveCount(0); // two rows: no "Showing k of n", no Show more
     // D-040: the flag badge's card carries the severity words and the stored reason; the capped tile says why its score is 0.
@@ -58,6 +59,7 @@ test("staff sees seeded matches by score and the How we matched panel shows only
     await expect(panel).toHaveCount(1);
     await expect(panel.locator("h3")).toBeFocused();
     await expect(panel.locator("[data-slot=panel-score]")).toHaveText("100");
+    await expect(panel.locator("[data-slot=fit-band]")).toHaveText("Strong fit");
     await expect(rows.nth(0).locator("[data-slot=match-panel]")).toHaveCount(width < 1024 ? 1 : 0);
     await expect(page.locator("[data-slot=match-aside] [data-slot=match-panel]")).toHaveCount(width < 1024 ? 0 : 1);
     const parts = panel.locator("[data-slot=match-component]");
@@ -71,6 +73,7 @@ test("staff sees seeded matches by score and the How we matched panel shows only
     await buttons.nth(1).click();
     await expect(buttons.first()).toHaveAttribute("aria-expanded", "false");
     await expect(panel.locator("[data-slot=panel-score]")).toHaveText("0");
+    await expect(panel.locator("[data-slot=fit-band]")).toHaveText("Pass: blocker");
     await expect(panel.locator("[data-slot=match-cap]")).toHaveText(CAP_NOTE);
     await expect(panel.locator("[data-slot=match-check]").first()).toHaveText(/Who may apply · Only state governments may apply$/);
     await expect(panel.locator("[data-slot=match-check][data-status=flagged]")).toHaveCount(1);

@@ -37,10 +37,20 @@ describe('buildDigest', () => {
     expect(d.html).toContain('<li>Family &lt;Therapy&gt; Fund · Funder not recorded · closes no close date · fit 82 · Eligible</li>');
     expect(d.html).not.toContain('<Therapy>');
   });
+  it('F-504d: groups the picked rows by band, best first; the threshold still decides which rows are picked', () => {
+    const rows = [row({ id: 'a', title: 'A', score: 90 }), row({ id: 'b', title: 'B', score: 74 }), row({ id: 'c', title: 'C', score: 75 }), row({ id: 'd', title: 'D', score: 60 }), row({ id: 'e', title: 'E', score: 59 })];
+    const d = buildDigest(rows, NOW, {});
+    expect([d.count, d.rows.map((r) => r.id), d.groups.map((g) => [g.label, g.rows.map((r) => r.id)])]).toEqual([4, ['a', 'c', 'b', 'd'], [['Strong fit', ['a', 'c']], ['Worth a look', ['b', 'd']]]]);
+    expect(d.text).toContain('Strong fit (2)\n- A · F'); expect(d.text).toContain('\n\nWorth a look (2)\n- B · F');
+    expect(d.html).toContain('<h3>Strong fit (2)</h3><ul><li>A · F'); expect(d.html).toContain('</ul><h3>Worth a look (2)</h3><ul><li>B · F');
+    expect(buildDigest(rows, NOW, { band_strong: 95 }).groups.map((g) => g.label)).toEqual(['Worth a look']);
+    expect(buildDigest(rows, NOW, { digest_threshold: 70, band_look: 60 }).rows.map((r) => r.id)).toEqual(['a', 'c', 'b']);
+  });
   it('says so when nothing is new', () => {
     const d = buildDigest([row({ score: 10 })], NOW, {});
     expect([d.count, d.subject]).toEqual([0, 'FAS Evidence · 0 new grant matches this week']);
     expect(d.text).toContain('No new matches above the threshold this week.');
     expect(d.html).toContain('<p>No new matches above the threshold this week.</p>');
+    expect(d.groups).toEqual([]);
   });
 });

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { V0_DRAFT_CONFIG, V0_DRAFT_WEIGHTS, V1_DRAFT_CONFIG, V1_DRAFT_PARAMS, V1_DRAFT_WEIGHTS } from './config-defaults';
+import { V0_DRAFT_CONFIG, V0_DRAFT_WEIGHTS, V1_1_DRAFT_CONFIG, V1_1_DRAFT_PARAMS, V1_DRAFT_CONFIG, V1_DRAFT_PARAMS, V1_DRAFT_WEIGHTS } from './config-defaults';
 import { EVAL_BARS, type EvalLabels, type EvalReport, formatReport, runEval } from './eval';
 import { FAS_PROFILE_SYNTHETIC as org } from './profile';
 
@@ -43,6 +43,15 @@ describe('grant match eval (F-509 regression gate)', () => {
     expect([JSON.parse(m?.[1] ?? '{}'), JSON.parse(m?.[2] ?? '{}')]).toEqual([V1_DRAFT_WEIGHTS, V1_DRAFT_PARAMS]);
     expect([sql.includes('approved_by'), /INSERT INTO match_config \(id, weights, params, created_at\)/.test(sql), /^\s*(UPDATE|DELETE)\b/m.test(sql), V1_DRAFT_CONFIG.approved_by]).toEqual([true, true, false, null]);
     expect(Object.values(V1_DRAFT_WEIGHTS).reduce((a, b) => a + b, 0)).toBeCloseTo(1, 9);
+  });
+  it('F-504d: v1.1-draft equals the unapproved migration seed (v1 weights and params plus the two band edges) and scores exactly as v1-draft', () => {
+    const sql = readFileSync('supabase/migrations/20261017000030_f504d_fit_bands.sql', 'utf8');
+    const m = /VALUES \('v1\.1-draft',\s*'(\{[^']+\})',\s*'(\{[^']+\})'/.exec(sql);
+    expect([JSON.parse(m?.[1] ?? '{}'), JSON.parse(m?.[2] ?? '{}')]).toEqual([V1_DRAFT_WEIGHTS, V1_1_DRAFT_PARAMS]);
+    const code = sql.split('\n').filter((l) => !l.startsWith('--')).join('\n');
+    expect([V1_1_DRAFT_PARAMS, /approved_by/.test(code), /'v1-draft'/.test(code), /^\s*(UPDATE|DELETE)\b/m.test(code), V1_1_DRAFT_CONFIG.approved_by]).toEqual([{ ...V1_DRAFT_PARAMS, band_strong: 75, band_look: 60 }, false, false, false, null]);
+    const v11 = runEval(set.labels, V1_1_DRAFT_CONFIG, org, NOW);
+    expect(v11).toEqual(report); expect(v11.precision).toBeGreaterThanOrEqual(PRECISION_FLOOR);
   });
   it('v0-draft stays as measured under its own params (precision 0.6087, below the bar): the F-504b params change nothing it does not set', () => {
     const v0 = runEval(set.labels, V0_DRAFT_CONFIG, org, NOW);

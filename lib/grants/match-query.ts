@@ -1,6 +1,7 @@
 // F-504: read the approved match_config, score open opportunities into match_result, and read them back for the panel.
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { AwardHistoryQuery, type StoredAward, summarize } from './award-history';
+import { type FitBand, fitBand } from './band';
 import { checkEligibility, fromMatchFlags } from './eligibility';
 import { loadOrgProfile } from './profile';
 import { type Component, type MatchConfig, scoreOpportunity, toMatchResultRow } from './score';
@@ -8,8 +9,9 @@ import { awardRange } from './terms';
 import type { Flag, OpportunityInput } from './types';
 
 export type MatchFlags = { eligible: boolean | 'unknown'; flags: Flag[] };
-/** `award` and `status` (DS-12a) read stored `opportunity.award_*` and `pipeline_status.status`; `status` is null when nobody has moved the opportunity. */
-export type MatchItem = { id: string; opportunityId?: string; title: string; funder: string; closes: string; award: string; status: string | null; score: number; eligibility: string; components: Component[]; flags: Flag[]; awards: AwardLine | null };
+/** `award` and `status` (DS-12a) read stored `opportunity.award_*` and `pipeline_status.status`; `status` is null when nobody has moved the opportunity.
+ * `band` (F-504d) is the stored score read against the approved config's band edges; absent, the badge is not shown. */
+export type MatchItem = { id: string; opportunityId?: string; title: string; funder: string; closes: string; award: string; status: string | null; score: number; eligibility: string; components: Component[]; flags: Flag[]; awards: AwardLine | null; band?: FitBand };
 /** DS-12b: stored `award_history` rows on the opportunity's Assistance Listing, summarised; null when there is no listing or no rows (the line is then omitted). */
 export type AwardLine = { count: number; median: number | null };
 export type MatchList = { config: { id: string; draft: boolean } | null; asOf: string | null; rows: MatchItem[] };
@@ -62,10 +64,10 @@ export class MatchQuery {
     const rows = open.map((r): MatchItem => {
       let flags: MatchFlags = { eligible: 'unknown', flags: [] };
       try { flags = fromMatchFlags(r.flags); } catch { /* malformed stored flags read as unknown */ }
-      const o = r.opportunity as NonNullable<ResultRow['opportunity']>;
+      const o = r.opportunity as NonNullable<ResultRow['opportunity']>, score = Number(r.score ?? 0), components = Array.isArray(r.components) ? (r.components as Component[]) : [];
       return { id: r.id, opportunityId: r.opportunity_id, title: o.title, funder: o.funder ?? 'Funder not recorded', closes: o.close_date ? `closes ${fmt(o.close_date, { month: 'short', day: 'numeric', year: 'numeric' })}` : 'no close date',
-        award: awardRange(num(o.award_floor), num(o.award_ceiling)), status: status.get(r.opportunity_id) ?? null, score: Number(r.score ?? 0),
-        eligibility: MatchQuery.eligibilityLabel(flags), components: Array.isArray(r.components) ? (r.components as Component[]) : [], flags: flags.flags, awards: awards.get(o.assistance_listing ?? '') ?? null };
+        award: awardRange(num(o.award_floor), num(o.award_ceiling)), status: status.get(r.opportunity_id) ?? null, score,
+        eligibility: MatchQuery.eligibilityLabel(flags), components, flags: flags.flags, awards: awards.get(o.assistance_listing ?? '') ?? null, band: fitBand(score, config.params, components) };
     }).sort((a, b) => b.score - a.score || a.title.localeCompare(b.title));
     const newest = open.map((r) => r.computed_at).sort().at(-1);
     return { config: { id: config.id, draft: config.approved_by === null }, asOf: newest ? fmt(newest, { month: 'short', year: 'numeric' }) : null, rows };

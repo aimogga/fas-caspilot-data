@@ -4,6 +4,7 @@
 import { Ban, Check, CircleDot, CircleHelp, TriangleAlert } from "lucide-react";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 import { DraftStrategyButton } from "@/components/grants/DraftStrategyButton";
+import { FitBandBadge } from "@/components/grants/FitBandBadge";
 import { EMPTY_PANEL, MatchPanel } from "@/components/grants/MatchPanel";
 import { ExplainCard, Hint } from "@/components/trust/explain";
 import { Badge } from "@/components/ui/badge";
@@ -66,7 +67,7 @@ export function MatchList({ rows, asOf }: { rows: MatchItem[]; asOf?: string }) 
         <ol data-slot="match-list" className="flex flex-col gap-4">
           {visible.map((r) => (
             <li key={r.id} data-match={r.id} className="grid gap-4 rounded-lg border border-border bg-card p-4 shadow-sm lg:grid-cols-[auto_1fr] lg:gap-6 lg:p-6">
-              <div><FitTile row={r} asOf={asOf} /></div>
+              <div className="flex flex-wrap items-center gap-2 lg:flex-col lg:items-start"><FitTile row={r} asOf={asOf} />{r.band ? <FitBandBadge band={r.band} /> : null}</div>
               <div className="flex min-w-0 flex-col gap-3">
                 <h3 className="text-base font-medium leading-snug break-words">{r.title}</h3>
                 <p data-slot="match-meta" className="text-sm text-muted-foreground">{r.funder} · {r.closes} · <span className="tabular-nums">{r.award}</span></p>
