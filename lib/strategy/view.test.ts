@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { RESOLVERS } from './citations';
 import { fakeGenerate } from './fake';
 import { generateDraft } from './generate';
 import { citationFace, factValue, footerWords, reportLines, toView } from './view';
@@ -26,6 +27,10 @@ describe('strategy draft screen helpers (F-508f)', () => {
     expect(citationFace(snap.facts[1]!, snap.built_at)).toMatchObject({ word: 'County data', source: 'census-sahie', asOf: '2023', value: 'value 12.4', term: { title: 'Uninsured rate, county FIPS 49035, 2023' } });
     expect(citationFace(snap.facts[0]!, snap.built_at)).toMatchObject({ word: 'Opportunity', asOf: 'Oct 2026', value: 'award floor $50,000 · award ceiling $200,000' });
     expect([factValue(snap.facts[2]!), factValue({ citation_id: 'award_history_summary:x', label: 'x', values: { count: 12, median: 150000, utah_share: 0.25 } })]).toEqual(['Hidden: fewer than 11 families or not published', 'count 12 · median $150,000 · utah share 25%']);
+  });
+
+  it('every registered citation kind has its own chip word, never the generic Source', () => {
+    for (const kind of RESOLVERS.keys()) expect(citationFace({ citation_id: `${kind}:x`, label: 'l', values: {} }, snap.built_at).word).not.toBe('Source');
   });
 
   it('a failed draft is never usable and its report reads in plain words', () => {

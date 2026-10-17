@@ -18,6 +18,9 @@ const KIND: Record<string, [word: string, plain: string, source: string]> = {
   award_history_summary: ['Past awards', 'Count, median and range of similar past awards, worked out from stored award records.', 'USAspending and 990-PF award history'],
   award_history: ['Past award', 'One similar past award from the stored award records.', 'USAspending and 990-PF award history'],
   metric: ['FAS figure', 'A quarterly FAS figure from the team dashboard; counts under 11 are hidden.', 'FAS dashboard'],
+  recipient_profile: ['Past winner', "Public Form 990 facts about an organization that won a similar award.", 'ProPublica Nonprofit Explorer (Form 990)'],
+  award_abstract: ['Award summary', "The published summary of a similar past award. The draft may describe it but never copies its wording.", 'Award abstract'],
+  org_knowledge: ['FAS fact', 'A fact about FAS that an admin approved for use in drafts.', 'FAS knowledge'],
 };
 const kindOf = (id: string) => KIND[id.split(':')[0] ?? ''] ?? ['Source', 'A stored row the draft was given.', 'Stored row'];
 const usd = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`, MONEY = /award|amount|median|min|max|floor|ceiling/;
