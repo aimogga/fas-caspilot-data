@@ -19,5 +19,5 @@ Every card's `SAMPLE CALL` was run as written from a cloud session (F-002). "Blo
 | `ojp_awards` | Use (UNVERIFIED) | 307 to sign-in | **New card.** Abstracts aren't public; rows stay `not_published` |
 | `propublica_990` | Use | 200, 584 Utah results | Terms read: cite ProPublica, no raw redistribution |
 | `irs_990pf_grants` | Verify first | 200 index and 200 batch zip (152 MB) | Grant fields confirmed in real 2025 XML |
-| `sam_entity` | Verify first | Blocked | Needs a SAM.gov API key and FAS's UEI (George) |
+| `sam_entity` | Verify first | 200, FAS registration Active (expires 2027-09-15) | Verified with George's key; UEI CZ9FYJUKH2S9 |
 | `ut_transparency` | Verify first | Blocked | Bulk data is BigQuery "Super User" access: an email to the state and GCP billing (George) |
