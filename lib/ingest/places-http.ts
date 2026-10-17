@@ -3,10 +3,10 @@ import { SahieHttp, type IngestHttpDeps, type SahieRunOpts } from './sahie-http'
 
 /** n8n entry: fetch → parse → fill → requireComplete → load, on the shared SahieHttp skeleton. */
 export class PlacesHttp {
-  /** PLACES publishes the prior data year each December, so the latest release is year - 1. */
-  static year(now: Date, requested?: string): string {
-    if (requested !== undefined) return SahieHttp.year(now, requested);
-    return String(now.getUTCFullYear() - 1);
+  /** No year filter by default: the county dataset is the current release, and its data year lags the calendar by about
+   *  two years (the 2025 release holds 2023 data), so pinning `year - 1` matched no rows (#208). A requested year is validated. */
+  static year(now: Date, requested?: string): string | undefined {
+    return requested === undefined ? undefined : SahieHttp.year(now, requested);
   }
 
   static async run(opts: SahieRunOpts) {

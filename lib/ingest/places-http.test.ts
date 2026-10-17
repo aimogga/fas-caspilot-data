@@ -24,13 +24,13 @@ const req = (token?: string, body?: string): Request =>
 afterEach(() => { vi.restoreAllMocks(); loaded.length = 0; });
 
 describe('PlacesHttp', () => {
-  it('rejects a missing or wrong token before running; defaults to the latest release year and validates a requested one', async () => {
+  it('rejects a missing or wrong token before running; no year filter by default and validates a requested one', async () => {
     const run = vi.fn();
     expect((await PlacesHttp.handle(req(), { env: { INGEST_TOKEN: 's' }, run })).status).toBe(401);
     expect((await PlacesHttp.handle(req('s'), { env: {}, run })).status).toBe(401);
     expect((await PlacesHttp.handle(req('t'), { env: { INGEST_TOKEN: 's' }, run })).status).toBe(401);
     expect(run).not.toHaveBeenCalled();
-    expect(PlacesHttp.year(new Date('2026-10-12T00:00:00Z'))).toBe('2025');
+    expect(PlacesHttp.year(new Date('2026-10-12T00:00:00Z'))).toBeUndefined();
     expect(PlacesHttp.year(new Date('2026-01-07T15:00:00Z'), '2023')).toBe('2023');
     expect(() => PlacesHttp.year(new Date(), '24')).toThrow();
   });
@@ -43,6 +43,13 @@ describe('PlacesHttp', () => {
     expect([requested.includes('year%3D%272023%27'), requested.includes('app_token')]).toEqual([true, false]);
     expect(loaded[0]).toMatchObject({ name: CdcPlaces.SOURCE_NAME, checksum: CdcPlaces.checksum(loaded[0]!.rows) });
     expect(loaded[0]!.rows.every((r) => r.vintage === '2023')).toBe(true);
+  });
+
+  it('#208: with no year asked it sends no year filter and loads the year the release holds (2023 in the 2025 release)', async () => {
+    let requested = '';
+    const httpFetch: typeof fetch = async (url) => { requested = String(url); return ok(rows('2023'))(url); };
+    const res = await PlacesHttp.run({ env: {}, httpFetch, client, load, now: new Date('2026-10-17T00:00:00Z') });
+    expect([res.rowsLoaded, requested.includes('year%3D'), loaded[0]!.rows.every((r) => r.vintage === '2023')]).toEqual([58, false, true]);
   });
 
   it('never loads an empty or unparseable payload', async () => {
