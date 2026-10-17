@@ -48,4 +48,12 @@ describe('unit: ProPublica parser with hand-written (UNVERIFIED) v2 fixtures', (
     expect(await ProPublica.lookup('Nobody Here', take, httpFetch)).toBeNull();
     await expect(ProPublica.lookup('x', take, async () => new Response('x', { status: 429 }))).rejects.toThrow('ProPublica request failed: 429');
   });
+  it('lookup (#210): a zero-result search answers 404 with an empty list, and an unknown EIN is 404; both mean not found, not a failed run', async () => {
+    const empty = JSON.stringify({ total_results: 0, organizations: [], num_pages: 0 }), urls: string[] = [];
+    const notFound: typeof fetch = async (u) => { urls.push(String(u)); return new Response(String(u).includes('organizations/') ? '{"error":"not found"}' : empty, { status: 404 }); };
+    expect([await ProPublica.lookup('Placeholder Mental Health Foundation', async () => {}, notFound), urls.length]).toEqual([null, 2]);
+    expect(await ProPublica.lookup('10-0000001', async () => {}, notFound)).toBeNull();
+    const searchThen404: typeof fetch = async (u) => (String(u).includes('organizations/') ? new Response('{}', { status: 404 }) : new Response(JSON.stringify(search), { status: 200 }));
+    expect(await ProPublica.lookup('Example Family Foundation', async () => {}, searchThen404)).toBeNull();
+  });
 });

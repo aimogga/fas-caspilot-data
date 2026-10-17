@@ -72,11 +72,13 @@ export class ProPublica {
   /** Stable over the stored columns (not `raw`). */ static checksum(rows: FoundationRow[]): string {
     return createHash('sha256').update(JSON.stringify([...rows].sort((a, b) => a.external_id.localeCompare(b.external_id)).map((r) => ({ ...r, raw: undefined })))).digest('hex');
   }
-  /** Name or EIN → profile: EINs go straight to the organization; names search Utah first, then national. Null when nothing matches; throws on non-2xx or a bad shape. */
+  /** Name or EIN → profile: EINs go straight to the organization; names search Utah first, then national. Null when nothing matches; throws on other non-2xx or a bad shape.
+   *  A 404 is "nothing matches": the search answers 404 with an empty `organizations` list for zero results, and an unknown EIN is 404 too (#210). */
   static async lookup(query: string, take: () => Promise<void>, httpFetch: typeof fetch = fetch): Promise<FunderProfile | null> {
-    const get = async (url: string): Promise<unknown> => { await take(); const res = await httpFetch(url); if (!res.ok) throw new Error(`ProPublica request failed: ${res.status}`); return res.json(); };
+    const get = async (url: string): Promise<unknown> => { await take(); const res = await httpFetch(url); if (res.status === 404) return null; if (!res.ok) throw new Error(`ProPublica request failed: ${res.status}`); return res.json(); };
     let ein = isEin(query) ? normalizeEin(query) : null;
-    for (const state of ['UT', null] as const) ein ??= ProPublica.bestMatch(query, ProPublica.parseSearch(await get(ProPublica.searchUrl(query, state))))?.ein ?? null;
-    return ein ? ProPublica.parseOrganization(await get(ProPublica.orgUrl(ein))) : null;
+    for (const state of ['UT', null] as const) { if (ein) break; const found = await get(ProPublica.searchUrl(query, state)); ein = found === null ? null : ProPublica.bestMatch(query, ProPublica.parseSearch(found))?.ein ?? null; }
+    const org = ein ? await get(ProPublica.orgUrl(ein)) : null;
+    return org === null ? null : ProPublica.parseOrganization(org);
   }
 }
