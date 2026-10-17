@@ -2,17 +2,22 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { COUNTIES } from '../synthetic/generate';
 import { NeedMapQuery, NOT_PUBLISHED, NOT_YET, type IndicatorRow, type ScoreRow, type SourceRow } from '../need-map/query';
 import { syntheticBadgeVisible } from '../shell/nav';
+import type { NeedParams } from '../need-score/compute';
+import type { ShownFlag } from '../need-score/reliability';
 import { indicatorCodes, inputLabel, sourceLabel } from './labels';
 
-export type ConfigRow = { version: string; weights: Record<string, number>; created_at: string; approved_by: string | null };
+export type ConfigRow = { version: string; weights: Record<string, number>; params?: NeedParams | null; created_at: string; approved_by: string | null };
 export type MethodInput = { configs: ConfigRow[]; scores: ScoreRow[]; indicators: IndicatorRow[]; sources: SourceRow[] };
 export type InputRow = { key: string; label: string; known: boolean; source: string; vintage: string; asOf: string; status: 'current' | 'not_published' };
 /** `points` is the weight as a whole number out of 100 (DESIGN.md need score rule 1); null when the stored weights sum to zero. */
 export type WeightRow = { key: string; label: string; known: boolean; weight: string; share: string; points: number | null };
 export type Draft = { version: string; createdLabel: string };
+/** F-210c: an input is `checked` for reliability when its stored rows carry a MOE. */
+export type CheckedInput = { key: string; label: string; checked: boolean };
+export type CountyFlags = { fips: string; name: string; flags: ShownFlag[] };
 export type MethodologyView = {
   version: string; approvedLabel: string; synthetic: boolean; singleInput: boolean; draft: Draft | null;
-  inputs: InputRow[]; weights: WeightRow[]; sum: string; mismatch: string | null; notPublished: string | null; footer: string; scored: number; counties: number;
+  inputs: InputRow[]; weights: WeightRow[]; sum: string; params: NeedParams; checked: CheckedInput[]; flagged: CountyFlags[]; mismatch: string | null; notPublished: string | null; footer: string; scored: number; counties: number;
 };
 
 export class MethodologyQuery {
@@ -54,13 +59,18 @@ export class MethodologyQuery {
     const notPublished = missing > 0 ? `${missing} of ${COUNTIES.length} counties are Not published for this version.` : null;
     const singleInput = keys.length === 1 && approved.version.includes('synthetic');
     const draft = MethodologyQuery.draft(input.configs, approved);
-    return { version: approved.version, approvedLabel: NeedMapQuery.monthYear(approved.created_at), synthetic, singleInput, draft, inputs, weights, sum: String(sum), mismatch, notPublished, footer, scored, counties: COUNTIES.length };
+    const checked = inputs.map((r) => ({ key: r.key, label: r.label, checked: indicators.some((i) => indicatorCodes(r.key).includes(i.indicator_code) && i.moe !== null) }));
+    const flagged = COUNTIES.flatMap((c) => {
+      const flags = NeedMapQuery.flags(input.scores.find((s) => s.version === approved.version && s.geo_fips === c.fips)?.components, input.sources);
+      return flags.length ? [{ fips: c.fips, name: `${c.name} County`, flags }] : [];
+    });
+    return { version: approved.version, approvedLabel: NeedMapQuery.monthYear(approved.created_at), synthetic, singleInput, draft, inputs, weights, sum: String(sum), params: approved.params ?? {}, checked, flagged, mismatch, notPublished, footer, scored, counties: COUNTIES.length };
   }
 
   static async load(client: SupabaseClient, env?: string): Promise<MethodologyView | null> {
     const [configs, scores, indicators, sources] = await Promise.all([
-      client.from('need_score_config').select('version,weights,created_at,approved_by'),
-      client.from('need_score').select('version,geo_fips,score'),
+      client.from('need_score_config').select('version,weights,params,created_at,approved_by'),
+      client.from('need_score').select('version,geo_fips,score,components'),
       client.from('public_indicator').select('source_id,indicator_code,geo_fips,value,moe,unit,vintage'),
       client.from('source_registry').select('id,name,last_success_at'),
     ]);

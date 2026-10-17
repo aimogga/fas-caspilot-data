@@ -3,9 +3,11 @@ import { COUNTIES } from '../synthetic/generate';
 import { NeedBins } from './bins';
 import { FasCounties, type FasRow } from './fas-counties';
 import { NeedRank } from './rank';
+import type { NeedComponent } from '../need-score/compute';
+import { reliabilityFlags, type ShownFlag } from '../need-score/reliability';
 
 export type ConfigRow = { version: string; created_at: string; approved_by: string | null };
-export type ScoreRow = { version: string; geo_fips: string; score: number | string };
+export type ScoreRow = { version: string; geo_fips: string; score: number | string; components?: Record<string, NeedComponent> | null };
 export type IndicatorRow = { source_id: string; indicator_code: string; geo_fips: string; value: number | string | null; moe: number | string | null; unit: string | null; vintage: string };
 export type SourceRow = { id: string; name: string; last_success_at: string | null };
 export type NeedInput = { configs: ConfigRow[]; scores: ScoreRow[]; indicators: IndicatorRow[]; sources: SourceRow[]; fas: FasRow[] };
@@ -13,6 +15,7 @@ export type BuildOptions = { fas?: boolean };
 export type CountyRow = {
   fips: string; name: string; fas: boolean; rank: string; score: string; bin: string; status: string; cells: Record<string, string>; value: number | null; binNo: number | null;
   /** Numeric indicator values behind `cells` (null when not loaded or not published), for comparisons. */ values: Record<string, number | null>;
+  /** F-210c: inputs marked low reliability in this county's stored score (still scored, never hidden). */ flags?: ShownFlag[];
 };
 export type Column = { code: string; label: string; note: string; unit: string | null };
 export type ColumnSource = { code: string; name: string; vintage: string; asOf: string };
@@ -101,6 +104,14 @@ export class NeedMapQuery {
     return { code: row.indicator_code, name, vintage: row.vintage, asOf };
   }
 
+  /** Stored low-reliability components with the input label and the source's display name. */
+  static flags(components: Record<string, NeedComponent> | null | undefined, sources: SourceRow[]): ShownFlag[] {
+    return reliabilityFlags(components).map((f) => {
+      const src = sources.find((s) => s.id === f.source_id);
+      return { ...f, label: NeedMapQuery.label(f.code), source: src ? SOURCES[src.name] ?? src.name : 'Unknown source' };
+    });
+  }
+
   /** `latest` is the newest `last_success_at` among the sources in use (ISO). */
   static footer(version: string | null, sources: ColumnSource[], latest: string | null): string {
     const names = [...new Set(sources.map((s) => s.name))].join(', ') || NOT_YET;
@@ -118,7 +129,7 @@ export class NeedMapQuery {
     const latest = input.sources.filter((s) => indicators.some((i) => i.source_id === s.id)).map((s) => s.last_success_at ?? '').sort().at(-1) || null;
     const scored = COUNTIES.map((c) => {
       const hit = input.scores.find((s) => s.version === version && s.geo_fips === c.fips);
-      return { fips: c.fips, score: hit ? Number(hit.score) : null };
+      return { fips: c.fips, score: hit ? Number(hit.score) : null, flags: NeedMapQuery.flags(hit?.components, input.sources) };
     });
     const ranks = NeedRank.rank(scored);
     const bins = NeedBins.assign(scored);
@@ -133,7 +144,7 @@ export class NeedMapQuery {
         rank: ranks.has(c.fips) ? `${ranks.get(c.fips)} of ${ranks.size}` : missing,
         score: score === null ? missing : NeedMapQuery.signed(score),
         bin: bins.has(c.fips) ? `${bins.get(c.fips)} of ${binMax}` : missing,
-        value: score, binNo: bins.get(c.fips) ?? null };
+        value: score, binNo: bins.get(c.fips) ?? null, flags: scored[i]?.flags ?? [] };
     });
     counties.sort((a, b) => (ranks.get(a.fips) ?? Infinity) - (ranks.get(b.fips) ?? Infinity) || a.name.localeCompare(b.name));
     const rows = counties.filter((r) => !opts.fas || r.fas);
@@ -144,7 +155,7 @@ export class NeedMapQuery {
   static async load(client: SupabaseClient, opts: BuildOptions = {}): Promise<NeedTableData> {
     const [configs, scores, indicators, sources, fas] = await Promise.all([
       client.from('need_score_config').select('version,created_at,approved_by'),
-      client.from('need_score').select('version,geo_fips,score'),
+      client.from('need_score').select('version,geo_fips,score,components'),
       client.from('public_indicator').select('source_id,indicator_code,geo_fips,value,moe,unit,vintage'),
       client.from('source_registry').select('id,name,last_success_at'),
       client.from('fas_service_county').select('fips'),

@@ -1,15 +1,22 @@
 import { NeedMapQuery } from '../need-map/query';
 
 export type NeedWeights = Record<string, number>;
+/** need_score_config.params (F-210c). `{}` keeps the v1 maths. */
+export type NeedParams = { z_cap?: number; cv_flag_pct?: number };
 export type NeedIndicator = {
   indicator_code: string;
   geo_fips: string;
   value: number | string | null;
+  moe?: number | string | null;
   vintage: string;
   source_id?: string;
   ingest_run_id?: string | null;
 };
-export type NeedComponent = { value: number; z: number; weight: number; vintage: string; source_id: string | null; ingest_run_id: string | null };
+/** `z_raw` only when `z_cap` is set; `cv`/`low_reliability` only when `cv_flag_pct` is set and the row has a MOE. */
+export type NeedComponent = {
+  value: number; z: number; weight: number; vintage: string; source_id: string | null; ingest_run_id: string | null;
+  z_raw?: number; cv?: number; low_reliability?: boolean;
+};
 export type NeedScored = { geo_fips: string; score: number; components: Record<string, NeedComponent> };
 
 const round6 = (n: number): number => Math.round(n * 1e6) / 1e6;
@@ -38,12 +45,28 @@ export class NeedScore {
     if (Math.abs(sum - 1) > 1e-6) throw new Error(`need score weights must sum to 1 (sum = ${sum})`);
   }
 
+  /** Census MOEs are 90% intervals: CV = (MOE / 1.645) / value × 100. Null without a MOE or with a value <= 0. */
+  static cv(value: number, moe: number | string | null | undefined): number | null {
+    if (moe === null || moe === undefined || moe === '' || !Number.isFinite(Number(moe)) || value <= 0) return null;
+    return round6((Number(moe) / 1.645 / value) * 100);
+  }
+
+  static validateParams(params: NeedParams): void {
+    for (const k of ['z_cap', 'cv_flag_pct'] as const) {
+      const v = params[k];
+      if (v !== undefined && (typeof v !== 'number' || !Number.isFinite(v) || v <= 0)) throw new Error(`need score param ${k} is not a number > 0`);
+    }
+  }
+
   /**
    * score_c = sum_i w_i * z_ic, z_ic = (x_ic - mean_i) / sd_i over counties with a published value for input i
    * (population sd; sd 0 gives z 0). Uses each input's newest vintage. A county missing any weighted input gets no score.
+   * `params.z_cap` clamps each z to [-z_cap, +z_cap] before weighting; `params.cv_flag_pct` flags components whose CV is above it.
    */
-  static compute(weights: NeedWeights, indicators: NeedIndicator[], fips: string[]): NeedScored[] {
+  static compute(weights: NeedWeights, indicators: NeedIndicator[], fips: string[], params: NeedParams = {}): NeedScored[] {
     NeedScore.validate(weights);
+    NeedScore.validateParams(params);
+    const cap = params.z_cap, flag = params.cv_flag_pct;
     const latest = NeedMapQuery.latest(indicators);
     const wanted = new Set(fips);
     const inputs = Object.entries(weights).map(([key, weight]) => {
@@ -64,9 +87,14 @@ export class NeedScore {
       let score = 0;
       for (const i of inputs) {
         const { x, row } = i.byFips.get(geo_fips) as { x: number; row: NeedIndicator };
-        const z = i.sd === 0 ? 0 : (x - i.mean) / i.sd;
+        const raw = i.sd === 0 ? 0 : (x - i.mean) / i.sd;
+        const z = cap === undefined ? raw : Math.min(cap, Math.max(-cap, raw));
         score += i.weight * z;
-        components[i.code] = { value: x, z: round6(z), weight: i.weight, vintage: row.vintage, source_id: row.source_id ?? null, ingest_run_id: row.ingest_run_id ?? null };
+        const c: NeedComponent = { value: x, z: round6(z), weight: i.weight, vintage: row.vintage, source_id: row.source_id ?? null, ingest_run_id: row.ingest_run_id ?? null };
+        if (cap !== undefined) c.z_raw = round6(raw);
+        const cv = flag === undefined ? null : NeedScore.cv(x, row.moe);
+        if (flag !== undefined && cv !== null) Object.assign(c, { cv, low_reliability: cv > flag });
+        components[i.code] = c;
       }
       out.push({ geo_fips, score: round6(score), components });
     }

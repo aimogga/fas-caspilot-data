@@ -1,16 +1,17 @@
 import { ResponsiveTable } from "@/components/layout";
+import { LowReliability } from "@/components/need-map/LowReliability";
 import { FreshnessChip, NotPublished } from "@/components/trust";
 import { ExplainCard, Hint, Provenance } from "@/components/trust/explain";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { UNLABELED } from "@/lib/methodology/labels";
 import type { Draft, InputRow, MethodologyView } from "@/lib/methodology/query";
-import { inputTerm, NEVER_LOADED, STAT_TERMS, SYNTHETIC_HINT, weightCards } from "@/lib/methodology/words";
+import { inputTerm, NEVER_LOADED, reliabilityWords, STAT_TERMS, SYNTHETIC_HINT, weightCards } from "@/lib/methodology/words";
 import { whyHidden } from "@/lib/trust/glossary";
 import { Info } from "lucide-react";
 import type { ReactNode } from "react";
 
-export const TOC = [["how", "How we calculate it"], ["inputs", "Inputs"], ["weights", "Weights"], ["vintages", "Vintages"], ["limits", "Limits"]] as const;
+export const TOC = [["how", "How we calculate it"], ["inputs", "Inputs"], ["weights", "Weights"], ["reliability", "Outliers and reliability"], ["vintages", "Vintages"], ["limits", "Limits"]] as const;
 const LIMITS = [
   ["It is not a measure of how well FAS is doing.", "Public county indicators only, not FAS cases or outcomes."],
   ["It is county-level only.", "No cities, ZIP codes, tracts, or addresses."],
@@ -114,6 +115,29 @@ export function FormulaBlock({ view }: { view: MethodologyView }) {
         {" "}A county missing a required input for this version is <Hint text={whyHidden("not_published")} className={DOTTED}>Not published</Hint> and gets no rank, the same rule as the need map.
       </p>
       {view.singleInput ? <p className={MUTED}>This approved version ({view.version}) uses a placeholder single input for previews. Real multi-input weights are set by FAS policy.</p> : null}
+    </div>
+  );
+}
+
+/** F-210c: z-scores, the cap and the reliability flag in words, which inputs are checked, then each flagged county with its marker. */
+export function ReliabilitySection({ view }: { view: MethodologyView }) {
+  const words = reliabilityWords(view.params), on = view.params.cv_flag_pct !== undefined;
+  return (
+    <div data-slot="reliability" className="flex flex-col gap-3 text-sm">
+      <p className="max-w-prose leading-7">A <T id="z_score">z-score</T> says how many <T id="sd">standard deviations</T> a county sits from the Utah average on one input. {words.cap}</p>
+      <p data-slot="reliability-flag" className="max-w-prose leading-7">{words.flag}</p>
+      {on ? (
+        <>
+          <ul data-slot="reliability-checked" className="flex flex-col gap-1">
+            {view.checked.map((c) => <li key={c.key} data-checked={c.checked}>{c.label}: {c.checked ? "checked (the source publishes a margin of error)" : "not checked (no margin of error is stored for this input)"}</li>)}
+          </ul>
+          {view.flagged.length ? (
+            <ul data-slot="reliability-counties" className="flex flex-col gap-2">
+              {view.flagged.map((c) => <li key={c.fips} data-fips={c.fips} className="flex flex-wrap items-center gap-2"><span className="font-medium">{c.name}</span>{c.flags.map((f) => <LowReliability key={f.code} flag={f} />)}</li>)}
+            </ul>
+          ) : <p className={MUTED}>No county is above the threshold in this version.</p>}
+        </>
+      ) : null}
     </div>
   );
 }

@@ -1,20 +1,20 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { NeedMapQuery, type ConfigRow } from '../need-map/query';
 import { COUNTIES } from '../synthetic/generate';
-import { NeedScore, type NeedIndicator, type NeedWeights } from './compute';
+import { NeedScore, type NeedIndicator, type NeedParams, type NeedWeights } from './compute';
 
 /** Writes need_score rows for the newest approved need_score_config, from the latest public_indicator vintages. */
 export class NeedScoreRecompute {
   static async run(client: SupabaseClient): Promise<{ version: string | null; scored: number }> {
-    const configs = await client.from('need_score_config').select('version,weights,created_at,approved_by');
+    const configs = await client.from('need_score_config').select('version,weights,params,created_at,approved_by');
     if (configs.error) throw new Error(configs.error.message);
-    const config = NeedMapQuery.approved((configs.data ?? []) as Array<ConfigRow & { weights: NeedWeights }>);
+    const config = NeedMapQuery.approved((configs.data ?? []) as Array<ConfigRow & { weights: NeedWeights; params?: NeedParams | null }>);
     if (config === null) return { version: null, scored: 0 };
     const codes = Object.keys(config.weights).map(NeedScore.code);
-    const indicators = await client.from('public_indicator').select('indicator_code,geo_fips,value,vintage,source_id,ingest_run_id').in('indicator_code', codes);
+    const indicators = await client.from('public_indicator').select('indicator_code,geo_fips,value,moe,vintage,source_id,ingest_run_id').in('indicator_code', codes);
     if (indicators.error) throw new Error(indicators.error.message);
     const fips = COUNTIES.map((c) => c.fips);
-    const scored = NeedScore.compute(config.weights, (indicators.data ?? []) as NeedIndicator[], fips);
+    const scored = NeedScore.compute(config.weights, (indicators.data ?? []) as NeedIndicator[], fips, config.params ?? {});
     if (scored.length === 0) throw new Error(`need score ${config.version}: no county has every input`);
     const rows = scored.map((s) => ({ version: config.version, geo_fips: s.geo_fips, score: s.score, components: s.components }));
     const up = await client.from('need_score').upsert(rows, { onConflict: 'version,geo_fips' });

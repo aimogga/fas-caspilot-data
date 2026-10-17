@@ -118,4 +118,13 @@ describe('CountyPanel', () => {
     expect(none).toContain(SELECT_PROMPT);
     expect(none).not.toContain('Highest need');
   });
+
+  it('F-210c: a flagged county shows "Low reliability" in words with the input and CV, and the card names the source row', () => {
+    const flag = { code: 'poverty_rate', value: 8, cv: 42.1, vintage: '2023', source_id: 's', ingest_run_id: 'run-9', label: 'Poverty rate', source: 'Census SAIPE' };
+    const out = html(row({ flags: [flag] }));
+    expect(out).toMatch(/data-slot="reliability"[^]*<button[^>]*data-slot="explain-trigger"[^>]*><span data-slot="low-reliability"[^>]*data-code="poverty_rate"[^>]*><svg[^]*?<\/svg> Low reliability · Poverty rate, CV 42.1%<\/span><\/button>/);
+    expect(text(out)).toContain('Need score +1.74');
+    expect(html(row())).not.toContain('low-reliability');
+  });
 });
+

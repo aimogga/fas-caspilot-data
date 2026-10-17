@@ -88,3 +88,56 @@ describe('NeedScore.validate', () => {
     expect(() => NeedScore.compute({ a: 0.4 }, [], [])).toThrow('sum to 1');
   });
 });
+
+describe('F-210c params: z cap and reliability flag', () => {
+  const v1 = golden.versions['v1-poverty-uninsured'].weights;
+  const w = { poverty_rate: 0.5, uninsured_rate: 0.5 };
+  const ids = Array.from({ length: 18 }, (_, i) => `c${i}`);
+  // Poverty: one high outlier (c0 = 100, the rest 0); uninsured: one low outlier (c1 = -100). Each outlier's raw z is ±sqrt(17).
+  const outliers = [...ids.map((f) => ind('poverty_rate', f, f === 'c0' ? 100 : 0)), ...ids.map((f) => ind('uninsured_rate', f, f === 'c1' ? -100 : 0))];
+  const withMoe = (moe: number | null): NeedIndicator[] => [{ ...ind('poverty_rate', 'a', 10), moe }, { ...ind('poverty_rate', 'b', 20), moe: null }];
+
+  it('without z_cap the v1 output is byte-for-byte the pre-F-210c output', () => {
+    // Written by origin/main's NeedScore.compute (before F-210c) on the v1 fixture: JSON.stringify(output) + '\n'.
+    const before = readFileSync('tests/golden/need-score-v1-output.json', 'utf8');
+    expect(`${JSON.stringify(NeedScore.compute(v1, golden.indicators, golden.fips))}\n`).toBe(before);
+    expect(`${JSON.stringify(NeedScore.compute(v1, golden.indicators, golden.fips, {}))}\n`).toBe(before);
+    const moe = golden.indicators.map((r) => ({ ...r, moe: 0.5 }));
+    expect(`${JSON.stringify(NeedScore.compute(v1, moe, golden.fips, {}))}\n`).toBe(before);
+  });
+
+  it('clamps z to [-z_cap, +z_cap] on both sides before weighting and keeps z_raw', () => {
+    const scored = NeedScore.compute(w, outliers, ids, { z_cap: 3 });
+    const c0 = scored.find((s) => s.geo_fips === 'c0'), c1 = scored.find((s) => s.geo_fips === 'c1');
+    expect(c0?.components.poverty_rate).toMatchObject({ z: 3, z_raw: 4.123106 });
+    expect(c1?.components.uninsured_rate).toMatchObject({ z: -3, z_raw: -4.123106 });
+    expect(c0?.score).toBeCloseTo(0.5 * 3 + 0.5 * (c0?.components.uninsured_rate.z ?? NaN), 6);
+    // An input inside the cap is untouched; z equals z_raw.
+    expect(c0?.components.uninsured_rate.z).toBe(c0?.components.uninsured_rate.z_raw);
+    const uncapped = NeedScore.compute(w, outliers, ids).find((s) => s.geo_fips === 'c0');
+    expect(uncapped?.components.poverty_rate.z).toBe(4.123106);
+    expect(uncapped?.components.poverty_rate).not.toHaveProperty('z_raw');
+  });
+
+  it('CV = (MOE / 1.645) / value × 100; flags only above cv_flag_pct (at, just under, just over)', () => {
+    const at = (moe: number) => NeedScore.compute({ poverty_rate: 1 }, withMoe(moe), ['a', 'b'], { cv_flag_pct: 30 })[0]?.components.poverty_rate;
+    expect(at(4.935)).toMatchObject({ cv: 30, low_reliability: false });
+    expect(at(4.9)).toMatchObject({ cv: 29.787234, low_reliability: false });
+    expect(at(4.97)).toMatchObject({ cv: 30.212766, low_reliability: true });
+    expect(NeedScore.cv(10, 4.97)).toBe(30.212766);
+  });
+
+  it('a missing MOE, a zero value or no cv_flag_pct sets no flag', () => {
+    const b = NeedScore.compute({ poverty_rate: 1 }, withMoe(9), ['a', 'b'], { cv_flag_pct: 30 })[1]?.components.poverty_rate;
+    expect(b).not.toHaveProperty('cv');
+    expect(b).not.toHaveProperty('low_reliability');
+    expect(NeedScore.compute({ poverty_rate: 1 }, withMoe(9), ['a', 'b'], { z_cap: 3 })[0]?.components.poverty_rate).not.toHaveProperty('low_reliability');
+    expect([NeedScore.cv(0, 1), NeedScore.cv(10, null), NeedScore.cv(10, undefined)]).toEqual([null, null, null]);
+  });
+
+  it('weights that do not sum to 1 still throw, and bad params throw', () => {
+    expect(() => NeedScore.compute({ poverty_rate: 0.4 }, [], [], { z_cap: 3, cv_flag_pct: 30 })).toThrow('sum to 1');
+    expect(() => NeedScore.compute(w, [], [], { z_cap: 0 })).toThrow('z_cap is not a number > 0');
+    expect(() => NeedScore.compute(w, [], [], { cv_flag_pct: '30' as unknown as number })).toThrow('cv_flag_pct is not a number > 0');
+  });
+});

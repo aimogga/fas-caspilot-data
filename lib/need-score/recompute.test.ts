@@ -60,6 +60,16 @@ describe('NeedScoreRecompute.run', () => {
     expect((calls.find((c) => c.op === 'upsert')?.rows as { version: string }[]).map((r) => r.version)).toEqual(['v1-poverty-uninsured', 'v1-poverty-uninsured']);
   });
 
+  it('F-210c: passes the approved params to the maths and reads each row\'s MOE', async () => {
+    const configs = [{ ...cfg('v1.1', { poverty_rate: 1 }, '2026-10-17', 'u'), params: { z_cap: 1, cv_flag_pct: 30 } }];
+    const rows = [ind('poverty_rate', '49001', 10), ind('poverty_rate', '49003', 30), ind('poverty_rate', '49005', 20)].map((r, i) => ({ ...r, moe: i === 0 ? 5 : null }));
+    const { client, calls } = fake({ need_score_config: configs, public_indicator: rows });
+    await NeedScoreRecompute.run(client);
+    const up = calls.find((c) => c.op === 'upsert')?.rows as { geo_fips: string; components: Record<string, Record<string, unknown>> }[];
+    expect(up[0]?.components.poverty_rate).toMatchObject({ z: -1, z_raw: -1.224745, cv: 30.395137, low_reliability: true });
+    expect(up[1]?.components.poverty_rate).not.toHaveProperty('cv');
+  });
+
   it('writes nothing when no version is approved', async () => {
     const { client, calls } = fake({ need_score_config: [cfg('draft', { poverty_rate: 1 }, '2026-10-14', null)] });
     expect(await NeedScoreRecompute.run(client)).toEqual({ version: null, scored: 0 });
