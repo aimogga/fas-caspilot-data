@@ -1,11 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { ErrorState, Grid, PageHeader, Stack } from "@/components/layout";
+import { AggregateTotals } from "@/components/dashboard/AggregateTotals";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { FreshnessWidget } from "@/components/dashboard/FreshnessWidget";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { metricProps } from "@/components/dashboard/metric-props";
 import { PipelineWidget } from "@/components/dashboard/PipelineWidget";
 import { TrendPictures } from "@/components/dashboard/TrendPictures";
+import { aggregateTotals, AggregatesQuery } from "@/lib/dashboard/aggregates";
 import { METRIC_CARDS } from "@/lib/dashboard/cards";
 import { describeFilters, parseFilters, type SearchParams } from "@/lib/dashboard/filters";
 import { MetricsQuery } from "@/lib/dashboard/metrics-query";
@@ -24,7 +26,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     console.error("[dashboard] load failed", { message: e instanceof Error ? e.message : "unknown" });
   }
   const filters = parseFilters(params, now, data?.counties.map((c) => c.fips));
-  const metrics = client && data ? await MetricsQuery.load(client, filters) : null;
+  const [metrics, aggregates] = client && data ? await Promise.all([MetricsQuery.load(client, filters), AggregatesQuery.load(client, filters.period)]) : [null, null];
   const county = data?.counties.find((c) => c.fips === filters.county)?.name ?? null;
   const [m1, ...rest] = METRIC_CARDS, o1 = METRIC_CARDS.find((c) => c.id === "o1");
   const card = (c: (typeof METRIC_CARDS)[number]) => <MetricCard key={c.id} card={c} {...metricProps(c.id, metrics, filters)} />;
@@ -38,6 +40,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       <TrendPictures metrics={metrics} period={filters.period} />
       <Grid cols={2} className="md:grid-cols-1 lg:grid-cols-2">{rest.slice(3, 5).map(card)}</Grid>
       {o1 ? card(o1) : null}
+      {data ? <AggregateTotals totals={aggregates ? aggregateTotals(aggregates, filters.county) : null} period={filters.period} countyName={county} /> : null}
       {data ? <Grid cols={2}><FreshnessWidget view={data.freshness} /><PipelineWidget view={data.pipeline} /></Grid> : null}
     </Stack>
   );
