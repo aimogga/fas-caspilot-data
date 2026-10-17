@@ -1,6 +1,6 @@
 # Runbook: loading FAS's real data into production (F-604)
 
-**Status: not yet executed. Real FAS data is gated on George (`human_gate: george-before-deploy`, Phase 6 legal gate in `docs/PRIVACY_AND_COMPLIANCE.md`).** Until every box in section 1 is ticked by George, the only data anywhere is synthetic or public, and production (`fas-caspilot-data.vercel.app`) keeps pointing at the synthetic `fas-dev` Supabase project (D-023).
+**Status: not yet executed. Dry run scripted and passing (section 6, 2026-10-17). Real FAS data is gated on George (`human_gate: george-before-deploy`, Phase 6 legal gate in `docs/PRIVACY_AND_COMPLIANCE.md`).** Until every box in section 1 is ticked by George, the only data anywhere is synthetic or public, and production (`fas-caspilot-data.vercel.app`) keeps pointing at the synthetic `fas-dev` Supabase project (D-023).
 
 This runbook is written so that a person with the Supabase, Vercel and n8n logins can perform the load without an engineer present, and so the dry run in section 6 proves the steps on synthetic data first. Each step says who does it and what evidence to keep.
 
@@ -17,7 +17,7 @@ The one rule: **a real FAS file is opened only on George's machine or inside the
 ## 1. Gates that must be closed first (George)
 
 - [ ] **Legal opinion in hand** on the HIPAA basis for provider session data and whether Business Associate Agreements are needed with Supabase, Vercel and any LLM provider (`docs/PRIVACY_AND_COMPLIANCE.md`, "Legal gates before real data"). Keep the opinion and any signed BAAs in FAS's own records, not in the repo.
-- [ ] **Plans that offer the needed BAAs are purchased** (Supabase and Vercel both require a paid tier for a BAA). Money decisions go through Chief of staff (D-014).
+- [ ] **Plans that offer the needed BAAs are purchased** (Supabase and Vercel both require a paid tier for a BAA). Money decisions go through Chief of staff (D-014). The Supabase org (Casepilot) is on the Free plan as of 2026-10-17.
 - [ ] **Security review (F-602) reported clean**: RLS tests per table × role, secret scan, dependency audit, Supabase advisors.
 - [ ] **Production Supabase project created** (section 3), separate from `fas-dev` (`zlizvzpatfyhdydfmxef`). The other project in the account, `dhlvtisumrvhnqbeidlt`, is not FAS and must not be used.
 - [ ] **Dry run passed on synthetic data** (section 6) with the evidence attached to the F-604 issue.
@@ -45,12 +45,13 @@ Do this on a branch-free day with the team on call. Nothing here touches real da
 
 1. **Create the production Supabase project** in the FAS organization. Name it so it cannot be confused with `fas-dev`. Record its project ref in `harness/DECISIONS.md` as a new decision superseding D-023. Enable the BAA on the project if the plan offers one.
 2. **Apply the migrations** from `supabase/migrations/` in order with the Supabase CLI (`supabase db push --linked` against the production ref, or the dashboard's migration runner). Never hand-edit an applied migration; a fix is a new file (golden rule 6). Confirm every table shows RLS enabled and forced.
-3. **Do not run `supabase/seed.sql` and do not run `pnpm seed:synthetic`** against production. Production starts empty except for reference rows: the 29 `geo_county` rows, `source_registry`, the approved `need_score_config` and `match_config` versions. Those come from migrations, not from the seed.
-4. **Create the FAS org row and the real user accounts** through Supabase Auth with `app_metadata.role` set to `admin`, `staff` or `board_viewer` and `app_metadata.org_id` set to the FAS org. No `example.test` accounts in production.
-5. **Vercel**: add a production-only set of environment variables pointing at the new project (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, a fresh `INGEST_TOKEN`, `CENSUS_API_KEY`, the alert webhook variables). Preview deployments keep the `fas-dev` values. Confirm the Ignored Build Step noted in D-014 is removed so `main` deploys.
-6. **n8n**: point a production copy of each ingest workflow at the production ingest URLs with the fresh token, keep them inactive until step 7, and keep the dev copies pointing at `fas-dev`.
-7. **Load the public data** by running the ingest workflows once (Census ACS, SAHIE, SAIPE first; the need score recompute after them). Check `/data-freshness` shows every source Current and the need map ranks all 29 counties.
-8. **Smoke the empty app** as each role: `/api/health` returns 200 with both checks ok; `/staff` shows "not available yet" tiles; `/board` shows the public-data cards and "No closed cases this quarter"; `/need-map` works.
+3. **Do not run `supabase/seed.sql` and do not run `pnpm seed:synthetic`** against production. Production starts empty except for reference rows that migrations insert: the 29 Utah `geo_county` rows (`20261017180000_f604_geo_county_utah.sql`; before that migration only the seed had them, so a fresh project rejected every county code), `source_registry`, and the approved `need_score_config` and `match_config` versions. Check: `select count(*) from geo_county where state = 'UT'` returns 29.
+4. **Create the FAS org row** with `name = 'Family Advocacy Services'`, `state = 'UT'` and `uei = 'CZ9FYJUKH2S9'`. That UEI is public, and was verified Active on SAM.gov on 2026-10-17, expiring 2027-09-15 (`docs/research/sam_entity.md`). Then **create the real user accounts** through Supabase Auth with `app_metadata.role` set to `admin`, `staff` or `board_viewer` and `app_metadata.org_id` set to the FAS org. No `example.test` accounts in production.
+5. **Vercel**: add a production-only set of environment variables pointing at the new project (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, a fresh `INGEST_TOKEN`, `CENSUS_API_KEY`, `SIMPLER_GRANTS_API_KEY`, `SOCRATA_APP_TOKEN` (optional), the alert webhook variables and `INGEST_ALERT_SECRET`, and George's `SAM_API_KEY` for the weekly SAM registration check). `.env.example` lists every name; values never go in the repo. Preview deployments keep the `fas-dev` values. Confirm the Ignored Build Step noted in D-014 is removed so `main` deploys.
+6. **Supabase Auth**: on the paid plan, turn on leaked-password protection (Auth → Passwords). Set a minimum length of 12 with mixed character types. Turn off sign-ups, since accounts are created by an admin. F-602 deferred this to production.
+7. **n8n**: point a production copy of each ingest workflow (including `sam-registration-weekly`) at the production ingest URLs with the fresh token, keep them inactive until step 8, and keep the dev copies pointing at `fas-dev`.
+8. **Load the public data** by running the ingest workflows once (Census ACS, SAHIE, SAIPE first; the need score recompute after them). Check `/data-freshness` shows every source Current and the need map ranks all 29 counties.
+9. **Smoke the empty app** as each role: `/api/health` returns 200 with both checks ok; `/staff` shows "not available yet" tiles; `/board` shows the public-data cards and "No closed cases this quarter"; `/need-map` works.
 
 Evidence to keep: the migration output, a screenshot of the RLS column in the dashboard, the health JSON, and the freshness page.
 
@@ -74,13 +75,30 @@ Evidence to keep: the migration output, a screenshot of the RLS column in the da
 
 ## 6. Dry run on synthetic data (team; required before section 5)
 
-The dry run proves the exact clicks of section 5 against the synthetic generator's output, so the real load has no surprises.
+The dry run is scripted, so it proves the load path on every CI run as well as on demand.
 
-1. Locally: `supabase start`, `supabase db reset` (migrations plus `seed.sql`), `pnpm dev`. Sign in as `admin@example.test`.
-2. Use synthetic CSVs that match the templates: `tests/fixtures/intake/case-good.csv` (saves) and `case-bad.csv` (every row rejected with a reason) cover the `case` entity; for the other four entities, download each template from `/staff/intake` and fill a few rows by hand from the IDs the local seed created (the seed itself is loaded by `supabase db reset`, and `pnpm seed:synthetic --sql <file>` writes the same rows as SQL for the local database, not as CSVs).
-3. Walk section 5 steps 2 to 4 with those files. Expect: `case-good.csv` saves and shows a batch ID; `case-bad.csv` saves nothing and lists every error; "Roll back this upload" removes the good batch and the list below shows it as Rolled back; the dashboards and the Word packet render.
-4. Run the automated proof of the same path: `pnpm test` (intake validation, mapping, commit and rollback units), `pnpm test:db` (RLS per table × role against the local database), and in CI `pnpm test:e2e` (`upload.spec.ts`, `entry-forms.spec.ts`, `aggregate.spec.ts`, `packets.spec.ts`).
-5. Attach to the F-604 issue: the CI run link, the local `test:db` output, and screenshots of the intake preview, the saved-batch message and the rollback message. That is the "dry run on synthetic data passes" evidence.
+**Automated: `tests/db/real-load-dry-run.test.ts`.** It runs in `pnpm test:db` locally and in CI. It plays a brand-new production project:
+1. It creates a fresh org "FAS Dry Run (synthetic)" and a fresh admin account, the way section 3 step 4 does.
+2. It loads all five entities in section 5 order through the same server path as `/staff/intake` → `/api/intake/commit`: server-side validation, then `intake_commit` under the admin's own access rules. Each file has 40 synthetic rows across all 29 counties.
+
+It checks:
+- **Section 3:** the migration alone carries the 29 Utah counties.
+- **Section 5 step 2:** a file with a bad county saves nothing and names the column.
+- **Section 5 step 2:** each entity saves 40 rows as one committed batch, with one `intake.commit` audit row, and every row is stamped with the org and batch.
+- **Section 2:** a column outside the template (`diagnosis`) is never stored, in any table or in the audit log.
+- **Section 5 step 3:** the shared M1, M4 and M6 views show the load and never a count under 11. The 10-case income band is hidden.
+- **Section 5 step 2.3:** a rollback removes exactly that batch, marks it `rolled_back`, writes `intake.rollback`, and a second rollback is refused (409).
+
+It deletes everything it created, so it can run any number of times.
+
+**To run it:**
+1. `supabase start`
+2. `supabase db reset`
+3. `pnpm test:db`, or for this file alone: `pnpm exec vitest run -c vitest.db.config.mts tests/db/real-load-dry-run.test.ts`, with the `supabase status -o env` values exported as `pnpm test:db` does
+
+**Visual check (optional, before the real load):** sign in locally as `admin@example.test` and click through section 5 with `tests/fixtures/intake/case-good.csv` and `case-bad.csv`, so the person doing the real load has seen the screens once.
+
+**Evidence for the F-604 issue:** the CI run link where `test:db` passed on `main`, and the local `test:db` output.
 
 ## 7. After the load
 
@@ -93,6 +111,6 @@ The dry run proves the exact clicks of section 5 against the synthetic generator
 
 - [ ] Section 1 gates ticked by George, with the legal opinion and BAAs held by FAS.
 - [ ] Section 3 evidence attached (migrations, RLS, health, freshness).
-- [ ] Section 6 dry-run evidence attached (CI link, `test:db` output, screenshots).
+- [ ] Section 6 dry-run evidence attached (CI link and local `test:db` output for `real-load-dry-run.test.ts`).
 - [ ] Section 5 performed; batch IDs and counts recorded; packet downloaded and read.
 - [ ] `harness/DECISIONS.md` updated with the production project ref and the date real data went in.
