@@ -230,10 +230,14 @@ test("a grant packet prepared for one seeded grant names it in month words and k
   await signIn(page, "staff@example.test");
   expect((await page.goto(`/staff/packets?variant=grant&opportunity=${id}`))?.status()).toBe(200);
   await expect(page.locator("[data-slot=packet-for]")).toHaveText("Prepared for Synthetic Family Fund · Synthetic Foundation · closes Mar 2027");
+  // F-403c: the staff-only note reads the seeded listing ("d"), which asks for no evidence; it is not part of the packet
+  await expect(page.locator("[data-slot=packet-asks]")).toContainText("The listing names no outcome, cost or wait-time evidence.");
+  await expect(page.locator("[data-slot=packet] [data-slot=packet-asks]")).toHaveCount(0);
   await expect(page.locator("[data-slot=packet-download]").first()).toHaveAttribute("href", new RegExp(`opportunity=${id}`));
   await page.selectOption("#county", "49035");
   await Promise.all([page.waitForURL(/county=49035/), page.getByRole("button", { name: "Update" }).click()]);
   await expect(page.locator("[data-slot=packet-for]")).toContainText("Synthetic Family Fund");
   await page.goto("/staff/packets?variant=grant&opportunity=not-a-uuid");
   await expect(page.locator("[data-slot=packet-for]")).toHaveCount(0);
+  await expect(page.locator("[data-slot=packet-asks]")).toHaveCount(0);
 });
