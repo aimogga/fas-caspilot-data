@@ -224,3 +224,16 @@ test("AC6: axe 0 serious or critical at 375, 1024 and 1440 with no horizontal ov
     expect(await axe(page), `axe @ ${width}`).toEqual([]);
   }
 });
+
+test("a grant packet prepared for one seeded grant names it in month words and keeps it across Update and the downloads (F-403b)", async ({ page }) => {
+  const id = "10101010-1010-1010-1010-101010101011";
+  await signIn(page, "staff@example.test");
+  expect((await page.goto(`/staff/packets?variant=grant&opportunity=${id}`))?.status()).toBe(200);
+  await expect(page.locator("[data-slot=packet-for]")).toHaveText("Prepared for Synthetic Family Fund · Synthetic Foundation · closes Mar 2027");
+  await expect(page.locator("[data-slot=packet-download]").first()).toHaveAttribute("href", new RegExp(`opportunity=${id}`));
+  await page.selectOption("#county", "49035");
+  await Promise.all([page.waitForURL(/county=49035/), page.getByRole("button", { name: "Update" }).click()]);
+  await expect(page.locator("[data-slot=packet-for]")).toContainText("Synthetic Family Fund");
+  await page.goto("/staff/packets?variant=grant&opportunity=not-a-uuid");
+  await expect(page.locator("[data-slot=packet-for]")).toHaveCount(0);
+});

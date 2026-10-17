@@ -23,8 +23,8 @@ const Field = ({ name, label, children }: { name: "variant" | "county"; label: s
   <div data-slot="form-field"><span className="flex items-center gap-1"><Label htmlFor={name}>{label}</Label><About text={CONTROL_HINTS[name] ?? ""} label={label} /></span>{children}</div>
 );
 /** F-404: plain links to the export route (DOCX or CSV appendix) for the current variant and county; hidden in print with the other controls. */
-const download = (variant: string, county: string | undefined, format: "docx" | "csv", label: string) => (
-  <span className="inline-flex items-center gap-1"><a data-slot="packet-download" className={buttonVariants({ variant: "outline" })} href={`/api/packets/export?variant=${variant}&county=${county ?? ""}&format=${format}`}>{label}</a>
+const download = (variant: string, county: string | undefined, opportunity: string | undefined, format: "docx" | "csv", label: string) => (
+  <span className="inline-flex items-center gap-1"><a data-slot="packet-download" className={buttonVariants({ variant: "outline" })} href={`/api/packets/export?variant=${variant}&county=${county ?? ""}${opportunity ? `&opportunity=${opportunity}` : ""}&format=${format}`}>{label}</a>
     <About text={DOWNLOAD_HINTS[format]} label={label} /></span>
 );
 
@@ -32,7 +32,7 @@ const download = (variant: string, county: string | undefined, format: "docx" | 
 export default async function PacketsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const now = new Date(), { variant, scope } = parsePacketParams(await searchParams);
   // The board packet is always statewide (scopeLabel), so the County menu only shows for the grant attachment.
-  const county = variant === "grant" ? scope.county : undefined;
+  const county = variant === "grant" ? scope.county : undefined, opportunity = scope.opportunity; // F-403b: kept across Update and the downloads
   let packet: Packet | null = null, errorId: string | undefined;
   try {
     const client = await createClient(), user = client ? (await client.auth.getUser()).data.user : null;
@@ -49,9 +49,10 @@ export default async function PacketsPage({ searchParams }: { searchParams: Prom
       <form method="get" action="/staff/packets" data-slot="packet-controls" className="flex flex-wrap items-end gap-3">
         <Field name="variant" label="Variant"><select id="variant" name="variant" defaultValue={variant} className={SELECT}>{(Object.keys(VARIANT_LABEL) as (keyof typeof VARIANT_LABEL)[]).map((v) => opt(v, VARIANT_LABEL[v]))}</select></Field>
         {variant === "grant" ? <Field name="county" label="County"><select id="county" name="county" defaultValue={county ?? ALL} className={SELECT}>{[opt(ALL, "Statewide"), ...COUNTIES.map((c) => opt(c.fips, c.name))]}</select></Field> : null}
+        {opportunity ? <input type="hidden" name="opportunity" value={opportunity} /> : null}
         <div className="flex flex-wrap gap-3">
           <button type="submit" className={buttonVariants()}>Update</button><PrintButton label="Print / Save as PDF" />
-          {download(variant, county, "docx", "Download Word (.docx)")}{download(variant, county, "csv", "Download CSV appendix")}
+          {download(variant, county, opportunity, "docx", "Download Word (.docx)")}{download(variant, county, opportunity, "csv", "Download CSV appendix")}
         </div>
       </form>
       {packet ? <PacketView packet={packet} /> : <ErrorState message="Couldn't build the packet" referenceId={errorId ?? randomUUID()} href="/staff/packets">Something went wrong on our side. Try again.</ErrorState>}

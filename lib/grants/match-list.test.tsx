@@ -57,5 +57,8 @@ describe("DS-12b MatchList and MatchPanel", () => {
     expect(panel).toContain('href="/staff/entry"');
     expect(text(panel)).toContain("FAS records · outcomes See these records in the grant evidence packet Add the missing records on Enter data");
     expect(renderToStaticMarkup(<MatchPanel id="p" row={item(1)} />)).not.toContain("evidence-links");
+    // F-403b: with the grant's id the packet link opens the packet prepared for that grant
+    expect(evidenceLinks(ev(15, ["fas_records.cost"]), "opp-1")[0]?.href).toBe("/staff/packets?variant=grant&opportunity=opp-1");
+    expect(renderToStaticMarkup(<MatchPanel id="p" row={item(1, { opportunityId: "opp-1", components: [ev(15, ["fas_records.cost"])] })} />)).toContain('href="/staff/packets?variant=grant&amp;opportunity=opp-1"');
   });
 });

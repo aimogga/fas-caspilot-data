@@ -101,9 +101,11 @@ export function sourceWords(ref: string): { label: string; plain: string } {
 }
 /** F-504f: where the evidence part leads. Credited FAS records → the grant evidence packet that shows them; evidence asked for but not held → Enter data. */
 export const EVIDENCE_PACKET_HREF = "/staff/packets?variant=grant", ENTER_DATA_HREF = "/staff/entry";
-export function evidenceLinks(c: { key: string; points: number; max: number; source_refs: string[] }): { href: string; label: string }[] {
+/** F-403b: with the grant's `opportunity.id` the packet link opens the packet prepared for that grant. */
+export function evidenceLinks(c: { key: string; points: number; max: number; source_refs: string[] }, opportunityId?: string): { href: string; label: string }[] {
   if (c.key !== "evidence_readiness") return [];
-  const links = c.source_refs.some((r) => r.startsWith("fas_records.")) ? [{ href: EVIDENCE_PACKET_HREF, label: "See these records in the grant evidence packet" }] : [];
+  const packet = opportunityId ? `${EVIDENCE_PACKET_HREF}&opportunity=${encodeURIComponent(opportunityId)}` : EVIDENCE_PACKET_HREF;
+  const links = c.source_refs.some((r) => r.startsWith("fas_records.")) ? [{ href: packet, label: "See these records in the grant evidence packet" }] : [];
   return c.points < c.max && c.source_refs.includes("match_config.params.evidence_available") ? [...links, { href: ENTER_DATA_HREF, label: "Add the missing records on Enter data" }] : links;
 }
 /** The stored flag message in plain words. "Could not check <what>: <field> missing" becomes "<What> not checked: <why>"; anything else is already words and passes through. */
