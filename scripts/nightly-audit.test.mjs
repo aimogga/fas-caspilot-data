@@ -5,6 +5,7 @@ import {
   generateReport,
   matchSecretLine,
   checkProgressLog,
+  changedFiles,
   readProgressLog,
   parseAgentsCommands,
   parseAudit,
@@ -129,6 +130,21 @@ describe('checkProgressLog', () => {
   it('finds documented PRs and flags missing', () => {
     expect(checkProgressLog(['Fix (#3)', 'Merge pull request #4 from'], 'PR #3\nPR #4')).toEqual({found: ['3', '4'], missing: []});
     expect(checkProgressLog(['Add (#5)'], 'PR #3')).toEqual({found: [], missing: ['5']});
+  });
+  it('D-041: a PR whose merge commit adds a harness/progress/*.md entry, or updates progress.md (before D-041), is documented without naming the PR', () => {
+    const commits = [
+      {subject: 'F-303b: aggregate totals (#315)', changed: ['lib/dashboard/aggregates.ts', 'harness/progress/2026-10-17T0742Z-f504d-fit-bands.md']},
+      {subject: 'DS-21a: sidebar (#289)', changed: ['components/x.tsx', 'harness/progress.md']},
+      {subject: 'Tooling fix (#320)', changed: ['scripts/x.mjs', 'harness/progress/sub/deep.md', 'docs/harness/progress.md']},
+      {subject: 'Old style (#3)', changed: []},
+    ];
+    expect(checkProgressLog(commits, 'PR #3 legacy entry')).toEqual({found: ['315', '289', '3'], missing: ['320']});
+  });
+  it('changedFiles lists what a commit adds or modifies against its first parent, and is empty when git fails', () => {
+    const seen = [];
+    expect(changedFiles('abc', (cmd) => { seen.push(cmd); return 'harness/progress/a.md\nlib/x.ts\n'; })).toEqual(['harness/progress/a.md', 'lib/x.ts']);
+    expect(seen).toEqual(['git diff --name-only --diff-filter=AM abc^1 abc']);
+    expect(changedFiles('abc', () => { throw new Error('no parent'); })).toEqual([]);
   });
 });
 describe('readProgressLog (D-041)', () => {
