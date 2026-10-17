@@ -3,6 +3,7 @@ import { needTerm } from '../need-map/terms';
 import { type Term, whyHidden } from '../trust/glossary';
 import { ALIAS } from './labels';
 import { NOT_PUBLISHED } from '../need-map/query';
+import type { NeedParams } from '../need-score/compute';
 import type { InputRow, MethodologyView, WeightRow } from './query';
 
 /** One sentence for each statistical word in the "How we calculate it" paragraph; the trigger is the word itself. */
@@ -34,7 +35,7 @@ export function weightCards(view: Pick<MethodologyView, 'weights' | 'inputs' | '
 
 const plural = (n: number, word: string) => `${n === 1 ? 'one' : n} ${word}${n === 1 ? '' : 's'}`;
 /** Serif headlines in words, one per section, from the stored view. */
-export function headlines(view: Pick<MethodologyView, 'weights' | 'inputs'>): Record<'how' | 'inputs' | 'weights' | 'vintages' | 'limits', string> {
+export function headlines(view: Pick<MethodologyView, 'weights' | 'inputs'>): Record<'how' | 'inputs' | 'weights' | 'reliability' | 'vintages' | 'limits', string> {
   const top = Math.max(...view.weights.map((w) => w.points ?? -1));
   const leaders = view.weights.filter((w) => w.points === top).map((w) => w.label);
   const weights = top < 0 || !leaders.length ? 'Weights are not available yet.'
@@ -43,11 +44,22 @@ export function headlines(view: Pick<MethodologyView, 'weights' | 'inputs'>): Re
     : `${leaders.slice(0, -1).join(', ')} and ${leaders[leaders.length - 1]} count most, at ${top} of 100 points each.`;
   return {
     how: `How we turn ${plural(view.inputs.length, 'public input')} into one county rank`,
-    inputs: 'What goes into the score', weights, vintages: 'When each input was published and last loaded', limits: 'What this score cannot tell you',
+    inputs: 'What goes into the score', weights, reliability: 'How we stop one county pulling the rest, and flag noisy estimates', vintages: 'When each input was published and last loaded', limits: 'What this score cannot tell you',
   };
 }
 
 /** The summary strip under the header: version and approval, inputs and points, counties scored. */
 export function summary(view: Pick<MethodologyView, 'version' | 'approvedLabel' | 'inputs' | 'scored' | 'counties'>): string[] {
   return [`Version ${view.version}, approved ${view.approvedLabel}`, `${plural(view.inputs.length, 'input')}, 100 points`, `${view.scored} of ${view.counties} counties scored`];
+}
+
+/** F-210c: the cap and the reliability check in plain words, from the approved version's stored params (golden rule 4). */
+export function reliabilityWords(params: NeedParams): { cap: string; flag: string } {
+  const cap = params.z_cap === undefined
+    ? 'This version does not cap z-scores, so a county with an extreme value counts at its full distance from the average.'
+    : `This version caps every z-score at ${params.z_cap} standard deviations either side of the average. A small county with an extreme estimate would otherwise stretch the scale and pull every other county's score; with the cap it still counts, and is still ranked, but at most ${params.z_cap} steps out.`;
+  const flag = params.cv_flag_pct === undefined
+    ? 'This version does not check how reliable each estimate is.'
+    : `We also check how noisy each estimate is. The Census publishes a margin of error; we turn it into a coefficient of variation (CV), the uncertainty as a share of the estimate: (margin ÷ 1.645) ÷ value × 100. When the CV is above ${params.cv_flag_pct}%, that county gets a "Low reliability" marker on that input. It is still scored and never hidden.`;
+  return { cap, flag };
 }

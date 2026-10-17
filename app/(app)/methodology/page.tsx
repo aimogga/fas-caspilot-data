@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import Link from "next/link";
 import { EmptyState, ErrorState, PageHeader, Stack } from "@/components/layout";
-import { DraftNotice, FormulaBlock, InputsTable, LimitsSection, MethodologyToc, Sec, TOC, VersionLine, WeightCards } from "@/components/methodology";
+import { DraftNotice, FormulaBlock, InputsTable, LimitsSection, ReliabilitySection, MethodologyToc, Sec, TOC, VersionLine, WeightCards } from "@/components/methodology";
 import { FreshnessChip, NotPublished } from "@/components/trust";
 import { Hint } from "@/components/trust/explain";
 import { buttonVariants } from "@/components/ui/button";
@@ -44,6 +44,7 @@ export default async function MethodologyPage() {
                 <WeightCards view={view} />
                 {view.mismatch ? <p data-slot="weights-mismatch" className="text-sm text-warning">{view.mismatch}</p> : null}
               </Sec>
+              <Sec id="reliability" eyebrow={eyebrow.reliability!} title={h!.reliability}><ReliabilitySection view={view} /></Sec>
               <Sec id="vintages" eyebrow={eyebrow.vintages!} title={h!.vintages}>
                 <p className="max-w-prose text-sm">Each input carries the vintage the source published and the date of our last successful load.</p>
                 <ul className="flex flex-col gap-2 text-sm">

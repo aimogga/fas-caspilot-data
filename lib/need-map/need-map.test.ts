@@ -155,3 +155,17 @@ describe('NeedTable markup', () => {
     expect(err).toMatch(/data-slot="error-state"[^]*<p>Body text<\/p>/);
   });
 });
+
+describe('F-210c low reliability on the need map', () => {
+  const comp = (cv: number | undefined, low: boolean | undefined) => ({ value: 9.2, z: 1, weight: 1, vintage: '2024', source_id: 's1', ingest_run_id: 'run-1', ...(cv === undefined ? {} : { cv, low_reliability: low }) });
+  const scores = [{ version: 'v2', geo_fips: '49035', score: '1.5', components: { uninsured_rate: comp(42.1, true) } }, { version: 'v2', geo_fips: '49049', score: -0.25, components: { uninsured_rate: comp(12, false) } }];
+
+  it('a flagged county keeps its score and rank and carries the input, CV and source row; others carry none', () => {
+    const data = NeedMapQuery.build(input({ scores }));
+    const salt = data.counties.find((c) => c.fips === '49035'), utah = data.counties.find((c) => c.fips === '49049');
+    expect([salt?.status, salt?.score, salt?.rank]).toEqual(['Ranked', '+1.50', '1 of 2']);
+    expect(salt?.flags).toEqual([{ code: 'uninsured_rate', value: 9.2, cv: 42.1, vintage: '2024', source_id: 's1', ingest_run_id: 'run-1', label: 'Uninsured rate', source: 'Census SAHIE' }]);
+    expect(utah?.flags).toEqual([]);
+    expect(NeedMapQuery.build(input()).counties.every((c) => c.flags?.length === 0)).toBe(true);
+  });
+});

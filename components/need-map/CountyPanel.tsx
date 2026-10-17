@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { CompareBars } from "@/components/need-map/CompareBars";
 import { CountyPicker } from "@/components/need-map/CountyPicker";
+import { LowReliability } from "@/components/need-map/LowReliability";
 import { Swatch, fillFor } from "@/components/need-map/NeedMap";
 import { ExplainCard, Hint, Provenance } from "@/components/trust/explain";
 import { ExplainLayer } from "@/components/trust/explain-layer";
@@ -55,6 +56,7 @@ function RankHeader({ county, counties, version }: { county: CountyRow; counties
     <div data-slot="rank-line" className="grid gap-1">
       <p className="m-0 font-serif text-xl leading-snug tabular-nums"><ExplainCard term="rank" value={county.rank} source={source} className="text-left">{line.place}</ExplainCard>{line.rest}</p>
       <p className="m-0 text-sm text-muted-foreground tabular-nums">Need score <ExplainCard term="need_score" value={county.score} source={source}>{county.score}</ExplainCard> · version {version ?? NOT_PUBLISHED}</p>
+      {county.flags?.length ? <p data-slot="reliability" className="m-0 flex flex-wrap gap-2">{county.flags.map((f) => <LowReliability key={f.code} flag={f} />)}</p> : null}
     </div>
   );
 }

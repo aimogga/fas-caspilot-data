@@ -47,4 +47,18 @@ describe('F-210 methodology query', () => {
     expect(view?.notPublished).toBe('29 of 29 counties are Not published for this version.');
     expect(view?.footer).toBe('Public sources: Census SAHIE · Need score version v2-real · as of Oct 2026');
   });
+  it('F-210c: carries the approved params, which inputs have a MOE, and each flagged county with its source row', () => {
+    const input = seed();
+    input.configs[1] = { ...input.configs[1]!, params: { z_cap: 3, cv_flag_pct: 30 } };
+    input.indicators.push({ source_id: SAHIE, indicator_code: 'uninsured', geo_fips: '49003', value: 5, moe: 2, unit: 'rate', vintage: '2023' });
+    input.scores[1] = { ...input.scores[1]!, components: { uninsured_rate: { value: 5, z: 3, z_raw: 4.1, weight: 1, vintage: '2023', source_id: SAHIE, ingest_run_id: 'run-u', cv: 41.2, low_reliability: true } } };
+    const view = MethodologyQuery.build(input, 'production');
+    expect(view?.params).toEqual({ z_cap: 3, cv_flag_pct: 30 });
+    expect(view?.checked).toEqual([{ key: 'uninsured', label: 'Uninsured rate', checked: true }]);
+    expect(view?.flagged).toEqual([{ fips: '49003', name: 'Box Elder County', flags: [expect.objectContaining({ code: 'uninsured_rate', cv: 41.2, label: 'Uninsured rate', source: 'Census SAHIE', ingest_run_id: 'run-u' })] }]);
+    expect(view?.scored).toBe(26);
+    const none = MethodologyQuery.build(seed(), 'production');
+    expect([none?.params, none?.checked[0]?.checked, none?.flagged]).toEqual([{}, false, []]);
+  });
 });
+
