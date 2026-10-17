@@ -24,8 +24,10 @@ import {
   evalFreshness,
   evalSanity,
   checkData, evalGrants, evalRls, checkGrantsAndRls, checkMainCi, checkDeploys,
-  classifyProbe, unmatchedAlertIssues, checkIngestAlerts, N8N_MARKER,
+  classifyProbe, unmatchedAlertIssues, checkIngestAlerts, N8N_MARKER, checkSuppression, evalSuppression,
 } from './nightly-audit.mjs';
+// Every main() call stubs the suppression suite, so a test run with Supabase env set (the audit job) never builds packets against a database.
+const SUP_OK = async () => ({status: 'GREEN', findings: [], details: []});
 const GHSA_IG = {id: 'GHSA-vfj7-8cjw-p6xm', package: 'braces', reason: 'CVE-2026-93687; dev-only lint toolchain transitive dep, no patched release', reviewer: 'QA bot', expires: '2026-11-08', severity: 'high'};
 const STALE_IG = {...GHSA_IG, id: 'GHSA-aaaa-bbbb-cccc', package: 'nope'};
 const BRACES_JSON = JSON.stringify({advisories: {'1240992': {severity: 'high', module_name: 'braces', cves: ['CVE-2026-93687'], github_advisory_id: 'GHSA-vfj7-8cjw-p6xm'}}, metadata: {vulnerabilities: {critical: 0, high: 1, moderate: 0, low: 0}}});
@@ -279,14 +281,14 @@ describe('main', () => {
     const code = await main({
       secretScan: greenStub, build: greenStub,
       deps: () => ({status: 'RED', findings: ['0 critical, 1 high'], details: [], ignored: []}),
-      harness: greenStub, emit: (res) => ({path: 'x', md: '', exitCode: auditExitCode(res)}), log: () => {},
+      harness: greenStub, emit: (res) => ({path: 'x', md: '', exitCode: auditExitCode(res)}), log: () => {}, suppression: SUP_OK,
     });
     expect(code).not.toBe(0);
   });
   it("returns 0 when checks are GREEN", async () => {
     const code = await main({
       secretScan: greenStub, build: greenStub, deps: greenStub, harness: greenStub,
-      emit: (res) => ({path: 'x', md: '', exitCode: auditExitCode(res)}), log: () => {},
+      emit: (res) => ({path: 'x', md: '', exitCode: auditExitCode(res)}), log: () => {}, suppression: SUP_OK,
     });
     expect(code).toBe(0);
   });
@@ -295,7 +297,7 @@ describe('main', () => {
     await main({
       secretScan: greenStub, build: greenStub, harness: greenStub,
       deps: () => ({status: 'YELLOW', findings: ['stale'], details: [], ignored: [GHSA_IG], stale: [STALE_IG]}),
-      emit: (res) => ({path: 'x', md: md = generateReport(res), exitCode: 0}), log: () => {},
+      emit: (res) => ({path: 'x', md: md = generateReport(res), exitCode: 0}), log: () => {}, suppression: SUP_OK,
     });
     expect(md).toContain('Ignored: GHSA-vfj7-8cjw-p6xm (braces, high):');
     expect(md).toContain('Stale: GHSA-aaaa-bbbb-cccc (nope, high):');
@@ -368,7 +370,7 @@ describe('data checks (synthetic)', () => {
     const ok = () => ({status: 'GREEN', findings: [], details: [], ignored: [], stale: []});
     let report;
     const data = async () => ({freshness: {status: 'YELLOW', findings: ['syn: stale'], details: ['syn: last success never']}, sanity: ok()});
-    await main({secretScan: ok, build: ok, deps: ok, harness: ok, data, log: () => {}, emit: (res) => { report = generateReport(res); return {path: 'x', exitCode: 0}; }});
+    await main({secretScan: ok, build: ok, deps: ok, harness: ok, data, log: () => {}, suppression: SUP_OK, emit: (res) => { report = generateReport(res); return {path: 'x', exitCode: 0}; }});
     expect(report).toContain('Overall: YELLOW');
     expect(report).toContain('Data freshness: syn: last success never');
   });
@@ -424,7 +426,7 @@ describe('F-601 QA mutation kills (synthetic)', () => {
   const run = async (o) => {
     let overall;
     await main({secretScan: ok, build: ok, deps: ok, harness: ok, data: async () => ({freshness: ok(), sanity: ok()}),
-      mainCi: async () => ok(), deploys: async () => ok(), alerts: async () => ok(), grantsRls: async () => ({grants: ok(), rls: ok()}), log: () => {},
+      mainCi: async () => ok(), deploys: async () => ok(), alerts: async () => ok(), grantsRls: async () => ({grants: ok(), rls: ok()}), log: () => {}, suppression: SUP_OK,
       emit: (res) => { overall = res.overall; return {path: 'x', exitCode: 0}; }, ...o});
     return overall;
   };
@@ -482,7 +484,7 @@ describe('deploy health (synthetic)', () => {
   it('deploy ERROR drives overall', async () => {
     let overall;
     await main({secretScan: ok, build: ok, deps: ok, harness: ok, data: async () => ({freshness: ok(), sanity: ok()}),
-      mainCi: async () => ok(), grantsRls: async () => ({grants: ok(), rls: ok()}), log: () => {},
+      mainCi: async () => ok(), grantsRls: async () => ({grants: ok(), rls: ok()}), log: () => {}, suppression: SUP_OK,
       deploys: async () => ({status: 'RED', findings: ['syn'], details: []}),
       emit: (res) => { overall = res.overall; return {path: 'x', exitCode: 0}; }});
     expect(overall).toBe('RED');
@@ -570,7 +572,7 @@ describe('ingest alerts (F-201, synthetic)', () => {
     const ok = () => ({status: 'GREEN', findings: [], details: [], ignored: [], stale: []});
     let overall;
     await main({secretScan: ok, build: ok, deps: ok, harness: ok, data: async () => ({freshness: ok(), sanity: ok()}), mainCi: async () => ok(),
-      deploys: async () => ok(), grantsRls: async () => ({grants: ok(), rls: ok()}), log: () => {},
+      deploys: async () => ok(), grantsRls: async () => ({grants: ok(), rls: ok()}), log: () => {}, suppression: SUP_OK,
       alerts: async () => ({status: 'YELLOW', findings: ['syn'], details: []}),
       emit: (res) => { overall = res.overall; return {path: 'x', exitCode: 0}; }});
     expect(overall).toBe('YELLOW');
@@ -594,5 +596,38 @@ describe('checkBuild', () => {
   it('reports a timeout or kill signal', () => {
     const run = (cmd) => { if (cmd === 'pnpm test') throw Object.assign(new Error('spawnSync /bin/sh ETIMEDOUT'), {code: 'ETIMEDOUT', signal: 'SIGTERM', stdout: '', stderr: ''}); return ''; };
     expect(checkBuild(run).details).toContain('test: exit ? ETIMEDOUT SIGTERM');
+  });
+});
+
+describe('F-601 check 4: suppression suite over the evidence packets', () => {
+  const finding = (rule) => ({rule, where: 'fas-results.figures[0]', text: 'n = 7', packet: 'org aaaaaaaa · board'});
+  it('evalSuppression: clean is GREEN, a small cell, exact date or case field is RED, unsourced only is YELLOW, no org is YELLOW; values never reach the report', () => {
+    expect(evalSuppression({checked: ['a', 'b'], findings: []})).toEqual({status: 'GREEN', findings: [], details: ['Suppression suite: 2 packets, no cell under 11, no exact date, no case field']});
+    for (const rule of ['small-cell', 'exact-date', 'case-field']) expect(evalSuppression({checked: ['a'], findings: [finding(rule)]}).status).toBe('RED');
+    const red = evalSuppression({checked: ['a'], findings: [finding('small-cell')]});
+    expect(red.findings).toEqual(['Packet org aaaaaaaa · board: small-cell at fas-results.figures[0]']);
+    expect(JSON.stringify(red)).not.toContain('n = 7');
+    expect(evalSuppression({checked: ['a'], findings: [finding('unsourced')]}).status).toBe('YELLOW');
+    expect(evalSuppression({checked: [], findings: []}).status).toBe('YELLOW');
+  });
+  it('checkSuppression skips without Supabase env, passes url and key to the loader, and turns a loader error into YELLOW', async () => {
+    expect((await checkSuppression({})).status).toBe('SKIPPED');
+    const seen = [];
+    const env = {SUPABASE_URL: 'http://127.0.0.1:1', SUPABASE_SERVICE_ROLE_KEY: 'not-a-secret'};
+    expect((await checkSuppression(env, async (u, k) => { seen.push(u, k); return {checked: ['a'], findings: []}; })).status).toBe('GREEN');
+    expect(seen).toEqual(['http://127.0.0.1:1', 'not-a-secret']);
+    const err = await checkSuppression(env, async () => { throw new Error('boom'); });
+    expect(err).toEqual({status: 'YELLOW', findings: ['suppression suite: could not build packets (boom)'], details: []});
+  });
+  it('main folds the suppression suite into privacy: RED drives overall, and it is listed as implemented, not todo', async () => {
+    const ok = () => ({status: 'GREEN', findings: [], details: [], ignored: [], stale: []});
+    let res;
+    const run = (suppression) => main({secretScan: ok, build: ok, deps: ok, harness: ok, data: async () => ({freshness: ok(), sanity: ok()}), mainCi: async () => ok(),
+      deploys: async () => ok(), alerts: async () => ok(), grantsRls: async () => ({grants: ok(), rls: ok()}), log: () => {}, suppression, emit: (r) => { res = r; return {path: 'x', exitCode: 0}; }});
+    await run(async () => evalSuppression({checked: ['a'], findings: [finding('small-cell')]}));
+    expect([res.overall, res.checks.privacy.status, res.checks.privacy.impl]).toEqual(['RED', 'RED', ['Secret scan', 'RLS + view security_invoker guard', 'Suppression suite: no cell < 11 in board/export packets']]);
+    expect(res.checks.privacy.todo).toEqual([]);
+    await run(async () => ({status: 'SKIPPED', reason: 'needs env', findings: [], details: []}));
+    expect([res.overall, res.checks.privacy.todo]).toEqual(['GREEN', ['Suppression suite (needs Supabase secrets)']]);
   });
 });
