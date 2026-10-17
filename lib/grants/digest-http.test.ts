@@ -30,7 +30,7 @@ function stubClient(orgs: string[], approved: boolean, results: unknown[] = []) 
 }
 const neverClient = { from: () => { throw new Error('client must not be used'); } } as unknown as SupabaseClient;
 const result = (id: string, score: number, posted: string | null, close: string | null = '2026-12-01') => ({
-  id, score, flags: { eligible: true, flags: [] }, computed_at: '2026-10-19T09:00:00Z', opportunity: { title: `Opp ${id}`, funder: 'Funder', close_date: close, posted_date: posted },
+  id, opportunity_id: `opp-${id}`, score, flags: { eligible: true, flags: [] }, computed_at: '2026-10-19T09:00:00Z', opportunity: { title: `Opp ${id}`, funder: 'Funder', close_date: close, posted_date: posted },
 });
 
 afterEach(() => vi.restoreAllMocks());
@@ -70,6 +70,7 @@ describe('GET /api/grants/digest results', () => {
     expect(d.rows.map((r) => r.id)).toEqual(['a']);
     expect(d.subject).toBe('FAS Evidence · 1 new grant match this week');
     expect(d.text).toContain('Opp a · Funder · closes Dec 1, 2026 · fit 70 · Eligible');
+    expect(d.text).toContain('  Evidence packet: http://127.0.0.1/staff/packets?variant=grant&opportunity=opp-a'); // F-505b: links use the origin n8n called
     expect(stub.calls).toEqual(['match_config', 'match_result']);
   });
   it('returns a generic 500 and never logs the token or service key when the read throws', async () => {

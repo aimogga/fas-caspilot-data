@@ -10,7 +10,7 @@ import { RecomputeHttp } from './recompute-http';
 
 export type DigestDeps = { env?: Record<string, string | undefined>; now?: Date; client?: SupabaseClient };
 export type OrgDigest = { org_id: string; config_id: string | null; reason?: string } & Partial<Digest>;
-type Row = { id: string; score: number | string | null; flags: unknown; computed_at: string; opportunity: { title: string; funder: string | null; close_date: string | null; posted_date: string | null } | null };
+type Row = { id: string; opportunity_id?: string; score: number | string | null; flags: unknown; computed_at: string; opportunity: { title: string; funder: string | null; close_date: string | null; posted_date: string | null } | null };
 const SOURCE = 'grants-digest';
 const MAX_DAYS = 90;
 
@@ -26,23 +26,24 @@ export class DigestHttp {
   }
 
   static async rows(client: SupabaseClient, orgId: string, configId: string): Promise<DigestRow[]> {
-    const { data, error } = await client.from('match_result').select('id,score,flags,computed_at,opportunity(title,funder,close_date,posted_date)').eq('org_id', orgId).eq('config_id', configId);
+    const { data, error } = await client.from('match_result').select('id,opportunity_id,score,flags,computed_at,opportunity(title,funder,close_date,posted_date)').eq('org_id', orgId).eq('config_id', configId);
     if (error) throw new Error(error.message);
     return ((data ?? []) as unknown as Row[]).filter((r) => r.opportunity).map((r) => {
       let eligibility = 'Unknown';
       try { eligibility = MatchQuery.eligibilityLabel(fromMatchFlags(r.flags)); } catch { /* malformed stored flags read as unknown */ }
       const o = r.opportunity as NonNullable<Row['opportunity']>;
-      return { id: r.id, title: o.title, funder: o.funder, closeDate: o.close_date, postedDate: o.posted_date, computedAt: r.computed_at, score: Number(r.score ?? 0), eligibility };
+      return { id: r.id, opportunityId: r.opportunity_id, title: o.title, funder: o.funder, closeDate: o.close_date, postedDate: o.posted_date, computedAt: r.computed_at, score: Number(r.score ?? 0), eligibility };
     });
   }
 
-  static async run(q: { orgId?: string; days: number }, deps: DigestDeps): Promise<OrgDigest[]> {
+  /** `appUrl` (F-505b): the origin n8n called, so the email's links point at the same app. */
+  static async run(q: { orgId?: string; days: number; appUrl?: string }, deps: DigestDeps): Promise<OrgDigest[]> {
     const env = deps.env ?? process.env, client = deps.client ?? SahieHttp.db(env), now = deps.now ?? new Date();
     const config = await MatchQuery.config(client);
     const out: OrgDigest[] = [];
     for (const id of await RecomputeHttp.orgIds(client, q.orgId)) {
       if (config === null) { out.push({ org_id: id, config_id: null, reason: 'no approved config' }); continue; }
-      out.push({ org_id: id, config_id: config.id, ...buildDigest(await DigestHttp.rows(client, id, config.id), now, config.params, q.days) });
+      out.push({ org_id: id, config_id: config.id, ...buildDigest(await DigestHttp.rows(client, id, config.id), now, config.params, q.days, q.appUrl) });
     }
     return out;
   }
@@ -59,7 +60,7 @@ export class DigestHttp {
       return Response.json({ error: 'bad request' }, { status: 400 });
     }
     try {
-      return Response.json({ digests: await DigestHttp.run(q, deps) });
+      return Response.json({ digests: await DigestHttp.run({ ...q, appUrl: new URL(request.url).origin }, deps) });
     } catch (e) {
       console.error('[grants] digest failed', { stage: 'run', message: IngestAlert.payload(SOURCE, e, env).error });
       return Response.json({ error: 'digest failed' }, { status: 500 });
