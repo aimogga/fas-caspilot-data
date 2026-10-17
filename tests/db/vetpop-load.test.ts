@@ -15,8 +15,9 @@ assertLocalSupabase(API, DB);
 describe('integration: VetPop load into local DB', () => {
   const client = createClient(API, SVC, { auth: { persistSession: false, autoRefreshToken: false } });
   // Beaver (49001) is absent from the payload and must load as an explicit not_published row.
-  const payload = COUNTIES.filter((c) => c.fips !== '49001')
-    .map((c) => ({ state: 'UT', county: `${c.name} County`, fips: c.fips, fiscal_year: '2023', veterans: c.fips === '49035' ? '61234' : '2500' }));
+  // Live jrjd-qghv shape (#209): each county is split into age × sex cells that the parser sums.
+  const payload = COUNTIES.filter((c) => c.fips !== '49001').flatMap((c) => [['Male', c.fips === '49035' ? '40000' : '1250'], ['Female', c.fips === '49035' ? '21234' : '1250']]
+    .map(([sex, veterans]) => ({ date: '2023-09-30T00:00:00.000', fips: c.fips, county_state: `${c.name}, UT`, state: 'Utah', age_group: '45 to 64', sex, veterans })));
   const rows = VaVetpop.requireComplete(VaVetpop.parse(payload));
   const runIds: string[] = [];
 
